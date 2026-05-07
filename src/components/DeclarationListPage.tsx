@@ -120,6 +120,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
   const [vccDeclNo, setVccDeclNo] = useState<string>('');
   const [cargoStep, setCargoStep] = useState<'list' | 'create' | 'amend' | 'success' | 'amendSuccess'>('list');
   type ClaimSubStep = 'list' | 'eligible' | 'refundType' | 'outbound' | 'missingDoc' | 'documents' | 'payment' | 'success';
+  const [claimDeclViewOpen, setClaimDeclViewOpen] = useState(false);
   const [claimStep, setClaimStep] = useState<ClaimSubStep>('list');
   const [claimContext, setClaimContext] = useState<{ claimType: ClaimType; declarationNo: string; depositType: string; refundType?: RefundType } | null>(null);
   const [ackStep, setAckStep] = useState<'list' | 'acceptSuccess' | 'declineSuccess'>('list');
@@ -212,13 +213,27 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               }}
             />
           )}
-          {claimStep === 'refundType' && claimContext && (
+          {claimStep === 'refundType' && claimContext && !claimDeclViewOpen && (
             <RefundTypePage
               onBack={() => setClaimStep('eligible')}
               onContinue={(type) => {
                 setClaimContext({ ...claimContext, refundType: type });
                 setClaimStep('documents');
               }}
+              declaration={{
+                claimType: claimContext.claimType === 'refundDeposit' ? 'Refund of Deposits' : claimContext.claimType === 'refundDuty' ? 'Refund of Duty' : 'Non Remittance',
+                declarationNo: claimContext.declarationNo,
+                depositType: claimContext.depositType,
+              }}
+              onViewDeclaration={() => setClaimDeclViewOpen(true)}
+            />
+          )}
+          {claimStep === 'refundType' && claimContext && claimDeclViewOpen && (
+            <CustomsDeclarationViewPage
+              declarationNo={claimContext.declarationNo}
+              onBack={() => setClaimDeclViewOpen(false)}
+              onServiceCatalogue={onServiceCatalogue}
+              onHome={onClose}
             />
           )}
           {claimStep === 'documents' && claimContext && (

@@ -109,10 +109,12 @@ const SAMPLE_OUTBOUND: OutboundRow[] = [
 
 /* ───────── Refund Type page (with inline Partial Invoice picker) ───────── */
 export function RefundTypePage({
-  onBack, onContinue,
+  onBack, onContinue, declaration, onViewDeclaration,
 }: {
   onBack: () => void;
   onContinue: (type: RefundType, partial?: PartialExportSelection) => void;
+  declaration?: { claimType: string; declarationNo: string; depositType: string };
+  onViewDeclaration?: () => void;
 }) {
   const [selected, setSelected] = useState<RefundType | null>(null);
   type CustomsAuthority = 'dubai' | 'other' | 'gcc';
@@ -212,6 +214,47 @@ export function RefundTypePage({
         </PrimaryBtn>
       }
     >
+      {declaration && (
+        <>
+          <SectionHeader>Declaration Details</SectionHeader>
+          <Card>
+            <div className="flex items-start justify-between gap-[20px] flex-wrap">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-x-[24px] gap-y-[16px] flex-1 min-w-[280px]">
+                <div className="flex flex-col gap-[4px]">
+                  <span className="text-[12px] text-[#697498]">Claim Type</span>
+                  <span className="text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{declaration.claimType}</span>
+                </div>
+                <div className="flex flex-col gap-[4px]">
+                  <span className="text-[12px] text-[#697498]">Declaration Number</span>
+                  <span className="text-[14px] text-[#1360d2]" style={{ fontWeight: 500 }}>{declaration.declarationNo}</span>
+                </div>
+                <div className="flex flex-col gap-[4px]">
+                  <span className="text-[12px] text-[#697498]">Deposit Type</span>
+                  <span className="text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{declaration.depositType}</span>
+                </div>
+                <div className="flex flex-col gap-[4px]">
+                  <span className="text-[12px] text-[#697498]">Declaration Date</span>
+                  <span className="text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>12-May-24</span>
+                </div>
+              </div>
+              {onViewDeclaration && (
+                <button
+                  onClick={onViewDeclaration}
+                  className="h-[40px] px-[18px] rounded-[4px] border border-[#1360d2] bg-white text-[14px] text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors inline-flex items-center gap-[8px] flex-shrink-0"
+                  style={{ fontWeight: 500 }}
+                >
+                  <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z" />
+                    <circle cx="10" cy="10" r="2.5" />
+                  </svg>
+                  View Declaration Details
+                </button>
+              )}
+            </div>
+          </Card>
+        </>
+      )}
+
       <SectionHeader>Refund Type</SectionHeader>
       <Card>
         <p className="text-[14px] text-[#455174] mb-[16px]">Please choose the refund type to begin your claim.</p>
