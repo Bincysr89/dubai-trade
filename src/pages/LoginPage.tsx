@@ -2,14 +2,22 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
 
+const REQUIRED_PASSWORD = 'IntegratedClearance';
+
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (password !== REQUIRED_PASSWORD) {
+      setError('Incorrect password — please try again.');
+      return;
+    }
+    setError('');
     navigate('/customer-type');
   };
 
@@ -47,10 +55,13 @@ export default function LoginPage() {
               <input
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => { setPassword(e.target.value); if (error) setError(''); }}
                 placeholder="Enter your password"
-                className="h-[56px] border border-[#e4e2e6] rounded-lg px-4 text-[16px] outline-none focus:border-[#0e1b3d] placeholder-[#5e5e62]"
+                className="h-[56px] border rounded-lg px-4 text-[16px] outline-none placeholder-[#5e5e62]"
+                style={{ borderColor: error ? '#dc3545' : '#e4e2e6' }}
+                aria-invalid={!!error}
               />
+              {error && <span className="text-[13px] text-[#dc3545]">{error}</span>}
             </div>
 
             <button
