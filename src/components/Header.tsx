@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import Logo from './Logo';
 import homeIconSrc from '../assets/icon-home.svg';
+import { setAuthenticated } from '../auth';
 
 type Props = { onServiceCatalogue?: () => void; onHome?: () => void };
 
@@ -27,7 +28,8 @@ export default function Header({ onServiceCatalogue, onHome }: Props) {
 
   const handleLogout = () => {
     setProfileOpen(false);
-    navigate('/login');
+    setAuthenticated(false);
+    navigate('/login', { replace: true });
   };
 
   return (

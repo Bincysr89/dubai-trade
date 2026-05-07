@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
+import { setAuthenticated } from '../auth';
 
 const REQUIRED_PASSWORD = 'IntegratedClearance';
 
@@ -15,9 +16,11 @@ export default function LoginPage() {
     e.preventDefault();
     if (password !== REQUIRED_PASSWORD) {
       setError('Incorrect password — please try again.');
+      setAuthenticated(false);
       return;
     }
     setError('');
+    setAuthenticated(true);
     navigate('/customer-type');
   };
 
