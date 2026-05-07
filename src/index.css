@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: 'Dubai', 'Inter', system-ui, -apple-system, sans-serif;
+  background: #f8fafd;
+  color: #0e1b3d;
+}
+
+/* Thin scrollbar for service columns */
+.scrollbar-thin::-webkit-scrollbar { width: 4px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: #d0d5e8; border-radius: 4px; }
+.scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #aab0c8; }
+
+/* Dubai Trade-style input/dropdown containers — white background with a subtle
+   elevation shadow. Targets the canonical DT control pattern: a 44/48/56px-tall
+   box with the standard #d5ddfb border (declared either via Tailwind class or
+   inline style). */
+[class*="border-[#d5ddfb]"][class*="h-[56px]"],
+[class*="border-[#d5ddfb]"][class*="h-[48px]"],
+[class*="border-[#d5ddfb]"][class*="h-[44px]"],
+[style*="border: 1px solid #d5ddfb"],
+[style*="border:1px solid #d5ddfb"],
+[style*="border: 1px solid rgb(213, 221, 251)"],
+[style*="border:1px solid rgb(213, 221, 251)"] {
+  box-shadow: 0px 2px 6px rgba(11, 21, 52, 0.06);
+  background: #ffffff;
+}
+
+[class*="border-[#d5ddfb]"][class*="h-[56px]"]:focus-within,
+[class*="border-[#d5ddfb]"][class*="h-[48px]"]:focus-within,
+[class*="border-[#d5ddfb]"][class*="h-[44px]"]:focus-within,
+[style*="border: 1px solid #d5ddfb"]:focus-within,
+[style*="border:1px solid #d5ddfb"]:focus-within {
+  box-shadow: 0px 4px 10px rgba(19, 96, 210, 0.10);
+}

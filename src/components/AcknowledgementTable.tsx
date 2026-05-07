@@ -1,0 +1,254 @@
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import Pagination from './Pagination';
+import StatusFilterHeader from './StatusFilterHeader';
+
+type Status = 'Accepted' | 'Pending' | 'Declined';
+
+const STATUS_STYLE: Record<Status, { bg: string; color: string }> = {
+  'Accepted': { bg: 'rgba(40,167,69,0.10)',   color: '#28a745' },
+  'Pending':  { bg: 'rgba(255,169,26,0.16)',  color: '#cc9200' },
+  'Declined': { bg: 'rgba(220,53,69,0.10)',   color: '#dc3545' },
+};
+
+type ReqType = 'New' | 'Amended' | 'Cancelled';
+
+type FlyoutId = 'view' | 'accept' | 'decline' | 'history' | 'regenerate';
+
+const ICONS: Record<FlyoutId, React.ReactNode> = {
+  view:       <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z" /><circle cx="10" cy="10" r="2.5" /></svg>,
+  accept:     <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="10" cy="10" r="7.5" /><path d="M6.5 10l2.5 2.5 4.5-5" /></svg>,
+  decline:    <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="10" cy="10" r="7.5" /><path d="M6.5 6.5l7 7M13.5 6.5l-7 7" /></svg>,
+  history:    <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="3" width="12" height="14" rx="1.5" /><path d="M7 7h6M7 10h6M7 13h4" /></svg>,
+  regenerate: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M16 10a6 6 0 1 1-1.8-4.3" /><path d="M16 3v3.5h-3.5" /></svg>,
+};
+
+const LABELS: Record<FlyoutId, string> = {
+  view: 'View Declaration',
+  accept: 'Accept',
+  decline: 'Decline',
+  history: 'History',
+  regenerate: 'Regenerate',
+};
+
+function getFlyoutItems(status: Status): { id: FlyoutId; disabled: boolean }[] {
+  if (status === 'Pending') {
+    return [
+      { id: 'view',       disabled: false },
+      { id: 'accept',     disabled: false },
+      { id: 'decline',    disabled: false },
+      { id: 'history',    disabled: false },
+      { id: 'regenerate', disabled: false },
+    ];
+  }
+  // Accepted / Declined
+  return [
+    { id: 'view',    disabled: false },
+    { id: 'accept',  disabled: true  },
+    { id: 'decline', disabled: true  },
+    { id: 'history', disabled: false },
+  ];
+}
+
+type Row = {
+  declaration: string;
+  reqType: ReqType;
+  clearanceDate: string;
+  importer: string;
+  importerTags?: ('Ack' | 'Owner')[];
+  exporter: string;
+  broker: string;
+  value: string;
+  decReason: string;
+  ackDate: string;
+  ackStatus: Status;
+};
+
+export const ACK_ROWS: Row[] = [
+  { declaration: '502100666777', reqType: 'New',       clearanceDate: '12-Dec-25', importer: 'AE-11565432-ALT Ex…', importerTags: ['Ack', 'Owner'], exporter: 'AE - 1001913 - Conso…', broker: 'AE - 1001913 - Conso…', value: '1009.92', decReason: 'Supp. Quantity',    ackDate: '25-Aug-25', ackStatus: 'Accepted' },
+  { declaration: '501777333222', reqType: 'New',       clearanceDate: '12-Dec-25', importer: 'AE - 11293837 - GTE…', importerTags: ['Ack', 'Owner'], exporter: 'AE - 1001913 - Conso…', broker: 'AE - 1001913 - Conso…', value: '1009.92', decReason: 'HS Code is Wro…',   ackDate: '25-Aug-25', ackStatus: 'Pending'  },
+  { declaration: '306999444111', reqType: 'Amended',   clearanceDate: '12-Dec-25', importer: 'AE - 11293837 - GTE…', exporter: 'AE - 1001913 - Conso…', broker: 'AE - 1001913 - Conso…', value: '1009.92', decReason: 'Supp. Quantity',    ackDate: '25-Aug-25', ackStatus: 'Accepted' },
+  { declaration: '209222666888', reqType: 'Amended',   clearanceDate: '12-Dec-25', importer: 'AE-11565432-ALT Ex…', exporter: 'AE - 1001913 - Conso…', broker: 'AE - 1001913 - Conso…', value: '1009.92', decReason: 'HS Code is Wro…',   ackDate: '25-Aug-25', ackStatus: 'Pending'  },
+  { declaration: '202333555111', reqType: 'Amended',   clearanceDate: '12-Dec-25', importer: 'AE - 11293837 - GTE…', exporter: 'AE - 1001913 - Conso…', broker: 'AE - 1001913 - Conso…', value: '1009.92', decReason: 'Supp. Quantity',    ackDate: '25-Aug-25', ackStatus: 'Pending'  },
+  { declaration: '502100666777', reqType: 'Cancelled', clearanceDate: '12-Dec-25', importer: 'AE-11565432-ALT Ex…', exporter: 'AE - 1001913 - Conso…', broker: 'AE - 1001913 - Conso…', value: '1009.92', decReason: 'HS Code is Wro…',   ackDate: '25-Aug-25', ackStatus: 'Declined' },
+  { declaration: '501777333222', reqType: 'Cancelled', clearanceDate: '12-Dec-25', importer: 'AE - 11293837 - GTE…', exporter: 'AE - 1001913 - Conso…', broker: 'AE - 1001913 - Conso…', value: '1009.92', decReason: 'Supp. Quantity',    ackDate: '25-Aug-25', ackStatus: 'Declined' },
+  { declaration: '306999444111', reqType: 'New',       clearanceDate: '12-Dec-25', importer: 'AE - 11293837 - GTE…', exporter: 'AE - 1001913 - Conso…', broker: 'AE - 1001913 - Conso…', value: '1009.92', decReason: 'Supp. Quantity',    ackDate: '25-Aug-25', ackStatus: 'Declined' },
+  { declaration: '209222666888', reqType: 'New',       clearanceDate: '12-Dec-25', importer: 'AE-11565432-ALT Ex…', exporter: 'AE - 1001913 - Conso…', broker: 'AE - 1001913 - Conso…', value: '1009.92', decReason: 'Supp. Quantity',    ackDate: '25-Aug-25', ackStatus: 'Accepted' },
+];
+
+type Props = {
+  onView?: () => void;
+  onAccept?: () => void;
+  onDecline?: (rowIndex: number) => void;
+  onHistory?: () => void;
+  onRegenerate?: () => void;
+  selected?: Set<number>;
+  onSelectedChange?: (s: Set<number>) => void;
+};
+
+export default function AcknowledgementTable({ onView, onAccept, onDecline, onHistory, onRegenerate, selected: selectedProp, onSelectedChange }: Props = {}) {
+  const [openFlyout, setOpenFlyout] = useState<number | null>(null);
+  const flyoutRef = useRef<HTMLDivElement>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(8);
+  const [statusFilter, setStatusFilter] = useState<Status | null>(null);
+  const STATUS_COLOR: Record<Status, string> = { Accepted: '#28a745', Pending: '#cc9200', Declined: '#dc3545' };
+  const filteredRows = useMemo(
+    () => statusFilter
+      ? ACK_ROWS.map((r, i) => ({ r, i })).filter(({ r }) => r.ackStatus === statusFilter)
+      : ACK_ROWS.map((r, i) => ({ r, i })),
+    [statusFilter]
+  );
+  const [selectedInternal, setSelectedInternal] = useState<Set<number>>(new Set());
+  const selected = selectedProp ?? selectedInternal;
+  const setSelected = (s: Set<number>) => {
+    if (onSelectedChange) onSelectedChange(s);
+    else setSelectedInternal(s);
+  };
+
+  useEffect(() => {
+    if (openFlyout === null) return;
+    const onDoc = (e: MouseEvent) => {
+      if (flyoutRef.current && !flyoutRef.current.contains(e.target as Node)) setOpenFlyout(null);
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [openFlyout]);
+
+  const allChecked = selected.size === ACK_ROWS.length;
+  const toggleAll = () => setSelected(allChecked ? new Set() : new Set(ACK_ROWS.map((_, i) => i)));
+  const toggleOne = (i: number) => {
+    const next = new Set(selected);
+    if (next.has(i)) next.delete(i); else next.add(i);
+    setSelected(next);
+  };
+
+  const headers: { label: string; w: number }[] = [
+    { label: 'Declaration',     w: 140 },
+    { label: 'Req. Type',       w: 110 },
+    { label: 'Clearance Date',  w: 130 },
+    { label: 'Importer',        w: 220 },
+    { label: 'Exporter',        w: 200 },
+    { label: 'Broker',          w: 200 },
+    { label: 'Value (AED)',     w: 120 },
+    { label: 'Dec. Reason',     w: 150 },
+    { label: 'Ack. Date',       w: 110 },
+  ];
+
+  const Checkbox = ({ checked, onChange }: { checked: boolean; onChange: () => void }) => (
+    <button onClick={onChange} role="checkbox" aria-checked={checked} className="size-[18px] rounded-[3px] flex-shrink-0 inline-flex items-center justify-center" style={{ border: `1.5px solid ${checked ? '#1360d2' : '#a7abb2'}`, background: checked ? '#1360d2' : '#fff' }}>
+      {checked && <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7l3 3 5-6" /></svg>}
+    </button>
+  );
+
+  return (
+    <div className="overflow-x-auto pb-[20px]">
+      <table style={{ minWidth: 1700, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: "'Dubai', sans-serif" }} className="w-full">
+        <thead>
+          <tr>
+            <th style={{ width: 48, minWidth: 48, background: '#e2ebf9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, borderTopLeftRadius: 8, borderBottomLeftRadius: 8 }}>
+              <Checkbox checked={allChecked} onChange={toggleAll} />
+            </th>
+            {headers.map((col) => (
+              <th key={col.label} style={{ width: col.w, minWidth: col.w, background: '#e2ebf9', padding: '10px 12px', textAlign: 'left', fontWeight: 500 }}>
+                <div className="flex items-center gap-[4px]">
+                  <span className="text-[14px] text-[#455174] whitespace-nowrap" style={{ letterSpacing: '0.07px' }}>{col.label}</span>
+                  <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#8f94ae" strokeWidth="1.5" strokeLinecap="round"><path d="M3 4h10M5 8h6M7 12h2" /></svg>
+                </div>
+              </th>
+            ))}
+            <th style={{ position: 'sticky', right: 79, width: 140, minWidth: 140, background: '#e2ebf9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
+              <StatusFilterHeader
+                label="Ack. Status"
+                options={Object.keys(STATUS_STYLE)}
+                value={statusFilter}
+                onChange={(v) => setStatusFilter(v as Status | null)}
+                colorMap={STATUS_COLOR}
+              />
+            </th>
+            <th style={{ position: 'sticky', right: 0, width: 79, minWidth: 79, background: '#e2ebf9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, zIndex: 2, borderTopRightRadius: 8, borderBottomRightRadius: 8 }}>
+              <span className="text-[14px] text-[#455174]" style={{ letterSpacing: '0.07px' }}>Actions</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredRows.map(({ r: row, i }) => {
+            const st = STATUS_STYLE[row.ackStatus];
+            const cell = (content: React.ReactNode, w: number) => (
+              <td style={{ background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: w }}>{content}</td>
+            );
+            const txt = (v: React.ReactNode) => <span className="text-[14px] text-[#0e1b3d] whitespace-nowrap">{v}</span>;
+            return (
+              <tr key={i}>
+                <td style={{ background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 48, borderTopLeftRadius: 8, borderBottomLeftRadius: 8 }}>
+                  <Checkbox checked={selected.has(i)} onChange={() => toggleOne(i)} />
+                </td>
+                {cell(<a href="#" className="text-[14px] text-[#1360d2] hover:underline whitespace-nowrap" style={{ fontWeight: 500 }}>{row.declaration}</a>, 140)}
+                {cell(txt(row.reqType), 110)}
+                {cell(txt(row.clearanceDate), 130)}
+                {cell(
+                  <div className="flex flex-col gap-[4px]">
+                    <span className="text-[14px] text-[#0e1b3d] whitespace-nowrap" style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 200, display: 'inline-block' }}>{row.importer}</span>
+                    {row.importerTags && row.importerTags.length > 0 && (
+                      <span className="inline-flex items-center px-[8px] py-[2px] rounded-[4px] text-[12px] self-start" style={{ background: 'rgba(19,96,210,0.10)', color: '#1360d2', fontWeight: 500 }}>
+                        {row.importerTags.join(', ')}
+                      </span>
+                    )}
+                  </div>, 220
+                )}
+                {cell(<span className="text-[14px] text-[#0e1b3d] whitespace-nowrap" style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180, display: 'inline-block' }}>{row.exporter}</span>, 200)}
+                {cell(<span className="text-[14px] text-[#0e1b3d] whitespace-nowrap" style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180, display: 'inline-block' }}>{row.broker}</span>, 200)}
+                {cell(txt(row.value), 120)}
+                {cell(<span className="text-[14px] text-[#0e1b3d] whitespace-nowrap" style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 140, display: 'inline-block' }}>{row.decReason}</span>, 150)}
+                {cell(txt(row.ackDate), 110)}
+                <td style={{ position: 'sticky', right: 79, background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 140, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', borderBottom: '1px solid #f8f8f8', zIndex: openFlyout === i ? 49 : 1 }}>
+                  <span className="text-[14px] font-medium whitespace-nowrap inline-flex items-center justify-center" style={{ background: st.bg, color: st.color, padding: '4px 12px', borderRadius: 4, lineHeight: '20px' }}>
+                    {row.ackStatus}
+                  </span>
+                </td>
+                <td style={{ position: 'sticky', right: 0, background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 79, textAlign: 'center', borderBottom: '1px solid #f8f8f8', zIndex: openFlyout === i ? 50 : 1 }}>
+                  <div className="relative inline-block" ref={openFlyout === i ? flyoutRef : undefined}>
+                    <button
+                      className="size-[28px] inline-flex items-center justify-center rounded hover:bg-[#f0f4ff] transition-colors"
+                      aria-label="More actions"
+                      onClick={() => setOpenFlyout(openFlyout === i ? null : i)}
+                    >
+                      <svg viewBox="0 0 4 18" width="4" height="18" fill="#697498">
+                        <circle cx="2" cy="2" r="2" /><circle cx="2" cy="9" r="2" /><circle cx="2" cy="16" r="2" />
+                      </svg>
+                    </button>
+                    {openFlyout === i && (
+                      <div className="absolute z-[100] bg-white rounded-[8px] py-[4px] overflow-hidden" style={{ right: '100%', top: 0, marginRight: 6, width: 200, boxShadow: '0px 2px 16px 0px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
+                        {getFlyoutItems(row.ackStatus).map((item) => (
+                          <button
+                            key={item.id}
+                            disabled={item.disabled}
+                            className={`group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left transition-colors ${item.disabled ? 'cursor-not-allowed' : 'hover:bg-[#1360d2]'}`}
+                            onClick={() => {
+                              if (item.disabled) return;
+                              setOpenFlyout(null);
+                              if (item.id === 'view')       onView?.();
+                              if (item.id === 'accept')     onAccept?.();
+                              if (item.id === 'decline')    onDecline?.(i);
+                              if (item.id === 'history')    onHistory?.();
+                              if (item.id === 'regenerate') onRegenerate?.();
+                            }}
+                          >
+                            <span className={`flex-shrink-0 inline-flex items-center justify-center ${item.disabled ? 'text-[#c9cdd6]' : 'text-[#1360d2] group-hover:text-white'}`}>{ICONS[item.id]}</span>
+                            <span className={`text-[14px] leading-[20px] ${item.disabled ? 'text-[#c9cdd6]' : 'text-[#111838] group-hover:text-white'}`} style={{ fontFamily: "'Dubai', sans-serif" }}>{LABELS[item.id]}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      <div className="pt-[16px]">
+        <Pagination page={page} totalPages={7} pageSize={pageSize} totalItems={7 * pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} />
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,108 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Logo from '../components/Logo';
+
+export default function LoginPage() {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [remember, setRemember] = useState(false);
+  const navigate = useNavigate();
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    navigate('/customer-type');
+  };
+
+  return (
+    <div
+      className="min-h-screen w-full flex items-center justify-start px-4 sm:px-8 md:px-16 py-8 bg-cover bg-center relative"
+      style={{
+        backgroundImage:
+          "linear-gradient(to bottom, rgba(14,27,61,0.35), rgba(14,27,61,0.55)), url('https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?auto=format&fit=crop&w=2400&q=80')",
+      }}
+    >
+      <div className="bg-white rounded-2xl p-8 shadow-xl w-full max-w-[544px]">
+        <div className="flex flex-col gap-7 items-center w-full max-w-[480px] mx-auto">
+          <Logo height={72} />
+
+          <h1 className="text-[#181d27] text-[24px] font-semibold text-center">Login to Your Account</h1>
+
+          <form onSubmit={onSubmit} className="flex flex-col gap-4 w-full">
+            <div className="flex flex-col gap-2">
+              <label className="text-black text-[16px]">
+                Username<span className="text-[#ea2428]">*</span>
+              </label>
+              <input
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Enter your username"
+                className="h-[56px] border border-[#e4e2e6] rounded-lg px-4 text-[16px] outline-none focus:border-[#0e1b3d] placeholder-[#5e5e62]"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-black text-[16px]">
+                Password<span className="text-[#ea2428]">*</span>
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                className="h-[56px] border border-[#e4e2e6] rounded-lg px-4 text-[16px] outline-none focus:border-[#0e1b3d] placeholder-[#5e5e62]"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="bg-[#0e1b3d] text-white h-[56px] rounded-full text-[20px] font-medium hover:bg-[#1a2750] transition-colors"
+            >
+              Login
+            </button>
+
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 cursor-pointer text-[#585e71] text-[16px]">
+                <input
+                  type="checkbox"
+                  checked={remember}
+                  onChange={(e) => setRemember(e.target.checked)}
+                  className="size-[20px] rounded border-2 border-[#c0c6cf] cursor-pointer"
+                />
+                Remember me
+              </label>
+              <button type="button" className="text-[#3081e0] font-medium text-[16px]">
+                Forgot password?
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="flex-1 h-px bg-[#e4e2e6]" />
+              <span className="text-[#40484f] text-[16px]">or</span>
+              <div className="flex-1 h-px bg-[#e4e2e6]" />
+            </div>
+
+            <button
+              type="button"
+              className="bg-white border border-black rounded-full h-[56px] flex items-center justify-center gap-2 font-semibold text-[18px] shadow-[0_2px_1px_rgba(0,0,0,0.12)] hover:bg-gray-50"
+            >
+              <svg viewBox="0 0 24 24" className="size-[24px]" fill="#0e1b3d">
+                <path d="M12 2a4 4 0 014 4v3a4 4 0 11-8 0V6a4 4 0 014-4zm-2 12h4a6 6 0 016 6v2H4v-2a6 6 0 016-6z" />
+              </svg>
+              Sign in with UAE PASS
+            </button>
+
+            <p className="text-[#40484f] text-[14px] text-center leading-6">
+              By logging in, you confirm that you understand & agree to the Dubai Trade Platform's{' '}
+              <a className="text-[#1360d2] underline cursor-pointer">Terms and Conditions</a> and{' '}
+              <a className="text-[#1360d2] underline cursor-pointer">Privacy Policy.</a>
+            </p>
+
+            <p className="text-center text-[15px] text-[#40484f] mt-2">
+              Don't have an account? <a className="text-[#1360d2] font-medium cursor-pointer">Register with Us</a>
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
