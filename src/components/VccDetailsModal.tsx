@@ -29,6 +29,7 @@ type Props = {
   open: boolean;
   details?: VccDetails;
   onClose: () => void;
+  onDownload?: () => void;
 };
 
 const Field = ({ label, value }: { label: string; value: string }) => (
@@ -43,7 +44,7 @@ const Field = ({ label, value }: { label: string; value: string }) => (
   </div>
 );
 
-export default function VccDetailsModal({ open, details, onClose }: Props) {
+export default function VccDetailsModal({ open, details, onClose, onDownload }: Props) {
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -141,7 +142,7 @@ export default function VccDetailsModal({ open, details, onClose }: Props) {
 
         {/* Footer */}
         <div
-          className="bg-white px-[24px] py-[16px] flex justify-end flex-shrink-0"
+          className="bg-white px-[24px] py-[16px] flex justify-end gap-[12px] flex-shrink-0"
           style={{ borderTop: '1px solid #e2ebf9' }}
         >
           <button
@@ -151,6 +152,18 @@ export default function VccDetailsModal({ open, details, onClose }: Props) {
           >
             Close
           </button>
+          {onDownload && (
+            <button
+              onClick={() => { onDownload(); }}
+              className="h-[48px] px-[24px] rounded-[4px] bg-[#1360d2] text-white inline-flex items-center gap-[8px] hover:bg-[#0f4fab] transition-colors"
+              style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, fontSize: 16 }}
+            >
+              <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10 3v10" /><path d="M5 9l5 5 5-5" /><path d="M3 17h14" />
+              </svg>
+              Download VCC
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -19,16 +19,6 @@ type FlyoutAction = 'amend' | 'view' | 'download' | 'audit';
 
 const FLYOUT_ITEMS: { id: FlyoutAction; label: string; icon: React.ReactNode }[] = [
   {
-    id: 'amend',
-    label: 'Amend Request',
-    icon: (
-      <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 17h3.5L16 7.5 12.5 4 3 13.5V17z" />
-        <path d="M11.5 5l3.5 3.5" />
-      </svg>
-    ),
-  },
-  {
     id: 'view',
     label: 'View Request',
     icon: (
@@ -115,19 +105,17 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
 
   const headers: { label: string; w: number }[] = [
     { label: 'Request No.',       w: 110 },
-    { label: 'VCC Count',         w: 95  },
+    { label: 'No. of Vehicles',   w: 130 },
     { label: 'Declaration No.',   w: 170 },
-    { label: 'Declaration Owner', w: 130 },
-    { label: 'Request Date',      w: 120 },
-    { label: 'Requested For',     w: 280 },
-    { label: 'Request Type',      w: 130 },
+    { label: 'Request Date',      w: 130 },
+    { label: 'Requested For',     w: 300 },
   ];
 
   return (
     <div className="overflow-x-auto pb-[20px]">
       <table
         style={{
-          minWidth: 1500,
+          minWidth: 1200,
           borderCollapse: 'separate',
           borderSpacing: '0 8px',
           fontFamily: "'Dubai', sans-serif",
@@ -184,8 +172,8 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
             return (
               <tr key={i}>
                 {cell(txt(row.reqNo), 110)}
-                {/* VCC Count — clickable, opens VCC Details popup */}
-                <td style={{ background: '#fff', padding: '0 8px', height: 54, verticalAlign: 'middle', width: 95, textAlign: 'center' }}>
+                {/* No. of Vehicles — clickable, opens VCC Details popup */}
+                <td style={{ background: '#fff', padding: '0 8px', height: 54, verticalAlign: 'middle', width: 130, textAlign: 'center' }}>
                   <button
                     onClick={() => onVccCountOpen?.(row)}
                     className="text-[14px] font-medium inline-flex items-center justify-center hover:opacity-80 transition-opacity"
@@ -215,10 +203,8 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
                     </button>
                   </div>
                 </td>
-                {cell(txt(row.declOwner),    130)}
-                {cell(txt(row.reqDate),      120)}
-                {cell(txt(row.requestedFor), 280)}
-                {cell(txt(row.requestType),  130)}
+                {cell(txt(row.reqDate),      130)}
+                {cell(txt(row.requestedFor), 300)}
 
                 {/* STICKY: Request Status */}
                 <td style={{

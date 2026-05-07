@@ -1,4 +1,5 @@
 import React from 'react';
+import BackToListingBar from './BackToListingBar';
 
 type Props = { declarationNo: string; onBack: () => void; onServiceCatalogue?: () => void; onHome?: () => void };
 
@@ -29,7 +30,8 @@ const Td = ({ children }: { children: React.ReactNode }) => (
 export default function CustomsDeclarationViewPage({ declarationNo, onBack, onServiceCatalogue, onHome }: Props) {
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full">
-      <div className="flex items-start justify-between px-[40px] pt-[24px] pb-[8px] flex-wrap gap-[12px]">
+      {/* Sticky breadcrumb / agent banner — title + body scroll under it. */}
+      <div className="flex items-start justify-between px-[40px] pt-[24px] pb-[12px] flex-wrap gap-[12px] flex-shrink-0 bg-[#f8fafd]">
         <div className="flex items-center gap-[6px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
           <button onClick={onBack} className="text-[14px] text-[#8f94ae] hover:underline">VCC Listing</button>
           <span className="text-[16px] text-[#dc3545]">/</span>
@@ -40,11 +42,12 @@ export default function CustomsDeclarationViewPage({ declarationNo, onBack, onSe
         </div>
       </div>
 
-      <h1 className="px-[40px] pt-[8px] pb-[20px] text-[28px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
-        Customs Declaration Number ({declarationNo}) <span className="text-[16px] text-[#697498]">(Version 1)</span>
-      </h1>
+      <div className="flex-1 overflow-y-auto" style={{ fontFamily: "'Dubai', sans-serif" }}>
+        <h1 className="px-[40px] pt-[8px] pb-[20px] text-[28px] text-[#111838]" style={{ fontWeight: 500 }}>
+          Customs Declaration Number ({declarationNo}) <span className="text-[16px] text-[#697498]">(Version 1)</span>
+        </h1>
 
-      <div className="flex-1 overflow-y-auto px-[40px] pb-[40px] flex flex-col gap-[20px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
+        <div className="px-[40px] pb-[24px] flex flex-col gap-[20px]">
         {/* Customs BIP */}
         <SectionTitle>Customs BIP</SectionTitle>
         <Card>
@@ -110,7 +113,7 @@ export default function CustomsDeclarationViewPage({ declarationNo, onBack, onSe
                   <Th>Weight (Kg)</Th>
                   <Th>Stat. Qty</Th>
                   <Th>Supp. Qty</Th>
-                  <Th>Unit Price (AED)</Th>
+                  <Th>Unit Price (Dh)</Th>
                   <Th>Customs Value</Th>
                 </tr>
               </thead>
@@ -194,16 +197,10 @@ export default function CustomsDeclarationViewPage({ declarationNo, onBack, onSe
           </div>
         </Card>
 
-        <div className="flex justify-start pt-[8px]">
-          <button
-            onClick={onBack}
-            className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[14px] text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
-            style={{ fontWeight: 500 }}
-          >
-            Back to Listing
-          </button>
         </div>
       </div>
+
+      <BackToListingBar onBack={onBack} />
     </div>
   );
 }

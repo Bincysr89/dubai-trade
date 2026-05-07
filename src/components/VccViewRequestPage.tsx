@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import BackToListingBar from './BackToListingBar';
 import VccDetailsModal, { type VccDetails } from './VccDetailsModal';
+import Dh from './Dh';
 
 const VCC_DETAILS_MAP: Record<string, VccDetails> = {
   '8026932': {
@@ -176,7 +177,7 @@ export default function VccViewRequestPage({ onBack, requestNumber = '25365' }: 
                     <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[14px] text-[#0e1b3d]">{c.ser}</span></td>
                     <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[14px] text-[#0e1b3d]">{c.type}</span></td>
                     <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[14px] text-[#0e1b3d]">{c.mode}</span></td>
-                    <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[14px] text-[#0e1b3d]">AED {c.amount}</span></td>
+                    <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[14px] text-[#0e1b3d] inline-flex items-baseline gap-[4px]"><Dh /> {c.amount}</span></td>
                     <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[14px] text-[#0e1b3d]">{c.account}</span></td>
                     <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><a className="text-[14px] text-[#1360d2] hover:underline" href="#">{c.ref}</a></td>
                   </tr>
@@ -215,21 +216,14 @@ export default function VccViewRequestPage({ onBack, requestNumber = '25365' }: 
             </div>
           </div>
           <div className="overflow-x-auto">
-            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontFamily: "'Dubai', sans-serif" }}>
+            <table className="dt-table" style={{ fontFamily: "'Dubai', sans-serif" }}>
               <thead>
                 <tr>
-                  <th style={{ background: '#e2ebf9', padding: '12px', textAlign: 'left', fontWeight: 500, width: 48, borderTopLeftRadius: 6 }}>
+                  <th style={{ width: 48 }}>
                     <Checkbox checked={allChecked} indeterminate={someChecked} onChange={toggleAll} />
                   </th>
-                  {['VCC Number', 'Chassis No.', 'Engine No.', 'Brand', 'Make', 'Model Year', 'VCC Date', 'VCC Status', 'Declaration Type', 'Remarks', 'Action'].map((h, i, arr) => (
-                    <th
-                      key={h}
-                      style={{
-                        background: '#e2ebf9', padding: '12px', textAlign: h === 'Action' ? 'center' : 'left', fontWeight: 500,
-                        color: '#455174', fontSize: 14, letterSpacing: '0.07px',
-                        borderTopRightRadius: i === arr.length - 1 ? 6 : 0,
-                      }}
-                    >{h}</th>
+                  {['VCC Number', 'Chassis No.', 'Engine No.', 'Brand', 'Make', 'Model Year', 'VCC Date', 'VCC Status', 'Declaration Type', 'Remarks', 'Action'].map((h) => (
+                    <th key={h} className="text-[14px]" style={{ textAlign: h === 'Action' ? 'center' : 'left' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -238,27 +232,27 @@ export default function VccViewRequestPage({ onBack, requestNumber = '25365' }: 
                   const st = STATUS_STYLE[v.status];
                   const checked = selected.has(v.vccNo);
                   return (
-                    <tr key={v.vccNo} style={{ background: checked ? '#f7faff' : '#fff' }}>
-                      <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}>
+                    <tr key={v.vccNo} className={checked ? 'is-selected' : ''}>
+                      <td>
                         <Checkbox checked={checked} onChange={() => toggleOne(v.vccNo)} />
                       </td>
-                      <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><button type="button" onClick={() => setOpenVccNo(v.vccNo)} className="text-[14px] text-[#1360d2] hover:underline" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>{v.vccNo}</button></td>
-                      <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[14px] text-[#0e1b3d]">{v.chassis}</span></td>
-                      <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[14px] text-[#0e1b3d]">{v.engine}</span></td>
-                      <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa', maxWidth: 320 }}>
+                      <td><button type="button" onClick={() => setOpenVccNo(v.vccNo)} className="text-[14px] text-[#1360d2] hover:underline" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>{v.vccNo}</button></td>
+                      <td><span className="text-[14px] text-[#0e1b3d]">{v.chassis}</span></td>
+                      <td><span className="text-[14px] text-[#0e1b3d]">{v.engine}</span></td>
+                      <td style={{ maxWidth: 320 }}>
                         <span className="text-[14px] text-[#0e1b3d]" style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={v.brand}>{v.brand}</span>
                       </td>
-                      <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[14px] text-[#0e1b3d]">{v.make}</span></td>
-                      <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[14px] text-[#0e1b3d]">{v.year}</span></td>
-                      <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[14px] text-[#0e1b3d] whitespace-nowrap">{v.vccDate}</span></td>
-                      <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}>
+                      <td><span className="text-[14px] text-[#0e1b3d]">{v.make}</span></td>
+                      <td><span className="text-[14px] text-[#0e1b3d]">{v.year}</span></td>
+                      <td><span className="text-[14px] text-[#0e1b3d] whitespace-nowrap">{v.vccDate}</span></td>
+                      <td>
                         <span className="text-[14px] font-medium inline-flex items-center justify-center whitespace-nowrap" style={{ background: st.bg, color: st.color, padding: '4px 12px', borderRadius: 4, lineHeight: '20px' }}>
                           {v.status}
                         </span>
                       </td>
-                      <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[14px] text-[#0e1b3d] whitespace-nowrap">{v.declType}</span></td>
-                      <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[14px] text-[#0e1b3d]">{v.remarks}</span></td>
-                      <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa', textAlign: 'center' }}>
+                      <td><span className="text-[14px] text-[#0e1b3d] whitespace-nowrap">{v.declType}</span></td>
+                      <td><span className="text-[14px] text-[#0e1b3d]">{v.remarks}</span></td>
+                      <td style={{ textAlign: 'center' }}>
                         <button
                           type="button"
                           onClick={() => downloadOne(v.vccNo)}

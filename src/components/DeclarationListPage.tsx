@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Header from './Header';
 import VccTable, { type VccRow } from './VccTable';
 import VccListPopup from './VccListPopup';
+import VccVehicleSearchTable from './VccVehicleSearchTable';
 import CustomsDeclarationViewPage from './CustomsDeclarationViewPage';
 import RequestVccPage from './RequestVccPage';
 import VccSearchResultPage from './VccSearchResultPage';
@@ -111,10 +112,18 @@ const DECLARATIONS: {
 export default function DeclarationListPage({ onClose, onServiceCatalogue }: Props) {
   const [activeTab, setActiveTab] = useState<'all' | 'epay'>('all');
   const [showFilters, setShowFilters] = useState(false);
+  // TODO: derive from auth context. For now broker login is enabled by default
+  // so the Customer Type / Code filters are visible.
+  const isBroker = true;
   const [showDrafts, setShowDrafts] = useState(false);
   const [searchType, setSearchType] = useState('Declaration');
   const [searchTypeOpen, setSearchTypeOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
+  /** Submitted query — populated only when the user presses Enter or clicks the search icon. */
+  const [searchQuery, setSearchQuery] = useState('');
+  const submitSearch = () => {
+    if (searchValue.trim() !== '') setSearchQuery(searchValue.trim());
+  };
   const [vccStep, setVccStep] = useState<'list' | 'create' | 'searchResult' | 'amend' | 'viewRequest' | 'paymentSuccess' | 'auditHistory' | 'declarationView'>('list');
   const [vccListPopupRow, setVccListPopupRow] = useState<VccRow | null>(null);
   const [vccDeclNo, setVccDeclNo] = useState<string>('');
@@ -148,6 +157,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
     setSearchType(activeMenu === 'VCC' ? 'Request Number' : 'Declaration');
     setSearchTypeOpen(false);
     setSearchValue('');
+    setSearchQuery('');
   }, [activeMenu]);
   const [openFlyout, setOpenFlyout] = useState<number | null>(null);
   const [filterFocused, setFilterFocused] = useState<Record<string, boolean>>({});
@@ -247,12 +257,12 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               summary={{
                 declarationNo: claimContext.declarationNo || '101-04498436-24',
                 depositType: claimContext.depositType || 'Missing Document Deposit',
-                depositAmount: 'AED 1,000',
+                depositAmount: 'Dh 1,000',
                 depositMethod: 'Cash (ePayment)',
                 refundType: claimContext.refundType === 'partial' ? 'Partial Export' : claimContext.refundType === 'full' ? 'Full Export' : 'No Export',
                 hsCount: 10,
                 outboundDeclarationNo: 'E: 2080004915824',
-                totalRefundAmount: 'AED 200.0',
+                totalRefundAmount: 'Dh 200.0',
               }}
               onBack={() => setClaimStep('documents')}
               onContinue={() => setClaimStep('success')}
@@ -620,7 +630,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                 ).map(opt => (
                   <button
                     key={opt}
-                    onClick={() => { setSearchType(opt); setSearchTypeOpen(false); setSearchValue(''); }}
+                    onClick={() => { setSearchType(opt); setSearchTypeOpen(false); setSearchValue(''); setSearchQuery(''); }}
                     className="block w-full text-left px-[14px] py-[8px] text-[14px] hover:bg-[#e2ebf9] transition-colors"
                     style={{ color: opt === searchType ? '#1360d2' : '#0e1b3d', fontFamily: "'Dubai', sans-serif", fontWeight: opt === searchType ? 500 : 400 }}
                   >{opt}</button>
@@ -632,12 +642,35 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               <input
                 type="text"
                 value={searchValue}
-                onChange={e => setSearchValue(e.target.value)}
-                placeholder={`${searchType.toLowerCase()}`}
-                className="flex-1 text-[14px] text-[#696f83] focus:outline-none bg-transparent"
+                onChange={e => { setSearchValue(e.target.value); if (searchQuery && e.target.value.trim() === '') setSearchQuery(''); }}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitSearch(); } }}
+                placeholder={
+                  (searchType === 'VCC Number' || searchType === 'Chasis Number')
+                    ? `Enter ${searchType.toLowerCase()} and press Enter`
+                    : `${searchType.toLowerCase()}`
+                }
+                className="flex-1 text-[14px] text-[#0e1b3d] focus:outline-none bg-transparent placeholder:text-[#697498]"
                 style={{ fontFamily: "'Dubai', sans-serif" }}
               />
-              <button className="flex-shrink-0 ml-[8px]">
+              {searchValue !== '' && (
+                <button
+                  type="button"
+                  onClick={() => { setSearchValue(''); setSearchQuery(''); }}
+                  aria-label="Clear search"
+                  className="flex-shrink-0 ml-[8px] size-[22px] inline-flex items-center justify-center rounded-full text-[#697498] hover:bg-[#f0f4ff] hover:text-[#0e1b3d] transition-colors"
+                >
+                  <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                    <path d="M5 5l10 10M15 5l-10 10" />
+                  </svg>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={submitSearch}
+                disabled={searchValue.trim() === ''}
+                aria-label="Search"
+                className="flex-shrink-0 ml-[8px] disabled:opacity-40 disabled:cursor-not-allowed"
+              >
                 <svg viewBox="0 0 24 24" className="size-[22px] text-[#455174]" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
                 </svg>
@@ -837,7 +870,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                 </>
               ) : activeMenu === 'VCC' ? (
                 <>
-                  {/* VCC Date From — calendar */}
+                  {/* *Request Date From — calendar (mandatory) */}
                   <div className="relative">
                     <div
                       tabIndex={0}
@@ -845,13 +878,13 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onClick={() => focusField('vccDateFrom')}
                       onBlur={() => blurField('vccDateFrom')}
                     >
-                      <span style={floatLabel(isFloated('vccDateFrom'))}>VCC Date From</span>
+                      <span style={floatLabel(isFloated('vccDateFrom'))}><span style={{ color: '#e8212e' }}>*</span>Request Date From</span>
                       <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['vccDateFrom'] || ''}</span>
                       <img src="https://www.figma.com/api/mcp/asset/08e2d6c0-9c2f-47ea-bd6b-8226369056e8" alt="" className="absolute right-[12px] size-[20px]" />
                     </div>
                   </div>
 
-                  {/* VCC Date To — calendar */}
+                  {/* *Request Date To — calendar (mandatory) */}
                   <div className="relative">
                     <div
                       tabIndex={0}
@@ -859,52 +892,126 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onClick={() => focusField('vccDateTo')}
                       onBlur={() => blurField('vccDateTo')}
                     >
-                      <span style={floatLabel(isFloated('vccDateTo'))}>VCC Date To</span>
+                      <span style={floatLabel(isFloated('vccDateTo'))}><span style={{ color: '#e8212e' }}>*</span>Request Date To</span>
                       <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['vccDateTo'] || ''}</span>
                       <img src="https://www.figma.com/api/mcp/asset/08e2d6c0-9c2f-47ea-bd6b-8226369056e8" alt="" className="absolute right-[12px] size-[20px]" />
                     </div>
                   </div>
 
-                  {/* Declaration Number — text */}
+                  {/* Status dropdown */}
                   <div className="relative">
-                    <input
-                      type="text"
-                      value={filterValues['vccDeclNumber'] || ''}
-                      onChange={e => setFilterValues(v => ({ ...v, vccDeclNumber: e.target.value }))}
-                      onFocus={() => focusField('vccDeclNumber')}
-                      onBlur={() => blurField('vccDeclNumber')}
-                      className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[14px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['vccDeclNumber'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
-                      style={{ fontFamily: "'Dubai', sans-serif" }}
-                    />
-                    <span style={floatLabel(isFloated('vccDeclNumber'))}>Declaration Number</span>
+                    <div
+                      tabIndex={0}
+                      className={`h-[56px] border rounded-[4px] flex items-center px-[12px] cursor-pointer transition-colors bg-white focus:outline-none ${filterFocused['vccStatus'] ? 'border-[#1360d2]' : 'border-[#d5ddfb] hover:border-[#1360d2]'}`}
+                      onClick={() => focusField('vccStatus')}
+                      onBlur={() => blurField('vccStatus')}
+                    >
+                      <span style={floatLabel(isFloated('vccStatus'))}>Status</span>
+                      <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['vccStatus'] || ''}</span>
+                      <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                    </div>
                   </div>
 
-                  {/* VCC Request Number — text */}
+                  {/* Customer Type dropdown — broker only */}
+                  {isBroker && (
+                    <div className="relative">
+                      <div
+                        tabIndex={0}
+                        className={`h-[56px] border rounded-[4px] flex items-center px-[12px] cursor-pointer transition-colors bg-white focus:outline-none ${filterFocused['vccCustomerType'] ? 'border-[#1360d2]' : 'border-[#d5ddfb] hover:border-[#1360d2]'}`}
+                        onClick={() => focusField('vccCustomerType')}
+                        onBlur={() => blurField('vccCustomerType')}
+                      >
+                        <span style={floatLabel(isFloated('vccCustomerType'))}>Customer Type</span>
+                        <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['vccCustomerType'] || ''}</span>
+                        <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Customer Code text — broker only */}
+                  {isBroker && (
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={filterValues['vccCustomerCode'] || ''}
+                        onChange={e => setFilterValues(v => ({ ...v, vccCustomerCode: e.target.value }))}
+                        onFocus={() => focusField('vccCustomerCode')}
+                        onBlur={() => blurField('vccCustomerCode')}
+                        className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[14px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['vccCustomerCode'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
+                        style={{ fontFamily: "'Dubai', sans-serif" }}
+                      />
+                      <span style={floatLabel(isFloated('vccCustomerCode'))}>Customer Code</span>
+                    </div>
+                  )}
+
+                  {/* Vehicle Brand */}
                   <div className="relative">
                     <input
                       type="text"
-                      value={filterValues['vccRequestNumber'] || ''}
-                      onChange={e => setFilterValues(v => ({ ...v, vccRequestNumber: e.target.value }))}
-                      onFocus={() => focusField('vccRequestNumber')}
-                      onBlur={() => blurField('vccRequestNumber')}
-                      className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[14px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['vccRequestNumber'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
+                      value={filterValues['vccVehicleBrand'] || ''}
+                      onChange={e => setFilterValues(v => ({ ...v, vccVehicleBrand: e.target.value }))}
+                      onFocus={() => focusField('vccVehicleBrand')}
+                      onBlur={() => blurField('vccVehicleBrand')}
+                      className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[14px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['vccVehicleBrand'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
                       style={{ fontFamily: "'Dubai', sans-serif" }}
                     />
-                    <span style={floatLabel(isFloated('vccRequestNumber'))}>VCC Request Number</span>
+                    <span style={floatLabel(isFloated('vccVehicleBrand'))}>Vehicle Brand</span>
                   </div>
 
-                  {/* Chassis Number — text */}
+                  {/* Vehicle Model */}
                   <div className="relative">
                     <input
                       type="text"
-                      value={filterValues['vccChassisNumber'] || ''}
-                      onChange={e => setFilterValues(v => ({ ...v, vccChassisNumber: e.target.value }))}
-                      onFocus={() => focusField('vccChassisNumber')}
-                      onBlur={() => blurField('vccChassisNumber')}
-                      className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[14px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['vccChassisNumber'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
+                      value={filterValues['vccVehicleModel'] || ''}
+                      onChange={e => setFilterValues(v => ({ ...v, vccVehicleModel: e.target.value }))}
+                      onFocus={() => focusField('vccVehicleModel')}
+                      onBlur={() => blurField('vccVehicleModel')}
+                      className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[14px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['vccVehicleModel'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
                       style={{ fontFamily: "'Dubai', sans-serif" }}
                     />
-                    <span style={floatLabel(isFloated('vccChassisNumber'))}>Chassis Number</span>
+                    <span style={floatLabel(isFloated('vccVehicleModel'))}>Vehicle Model</span>
+                  </div>
+
+                  {/* Vehicle Type */}
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={filterValues['vccVehicleType'] || ''}
+                      onChange={e => setFilterValues(v => ({ ...v, vccVehicleType: e.target.value }))}
+                      onFocus={() => focusField('vccVehicleType')}
+                      onBlur={() => blurField('vccVehicleType')}
+                      className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[14px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['vccVehicleType'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
+                      style={{ fontFamily: "'Dubai', sans-serif" }}
+                    />
+                    <span style={floatLabel(isFloated('vccVehicleType'))}>Vehicle Type</span>
+                  </div>
+
+                  {/* Specification Standard Name */}
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={filterValues['vccSpecStandard'] || ''}
+                      onChange={e => setFilterValues(v => ({ ...v, vccSpecStandard: e.target.value }))}
+                      onFocus={() => focusField('vccSpecStandard')}
+                      onBlur={() => blurField('vccSpecStandard')}
+                      className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[14px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['vccSpecStandard'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
+                      style={{ fontFamily: "'Dubai', sans-serif" }}
+                    />
+                    <span style={floatLabel(isFloated('vccSpecStandard'))}>Specification Standard Name</span>
+                  </div>
+
+                  {/* Vehicle Year Build */}
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={filterValues['vccYearBuild'] || ''}
+                      onChange={e => setFilterValues(v => ({ ...v, vccYearBuild: e.target.value }))}
+                      onFocus={() => focusField('vccYearBuild')}
+                      onBlur={() => blurField('vccYearBuild')}
+                      className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[14px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['vccYearBuild'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
+                      style={{ fontFamily: "'Dubai', sans-serif" }}
+                    />
+                    <span style={floatLabel(isFloated('vccYearBuild'))}>Vehicle Year Build</span>
                   </div>
                 </>
               ) : activeMenu === 'Refund & Claims' ? (
@@ -1312,13 +1419,17 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
 
         {/* Table swap based on active sidebar menu */}
         {activeMenu === 'VCC' ? (
-          <VccTable
-            onView={() => setVccStep('viewRequest')}
-            onAmend={() => setVccStep('amend')}
-            onAudit={() => setVccStep('auditHistory')}
-            onVccCountOpen={(row) => setVccListPopupRow(row)}
-            onDeclarationOpen={(declNo) => { setVccDeclNo(declNo); setVccStep('declarationView'); }}
-          />
+          (searchType === 'VCC Number' || searchType === 'Chasis Number') && searchQuery !== '' ? (
+            <VccVehicleSearchTable searchTerm={searchQuery} searchType={searchType as 'VCC Number' | 'Chasis Number'} />
+          ) : (
+            <VccTable
+              onView={() => setVccStep('viewRequest')}
+              onAmend={() => setVccStep('amend')}
+              onAudit={() => setVccStep('auditHistory')}
+              onVccCountOpen={(row) => setVccListPopupRow(row)}
+              onDeclarationOpen={(declNo) => { setVccDeclNo(declNo); setVccStep('declarationView'); }}
+            />
+          )
         ) : activeMenu === 'Cargo Transfer' ? (
           <CargoTransferTable
             onAmend={() => setCargoStep('amend')}

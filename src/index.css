@@ -41,3 +41,44 @@ body {
 [style*="border:1px solid #d5ddfb"]:focus-within {
   box-shadow: 0px 4px 10px rgba(19, 96, 210, 0.10);
 }
+
+/* Dubai Trade-style data table — light-blue header, separated rows on the page
+   background, blue hover and a stronger blue selected state. */
+.dt-table {
+  border-collapse: separate;
+  border-spacing: 0 8px;
+  width: 100%;
+}
+.dt-table thead th {
+  background: #e2ebf9;
+  color: #455174;
+  font-weight: 500;
+  text-align: left;
+  padding: 10px 12px;
+  letter-spacing: 0.07px;
+  white-space: nowrap;
+}
+.dt-table thead tr th:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
+.dt-table thead tr th:last-child  { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+.dt-table tbody td {
+  background: #ffffff;
+  padding: 14px 12px;
+  border-top: 1px solid transparent;
+  border-bottom: 1px solid transparent;
+  transition: background-color 120ms ease;
+}
+.dt-table tbody tr:hover td {
+  background: #f4f7fc;
+}
+.dt-table tbody tr.is-selected td {
+  background: #e2ebf9;
+}
+
+/* Eligible declarations table — same row hover / selection treatment.
+   Uses !important to override the per-cell inline `background: #fff` styles. */
+.eligible-table tbody tr:not(.is-disabled):hover td {
+  background: #f4f7fc !important;
+}
+.eligible-table tbody tr.is-selected td {
+  background: #e2ebf9 !important;
+}

@@ -4,6 +4,7 @@ import FloatingField from './FloatingField';
 import ClaimantBrokerDetail from './ClaimantBrokerDetail';
 import type { ClaimType } from './ClaimTypeSelectionPage';
 import ClaimStepper from './ClaimStepper';
+import Dh from './Dh';
 
 const CLAIM_TYPE_LABEL: Record<ClaimType, string> = {
   refundDeposit: 'Refund of Deposits',
@@ -42,7 +43,7 @@ const Card: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   </div>
 );
 
-const Field = ({ k, v }: { k: string; v: string }) => (
+const Field = ({ k, v }: { k: string; v: React.ReactNode }) => (
   <div className="flex flex-col gap-[4px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
     <span className="text-[13px] text-[#696f83]">{k}</span>
     <span className="text-[14px] text-[#051937]" style={{ fontWeight: 500 }}>{v}</span>
@@ -63,7 +64,7 @@ function ClaimDetailsStep({
           <Field k="Claim Type" v={CLAIM_TYPE_LABEL[claimType]} />
           <Field k="Declaration Number" v={declarationNo} />
           <Field k="Declaration Date" v="12/05/2024" />
-          <Field k="Deposit Amount" v="AED 1,000" />
+          <Field k="Deposit Amount" v={<><Dh /> 1,000</>} />
           <Field k="Deposit Method" v="Cash" />
           <Field k="Claim Expiry" v="04/03/2025" />
         </div>
@@ -118,13 +119,13 @@ function PaymentDetailsStep({ values, setValues }: { values: any; setValues: (v:
       <Card>
         <div className="flex flex-col gap-[12px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
           {[
-            { k: 'Refund Amount',       v: 'AED 1,000.00' },
-            { k: 'Processing Fee',      v: 'AED 25.00' },
-            { k: 'Net Refund Payable',  v: 'AED 975.00', total: true },
+            { k: 'Refund Amount',       v: '1,000.00' },
+            { k: 'Processing Fee',      v: '25.00' },
+            { k: 'Net Refund Payable',  v: '975.00', total: true },
           ].map((row) => (
             <div key={row.k} className="flex items-center justify-between border-b border-[#eef1f6] last:border-0 pb-[10px] last:pb-0">
               <span className={`text-[14px] ${row.total ? 'text-[#0e1b3d]' : 'text-[#696f83]'}`} style={{ fontWeight: row.total ? 600 : 400 }}>{row.k}</span>
-              <span className={`text-[16px] ${row.total ? 'text-[#1360d2]' : 'text-[#051937]'}`} style={{ fontWeight: row.total ? 700 : 500 }}>{row.v}</span>
+              <span className={`text-[16px] inline-flex items-baseline gap-[4px] ${row.total ? 'text-[#1360d2]' : 'text-[#051937]'}`} style={{ fontWeight: row.total ? 700 : 500 }}><Dh /> {row.v}</span>
             </div>
           ))}
         </div>

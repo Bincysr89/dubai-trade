@@ -85,7 +85,7 @@ export default function VccSearchResultPage({ onBack, onSubmit, initialSelected,
   const vccCharges = count * VCC_PER_VEHICLE;
   const knowledgeFees = count > 0 ? KNOWLEDGE_FEES : 0;
   const total = vccCharges + knowledgeFees;
-  const fmt = (n: number) => `AED ${n.toLocaleString()}`;
+  const fmt = (n: number) => `Dh ${n.toLocaleString()}`;
 
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full">

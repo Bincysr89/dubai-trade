@@ -4,6 +4,7 @@ import FloatingField from './FloatingField';
 import ClaimantBrokerDetail from './ClaimantBrokerDetail';
 import ClaimStepper from './ClaimStepper';
 import DTSelect from './DTSelect';
+import Dh, { DhAmount } from './Dh';
 
 /* ───────── Shared types ───────── */
 export type RefundType = 'full' | 'partial' | 'no';
@@ -25,12 +26,16 @@ const REFUND_OPTIONS: { id: RefundType; title: string; sub: string }[] = [
 const PageShell: React.FC<{
   title: string;
   children: React.ReactNode;
-  onBack: () => void;
+  /** Returns to the previous step. Renders the "Back" button when supplied. */
+  onBack?: () => void;
+  /** Returns to the main claims listing. Renders "Back to Listing" when supplied (only on first sub-step). */
+  onBackToListing?: () => void;
   rightContent: React.ReactNode;
   activeIndex?: number;
-}> = ({ title, children, onBack, rightContent, activeIndex = 0 }) => (
+}> = ({ title, children, onBack, onBackToListing, rightContent, activeIndex = 0 }) => (
   <div className="flex flex-col bg-[#f8fafd] h-full" style={{ fontFamily: "'Dubai', sans-serif" }}>
-    <div className="flex items-start justify-between px-[40px] pt-[24px] pb-[8px] flex-wrap gap-[12px]">
+    {/* Sticky breadcrumb / agent banner — content below scrolls under it. */}
+    <div className="flex items-start justify-between px-[40px] pt-[24px] pb-[12px] flex-wrap gap-[12px] flex-shrink-0 bg-[#f8fafd]">
       <div className="flex items-center gap-[6px]">
         <span className="text-[14px] text-[#8f94ae]">Home</span>
         <span className="text-[16px] text-[#dc3545]">/</span>
@@ -43,18 +48,21 @@ const PageShell: React.FC<{
       </div>
     </div>
 
-    <h1 className="px-[40px] pt-[8px] text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>{title}</h1>
+    {/* Title + stepper + body all scroll together below the breadcrumb. */}
+    <div className="flex-1 overflow-y-auto">
+      <h1 className="px-[40px] pt-[8px] text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>{title}</h1>
 
-    <div className="px-[40px] pt-[16px]">
-      <ClaimStepper activeIndex={activeIndex} />
+      <div className="px-[40px] pt-[16px]">
+        <ClaimStepper activeIndex={activeIndex} />
+      </div>
+
+      <div className="px-[40px] py-[24px] flex flex-col gap-[20px]">
+        {children}
+        <ClaimantBrokerDetail />
+      </div>
     </div>
 
-    <div className="flex-1 overflow-y-auto px-[40px] py-[24px] flex flex-col gap-[20px]">
-      {children}
-      <ClaimantBrokerDetail />
-    </div>
-
-    <BackToListingBar onBack={onBack} rightContent={rightContent} />
+    <BackToListingBar onBack={onBack} onBackToListing={onBackToListing} rightContent={rightContent} />
   </div>
 );
 
@@ -109,9 +117,10 @@ const SAMPLE_OUTBOUND: OutboundRow[] = [
 
 /* ───────── Refund Type page (with inline Partial Invoice picker) ───────── */
 export function RefundTypePage({
-  onBack, onContinue, declaration, onViewDeclaration,
+  onBack, onBackToListing, onContinue, declaration, onViewDeclaration,
 }: {
   onBack: () => void;
+  onBackToListing?: () => void;
   onContinue: (type: RefundType, partial?: PartialExportSelection) => void;
   declaration?: { claimType: string; declarationNo: string; depositType: string };
   onViewDeclaration?: () => void;
@@ -180,8 +189,8 @@ export function RefundTypePage({
           suppQty: '10',
           importPrice: String(importPrice),
           allocation: hsIdx === 0 ? 'multiple' : 'single',
-          exportValue: `AED ${exportValue.toLocaleString()}`,
-          claimAmount: `AED ${claimAmount.toLocaleString()}`,
+          exportValue: exportValue.toLocaleString(),
+          claimAmount: claimAmount.toLocaleString(),
         });
       });
     });
@@ -194,6 +203,7 @@ export function RefundTypePage({
       title="Select Refund Type"
       activeIndex={1}
       onBack={onBack}
+      onBackToListing={onBackToListing}
       rightContent={
         <PrimaryBtn
           disabled={!valid}
@@ -218,39 +228,40 @@ export function RefundTypePage({
         <>
           <SectionHeader>Declaration Details</SectionHeader>
           <Card>
-            <div className="flex items-start justify-between gap-[20px] flex-wrap">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-x-[24px] gap-y-[16px] flex-1 min-w-[280px]">
-                <div className="flex flex-col gap-[4px]">
-                  <span className="text-[12px] text-[#697498]">Claim Type</span>
-                  <span className="text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{declaration.claimType}</span>
+            <div
+              className="grid items-start"
+              style={{ gap: 20, gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))' }}
+            >
+              {[
+                { k: 'Declaration Number', v: declaration.declarationNo, accent: true },
+                { k: 'Declaration Date',   v: '12-May-24' },
+                { k: 'Deposit Type',       v: declaration.depositType },
+                { k: 'Deposit Amount',     v: <DhAmount value="1,000" /> },
+                { k: 'Deposit Method',     v: 'Cash (ePayment)' },
+                { k: 'Claim Expiry',       v: '04-Mar-25' },
+                { k: 'Export Expiry',      v: '15-Apr-25' },
+              ].map((f) => (
+                <div key={f.k} className="flex flex-col gap-[4px] min-w-0">
+                  <span className="text-[12px] text-[#697498]">{f.k}</span>
+                  <span className="text-[14px] truncate" style={{ color: f.accent ? '#1360d2' : '#0e1b3d', fontWeight: 500 }}>{f.v}</span>
                 </div>
-                <div className="flex flex-col gap-[4px]">
-                  <span className="text-[12px] text-[#697498]">Declaration Number</span>
-                  <span className="text-[14px] text-[#1360d2]" style={{ fontWeight: 500 }}>{declaration.declarationNo}</span>
-                </div>
-                <div className="flex flex-col gap-[4px]">
-                  <span className="text-[12px] text-[#697498]">Deposit Type</span>
-                  <span className="text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{declaration.depositType}</span>
-                </div>
-                <div className="flex flex-col gap-[4px]">
-                  <span className="text-[12px] text-[#697498]">Declaration Date</span>
-                  <span className="text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>12-May-24</span>
-                </div>
-              </div>
-              {onViewDeclaration && (
+              ))}
+            </div>
+            {onViewDeclaration && (
+              <div className="mt-[20px]">
                 <button
                   onClick={onViewDeclaration}
-                  className="h-[40px] px-[18px] rounded-[4px] border border-[#1360d2] bg-white text-[14px] text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors inline-flex items-center gap-[8px] flex-shrink-0"
+                  className="h-[40px] px-[18px] rounded-[4px] border border-[#1360d2] bg-white text-[14px] text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors inline-flex items-center gap-[8px]"
                   style={{ fontWeight: 500 }}
                 >
                   <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z" />
                     <circle cx="10" cy="10" r="2.5" />
                   </svg>
-                  View Declaration Details
+                  View Declaration
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </Card>
         </>
       )}
@@ -401,33 +412,33 @@ export function RefundTypePage({
             )}
 
             {outboundRows.length > 0 && (
-              <div className="overflow-x-auto rounded-[6px] border border-[#eef1f6]">
-                <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 1100 }}>
+              <div className="overflow-x-auto">
+                <table className="dt-table" style={{ minWidth: 1100 }}>
                   <thead>
-                    <tr style={{ background: '#f4f7fc' }}>
-                      <th className="text-left text-[13px] text-[#455174]" style={{ padding: '10px 16px', fontWeight: 600, whiteSpace: 'nowrap' }}>Outbound Declaration No.</th>
-                      <th className="text-left text-[13px] text-[#455174]" style={{ padding: '10px 16px', fontWeight: 600, whiteSpace: 'nowrap' }}>Export Declaration Type</th>
-                      <th className="text-left text-[13px] text-[#455174]" style={{ padding: '10px 16px', fontWeight: 600, whiteSpace: 'nowrap' }}>Exit Point</th>
-                      <th className="text-left text-[13px] text-[#455174]" style={{ padding: '10px 16px', fontWeight: 600, whiteSpace: 'nowrap' }}>Re-Export To</th>
-                      <th className="text-left text-[13px] text-[#455174]" style={{ padding: '10px 16px', fontWeight: 600, whiteSpace: 'nowrap' }}>Actual Departure Date</th>
-                      <th className="text-left text-[13px] text-[#455174]" style={{ padding: '10px 16px', fontWeight: 600, whiteSpace: 'nowrap' }}>Weight</th>
-                      <th className="text-left text-[13px] text-[#455174]" style={{ padding: '10px 16px', fontWeight: 600, whiteSpace: 'nowrap' }}>Statistical Quantity</th>
-                      <th className="text-left text-[13px] text-[#455174]" style={{ padding: '10px 16px', fontWeight: 600, whiteSpace: 'nowrap' }}>Customs Authority</th>
-                      <th style={{ padding: '10px 16px', width: 60 }} />
+                    <tr>
+                      <th className="text-[13px]">Outbound Declaration No.</th>
+                      <th className="text-[13px]">Export Declaration Type</th>
+                      <th className="text-[13px]">Exit Point</th>
+                      <th className="text-[13px]">Re-Export To</th>
+                      <th className="text-[13px]">Actual Departure Date</th>
+                      <th className="text-[13px]">Weight</th>
+                      <th className="text-[13px]">Statistical Quantity</th>
+                      <th className="text-[13px]">Customs Authority</th>
+                      <th style={{ width: 60 }} />
                     </tr>
                   </thead>
                   <tbody>
                     {outboundRows.map((r, idx) => (
-                      <tr key={r.id} style={{ background: '#fff', borderTop: '1px solid #eef1f6' }}>
-                        <td className="text-[13px] text-[#0e1b3d]" style={{ padding: '12px 16px', fontWeight: 500, whiteSpace: 'nowrap' }}>{r.declarationNo}</td>
-                        <td className="text-[13px] text-[#0e1b3d]" style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{r.exportType}</td>
-                        <td className="text-[13px] text-[#0e1b3d]" style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{r.exitPoint}</td>
-                        <td className="text-[13px] text-[#0e1b3d]" style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{r.reExportTo}</td>
-                        <td className="text-[13px] text-[#0e1b3d]" style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{r.departureDate}</td>
-                        <td className="text-[13px] text-[#0e1b3d]" style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{r.weight}</td>
-                        <td className="text-[13px] text-[#0e1b3d]" style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{r.statQty}</td>
-                        <td className="text-[13px] text-[#0e1b3d]" style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{r.customsAuthority}</td>
-                        <td style={{ padding: '12px 16px' }}>
+                      <tr key={r.id}>
+                        <td className="text-[13px] text-[#0e1b3d]" style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>{r.declarationNo}</td>
+                        <td className="text-[13px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{r.exportType}</td>
+                        <td className="text-[13px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{r.exitPoint}</td>
+                        <td className="text-[13px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{r.reExportTo}</td>
+                        <td className="text-[13px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{r.departureDate}</td>
+                        <td className="text-[13px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{r.weight}</td>
+                        <td className="text-[13px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{r.statQty}</td>
+                        <td className="text-[13px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{r.customsAuthority}</td>
+                        <td>
                           <button
                             onClick={() => setOutboundRows(outboundRows.filter((_, i) => i !== idx))}
                             aria-label="Remove"
@@ -471,11 +482,11 @@ export function RefundTypePage({
                 <p className="text-[13px] text-[#a7abb2]">Add an outbound declaration above to auto-populate the eligible HS codes.</p>
               </div>
             ) : (
-              <div className="border border-[#d5ddfb] rounded-[8px] overflow-x-auto">
-                <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 1300 }}>
+              <div className="overflow-x-auto">
+                <table className="dt-table" style={{ minWidth: 1300 }}>
                   <thead>
-                    <tr style={{ background: '#e2ebf9' }}>
-                      <th style={{ padding: '12px', width: 44 }}>
+                    <tr>
+                      <th style={{ width: 44 }}>
                         <button
                           aria-label="Select all"
                           onClick={() => {
@@ -499,10 +510,10 @@ export function RefundTypePage({
                       <th className="text-left text-[14px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Weight (Kg)</th>
                       <th className="text-left text-[14px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Stat./Exported Qty</th>
                       <th className="text-left text-[14px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Supp. Qty</th>
-                      <th className="text-left text-[14px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Import Unit Price (AED)</th>
+                      <th className="text-left text-[14px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Import Unit Price (Dh)</th>
                       <th className="text-left text-[14px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Allocation Method</th>
-                      <th className="text-left text-[14px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Export Value (AED)</th>
-                      <th className="text-left text-[14px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Claim Amount (AED)</th>
+                      <th className="text-left text-[14px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Export Value (Dh)</th>
+                      <th className="text-left text-[14px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Claim Amount (Dh)</th>
                       <th style={{ padding: '12px', width: 60 }} />
                     </tr>
                   </thead>
@@ -512,8 +523,8 @@ export function RefundTypePage({
                       const key = `${e.invoiceId}::${e.code}`;
                       const isSelected = selectedHs.has(key);
                       return (
-                        <tr key={idx} style={{ borderTop: '1px solid #eef1f6', background: isSelected ? '#f6f9fe' : '#fff' }}>
-                          <td style={{ padding: '12px' }}>
+                        <tr key={idx} className={isSelected ? 'is-selected' : ''}>
+                          <td>
                             <button
                               onClick={() => {
                                 const next = new Set(selectedHs);
@@ -527,14 +538,14 @@ export function RefundTypePage({
                               {isSelected && <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7l3 3 5-6" /></svg>}
                             </button>
                           </td>
-                          <td className="text-[14px] text-[#1360d2]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>{inv?.invoiceNo}</td>
-                          <td className="text-[14px] text-[#051937]" style={{ padding: '12px', whiteSpace: 'nowrap', fontWeight: 500 }}>{e.code}</td>
-                          <td className="text-[14px] text-[#051937]" style={{ padding: '12px' }}>{e.description}</td>
-                          <td className="text-[14px] text-[#051937]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{e.weight}</td>
-                          <td className="text-[14px] text-[#051937]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{e.statQty}</td>
-                          <td className="text-[14px] text-[#051937]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{e.suppQty}</td>
-                          <td className="text-[14px] text-[#051937]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{e.importPrice}</td>
-                          <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>
+                          <td className="text-[14px] text-[#1360d2]" style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>{inv?.invoiceNo}</td>
+                          <td className="text-[14px] text-[#051937]" style={{ whiteSpace: 'nowrap', fontWeight: 500 }}>{e.code}</td>
+                          <td className="text-[14px] text-[#051937]">{e.description}</td>
+                          <td className="text-[14px] text-[#051937]" style={{ whiteSpace: 'nowrap' }}>{e.weight}</td>
+                          <td className="text-[14px] text-[#051937]" style={{ whiteSpace: 'nowrap' }}>{e.statQty}</td>
+                          <td className="text-[14px] text-[#051937]" style={{ whiteSpace: 'nowrap' }}>{e.suppQty}</td>
+                          <td className="text-[14px] text-[#051937]" style={{ whiteSpace: 'nowrap' }}>{e.importPrice}</td>
+                          <td style={{ whiteSpace: 'nowrap' }}>
                             <span
                               className="inline-flex items-center px-[10px] py-[3px] rounded-[12px] text-[12px]"
                               style={{
@@ -547,9 +558,9 @@ export function RefundTypePage({
                               {e.allocation}
                             </span>
                           </td>
-                          <td className="text-[14px] text-[#051937]" style={{ padding: '12px', whiteSpace: 'nowrap', fontWeight: 500 }}>{e.exportValue}</td>
-                          <td className="text-[14px] text-[#1360d2]" style={{ padding: '12px', whiteSpace: 'nowrap', fontWeight: 600 }}>{e.claimAmount}</td>
-                          <td style={{ padding: '12px' }}>
+                          <td className="text-[14px] text-[#051937]" style={{ whiteSpace: 'nowrap', fontWeight: 500 }}><DhAmount value={e.exportValue} /></td>
+                          <td className="text-[14px] text-[#1360d2]" style={{ whiteSpace: 'nowrap', fontWeight: 600 }}><DhAmount value={e.claimAmount} /></td>
+                          <td>
                             <button
                               onClick={() => { setEditingIndex(idx); setDraftEntry(e); setHsSearch(''); setHsModalOpen(true); }}
                               aria-label="Edit"
@@ -660,7 +671,7 @@ export function RefundTypePage({
                   {numField('Weight (Kg)', 'weight', 'Enter weight')}
                   {numField('Stat. / Exported Qty', 'statQty', 'Enter quantity')}
                   {numField('Supp. Qty', 'suppQty', 'Enter quantity')}
-                  {numField('Import Unit Price (AED)', 'importPrice', 'Enter price')}
+                  {numField('Import Unit Price (Dh)', 'importPrice', 'Enter price')}
                   {/* Allocation Method dropdown */}
                   <DTSelect
                     label="Allocation Method"
@@ -696,8 +707,8 @@ export function RefundTypePage({
                     const claim = Math.round(exportVal * 0.05);
                     const computed: HsEntry = {
                       ...draftEntry,
-                      exportValue: `AED ${exportVal.toLocaleString()}`,
-                      claimAmount: `AED ${claim.toLocaleString()}`,
+                      exportValue: exportVal.toLocaleString(),
+                      claimAmount: claim.toLocaleString(),
                     };
                     if (editingIndex !== null) {
                       const next = [...hsEntries];
@@ -735,9 +746,10 @@ export type OutboundDetails = {
 };
 
 export function OutboundDeclarationPage({
-  onBack, onContinue,
+  onBack, onBackToListing, onContinue,
 }: {
   onBack: () => void;
+  onBackToListing?: () => void;
   onContinue: (d: OutboundDetails) => void;
 }) {
   const [v, setV] = useState<OutboundDetails>({ outboundDeclNumber: '', outboundDate: '', portOfDischarge: '', totalQuantity: '', weight: '', remarks: '' });
@@ -749,6 +761,7 @@ export function OutboundDeclarationPage({
       title="Outbound Declaration Details"
       activeIndex={1}
       onBack={onBack}
+      onBackToListing={onBackToListing}
       rightContent={<PrimaryBtn disabled={!valid} onClick={() => onContinue(v)}>Continue</PrimaryBtn>}
     >
       <SectionHeader>Outbound Declaration</SectionHeader>
@@ -805,7 +818,7 @@ const makeHs = (code: string): HsRow => ({
   condition: 'New',
   countryOfOrigin: 'India',
   weight: '100 kg',
-  valueOfGoods: 'AED 1500',
+  valueOfGoods: 'Dh 1500',
   statisticalQty: '100 - Unit',
   supplementaryQty: '100',
   itemQty: '100 - Unit',
@@ -851,9 +864,10 @@ const HS_COLUMNS: { key: keyof HsRow; label: string; width: number }[] = [
 export type PartialExportSelection = { invoiceIds: string[]; hsCodes: { invoiceId: string; code: string }[] };
 
 export function PartialExportPage({
-  onBack, onContinue,
+  onBack, onBackToListing, onContinue,
 }: {
   onBack: () => void;
+  onBackToListing?: () => void;
   onContinue: (s: PartialExportSelection) => void;
 }) {
   const [selectedInvoices, setSelectedInvoices] = useState<Set<string>>(new Set());
@@ -885,6 +899,7 @@ export function PartialExportPage({
       title="Partial Export — Select Invoices &amp; HS Codes"
       activeIndex={1}
       onBack={onBack}
+      onBackToListing={onBackToListing}
       rightContent={<PrimaryBtn disabled={!valid} onClick={() => onContinue({ invoiceIds: Array.from(selectedInvoices), hsCodes: Array.from(selectedHs).map((k) => { const [invoiceId, code] = k.split('::'); return { invoiceId, code }; }) })}>Continue</PrimaryBtn>}
     >
       <SectionHeader>Invoices &amp; HS Codes</SectionHeader>
@@ -980,9 +995,10 @@ const REQUIRED_DOC_TYPES: { id: string; label: string; required?: boolean; autho
 ];
 
 export function DocumentUploadPage({
-  onBack, onContinue,
+  onBack, onBackToListing, onContinue,
 }: {
   onBack: () => void;
+  onBackToListing?: () => void;
   onContinue: (docs: UploadedDoc[]) => void;
 }) {
   const [selectedDocType, setSelectedDocType] = useState<string>(REQUIRED_DOC_TYPES[0].id);
@@ -1018,6 +1034,7 @@ export function DocumentUploadPage({
       title="Upload Documents"
       activeIndex={2}
       onBack={onBack}
+      onBackToListing={onBackToListing}
       rightContent={<PrimaryBtn disabled={!requiredMet} onClick={() => onContinue(docs)}>Continue</PrimaryBtn>}
     >
       <Card>
@@ -1162,6 +1179,7 @@ export function PaymentDetailsPage({
 }: {
   summary: ClaimSummary;
   onBack: () => void;
+  onBackToListing?: () => void;
   onContinue: (p: PaymentDetails) => void;
 }) {
   const [mode, setMode] = useState('');
@@ -1188,11 +1206,11 @@ export function PaymentDetailsPage({
   const fields: { k: string; v: React.ReactNode }[] = [
     { k: 'Declaration No.',       v: summary.declarationNo },
     { k: 'Deposit Type',          v: summary.depositType },
-    { k: 'Deposit Amount',        v: summary.depositAmount },
+    { k: 'Deposit Amount',        v: <span className="inline-flex items-baseline gap-[4px]"><Dh /> {String(summary.depositAmount).replace(/^Dh\s*/, '')}</span> },
     { k: 'Deposit Method',        v: depositMethodField },
     { k: 'Refund Type',           v: <span>{summary.refundType}{summary.refundType.toLowerCase().includes('partial') && <span className="text-[14px] text-[#696f83] ml-[8px]">No. of HS Codes — {summary.hsCount}</span>}</span> },
     { k: 'Outbound Declaration',  v: summary.outboundDeclarationNo },
-    { k: 'Total Refund Amount',   v: <span style={{ color: '#1360d2', fontWeight: 600 }}>{summary.totalRefundAmount}</span> },
+    { k: 'Total Refund Amount',   v: <span className="inline-flex items-baseline gap-[4px]" style={{ color: '#1360d2', fontWeight: 600 }}><Dh /> {String(summary.totalRefundAmount).replace(/^Dh\s*/, '')}</span> },
   ];
 
   return (
@@ -1200,6 +1218,7 @@ export function PaymentDetailsPage({
       title="Claim Payment Details"
       activeIndex={3}
       onBack={onBack}
+      onBackToListing={onBackToListing}
       rightContent={<PrimaryBtn disabled={!valid} onClick={() => onContinue({ mode, accountNo })}>Submit Claim</PrimaryBtn>}
     >
       <SectionHeader>Claim Summary</SectionHeader>
@@ -1226,15 +1245,15 @@ export function PaymentDetailsPage({
             <div className="flex flex-col gap-[10px]">
               <div className="flex items-center gap-[12px]" style={{ background: '#eff2f7', height: 49, padding: '0 12px' }}>
                 <span className="text-[16px]" style={{ color: '#696f83', fontWeight: 500, flex: 1 }}>Total Charges</span>
-                <span className="text-[20px]" style={{ color: '#051937', fontWeight: 700 }}>AED 70</span>
+                <span className="text-[20px]" style={{ color: '#051937', fontWeight: 700 }}><DhAmount value="70" /></span>
               </div>
               <div className="flex items-start gap-[12px]" style={{ padding: '0 12px' }}>
                 <span className="text-[14px]" style={{ color: '#696f83', fontWeight: 500, flex: 1 }}>Claim Registration Charge</span>
-                <span className="text-[16px]" style={{ color: '#051937', fontWeight: 700, minWidth: 80 }}>AED 50</span>
+                <span className="text-[16px]" style={{ color: '#051937', fontWeight: 700, minWidth: 80 }}><DhAmount value="50" /></span>
               </div>
               <div className="flex items-start gap-[12px]" style={{ padding: '0 12px' }}>
                 <span className="text-[14px]" style={{ color: '#696f83', fontWeight: 500, flex: 1 }}>Knowledge-Innovation Dirham</span>
-                <span className="text-[16px]" style={{ color: '#051937', fontWeight: 700, minWidth: 80 }}>AED 20</span>
+                <span className="text-[16px]" style={{ color: '#051937', fontWeight: 700, minWidth: 80 }}><DhAmount value="20" /></span>
               </div>
             </div>
             <div>
@@ -1270,9 +1289,10 @@ export function PaymentDetailsPage({
 export type MissingDocDetails = { refundAmount: string; currency: string; depositMethod: DepositMethod; remarks: string };
 
 export function MissingDocDepositPage({
-  onBack, onContinue,
+  onBack, onBackToListing, onContinue,
 }: {
   onBack: () => void;
+  onBackToListing?: () => void;
   onContinue: (d: MissingDocDetails) => void;
 }) {
   // Refund Amount is auto-calculated by the system based on the declaration.
@@ -1297,6 +1317,7 @@ export function MissingDocDepositPage({
       title="Refund Details"
       activeIndex={1}
       onBack={onBack}
+      onBackToListing={onBackToListing}
       rightContent={<PrimaryBtn disabled={!valid} onClick={() => valid && onContinue({ refundAmount, currency, depositMethod: depositMethod as DepositMethod, remarks })}>Continue</PrimaryBtn>}
     >
       <SectionHeader>Refund &amp; Deposit Method</SectionHeader>

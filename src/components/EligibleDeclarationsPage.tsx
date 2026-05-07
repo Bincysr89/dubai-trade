@@ -5,6 +5,7 @@ import FloatingField from './FloatingField';
 import type { ClaimType } from './ClaimTypeSelectionPage';
 import ClaimantBrokerDetail from './ClaimantBrokerDetail';
 import ClaimStepper from './ClaimStepper';
+import Dh from './Dh';
 
 export type RefundType = 'full' | 'partial' | 'no';
 
@@ -278,15 +279,15 @@ const SAMPLE_INVOICES: Invoice[] = [
   {
     id: 'inv1', invoiceNo: 'INV-2024-09812', date: '12/05/2024',
     hsCodes: [
-      { code: '8471.30.0010', description: 'Portable computers', quantity: '50', value: 'AED 250,000' },
-      { code: '8517.12.0000', description: 'Mobile phones',       quantity: '120', value: 'AED 480,000' },
+      { code: '8471.30.0010', description: 'Portable computers', quantity: '50', value: 'Dh 250,000' },
+      { code: '8517.12.0000', description: 'Mobile phones',       quantity: '120', value: 'Dh 480,000' },
     ],
   },
   {
     id: 'inv2', invoiceNo: 'INV-2024-09813', date: '12/05/2024',
     hsCodes: [
-      { code: '8528.72.0000', description: 'Television receivers', quantity: '30',  value: 'AED 90,000'  },
-      { code: '8504.40.0000', description: 'Static converters',    quantity: '200', value: 'AED 35,000'  },
+      { code: '8528.72.0000', description: 'Television receivers', quantity: '30',  value: 'Dh 90,000'  },
+      { code: '8504.40.0000', description: 'Static converters',    quantity: '200', value: 'Dh 35,000'  },
     ],
   },
 ];
@@ -404,7 +405,9 @@ function PartialExportInvoiceModal({
                                   <td className="text-[13px] text-[#0e1b3d]" style={{ padding: '8px 12px', fontWeight: 500 }}>{hs.code}</td>
                                   <td className="text-[13px] text-[#0e1b3d]" style={{ padding: '8px 12px' }}>{hs.description}</td>
                                   <td className="text-[13px] text-[#0e1b3d]" style={{ padding: '8px 12px' }}>{hs.quantity}</td>
-                                  <td className="text-[13px] text-[#0e1b3d]" style={{ padding: '8px 12px' }}>{hs.value}</td>
+                                  <td className="text-[13px] text-[#0e1b3d]" style={{ padding: '8px 12px' }}>
+                                    <span className="inline-flex items-baseline gap-[4px]"><Dh /> {String(hs.value).replace(/^Dh\s*/, '')}</span>
+                                  </td>
                                 </tr>
                               );
                             })}
@@ -502,7 +505,7 @@ type Row = {
   declarationNo: string;
   declarationDate: string;
   depositType: string;
-  depositAmount: string;     // 'AED 1,000' or 'N/A'
+  depositAmount: string;     // 'Dh 1,000' or 'N/A'
   depositMethod: string;     // 'Cash' / 'Standing Guarantee' / 'N/A'
   claimExpiry: string;
   exportExpiry: string;
@@ -512,18 +515,18 @@ type Row = {
 
 const ROWS: Row[] = [
   // Refund of Deposits — any deposit-labeled item
-  { declarationNo: '101-04498436-24', declarationDate: '12/05/2024', depositType: 'Missing Document Deposit',     depositAmount: 'AED 1,000', depositMethod: 'Cash',                claimExpiry: '04/03/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
-  { declarationNo: '105-01426431-24', declarationDate: '09/10/2024', depositType: 'Deposit Alternative Duty Rate', depositAmount: 'AED 1,000', depositMethod: 'Standing Guarantee', claimExpiry: '04/03/2025', exportExpiry: '03/08/2025', remarks: '—', kind: 'requestExt' },
-  { declarationNo: '202-08812205-24', declarationDate: '08/14/2024', depositType: 'Missing Document Deposit',     depositAmount: 'AED 2,500', depositMethod: 'Cash',                claimExpiry: '06/15/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
-  { declarationNo: '404-09988123-24', declarationDate: '07/02/2024', depositType: 'Deposit Alternative Duty Rate', depositAmount: 'AED 5,000', depositMethod: 'Standing Guarantee', claimExpiry: '07/01/2025', exportExpiry: '05/15/2025', remarks: '—', kind: 'requestExt' },
-  { declarationNo: '108-05512790-24', declarationDate: '11/02/2024', depositType: 'Duty Deposit',                  depositAmount: 'AED 3,200', depositMethod: 'Standing Guarantee', claimExpiry: '05/01/2025', exportExpiry: '04/01/2025', remarks: '—', kind: 'requestExt' },
-  { declarationNo: '210-04477981-24', declarationDate: '10/02/2024', depositType: 'Anti Dumping Deposit',          depositAmount: 'AED 7,500', depositMethod: 'Cash',                claimExpiry: '04/15/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
-  { declarationNo: '312-09921077-24', declarationDate: '06/22/2024', depositType: 'Exemption Deposit',             depositAmount: 'AED 4,000', depositMethod: 'Cash',                claimExpiry: '06/30/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
+  { declarationNo: '101-04498436-24', declarationDate: '12/05/2024', depositType: 'Missing Document Deposit',     depositAmount: 'Dh 1,000', depositMethod: 'Cash',                claimExpiry: '04/03/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
+  { declarationNo: '105-01426431-24', declarationDate: '09/10/2024', depositType: 'Deposit Alternative Duty Rate', depositAmount: 'Dh 1,000', depositMethod: 'Standing Guarantee', claimExpiry: '04/03/2025', exportExpiry: '03/08/2025', remarks: '—', kind: 'requestExt' },
+  { declarationNo: '202-08812205-24', declarationDate: '08/14/2024', depositType: 'Missing Document Deposit',     depositAmount: 'Dh 2,500', depositMethod: 'Cash',                claimExpiry: '06/15/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
+  { declarationNo: '404-09988123-24', declarationDate: '07/02/2024', depositType: 'Deposit Alternative Duty Rate', depositAmount: 'Dh 5,000', depositMethod: 'Standing Guarantee', claimExpiry: '07/01/2025', exportExpiry: '05/15/2025', remarks: '—', kind: 'requestExt' },
+  { declarationNo: '108-05512790-24', declarationDate: '11/02/2024', depositType: 'Duty Deposit',                  depositAmount: 'Dh 3,200', depositMethod: 'Standing Guarantee', claimExpiry: '05/01/2025', exportExpiry: '04/01/2025', remarks: '—', kind: 'requestExt' },
+  { declarationNo: '210-04477981-24', declarationDate: '10/02/2024', depositType: 'Anti Dumping Deposit',          depositAmount: 'Dh 7,500', depositMethod: 'Cash',                claimExpiry: '04/15/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
+  { declarationNo: '312-09921077-24', declarationDate: '06/22/2024', depositType: 'Exemption Deposit',             depositAmount: 'Dh 4,000', depositMethod: 'Cash',                claimExpiry: '06/30/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
 
   // Refund of Duty — cancelled/amended declarations + duty-exempted goods
-  { declarationNo: '506-02100934-24', declarationDate: '09/18/2024', depositType: 'Cancelled/Amended Declaration', depositAmount: 'AED 1,800', depositMethod: 'Cash',                claimExpiry: '05/20/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
-  { declarationNo: '507-03219875-24', declarationDate: '08/03/2024', depositType: 'Duty Exempted',                 depositAmount: 'AED 6,200', depositMethod: 'Cash',                claimExpiry: '06/05/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
-  { declarationNo: '511-04412309-24', declarationDate: '07/15/2024', depositType: 'Cancelled/Amended Declaration', depositAmount: 'AED 2,400', depositMethod: 'Cash',                claimExpiry: '07/01/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
+  { declarationNo: '506-02100934-24', declarationDate: '09/18/2024', depositType: 'Cancelled/Amended Declaration', depositAmount: 'Dh 1,800', depositMethod: 'Cash',                claimExpiry: '05/20/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
+  { declarationNo: '507-03219875-24', declarationDate: '08/03/2024', depositType: 'Duty Exempted',                 depositAmount: 'Dh 6,200', depositMethod: 'Cash',                claimExpiry: '06/05/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
+  { declarationNo: '511-04412309-24', declarationDate: '07/15/2024', depositType: 'Cancelled/Amended Declaration', depositAmount: 'Dh 2,400', depositMethod: 'Cash',                claimExpiry: '07/01/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
 
   // Non Remittance — FZ exports without deposit
   { declarationNo: '303-02655456-24', declarationDate: '10/21/2024', depositType: 'Non Remittance Claim',          depositAmount: 'N/A',       depositMethod: 'N/A',                claimExpiry: '12/19/2024', exportExpiry: '11/19/2024', remarks: '—', kind: 'expired' },
@@ -746,7 +749,7 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
           {claimType && (
           <>
           <div className="overflow-x-auto px-[16px] pt-[8px] pb-[16px]">
-            <table style={{ minWidth: 1380, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: "'Dubai', sans-serif" }} className="w-full">
+            <table style={{ minWidth: 1380, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: "'Dubai', sans-serif" }} className="w-full eligible-table">
               <thead>
                 <tr>
                   <th style={{ width: 48, minWidth: 48, background: '#e2ebf9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, borderTopLeftRadius: 8, borderBottomLeftRadius: 8 }} />
@@ -782,7 +785,7 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
                     );
                     const txt = (v: React.ReactNode) => <span className="text-[14px] text-[#0e1b3d] whitespace-nowrap">{v}</span>;
                     return (
-                      <tr key={i} onClick={() => { if (!expired) setSelectedDecl(row.declarationNo); }} style={{ cursor: expired ? 'default' : 'pointer' }}>
+                      <tr key={i} className={`${expired ? 'is-disabled' : ''} ${isSelected ? 'is-selected' : ''}`.trim()} onClick={() => { if (!expired) setSelectedDecl(row.declarationNo); }} style={{ cursor: expired ? 'default' : 'pointer' }}>
                         <td style={{ background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 48 }}>
                           <button
                             type="button"
@@ -800,7 +803,9 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
                         {cell(txt(row.declarationDate), 140)}
                         {cell(<span className="text-[14px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3 }}>{row.depositType}</span>, 220)}
                         {cell(
-                          <span className="text-[14px] whitespace-nowrap" style={{ color: row.depositAmount === 'N/A' ? '#697498' : '#cc9200', fontWeight: row.depositAmount === 'N/A' ? 400 : 600 }}>{row.depositAmount}</span>,
+                          <span className="text-[14px] whitespace-nowrap inline-flex items-baseline gap-[4px]" style={{ color: row.depositAmount === 'N/A' ? '#697498' : '#0e1b3d', fontWeight: row.depositAmount === 'N/A' ? 400 : 500 }}>
+                            {row.depositAmount === 'N/A' ? row.depositAmount : (<><Dh /> {row.depositAmount.replace(/^Dh\s*/, '')}</>)}
+                          </span>,
                           150
                         )}
                         {cell(<span className="text-[14px]" style={{ color: row.depositMethod === 'N/A' ? '#697498' : '#0e1b3d' }}>{row.depositMethod}</span>, 170)}

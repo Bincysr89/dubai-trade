@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import FloatingField from './FloatingField';
+import Dh from './Dh';
 // @ts-ignore
 import containerIllustration from '../assets/Container/Empty Page - Illustration.svg';
 // @ts-ignore
@@ -531,7 +532,7 @@ function AmendmentDetails() {
             <tbody>
               {[
                 { charge: 'Registration Fee', oldAmt: '—', newAmt: '—' },
-                { charge: 'Declaration Amendment Charges', oldAmt: 'AED 40.00', newAmt: 'AED 25.00' },
+                { charge: 'Declaration Amendment Charges', oldAmt: 'Dh 40.00', newAmt: 'Dh 25.00' },
               ].map((r, i) => (
                 <tr key={i}>
                   <td style={{ padding: '16px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[14px] text-[#0e1b3d]">{r.charge}</span></td>
@@ -587,15 +588,15 @@ function PaymentDetails({ agreed, setAgreed }: { agreed: boolean; setAgreed: (v:
                 <div className="flex flex-col gap-[12px]">
                   <div className="bg-[#eff2f7] flex items-center gap-[12px] px-[12px] h-[49px]">
                     <span className="text-[16px] text-[#696f83] flex-1" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Total Charges</span>
-                    <span className="text-[20px] text-[#051937]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 700 }}>AED 100</span>
+                    <span className="text-[20px] text-[#051937] inline-flex items-baseline gap-[4px]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 700 }}><Dh /> 100</span>
                   </div>
                   <div className="px-[12px] flex items-center gap-[12px]">
                     <span className="text-[14px] text-[#696f83] flex-1" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Other charges</span>
-                    <span className="text-[16px] text-[#051937]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 700 }}>AED 80</span>
+                    <span className="text-[16px] text-[#051937] inline-flex items-baseline gap-[4px]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 700 }}><Dh /> 80</span>
                   </div>
                   <div className="px-[12px] flex items-center gap-[12px]">
                     <span className="text-[14px] text-[#696f83] flex-1" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Registration Fee</span>
-                    <span className="text-[16px] text-[#051937]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 700 }}>AED 20</span>
+                    <span className="text-[16px] text-[#051937] inline-flex items-baseline gap-[4px]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 700 }}><Dh /> 20</span>
                   </div>
                 </div>
               </td>
@@ -668,12 +669,12 @@ function SubmitSummaryModal({ open, onClose, onConfirm }: { open: boolean; onClo
               {[['Deposit', 50], ['Other Charges', 50], ['Registration Fee', 0]].map(([k, v]) => (
                 <div key={k as string} className="flex items-center justify-between" style={{ fontFamily: "'Dubai', sans-serif" }}>
                   <span className="text-[16px] text-[#051a37]" style={{ fontWeight: 500 }}>{k}</span>
-                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>AED {v}</span>
+                  <span className="text-[16px] text-[#0e1b3d] inline-flex items-baseline gap-[4px]" style={{ fontWeight: 500 }}><Dh /> {v}</span>
                 </div>
               ))}
               <div className="border-t border-[#e2e4e9] pt-[16px] flex items-center justify-between">
                 <span className="text-[18px] text-[#051a37]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Total Payment</span>
-                <span className="text-[18px] text-[#1360d2]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>AED 90.00</span>
+                <span className="text-[18px] text-[#1360d2] inline-flex items-baseline gap-[4px]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}><Dh /> 90.00</span>
               </div>
               <p className="text-[14px] text-[#696f83]" style={{ fontFamily: "'Dubai', sans-serif" }}>All fees are non-refundable. Payment may be subject to Knowledge/Innovation fees.</p>
             </div>

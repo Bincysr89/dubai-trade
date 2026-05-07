@@ -129,7 +129,7 @@ export default function AcknowledgementTable({ onView, onAccept, onDecline, onHi
     { label: 'Importer',        w: 220 },
     { label: 'Exporter',        w: 200 },
     { label: 'Broker',          w: 200 },
-    { label: 'Value (AED)',     w: 120 },
+    { label: 'Value (Dh)',     w: 120 },
     { label: 'Dec. Reason',     w: 150 },
     { label: 'Ack. Date',       w: 110 },
   ];
