@@ -55,10 +55,10 @@ type Props = {
 
 
 type BadgeType = 'both' | 'aeo' | 'wlp';
-type DeclStatus = 'Cleared' | 'Submitted' | 'Payment Pending' | 'VAT Payment Pending' | 'Declined' | 'Cancelled' | 'Clearance Inspection';
+type DeclStatus = 'Completed' | 'Submitted' | 'Payment Pending' | 'VAT Payment Pending' | 'Declined' | 'Cancelled' | 'Clearance Inspection';
 
 const STATUS_STYLE: Record<DeclStatus, { bg: string; color: string; border: string }> = {
-  'Cleared':              { bg: '#e6f4ec', color: '#1b6c3a', border: '#a8d5b8' },
+  'Completed':              { bg: '#e6f4ec', color: '#1b6c3a', border: '#a8d5b8' },
   'Submitted':            { bg: '#e8f0ff', color: '#1360d2', border: '#b3caff' },
   'Payment Pending':      { bg: '#fff3e0', color: '#b45309', border: '#fcd7a0' },
   'VAT Payment Pending':  { bg: '#fff3e0', color: '#b45309', border: '#fcd7a0' },
@@ -98,7 +98,7 @@ const DECLARATIONS: {
   doNo: string; permit: boolean; broker: string; createdBy: string;
   statusDate: string; status: DeclStatus; showInfo?: boolean;
 }[] = [
-  { no:'1012132132', badge:'both', type:'Export from Local',                               date:'05-Dec-24', owner:'code + name', channel:'Sea', reqNo:'12345788', reqType:'New', clientRef:'JOB213354578',   carrierReg:'JOB213354578',   mawb:'MAWB/MBOL', hawb:'HAWB/HBOL', doNo:'NIL',       permit:true,  broker:'code + name. S', createdBy:'Username', statusDate:'08-Dec-24', status:'Cleared' },
+  { no:'1012132132', badge:'both', type:'Export from Local',                               date:'05-Dec-24', owner:'code + name', channel:'Sea', reqNo:'12345788', reqType:'New', clientRef:'JOB213354578',   carrierReg:'JOB213354578',   mawb:'MAWB/MBOL', hawb:'HAWB/HBOL', doNo:'NIL',       permit:true,  broker:'code + name. S', createdBy:'Username', statusDate:'08-Dec-24', status:'Completed' },
   { no:'1012132132', badge:'aeo',  type:'Export Statistical',                               date:'05-Dec-24', owner:'code + name', channel:'Sea', reqNo:'12345788', reqType:'New', clientRef:'PGH658916794',   carrierReg:'PGH658916794',   mawb:'MAWB/MBOL', hawb:'HAWB/HBOL', doNo:'DO-123456', permit:true,  broker:'code + name. S', createdBy:'Username', statusDate:'08-Dec-24', status:'Submitted' },
   { no:'1012132132', badge:'wlp',  type:'Re Export to ROW (after import for re export)',    date:'05-Dec-24', owner:'code + name', channel:'Sea', reqNo:'12345788', reqType:'New', clientRef:'GJF4589789487',  carrierReg:'GJF4589789487',  mawb:'MAWB/MBOL', hawb:'HAWB/HBOL', doNo:'DO-123456', permit:false, broker:'code + name. S', createdBy:'Username', statusDate:'08-Dec-24', status:'Submitted' },
   { no:'1012132132', badge:'both', type:'Re Export to ROW (after import for re export)',    date:'05-Dec-24', owner:'code + name', channel:'Sea', reqNo:'12345788', reqType:'New', clientRef:'VNF215648748',   carrierReg:'VNF215648748',   mawb:'MAWB/MBOL', hawb:'HAWB/HBOL', doNo:'DO-123456', permit:true,  broker:'code + name. S', createdBy:'Username', statusDate:'08-Dec-24', status:'Payment Pending' },
@@ -140,7 +140,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
   const [ackDeclineRowIndex, setAckDeclineRowIndex] = useState<number | null>(null);
   const [declStatusFilter, setDeclStatusFilter] = useState<DeclStatus | null>(null);
   const DECL_STATUS_COLOR: Record<DeclStatus, string> = {
-    'Cleared': '#1b6c3a', 'Submitted': '#1360d2', 'Payment Pending': '#cc9200',
+    'Completed': '#1b6c3a', 'Submitted': '#1360d2', 'Payment Pending': '#cc9200',
     'VAT Payment Pending': '#cc9200', 'Declined': '#dc3545',
     'Cancelled': '#697498', 'Clearance Inspection': '#1360d2',
   };

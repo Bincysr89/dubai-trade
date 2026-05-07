@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import BackToListingBar from './BackToListingBar';
 import VccDetailsModal, { type VccDetails } from './VccDetailsModal';
+import VccAuditHistoryModal from './VccAuditHistoryModal';
 import Dh from './Dh';
 
 const VCC_DETAILS_MAP: Record<string, VccDetails> = {
@@ -114,6 +115,18 @@ function Checkbox({ checked, indeterminate, onChange }: { checked: boolean; inde
 export default function VccViewRequestPage({ onBack, requestNumber = '25365' }: Props) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [openVccNo, setOpenVccNo] = useState<string | null>(null);
+  const [historyVccNo, setHistoryVccNo] = useState<string | null>(null);
+  const [actionMenuFor, setActionMenuFor] = useState<string | null>(null);
+  const actionMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!actionMenuFor) return;
+    const onDoc = (e: MouseEvent) => {
+      if (actionMenuRef.current && !actionMenuRef.current.contains(e.target as Node)) setActionMenuFor(null);
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [actionMenuFor]);
   const allChecked  = selected.size === VEHICLES.length;
   const someChecked = selected.size > 0 && !allChecked;
   const toggleAll = () => setSelected(allChecked ? new Set() : new Set(VEHICLES.map((v) => v.vccNo)));
@@ -252,18 +265,56 @@ export default function VccViewRequestPage({ onBack, requestNumber = '25365' }: 
                       </td>
                       <td><span className="text-[14px] text-[#0e1b3d] whitespace-nowrap">{v.declType}</span></td>
                       <td><span className="text-[14px] text-[#0e1b3d]">{v.remarks}</span></td>
-                      <td style={{ textAlign: 'center' }}>
-                        <button
-                          type="button"
-                          onClick={() => downloadOne(v.vccNo)}
-                          aria-label={`Download VCC ${v.vccNo}`}
-                          title="Download VCC certificate"
-                          className="size-[32px] inline-flex items-center justify-center rounded-[4px] text-[#1360d2] hover:bg-[#e2ebf9] transition-colors"
-                        >
-                          <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M10 3v10" /><path d="M5 9l5 5 5-5" /><path d="M3 17h14" />
-                          </svg>
-                        </button>
+                      <td style={{ textAlign: 'center', position: 'relative' }}>
+                        <div className="relative inline-block" ref={actionMenuFor === v.vccNo ? actionMenuRef : undefined}>
+                          <button
+                            type="button"
+                            onClick={() => setActionMenuFor(actionMenuFor === v.vccNo ? null : v.vccNo)}
+                            aria-label={`Actions for VCC ${v.vccNo}`}
+                            className="size-[32px] inline-flex items-center justify-center rounded-[4px] hover:bg-[#f0f4ff] transition-colors"
+                          >
+                            <svg viewBox="0 0 4 18" width="4" height="18" fill="#697498">
+                              <circle cx="2" cy="2" r="2" /><circle cx="2" cy="9" r="2" /><circle cx="2" cy="16" r="2" />
+                            </svg>
+                          </button>
+                          {actionMenuFor === v.vccNo && (
+                            <div
+                              className="absolute z-[100] bg-white rounded-[8px] py-[4px] overflow-hidden"
+                              style={{
+                                right: '100%',
+                                top: 0,
+                                marginRight: 6,
+                                width: 200,
+                                boxShadow: '0px 2px 16px 0px rgba(0,0,0,0.12)',
+                                border: '1px solid #f0f0f5',
+                              }}
+                            >
+                              <button
+                                onClick={() => { setActionMenuFor(null); downloadOne(v.vccNo); }}
+                                className="group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
+                              >
+                                <span className="text-[#1360d2] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
+                                  <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M10 3v10" /><path d="M5 9l5 5 5-5" /><path d="M3 17h14" />
+                                  </svg>
+                                </span>
+                                <span className="text-[14px] text-[#111838] group-hover:text-white leading-[20px]">Download VCC</span>
+                              </button>
+                              <button
+                                onClick={() => { setActionMenuFor(null); setHistoryVccNo(v.vccNo); }}
+                                className="group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
+                              >
+                                <span className="text-[#1360d2] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
+                                  <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="10" cy="10" r="7.5" />
+                                    <path d="M10 6v4l2.5 2" />
+                                  </svg>
+                                </span>
+                                <span className="text-[14px] text-[#111838] group-hover:text-white leading-[20px]">Audit History</span>
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -280,6 +331,11 @@ export default function VccViewRequestPage({ onBack, requestNumber = '25365' }: 
         open={openVccNo !== null}
         details={openVccNo ? VCC_DETAILS_MAP[openVccNo] : undefined}
         onClose={() => setOpenVccNo(null)}
+      />
+      <VccAuditHistoryModal
+        open={historyVccNo !== null}
+        vccNo={historyVccNo ?? undefined}
+        onClose={() => setHistoryVccNo(null)}
       />
     </div>
   );

@@ -7,10 +7,10 @@ const wlpLogoSrc = 'https://www.figma.com/api/mcp/asset/09b98e1a-ea9f-41ca-97a4-
 const aeoLogoSrc = 'https://www.figma.com/api/mcp/asset/5de21541-f817-4a23-bf16-0ba8c4300be7';
 
 type BadgeType = 'both' | 'aeo' | 'wlp' | 'none';
-type VccStatus = 'Cleared' | 'Submitted' | 'Payment Pending';
+type VccStatus = 'Completed' | 'Submitted' | 'Payment Pending';
 
 const VCC_STATUS_STYLE: Record<VccStatus, { bg: string; color: string }> = {
-  'Cleared':         { bg: 'rgba(40,167,69,0.08)',  color: '#28a745' },
+  'Completed':         { bg: 'rgba(40,167,69,0.08)',  color: '#28a745' },
   'Submitted':       { bg: 'rgba(19,96,210,0.08)',  color: '#1360d2' },
   'Payment Pending': { bg: 'rgba(255,169,26,0.16)', color: '#fbb500' },
 };
@@ -68,7 +68,7 @@ export type VccRow = {
 
 // Source: Figma node 152:40881 — VCC Request List
 const VCC_REQUESTS: VccRow[] = [
-  { reqNo: '25345', declNo: '1012132132', badge: 'both', reqDate: '05-Dec-24', requestedFor: 'CONSOLIDATED SHIPPING SERVICES L.L.C — AE-1019056',  requestType: 'New', subType: 'New', vccCount: 3, remarks: '', declType: 'Export from Local',                              declOwner: 'code + name', status: 'Cleared' },
+  { reqNo: '25345', declNo: '1012132132', badge: 'both', reqDate: '05-Dec-24', requestedFor: 'CONSOLIDATED SHIPPING SERVICES L.L.C — AE-1019056',  requestType: 'New', subType: 'New', vccCount: 3, remarks: '', declType: 'Export from Local',                              declOwner: 'code + name', status: 'Completed' },
   { reqNo: '25345', declNo: '1012132132', badge: 'aeo',  reqDate: '05-Dec-24', requestedFor: 'CONSOLIDATED SHIPPING SERVICES L.L.C — AE-1019056',  requestType: 'New', subType: 'New', vccCount: 1, remarks: '', declType: 'Export Statistical',                             declOwner: 'code + name', status: 'Submitted' },
   { reqNo: '25345', declNo: '1012132132', badge: 'wlp',  reqDate: '05-Dec-24', requestedFor: 'CONSOLIDATED SHIPPING SERVICES L.L.C — AE-1019056',  requestType: 'New', subType: 'New', vccCount: 2, remarks: '', declType: 'Re Export to ROW (after import for re export)',  declOwner: 'code + name', status: 'Submitted' },
   { reqNo: '25345', declNo: '1012132132', badge: 'wlp',  reqDate: '05-Dec-24', requestedFor: 'CONSOLIDATED SHIPPING SERVICES L.L.C — AE-1019056',  requestType: 'New', subType: 'New', vccCount: 4, remarks: '', declType: 'Re Export to ROW (after import for re export)',  declOwner: 'code + name', status: 'Payment Pending' },
@@ -90,7 +90,7 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
   const [pageSize, setPageSize] = useState(8);
   const [statusFilter, setStatusFilter] = useState<VccStatus | null>(null);
   const VCC_STATUS_COLOR: Record<VccStatus, string> = {
-    'Cleared': '#28a745', 'Submitted': '#1360d2', 'Payment Pending': '#cc9200',
+    'Completed': '#28a745', 'Submitted': '#1360d2', 'Payment Pending': '#cc9200',
   };
   const filteredRows = useMemo(() => statusFilter ? VCC_REQUESTS.filter((r) => r.status === statusFilter) : VCC_REQUESTS, [statusFilter]);
 

@@ -58,7 +58,7 @@ export default function CustomsDeclarationViewPage({ declarationNo, onBack, onSe
             <Field k="Cargo Channel" v="Sea" />
             <Field k="Regime Type" v="Re-Export to ROW" />
             <Field k="Permit" v="Yes" />
-            <Field k="Declaration Status" v={<span className="inline-flex items-center px-[10px] py-[3px] rounded-[4px] text-[12px]" style={{ background: 'rgba(40,167,69,0.10)', color: '#1b6c3a', fontWeight: 500 }}>Cleared</span>} />
+            <Field k="Declaration Status" v={<span className="inline-flex items-center px-[10px] py-[3px] rounded-[4px] text-[12px]" style={{ background: 'rgba(40,167,69,0.10)', color: '#1b6c3a', fontWeight: 500 }}>Completed</span>} />
             <Field k="Declaration Date" v="05-Dec-24" />
             <Field k="Carrier Registration No." v="PGH658916794" />
             <Field k="Customer Type" v="Importer" />
