@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import VccDetailsModal, { type VccDetails } from './VccDetailsModal';
 
 type Status = 'Generated' | 'Printed/Downloaded';
@@ -54,10 +54,25 @@ function buildDetails(row: VehicleRow): VccDetails {
   };
 }
 
-type Props = { searchTerm: string; searchType: 'VCC Number' | 'Chasis Number' };
+type Props = {
+  searchTerm: string;
+  searchType: 'VCC Number' | 'Chasis Number';
+  onViewRequest?: (reqNo: string) => void;
+};
 
-export default function VccVehicleSearchTable({ searchTerm, searchType }: Props) {
+export default function VccVehicleSearchTable({ searchTerm, searchType, onViewRequest }: Props) {
   const [openVcc, setOpenVcc] = useState<VehicleRow | null>(null);
+  const [menuFor, setMenuFor] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuFor) return;
+    const onDoc = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuFor(null);
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [menuFor]);
 
   const filtered = useMemo(() => {
     const q = searchTerm.trim().toLowerCase();
@@ -174,18 +189,50 @@ export default function VccVehicleSearchTable({ searchTerm, searchType }: Props)
                   style={{
                     ...cellStyle,
                     position: 'sticky', right: 0, width: STICKY_ACTION_W, minWidth: STICKY_ACTION_W,
-                    textAlign: 'center', zIndex: 1,
+                    textAlign: 'center', zIndex: menuFor === row.vccNo ? 50 : 1,
                   }}
                 >
-                  <button
-                    onClick={() => downloadOne(row)}
-                    aria-label={`Download VCC ${row.vccNo}`}
-                    className="size-[32px] inline-flex items-center justify-center rounded-[4px] text-[#1360d2] hover:bg-[#e2ebf9] transition-colors"
-                  >
-                    <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M10 3v10" /><path d="M5 9l5 5 5-5" /><path d="M3 17h14" />
-                    </svg>
-                  </button>
+                  <div className="relative inline-block" ref={menuFor === row.vccNo ? menuRef : undefined}>
+                    <button
+                      onClick={() => setMenuFor(menuFor === row.vccNo ? null : row.vccNo)}
+                      aria-label={`Actions for VCC ${row.vccNo}`}
+                      className="size-[32px] inline-flex items-center justify-center rounded-[4px] hover:bg-[#f0f4ff] transition-colors"
+                    >
+                      <svg viewBox="0 0 4 18" width="4" height="18" fill="#697498">
+                        <circle cx="2" cy="2" r="2" /><circle cx="2" cy="9" r="2" /><circle cx="2" cy="16" r="2" />
+                      </svg>
+                    </button>
+                    {menuFor === row.vccNo && (
+                      <div
+                        className="absolute z-[100] bg-white rounded-[8px] py-[4px] overflow-hidden"
+                        style={{ right: '100%', top: 0, marginRight: 6, width: 200, boxShadow: '0px 2px 16px 0px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}
+                      >
+                        <button
+                          onClick={() => { setMenuFor(null); onViewRequest?.(row.reqNo); }}
+                          className="group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
+                        >
+                          <span className="text-[#1360d2] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
+                            <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z" />
+                              <circle cx="10" cy="10" r="2.5" />
+                            </svg>
+                          </span>
+                          <span className="text-[14px] text-[#111838] group-hover:text-white leading-[20px]">View Request</span>
+                        </button>
+                        <button
+                          onClick={() => { setMenuFor(null); downloadOne(row); }}
+                          className="group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
+                        >
+                          <span className="text-[#1360d2] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
+                            <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M10 3v10" /><path d="M5 9l5 5 5-5" /><path d="M3 17h14" />
+                            </svg>
+                          </span>
+                          <span className="text-[14px] text-[#111838] group-hover:text-white leading-[20px]">Download VCC</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </td>
               </tr>
             );

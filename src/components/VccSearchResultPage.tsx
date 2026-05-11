@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Pagination from './Pagination';
 import BackToListingBar from './BackToListingBar';
 
@@ -27,15 +27,17 @@ const SAMPLE_COLORS  = ['Red', 'Black', 'White', 'Silver', 'Blue', 'Green', 'Gre
 const SAMPLE_YEARS   = ['2010', '2012', '2022', '2018', '2020', '2024', '2015', '2023'];
 const SAMPLE_ENGINES = ['EN-9381472', 'EN-2284917', 'EN-7190334', 'EN-5572819', 'EN-3098471', 'EN-6411238', 'EN-8823746', 'EN-1107592'];
 
-const VEHICLES: Vehicle[] = Array.from({ length: 8 }, (_, i) => ({
+// 56 sample vehicles (7 pages × 8 per page) so the "select all" header checkbox
+// covers every chassis number, not just the rows visible on the current page.
+const VEHICLES: Vehicle[] = Array.from({ length: 56 }, (_, i) => ({
   id: `v${i}`,
-  bhassis: `BHASSIS0${i + 1}`,
-  chassis: `BHASSIS0${i + 1}`,
+  bhassis: `BHASSIS${String(i + 1).padStart(3, '0')}`,
+  chassis: `BHASSIS${String(i + 1).padStart(3, '0')}`,
   make: 'ACURAATEISLDFGDLLLDFDLSDFDKKKD',
-  brand: SAMPLE_BRANDS[i],
-  engineNumber: SAMPLE_ENGINES[i],
-  model: SAMPLE_YEARS[i],
-  color: SAMPLE_COLORS[i],
+  brand: SAMPLE_BRANDS[i % SAMPLE_BRANDS.length],
+  engineNumber: `${SAMPLE_ENGINES[i % SAMPLE_ENGINES.length]}-${String(i + 1).padStart(2, '0')}`,
+  model: SAMPLE_YEARS[i % SAMPLE_YEARS.length],
+  color: SAMPLE_COLORS[i % SAMPLE_COLORS.length],
 }));
 
 const VCC_PER_VEHICLE = 50;     // AED
@@ -61,16 +63,59 @@ const FilterIcon = () => (
 
 export default function VccSearchResultPage({ onBack, onSubmit, initialSelected, mode = 'create' }: Props) {
   const [selected, setSelected] = useState<Set<string>>(() => new Set(initialSelected ?? []));
-  const [page, setPage] = useState(4);
+  const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
   const [paymentMode, setPaymentMode] = useState('');
   const [creditAccount, setCreditAccount] = useState('');
+  const [step, setStep] = useState<'select' | 'payment'>('select');
+  const [vehicleQuery, setVehicleQuery] = useState('');
 
-  const allChecked = selected.size === VEHICLES.length;
-  const someChecked = selected.size > 0 && !allChecked;
+  const filteredVehicles = useMemo(() => {
+    const q = vehicleQuery.trim().toLowerCase();
+    if (!q) return VEHICLES;
+    return VEHICLES.filter((v) =>
+      v.chassis.toLowerCase().includes(q) ||
+      v.bhassis.toLowerCase().includes(q) ||
+      v.brand.toLowerCase().includes(q) ||
+      v.engineNumber.toLowerCase().includes(q),
+    );
+  }, [vehicleQuery]);
+
+  // Header checkbox selects only the rows visible on the current page.
+  // The "Select all across pages" link offers a separate full-dataset action.
+  const filteredIds = useMemo(() => new Set(filteredVehicles.map((v) => v.id)), [filteredVehicles]);
+  const pageIds = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filteredVehicles.slice(start, start + pageSize).map((v) => v.id);
+  }, [filteredVehicles, page, pageSize]);
+
+  const allOnPageChecked = pageIds.length > 0 && pageIds.every((id) => selected.has(id));
+  const someOnPageChecked = !allOnPageChecked && pageIds.some((id) => selected.has(id));
+  const allChecked = allOnPageChecked;
+  const someChecked = someOnPageChecked;
+  const allAcrossPagesChecked = filteredIds.size > 0 && [...filteredIds].every((id) => selected.has(id));
 
   const toggleAll = () => {
-    setSelected(allChecked ? new Set() : new Set(VEHICLES.map((v) => v.id)));
+    setSelected((s) => {
+      const next = new Set(s);
+      if (allOnPageChecked) pageIds.forEach((id) => next.delete(id));
+      else pageIds.forEach((id) => next.add(id));
+      return next;
+    });
+  };
+  const selectAllAcrossPages = () => {
+    setSelected((s) => {
+      const next = new Set(s);
+      filteredIds.forEach((id) => next.add(id));
+      return next;
+    });
+  };
+  const clearAllAcrossPages = () => {
+    setSelected((s) => {
+      const next = new Set(s);
+      filteredIds.forEach((id) => next.delete(id));
+      return next;
+    });
   };
   const toggleOne = (id: string) => {
     setSelected((s) => {
@@ -123,9 +168,9 @@ export default function VccSearchResultPage({ onBack, onSubmit, initialSelected,
         </div>
       )}
 
-      {/* Two-column body */}
+      {/* Body — single column on select step; selection list + payment summary stacked on payment step */}
       <div className="flex-1 overflow-y-auto px-[40px] py-[24px]">
-        <div className="grid gap-[24px] items-start grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className={step === 'payment' ? 'grid gap-[24px] items-start grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px]' : 'flex flex-col'}>
           {/* LEFT */}
           <div className="flex flex-col gap-[24px] min-w-0">
             {/* Declaration Details summary card */}
@@ -141,14 +186,81 @@ export default function VccSearchResultPage({ onBack, onSubmit, initialSelected,
               </div>
             </div>
 
-            {/* Vehicle Details */}
+            {/* Vehicle Details — selection (select step) OR selected list (payment step) */}
+            {step === 'select' && (
             <div className="bg-white rounded-[8px] px-[24px] py-[20px]" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
               <p className="text-[20px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 700 }}>
                 Vehicle Details
               </p>
-              <p className="text-[14px] text-[#455174] mt-[4px] mb-[16px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
-                Choose the vehicle details which is required to apply certificate
+              <p className="text-[13px] text-[#697498] mt-[4px] mb-[12px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
+                Use the header checkbox to select this page, or pick individual chassis numbers.
               </p>
+
+              {/* Search bar — sits directly above the table */}
+              <div className="relative flex items-center bg-white border border-[#d5ddfb] rounded-[4px] h-[44px] w-full sm:max-w-[360px] px-[14px]">
+                <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" className="flex-shrink-0 mr-[8px]"><circle cx="9" cy="9" r="6" /><path d="M14 14l4 4" strokeLinecap="round" /></svg>
+                <input
+                  type="text"
+                  value={vehicleQuery}
+                  onChange={(e) => setVehicleQuery(e.target.value)}
+                  placeholder="Search chassis, brand or engine"
+                  className="flex-1 text-[14px] text-[#0e1b3d] focus:outline-none bg-transparent placeholder:text-[#697498]"
+                  style={{ fontFamily: "'Dubai', sans-serif" }}
+                />
+                {vehicleQuery && (
+                  <button
+                    onClick={() => setVehicleQuery('')}
+                    aria-label="Clear"
+                    className="ml-[6px] size-[22px] inline-flex items-center justify-center rounded-full text-[#697498] hover:bg-[#f0f4ff] hover:text-[#0e1b3d] transition-colors"
+                  >
+                    <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M5 5l10 10M15 5l-10 10" /></svg>
+                  </button>
+                )}
+              </div>
+
+              {/* Count summary — under the search bar */}
+              <p className="text-[14px] text-[#455174] mt-[12px] mb-[12px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
+                <span style={{ color: '#0e1b3d', fontWeight: 600 }}>{VEHICLES.length}</span> chassis number{VEHICLES.length === 1 ? '' : 's'} available
+                {selected.size > 0 && (
+                  <> · <span style={{ color: '#1360d2', fontWeight: 600 }}>{selected.size}</span> selected</>
+                )}
+              </p>
+
+              {/* Cross-page selection banner */}
+              {allOnPageChecked && filteredIds.size > pageIds.length && !allAcrossPagesChecked && (
+                <div
+                  className="flex items-center justify-between gap-[12px] rounded-[6px] px-[14px] py-[10px] mb-[12px] flex-wrap"
+                  style={{ background: '#e2ebf9', border: '1px solid #b7cff3', fontFamily: "'Dubai', sans-serif" }}
+                >
+                  <span className="text-[13px] text-[#0e1b3d]">
+                    All <strong>{pageIds.length}</strong> chassis on this page are selected.
+                  </span>
+                  <button
+                    onClick={selectAllAcrossPages}
+                    className="text-[13px] text-[#1360d2] hover:underline"
+                    style={{ fontWeight: 600 }}
+                  >
+                    Select all {filteredIds.size} across all pages
+                  </button>
+                </div>
+              )}
+              {allAcrossPagesChecked && filteredIds.size > pageIds.length && (
+                <div
+                  className="flex items-center justify-between gap-[12px] rounded-[6px] px-[14px] py-[10px] mb-[12px] flex-wrap"
+                  style={{ background: '#e6f4ec', border: '1px solid #a8d5b8', fontFamily: "'Dubai', sans-serif" }}
+                >
+                  <span className="text-[13px] text-[#0e1b3d]">
+                    All <strong>{filteredIds.size}</strong> chassis numbers across all pages are selected.
+                  </span>
+                  <button
+                    onClick={clearAllAcrossPages}
+                    className="text-[13px] text-[#1b6c3a] hover:underline"
+                    style={{ fontWeight: 600 }}
+                  >
+                    Clear selection
+                  </button>
+                </div>
+              )}
 
               {/* Table */}
               <div className="overflow-x-auto">
@@ -194,7 +306,14 @@ export default function VccSearchResultPage({ onBack, onSubmit, initialSelected,
                     </tr>
                   </thead>
                   <tbody>
-                    {VEHICLES.slice(0, pageSize).map((v) => {
+                    {filteredVehicles.length === 0 && (
+                      <tr>
+                        <td colSpan={7} style={{ padding: '24px 12px', textAlign: 'center', borderBottom: '1px solid #f0f3fa' }}>
+                          <span className="text-[14px] text-[#697498]">No vehicles match &ldquo;{vehicleQuery}&rdquo;.</span>
+                        </td>
+                      </tr>
+                    )}
+                    {filteredVehicles.slice((page - 1) * pageSize, page * pageSize).map((v) => {
                       const checked = selected.has(v.id);
                       return (
                         <tr key={v.id} style={{ background: checked ? '#f7faff' : '#fff' }}>
@@ -230,17 +349,66 @@ export default function VccSearchResultPage({ onBack, onSubmit, initialSelected,
               <div className="pt-[16px]">
                 <Pagination
                   page={page}
-                  totalPages={7}
+                  totalPages={Math.max(1, Math.ceil(filteredVehicles.length / pageSize))}
                   pageSize={pageSize}
-                  totalItems={7 * pageSize}
+                  totalItems={filteredVehicles.length}
                   onPageChange={setPage}
-                  onPageSizeChange={setPageSize}
+                  onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
                 />
               </div>
             </div>
+            )}
+
+            {/* Selected vehicles list — shown on payment step */}
+            {step === 'payment' && (
+              <div className="bg-white rounded-[8px] px-[24px] py-[20px]" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
+                <div className="flex items-baseline justify-between flex-wrap gap-[8px]">
+                  <p className="text-[20px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 700 }}>
+                    Selected Vehicles
+                  </p>
+                  <span className="text-[14px] text-[#455174]" style={{ fontFamily: "'Dubai', sans-serif" }}>
+                    <span style={{ color: '#1360d2', fontWeight: 600 }}>{count}</span> chassis number{count === 1 ? '' : 's'}
+                  </span>
+                </div>
+                <p className="text-[13px] text-[#697498] mt-[4px] mb-[16px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
+                  Review the chassis numbers you&rsquo;ve added to this request.
+                </p>
+                <div className="overflow-x-auto">
+                  <table className="dt-table" style={{ fontFamily: "'Dubai', sans-serif" }}>
+                    <thead>
+                      <tr>
+                        <th className="text-[14px]" style={{ width: 60 }}>#</th>
+                        <th className="text-[14px]" style={{ width: 160 }}>Chassis Number</th>
+                        <th className="text-[14px]">Vehicle Make</th>
+                        <th className="text-[14px]" style={{ width: 140 }}>Brand</th>
+                        <th className="text-[14px]" style={{ width: 160 }}>Engine Number</th>
+                        <th className="text-[14px]" style={{ width: 110 }}>Model Year</th>
+                        <th className="text-[14px]" style={{ width: 110 }}>Color</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {VEHICLES.filter((v) => selected.has(v.id)).map((v, i) => (
+                        <tr key={v.id}>
+                          <td className="text-[14px] text-[#697498]" style={{ whiteSpace: 'nowrap' }}>{i + 1}</td>
+                          <td style={{ whiteSpace: 'nowrap' }}>
+                            <span className="text-[14px] text-[#455174] inline-flex items-center justify-center px-[8px] py-[3px] rounded-[4px] bg-[#e2ebf9]" style={{ minWidth: 86 }}>{v.chassis}</span>
+                          </td>
+                          <td className="text-[14px] text-[#0e1b3d]" style={{ maxWidth: 240, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={v.make}>{v.make}</td>
+                          <td className="text-[14px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{v.brand}</td>
+                          <td className="text-[14px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{v.engineNumber}</td>
+                          <td className="text-[14px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{v.model}</td>
+                          <td className="text-[14px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{v.color}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* RIGHT — Payment Summary */}
+          {/* RIGHT — Payment Summary (only on payment step) */}
+          {step === 'payment' && (
           <div className="bg-white rounded-[8px] px-[20px] py-[16px]" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
             <div>
               <p className="text-[18px] text-[#0e1b3d] mb-[12px]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 700 }}>
@@ -286,10 +454,35 @@ export default function VccSearchResultPage({ onBack, onSubmit, initialSelected,
               </button>
             </div>
           </div>
+          )}
         </div>
       </div>
 
-      <BackToListingBar onBack={onBack} />
+      {step === 'select' ? (
+        <BackToListingBar
+          onBackToListing={onBack}
+          rightContent={
+            <div className="flex items-center gap-[16px]">
+              <span className="text-[14px] text-[#455174]" style={{ fontFamily: "'Dubai', sans-serif" }}>
+                <span className="text-[#0e1b3d]" style={{ fontWeight: 600 }}>{count}</span> chassis number{count === 1 ? '' : 's'} selected
+              </span>
+              <button
+                onClick={() => { if (count > 0) setStep('payment'); }}
+                disabled={count === 0}
+                className="h-[48px] px-[24px] rounded-[4px] text-[16px] text-white disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-[8px]"
+                style={{ background: '#1360d2', fontFamily: "'Dubai', sans-serif", fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}
+              >
+                Proceed to Payment
+                <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M8 4l6 6-6 6" />
+                </svg>
+              </button>
+            </div>
+          }
+        />
+      ) : (
+        <BackToListingBar onBack={() => setStep('select')} />
+      )}
 
     </div>
   );

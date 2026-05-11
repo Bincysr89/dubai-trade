@@ -149,7 +149,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
                   </div>, 280
                 )}
                 {cell(txt(row.submissionDate), 170)}
-                {cell(<span className="text-[13px] text-[#455174]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3 }}>{row.remark}</span>, 200)}
+                {cell(<span className="text-[14px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3 }}>{row.remark}</span>, 200)}
                 <td style={{ position: 'sticky', right: 79, background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 160, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', borderBottom: '1px solid #f8f8f8', zIndex: openFlyout === i ? 49 : 1 }}>
                   <span className="text-[14px] font-medium whitespace-nowrap inline-flex items-center justify-center" style={{ background: st.bg, color: st.color, padding: '4px 12px', borderRadius: 4, lineHeight: '20px' }}>
                     {row.status}

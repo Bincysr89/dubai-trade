@@ -124,6 +124,20 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
   const submitSearch = () => {
     if (searchValue.trim() !== '') setSearchQuery(searchValue.trim());
   };
+
+  // Toolbar Status filter — declared here; effect that depends on `activeMenu`
+  // is placed below where `activeMenu` is defined to avoid a TDZ error.
+  const [toolbarStatus, setToolbarStatus] = useState<string | null>(null);
+  const [toolbarStatusOpen, setToolbarStatusOpen] = useState(false);
+  const toolbarStatusRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!toolbarStatusOpen) return;
+    const onDoc = (e: MouseEvent) => {
+      if (toolbarStatusRef.current && !toolbarStatusRef.current.contains(e.target as Node)) setToolbarStatusOpen(false);
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [toolbarStatusOpen]);
   const [vccStep, setVccStep] = useState<'list' | 'create' | 'searchResult' | 'amend' | 'viewRequest' | 'paymentSuccess' | 'auditHistory' | 'declarationView'>('list');
   const [vccListPopupRow, setVccListPopupRow] = useState<VccRow | null>(null);
   const [vccDeclNo, setVccDeclNo] = useState<string>('');
@@ -151,6 +165,17 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
   })();
   const [panelCollapsed, setPanelCollapsed] = useState(false);
   const [activeMenu, setActiveMenu] = useState<'Declaration' | 'Acknowledgement' | 'VCC' | 'Refund & Claims' | 'Cargo Transfer'>('Declaration');
+
+  // Status options per menu — defined here so it can reference `activeMenu`.
+  const TOOLBAR_STATUS_OPTIONS: Record<typeof activeMenu, string[]> = {
+    'Declaration':       ['Completed', 'Submitted', 'Payment Pending', 'VAT Payment Pending', 'Declined', 'Cancelled', 'Clearance Inspection'],
+    'Acknowledgement':   ['Accepted', 'Pending', 'Declined'],
+    'VCC':               ['Completed', 'Submitted', 'Payment Pending'],
+    'Refund & Claims':   ['Under Processing', 'Completed', 'Suspended', 'Draft'],
+    'Cargo Transfer':    ['Completed', 'Submitted', 'Cancelled'],
+  };
+  // Reset toolbar status when switching tabs so previous filter doesn't leak.
+  useEffect(() => { setToolbarStatus(null); }, [activeMenu]);
 
   // Reset the search-type dropdown when switching modules so options stay consistent
   useEffect(() => {
@@ -678,12 +703,47 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             </div>
           </div>
 
-          {/* Status dropdown */}
-          <div className="flex items-center gap-[8px] bg-white border border-[#d5ddfb] rounded-[4px] h-[48px] px-[16px] flex-shrink-0 cursor-pointer">
-            <span className="text-[14px] text-[#1360d2] font-medium capitalize" style={{ fontFamily: "'Dubai', sans-serif" }}>Status</span>
-            <svg viewBox="0 0 24 24" className="size-[22px] text-[#1360d2]" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M6 9l6 6 6-6" />
-            </svg>
+          {/* Status dropdown — populated from the active table */}
+          <div className="relative flex-shrink-0" ref={toolbarStatusRef}>
+            <button
+              type="button"
+              onClick={() => setToolbarStatusOpen((o) => !o)}
+              className="flex items-center gap-[8px] bg-white border border-[#d5ddfb] rounded-[4px] h-[48px] px-[16px] hover:bg-[#f7faff] transition-colors"
+              aria-haspopup="listbox"
+              aria-expanded={toolbarStatusOpen}
+            >
+              <span className="text-[14px] text-[#1360d2] font-medium whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>
+                {toolbarStatus ?? 'Status'}
+              </span>
+              <svg viewBox="0 0 24 24" className={`size-[22px] text-[#1360d2] transition-transform ${toolbarStatusOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            {toolbarStatusOpen && (
+              <div
+                className="absolute z-[80] top-[52px] left-0 bg-white rounded-[8px] py-[4px] overflow-hidden"
+                style={{ minWidth: 220, boxShadow: '0px 2px 16px 0px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}
+                role="listbox"
+              >
+                <button
+                  onClick={() => { setToolbarStatus(null); setToolbarStatusOpen(false); }}
+                  className="block w-full text-left px-[14px] py-[8px] text-[14px] hover:bg-[#e2ebf9] transition-colors"
+                  style={{ color: toolbarStatus === null ? '#1360d2' : '#0e1b3d', fontFamily: "'Dubai', sans-serif", fontWeight: toolbarStatus === null ? 500 : 400 }}
+                >
+                  All statuses
+                </button>
+                {TOOLBAR_STATUS_OPTIONS[activeMenu].map((opt) => (
+                  <button
+                    key={opt}
+                    onClick={() => { setToolbarStatus(opt); setToolbarStatusOpen(false); }}
+                    className="block w-full text-left px-[14px] py-[8px] text-[14px] hover:bg-[#e2ebf9] transition-colors"
+                    style={{ color: opt === toolbarStatus ? '#1360d2' : '#0e1b3d', fontFamily: "'Dubai', sans-serif", fontWeight: opt === toolbarStatus ? 500 : 400 }}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Right-side group: pushes to end */}
@@ -1420,7 +1480,11 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
         {/* Table swap based on active sidebar menu */}
         {activeMenu === 'VCC' ? (
           (searchType === 'VCC Number' || searchType === 'Chasis Number') && searchQuery !== '' ? (
-            <VccVehicleSearchTable searchTerm={searchQuery} searchType={searchType as 'VCC Number' | 'Chasis Number'} />
+            <VccVehicleSearchTable
+              searchTerm={searchQuery}
+              searchType={searchType as 'VCC Number' | 'Chasis Number'}
+              onViewRequest={() => setVccStep('viewRequest')}
+            />
           ) : (
             <VccTable
               onView={() => setVccStep('viewRequest')}
@@ -1428,6 +1492,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               onAudit={() => setVccStep('auditHistory')}
               onVccCountOpen={(row) => setVccListPopupRow(row)}
               onDeclarationOpen={(declNo) => { setVccDeclNo(declNo); setVccStep('declarationView'); }}
+              externalStatus={toolbarStatus}
             />
           )
         ) : activeMenu === 'Cargo Transfer' ? (

@@ -81,9 +81,11 @@ type Props = {
   onAudit?: () => void;
   onDeclarationOpen?: (declNo: string) => void;
   onVccCountOpen?: (row: VccRow) => void;
+  /** Optional status filter driven from the parent toolbar. When provided, takes precedence over the column-header filter. */
+  externalStatus?: string | null;
 };
 
-export default function VccTable({ onView, onAmend, onDownload, onAudit, onDeclarationOpen, onVccCountOpen }: Props = {}) {
+export default function VccTable({ onView, onAmend, onDownload, onAudit, onDeclarationOpen, onVccCountOpen, externalStatus }: Props = {}) {
   const [openFlyout, setOpenFlyout] = useState<number | null>(null);
   const flyoutRef = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState(1);
@@ -92,7 +94,11 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
   const VCC_STATUS_COLOR: Record<VccStatus, string> = {
     'Completed': '#28a745', 'Submitted': '#1360d2', 'Payment Pending': '#cc9200',
   };
-  const filteredRows = useMemo(() => statusFilter ? VCC_REQUESTS.filter((r) => r.status === statusFilter) : VCC_REQUESTS, [statusFilter]);
+  const effectiveStatus = (externalStatus as VccStatus | null | undefined) ?? statusFilter;
+  const filteredRows = useMemo(
+    () => effectiveStatus ? VCC_REQUESTS.filter((r) => r.status === effectiveStatus) : VCC_REQUESTS,
+    [effectiveStatus],
+  );
 
   useEffect(() => {
     if (openFlyout === null) return;
