@@ -108,14 +108,22 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
     { label: 'No. of Vehicles',   w: 130 },
     { label: 'Declaration No.',   w: 170 },
     { label: 'Request Date',      w: 130 },
-    { label: 'Requested For',     w: 300 },
+    { label: 'Requested For',     w: 280 },
+    { label: 'Remarks',           w: 320 },
   ];
+
+  /** Status-driven default remark — overrides the row's stored remarks. */
+  const remarkFor = (status: VccStatus): string => {
+    if (status === 'Completed') return 'Your Request VCCs have been processed and downloaded.';
+    if (status === 'Payment Pending') return 'ePayment transaction is in progress. Please try after sometime (up to 30 minutes).';
+    return 'Request submitted. Awaiting processing.';
+  };
 
   return (
     <div className="overflow-x-auto pb-[20px]">
       <table
         style={{
-          minWidth: 1200,
+          minWidth: 1500,
           borderCollapse: 'separate',
           borderSpacing: '0 8px',
           fontFamily: "'Dubai', sans-serif",
@@ -204,7 +212,16 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
                   </div>
                 </td>
                 {cell(txt(row.reqDate),      130)}
-                {cell(txt(row.requestedFor), 300)}
+                {cell(txt(row.requestedFor), 280)}
+                {cell(
+                  <span
+                    className="text-[14px] text-[#0e1b3d]"
+                    style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3 }}
+                  >
+                    {remarkFor(row.status)}
+                  </span>,
+                  320,
+                )}
 
                 {/* STICKY: Request Status */}
                 <td style={{
