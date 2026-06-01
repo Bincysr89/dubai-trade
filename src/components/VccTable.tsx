@@ -2,20 +2,21 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Pagination from './Pagination';
 import StatusFilterHeader from './StatusFilterHeader';
 
-// Reuse Figma badge assets (valid 7 days from generation)
-const wlpLogoSrc = 'https://www.figma.com/api/mcp/asset/09b98e1a-ea9f-41ca-97a4-31b56c097b09';
-const aeoLogoSrc = 'https://www.figma.com/api/mcp/asset/5de21541-f817-4a23-bf16-0ba8c4300be7';
+// Inline data URIs — no external dependency
+const wlpLogoSrc = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAICAYAAAD9aA/QAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAAAg5JREFUeAF9kUFoE0EUht+bnd2ERjezAUniKkStFcVDqKAgovWgN6GQiooXrVBQUYp4yMWzIkhPggc9SEGsKXpViojiwSBiUUqUiklBhdCSrNX0sJuZ8U1qKwHpW5Zl3r753vv/h+B5yR25q1Xbjnknjg8E924PbanVagFQ5PMgnj3AGWTxnsOFdTubTXtRSon1en0pl8snz128W50ovRCUA8uyQEqttYp+fJq7tYvBGjE9DcG2ven80bPX8OSZpxXPH/0mspc/C5FL/qvSwBhThcGDDWIDIPZAQyDvRiG9iXgq1eu6bpu1Wom4559+F7YdlyE9jAGzLOy+wkBGYTB248h2v684ixTgNWF1YhIB3OLu8IX7Fb93ZG74fKk6WhyvcM6zCBKVUp0a0KqLqylPNogrxalZbjleJuOjB95fMBoFAFEUscnHL0UYKTH55JVQUgtEjYb339DmHpoPe13+mkqnfTrqJUSm+TKXZpIKJkrPQdIEts0hDEN4+GiKzqSEW6tGmTCbZYu/lYFms5tAKWma0PBR/WP55p5G48uvruW1CR6LOXqoMBA4jqMNlIwFkmcWBBmCZDduhg12Is7W24mVVhaz4NCBvp8f3lzvn5+fqRstHJr0e+tygYEOHtv//c7Yqf6RS+Pvy29rftSWHbkrE1MDd/e+YsViaPJJ47mmBVJfECJqLSxAx7g/Hi/Gz6+U/BcAAAAASUVORK5CYII=';
+const aeoLogoSrc = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAHCAYAAAAf6f3xAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAAAs9JREFUeAElUltIVF0U/tbeR8+oUxrq/zc2DQZTUlB0oRvR/SmiogcDzXqIkO49REQUPhTdiS4PRZQmRFAIPXShoIKgokgt6iEpI6OZ0KmEzImZM+fsvVrHXs4+e+39fev7vrXpfWTS5RLSrRNyPZ0ATBwoeRSZuJ+ZO5u8Tw+6AR9JuGie1wAU9aLz6Ut0wMhdFYvFZhDsFrDVIGVIFfchuTCnkjP6U63tt2pr/6hgc8dGkNlN1iag1UcLHPt2/fRtR4PXFYDHS4CuJ8I2Ttgt0SoH8AaBhwgb71tSjV/5wyA/g6ZNS9HRNix1oqLSCI2bPJa0ewdzG10a/V8daVVmmT+g/pUxs/btAgcHtcUVQ2QUY7UCLsWb9rpOqJzAJEwk//gxsgpcanLIqKkpxVB+f1hVrMZTX2qpqcc9cU20/UZMBXYZXDqlWXna59eBYk5fm921fP33il4O9gjNSeMgoyzWMsOTfQUxtzgseJLPqLBJqCJceUQElwMWB2qnqRytJPg7qwp7houD8S3Rxefe9nRMSWEEIIgCPzBsWJKC9QtZ9FdO/Dy6K4rhn2Ms2xfk81RWaoBha4gpL6NJiinKSOOZaeBuM2blzpd71al8Ia6J0t319bbYK8SrzLZ2JyhfIapKmfSC7PDvQ0gmm2FD0YGjyK2Lljo53xvSqiTCiMXyff6YoTgPZhzFK4NRFcfo99AEsdFPyv7P0APUG6nb5IPPivabBNUn76tBhJioN7B8+tlnVW42e0Vb9eXfICQGxVGxuUxbXsNElUxok4TecZgOqfCGoG17qmX+tcTx7gY2/kUxd1vcvlNMiyzxnCIn0kgrAPdMSXIVsdqKkAj8vLKMjlT/jP5IHL3QaC1n7YXt95XKjIwiXVbmJDZcbbC6aDDwTE+xtmtEkyOE/0YVhkD6+9e29e1wXU5sbF3MBjtguVYOexjOmfSbE11/AVP+QMCmcxkpAAAAAElFTkSuQmCC';
 
 type BadgeType = 'both' | 'aeo' | 'wlp' | 'none';
-type VccStatus = 'Completed' | 'Submitted' | 'Payment Pending';
+type VccStatus = 'Submitted' | 'Under Processing' | 'Completed' | 'Rejected';
 
 const VCC_STATUS_STYLE: Record<VccStatus, { bg: string; color: string }> = {
-  'Completed':         { bg: 'rgba(40,167,69,0.08)',  color: '#28a745' },
-  'Submitted':       { bg: 'rgba(19,96,210,0.08)',  color: '#1360d2' },
-  'Payment Pending': { bg: 'rgba(255,169,26,0.16)', color: '#fbb500' },
+  'Submitted':        { bg: 'rgba(19,96,210,0.08)',   color: '#1360d2' },
+  'Under Processing': { bg: 'rgba(255,169,26,0.16)',  color: '#b45309' },
+  'Completed':        { bg: 'rgba(40,167,69,0.08)',   color: '#28a745' },
+  'Rejected':         { bg: 'rgba(192,57,43,0.08)',   color: '#c0392b' },
 };
 
-type FlyoutAction = 'amend' | 'view' | 'download' | 'audit';
+type FlyoutAction = 'amend' | 'view' | 'download' | 'audit' | 'recheck';
 
 const FLYOUT_ITEMS: { id: FlyoutAction; label: string; icon: React.ReactNode }[] = [
   {
@@ -69,9 +70,9 @@ export type VccRow = {
 // Source: Figma node 152:40881 — VCC Request List
 const VCC_REQUESTS: VccRow[] = [
   { reqNo: '25345', declNo: '1012132132', badge: 'both', reqDate: '05-Dec-24', requestedFor: 'CONSOLIDATED SHIPPING SERVICES L.L.C — AE-1019056',  requestType: 'New', subType: 'New', vccCount: 3, remarks: '', declType: 'Export from Local',                              declOwner: 'code + name', status: 'Completed' },
-  { reqNo: '25345', declNo: '1012132132', badge: 'aeo',  reqDate: '05-Dec-24', requestedFor: 'CONSOLIDATED SHIPPING SERVICES L.L.C — AE-1019056',  requestType: 'New', subType: 'New', vccCount: 1, remarks: '', declType: 'Export Statistical',                             declOwner: 'code + name', status: 'Submitted' },
-  { reqNo: '25345', declNo: '1012132132', badge: 'wlp',  reqDate: '05-Dec-24', requestedFor: 'CONSOLIDATED SHIPPING SERVICES L.L.C — AE-1019056',  requestType: 'New', subType: 'New', vccCount: 2, remarks: '', declType: 'Re Export to ROW (after import for re export)',  declOwner: 'code + name', status: 'Submitted' },
-  { reqNo: '25345', declNo: '1012132132', badge: 'wlp',  reqDate: '05-Dec-24', requestedFor: 'CONSOLIDATED SHIPPING SERVICES L.L.C — AE-1019056',  requestType: 'New', subType: 'New', vccCount: 4, remarks: '', declType: 'Re Export to ROW (after import for re export)',  declOwner: 'code + name', status: 'Payment Pending' },
+  { reqNo: '25346', declNo: '1012132133', badge: 'aeo',  reqDate: '05-Dec-24', requestedFor: 'CONSOLIDATED SHIPPING SERVICES L.L.C — AE-1019056',  requestType: 'New', subType: 'New', vccCount: 1, remarks: '', declType: 'Export Statistical',                             declOwner: 'code + name', status: 'Submitted' },
+  { reqNo: '25347', declNo: '1012132134', badge: 'wlp',  reqDate: '04-Dec-24', requestedFor: 'CONSOLIDATED SHIPPING SERVICES L.L.C — AE-1019056',  requestType: 'New', subType: 'New', vccCount: 2, remarks: '', declType: 'Re Export to ROW (after import for re export)',  declOwner: 'code + name', status: 'Under Processing' },
+  { reqNo: '25348', declNo: '1012132135', badge: 'wlp',  reqDate: '03-Dec-24', requestedFor: 'CONSOLIDATED SHIPPING SERVICES L.L.C — AE-1019056',  requestType: 'New', subType: 'New', vccCount: 4, remarks: '', declType: 'Re Export to ROW (after import for re export)',  declOwner: 'code + name', status: 'Rejected' },
 ];
 
 type Props = {
@@ -92,7 +93,7 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
   const [pageSize, setPageSize] = useState(8);
   const [statusFilter, setStatusFilter] = useState<VccStatus | null>(null);
   const VCC_STATUS_COLOR: Record<VccStatus, string> = {
-    'Completed': '#28a745', 'Submitted': '#1360d2', 'Payment Pending': '#cc9200',
+    'Submitted': '#1360d2', 'Under Processing': '#b45309', 'Completed': '#28a745', 'Rejected': '#c0392b',
   };
   const effectiveStatus = (externalStatus as VccStatus | null | undefined) ?? statusFilter;
   const filteredRows = useMemo(
@@ -120,8 +121,9 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
 
   /** Status-driven default remark — overrides the row's stored remarks. */
   const remarkFor = (status: VccStatus): string => {
-    if (status === 'Completed') return 'Your Request VCCs have been processed and downloaded.';
-    if (status === 'Payment Pending') return 'ePayment transaction is in progress. Please try after sometime (up to 30 minutes).';
+    if (status === 'Completed')        return 'Your Request VCCs have been processed and downloaded.';
+    if (status === 'Under Processing') return 'Request is being reviewed. Please check back shortly.';
+    if (status === 'Rejected')         return 'Request has been rejected. Please contact support for details.';
     return 'Request submitted. Awaiting processing.';
   };
 
@@ -144,7 +146,7 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
                 style={{ width: col.w, minWidth: col.w, background: '#e2ebf9', padding: '10px 8px', textAlign: 'left', fontWeight: 500 }}
               >
                 <div className="flex items-center gap-[4px]">
-                  <span className="text-[14px] text-[#455174] whitespace-nowrap" style={{ letterSpacing: '0.07px' }}>{col.label}</span>
+                  <span className="text-[16px] text-[#455174] whitespace-nowrap" style={{ letterSpacing: '0.07px' }}>{col.label}</span>
                   <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#8f94ae" strokeWidth="1.5" strokeLinecap="round">
                     <path d="M3 4h10M5 8h6M7 12h2" />
                   </svg>
@@ -171,7 +173,7 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
               background: '#e2ebf9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, zIndex: 2,
               borderTopRightRadius: 8, borderBottomRightRadius: 8,
             }}>
-              <span className="text-[14px] text-[#455174]" style={{ letterSpacing: '0.07px' }}>Actions</span>
+              <span className="text-[16px] text-[#455174]" style={{ letterSpacing: '0.07px' }}>Actions</span>
             </th>
           </tr>
         </thead>
@@ -179,7 +181,7 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
         <tbody>
           {filteredRows.map((row, i) => {
             const st = VCC_STATUS_STYLE[row.status];
-            const txt = (v: React.ReactNode) => <span className="text-[14px] text-[#0e1b3d] whitespace-nowrap">{v}</span>;
+            const txt = (v: React.ReactNode) => <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{v}</span>;
             const cell = (content: React.ReactNode, w: number) => (
               <td style={{ background: '#fff', padding: '0 8px', height: 54, verticalAlign: 'middle', width: w }}>{content}</td>
             );
@@ -190,7 +192,7 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
                 <td style={{ background: '#fff', padding: '0 8px', height: 54, verticalAlign: 'middle', width: 130, textAlign: 'center' }}>
                   <button
                     onClick={() => onVccCountOpen?.(row)}
-                    className="text-[14px] font-medium inline-flex items-center justify-center hover:opacity-80 transition-opacity"
+                    className="text-[16px] font-medium inline-flex items-center justify-center hover:opacity-80 transition-opacity"
                     style={{ background: 'rgba(19,96,210,0.08)', color: '#1360d2', minWidth: 32, height: 24, padding: '0 8px', borderRadius: 12, textDecoration: 'underline' }}
                     aria-label="View VCC details"
                   >
@@ -210,7 +212,7 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
                     </div>
                     <button
                       onClick={() => onDeclarationOpen?.(row.declNo)}
-                      className="text-[14px] text-[#1360d2] whitespace-nowrap hover:underline"
+                      className="text-[16px] text-[#1360d2] whitespace-nowrap hover:underline"
                       style={{ fontWeight: 500 }}
                     >
                       {row.declNo}
@@ -221,7 +223,7 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
                 {cell(txt(row.requestedFor), 280)}
                 {cell(
                   <span
-                    className="text-[14px] text-[#0e1b3d]"
+                    className="text-[16px] text-[#0e1b3d]"
                     style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3 }}
                   >
                     {remarkFor(row.status)}
@@ -238,7 +240,7 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
                   zIndex: openFlyout === i ? 49 : 1,
                 }}>
                   <span
-                    className="text-[14px] font-medium whitespace-nowrap inline-flex items-center justify-center"
+                    className="text-[16px] font-medium whitespace-nowrap inline-flex items-center justify-center"
                     style={{ background: st.bg, color: st.color, padding: '4px 12px', borderRadius: 4, lineHeight: '20px' }}
                   >
                     {row.status}
@@ -275,6 +277,23 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
                           border: '1px solid #f0f0f5',
                         }}
                       >
+                        {/* Recheck Payment Status — only for Under Processing rows */}
+                        {row.status === 'Under Processing' && (
+                          <button
+                            className="group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
+                            onClick={() => setOpenFlyout(null)}
+                          >
+                            <span className="text-[#f59e0b] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
+                              <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M4 4a7 7 0 1 1 0 12" />
+                                <path d="M1 4h3v3" />
+                              </svg>
+                            </span>
+                            <span className="text-[16px] text-[#111838] group-hover:text-white leading-[20px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
+                              Recheck Payment Status
+                            </span>
+                          </button>
+                        )}
                         {FLYOUT_ITEMS.map((item) => (
                           <button
                             key={item.id}
@@ -290,7 +309,7 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
                             <span className="text-[#1360d2] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
                               {item.icon}
                             </span>
-                            <span className="text-[14px] text-[#111838] group-hover:text-white leading-[20px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
+                            <span className="text-[16px] text-[#111838] group-hover:text-white leading-[20px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
                               {item.label}
                             </span>
                           </button>

@@ -60,7 +60,7 @@ function OutboundDeclarationModal({
         </div>
 
         <div className="px-[28px] py-[24px] flex flex-col gap-[20px] overflow-y-auto">
-          <p className="text-[14px] text-[#455174]">
+          <p className="text-[16px] text-[#455174]">
             For a full re-export refund, please provide the outbound declaration number and supporting details so the claim can be matched to the export shipment.
           </p>
 
@@ -120,7 +120,7 @@ function OutboundDeclarationModal({
         <div className="border-t border-[#eef1f6] px-[28px] py-[16px] flex items-center justify-end gap-[12px]">
           <button
             onClick={onClose}
-            className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[14px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors"
+            className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors"
             style={{ fontWeight: 500 }}
           >
             Cancel
@@ -128,7 +128,7 @@ function OutboundDeclarationModal({
           <button
             disabled={!valid}
             onClick={() => valid && onSubmit(v)}
-            className="h-[44px] px-[24px] rounded-[4px] text-[14px] text-white transition-colors"
+            className="h-[44px] px-[24px] rounded-[4px] text-[16px] text-white transition-colors"
             style={{ background: valid ? '#1360d2' : '#a7c3eb', cursor: valid ? 'pointer' : 'not-allowed', fontWeight: 500, boxShadow: valid ? '0px 0px 8px rgba(28,72,191,0.16)' : 'none' }}
           >
             Continue
@@ -194,7 +194,7 @@ function MissingDocDepositModal({
           </button>
         </div>
         <div className="px-[28px] py-[24px] flex flex-col gap-[20px]">
-          <p className="text-[14px] text-[#455174]">Provide the refund amount and the original deposit method used for this declaration.</p>
+          <p className="text-[16px] text-[#455174]">Provide the refund amount and the original deposit method used for this declaration.</p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[20px]">
             <FloatingField label="Refund Amount" required placeholder="Enter Amount" value={refundAmount} onChange={setRefundAmount} />
             <FloatingField label="Currency" placeholder="AED" value={currency} onChange={setCurrency} trailingIcon={<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M5 8l5 5 5-5" /></svg>} />
@@ -206,7 +206,7 @@ function MissingDocDepositModal({
                 onClick={() => setOpen2(!open2)}
                 className={`h-[56px] border rounded-[4px] flex items-center px-[14px] cursor-pointer transition-colors bg-white ${open2 ? 'border-[#1360d2]' : 'border-[#d5ddfb] hover:border-[#1360d2]'}`}
               >
-                <span className="text-[14px] flex-1" style={{ color: depositMethod ? '#0e1b3d' : '#697498' }}>
+                <span className="text-[16px] flex-1" style={{ color: depositMethod ? '#0e1b3d' : '#697498' }}>
                   {depositMethod ? DEPOSIT_METHOD_LABEL[depositMethod] : 'Select'}
                 </span>
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
@@ -239,7 +239,7 @@ function MissingDocDepositModal({
                           {m === 'epayment' && <><rect x="3" y="6" width="14" height="9" rx="1.5" /><path d="M3 10h14" /><path d="M6 13h3" /></>}
                         </svg>
                       </span>
-                      <span className="text-[14px] text-[#111838] group-hover:text-white">{DEPOSIT_METHOD_LABEL[m]}</span>
+                      <span className="text-[16px] text-[#111838] group-hover:text-white">{DEPOSIT_METHOD_LABEL[m]}</span>
                     </button>
                   ))}
                 </div>
@@ -252,11 +252,11 @@ function MissingDocDepositModal({
           </div>
         </div>
         <div className="border-t border-[#eef1f6] px-[28px] py-[16px] flex items-center justify-end gap-[12px]">
-          <button onClick={onClose} className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[14px] text-[#1360d2] hover:bg-[#f0f4ff]" style={{ fontWeight: 500 }}>Cancel</button>
+          <button onClick={onClose} className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#f0f4ff]" style={{ fontWeight: 500 }}>Cancel</button>
           <button
             disabled={!valid}
             onClick={() => valid && onSubmit({ refundAmount, currency, depositMethod: depositMethod as DepositMethod, remarks })}
-            className="h-[44px] px-[24px] rounded-[4px] text-[14px] text-white"
+            className="h-[44px] px-[24px] rounded-[4px] text-[16px] text-white"
             style={{ background: valid ? '#1360d2' : '#a7c3eb', cursor: valid ? 'pointer' : 'not-allowed', fontWeight: 500, boxShadow: valid ? '0px 0px 8px rgba(28,72,191,0.16)' : 'none' }}
           >
             Continue
@@ -345,7 +345,7 @@ function PartialExportInvoiceModal({
           </button>
         </div>
         <div className="px-[28px] py-[24px] flex flex-col gap-[16px] overflow-y-auto">
-          <p className="text-[14px] text-[#455174]">Choose the invoices that contain the partially exported goods, then select the HS codes within each invoice that were re-exported.</p>
+          <p className="text-[16px] text-[#455174]">Choose the invoices that contain the partially exported goods, then select the HS codes within each invoice that were re-exported.</p>
           <div className="flex flex-col gap-[12px]">
             {SAMPLE_INVOICES.map((inv) => {
               const invSelected = selectedInvoices.has(inv.id);
@@ -363,9 +363,9 @@ function PartialExportInvoiceModal({
                       {invSelected && <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8l3 3 7-7" /></svg>}
                     </button>
                     <div className="flex-1 flex items-center gap-[16px]">
-                      <span className="text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{inv.invoiceNo}</span>
-                      <span className="text-[13px] text-[#697498]">Date: {inv.date}</span>
-                      <span className="text-[13px] text-[#697498]">{inv.hsCodes.length} HS code{inv.hsCodes.length !== 1 ? 's' : ''}</span>
+                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{inv.invoiceNo}</span>
+                      <span className="text-[16px] text-[#697498]">Date: {inv.date}</span>
+                      <span className="text-[16px] text-[#697498]">{inv.hsCodes.length} HS code{inv.hsCodes.length !== 1 ? 's' : ''}</span>
                     </div>
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 120ms' }}>
                       <path d="M6 9l6 6 6-6" />
@@ -378,10 +378,10 @@ function PartialExportInvoiceModal({
                           <thead>
                             <tr style={{ background: '#f4f7fc' }}>
                               <th style={{ padding: '8px 12px', width: 36 }} />
-                              <th className="text-left text-[13px] text-[#455174]" style={{ padding: '8px 12px', fontWeight: 600 }}>HS Code</th>
-                              <th className="text-left text-[13px] text-[#455174]" style={{ padding: '8px 12px', fontWeight: 600 }}>Description</th>
-                              <th className="text-left text-[13px] text-[#455174]" style={{ padding: '8px 12px', fontWeight: 600 }}>Quantity</th>
-                              <th className="text-left text-[13px] text-[#455174]" style={{ padding: '8px 12px', fontWeight: 600 }}>Value</th>
+                              <th className="text-left text-[16px] text-[#455174]" style={{ padding: '8px 12px', fontWeight: 600 }}>HS Code</th>
+                              <th className="text-left text-[16px] text-[#455174]" style={{ padding: '8px 12px', fontWeight: 600 }}>Description</th>
+                              <th className="text-left text-[16px] text-[#455174]" style={{ padding: '8px 12px', fontWeight: 600 }}>Quantity</th>
+                              <th className="text-left text-[16px] text-[#455174]" style={{ padding: '8px 12px', fontWeight: 600 }}>Value</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -402,10 +402,10 @@ function PartialExportInvoiceModal({
                                       {hsSelected && <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7l3 3 5-6" /></svg>}
                                     </button>
                                   </td>
-                                  <td className="text-[13px] text-[#0e1b3d]" style={{ padding: '8px 12px', fontWeight: 500 }}>{hs.code}</td>
-                                  <td className="text-[13px] text-[#0e1b3d]" style={{ padding: '8px 12px' }}>{hs.description}</td>
-                                  <td className="text-[13px] text-[#0e1b3d]" style={{ padding: '8px 12px' }}>{hs.quantity}</td>
-                                  <td className="text-[13px] text-[#0e1b3d]" style={{ padding: '8px 12px' }}>
+                                  <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '8px 12px', fontWeight: 500 }}>{hs.code}</td>
+                                  <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '8px 12px' }}>{hs.description}</td>
+                                  <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '8px 12px' }}>{hs.quantity}</td>
+                                  <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '8px 12px' }}>
                                     <span className="inline-flex items-baseline gap-[4px]"><Dh /> {String(hs.value).replace(/^Dh\s*/, '')}</span>
                                   </td>
                                 </tr>
@@ -422,7 +422,7 @@ function PartialExportInvoiceModal({
           </div>
         </div>
         <div className="border-t border-[#eef1f6] px-[28px] py-[16px] flex items-center justify-end gap-[12px]">
-          <button onClick={onClose} className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[14px] text-[#1360d2] hover:bg-[#f0f4ff]" style={{ fontWeight: 500 }}>Cancel</button>
+          <button onClick={onClose} className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#f0f4ff]" style={{ fontWeight: 500 }}>Cancel</button>
           <button
             disabled={!valid}
             onClick={() => {
@@ -432,7 +432,7 @@ function PartialExportInvoiceModal({
                 hsCodes: Array.from(selectedHs).map((k) => { const [invoiceId, code] = k.split('::'); return { invoiceId, code }; }),
               });
             }}
-            className="h-[44px] px-[24px] rounded-[4px] text-[14px] text-white"
+            className="h-[44px] px-[24px] rounded-[4px] text-[16px] text-white"
             style={{ background: valid ? '#1360d2' : '#a7c3eb', cursor: valid ? 'pointer' : 'not-allowed', fontWeight: 500, boxShadow: valid ? '0px 0px 8px rgba(28,72,191,0.16)' : 'none' }}
           >
             Continue
@@ -460,7 +460,7 @@ function RefundTypeModal({ open, onClose, onContinue }: { open: boolean; onClose
           </button>
         </div>
         <div className="px-[28px] py-[24px] flex flex-col gap-[14px]">
-          <p className="text-[14px] text-[#455174]">Please choose the refund type to begin your claim.</p>
+          <p className="text-[16px] text-[#455174]">Please choose the refund type to begin your claim.</p>
           <div className="flex flex-col gap-[12px]">
             {REFUND_OPTIONS.map((opt) => {
               const active = selected === opt.id;
@@ -476,18 +476,18 @@ function RefundTypeModal({ open, onClose, onContinue }: { open: boolean; onClose
                   </span>
                   <span className="flex flex-col gap-[4px]">
                     <span className="text-[15px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{opt.title}</span>
-                    <span className="text-[13px] text-[#696f83]">{opt.sub}</span>
+                    <span className="text-[16px] text-[#696f83]">{opt.sub}</span>
                   </span>
                 </button>
               );
             })}
           </div>
           <div className="flex items-center justify-end gap-[12px] pt-[8px]">
-            <button onClick={onClose} className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[14px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors" style={{ fontWeight: 500 }}>Cancel</button>
+            <button onClick={onClose} className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors" style={{ fontWeight: 500 }}>Cancel</button>
             <button
               disabled={!selected}
               onClick={() => selected && onContinue(selected)}
-              className="h-[44px] px-[24px] rounded-[4px] text-[14px] text-white transition-colors"
+              className="h-[44px] px-[24px] rounded-[4px] text-[16px] text-white transition-colors"
               style={{ background: selected ? '#1360d2' : '#a7c3eb', cursor: selected ? 'pointer' : 'not-allowed', fontWeight: 500, boxShadow: selected ? '0px 0px 8px rgba(28,72,191,0.16)' : 'none' }}
             >
               Continue
@@ -505,6 +505,7 @@ type Row = {
   declarationNo: string;
   declarationDate: string;
   depositType: string;
+  declarationCategory: string | null;
   depositAmount: string;     // 'Dh 1,000' or 'N/A'
   depositMethod: string;     // 'Cash' / 'Standing Guarantee' / 'N/A'
   claimExpiry: string;
@@ -514,29 +515,45 @@ type Row = {
 };
 
 const ROWS: Row[] = [
-  // Refund of Deposits — any deposit-labeled item
-  { declarationNo: '101-04498436-24', declarationDate: '12/05/2024', depositType: 'Missing Document Deposit',     depositAmount: 'Dh 1,000', depositMethod: 'Cash',                claimExpiry: '04/03/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
-  { declarationNo: '105-01426431-24', declarationDate: '09/10/2024', depositType: 'Deposit Alternative Duty Rate', depositAmount: 'Dh 1,000', depositMethod: 'Standing Guarantee', claimExpiry: '04/03/2025', exportExpiry: '03/08/2025', remarks: '—', kind: 'requestExt' },
-  { declarationNo: '202-08812205-24', declarationDate: '08/14/2024', depositType: 'Missing Document Deposit',     depositAmount: 'Dh 2,500', depositMethod: 'Cash',                claimExpiry: '06/15/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
-  { declarationNo: '404-09988123-24', declarationDate: '07/02/2024', depositType: 'Deposit Alternative Duty Rate', depositAmount: 'Dh 5,000', depositMethod: 'Standing Guarantee', claimExpiry: '07/01/2025', exportExpiry: '05/15/2025', remarks: '—', kind: 'requestExt' },
-  { declarationNo: '108-05512790-24', declarationDate: '11/02/2024', depositType: 'Duty Deposit',                  depositAmount: 'Dh 3,200', depositMethod: 'Standing Guarantee', claimExpiry: '05/01/2025', exportExpiry: '04/01/2025', remarks: '—', kind: 'requestExt' },
-  { declarationNo: '210-04477981-24', declarationDate: '10/02/2024', depositType: 'Anti Dumping Deposit',          depositAmount: 'Dh 7,500', depositMethod: 'Cash',                claimExpiry: '04/15/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
-  { declarationNo: '312-09921077-24', declarationDate: '06/22/2024', depositType: 'Exemption Deposit',             depositAmount: 'Dh 4,000', depositMethod: 'Cash',                claimExpiry: '06/30/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
+  // ── Refund of Deposits ─────────────────────────────────────────────────────
+  // Alternative Duty Deposit
+  { declarationNo: '105-01426431-24', declarationDate: '09/10/2024', depositType: 'Alternative Duty Deposit',          declarationCategory: 'Import for Re Export',          depositAmount: 'Dh 1,000', depositMethod: 'Standing Guarantee', claimExpiry: '04/03/2025', exportExpiry: '03/08/2025', remarks: '—', kind: 'requestExt' },
+  { declarationNo: '404-09988123-24', declarationDate: '07/02/2024', depositType: 'Alternative Duty Deposit',          declarationCategory: 'Temporary Admission',           depositAmount: 'Dh 5,000', depositMethod: 'Standing Guarantee', claimExpiry: '07/01/2025', exportExpiry: '05/15/2025', remarks: '—', kind: 'requestExt' },
+  { declarationNo: '201-07612301-24', declarationDate: '08/14/2024', depositType: 'Alternative Duty Deposit',          declarationCategory: 'Transit (ROW to ROW)',          depositAmount: 'Dh 2,200', depositMethod: 'Cash',               claimExpiry: '06/15/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
+  { declarationNo: '209-03312099-24', declarationDate: '10/05/2024', depositType: 'Alternative Duty Deposit',          declarationCategory: 'FZ Export',                    depositAmount: 'Dh 3,800', depositMethod: 'Cash',               claimExpiry: '05/01/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
+  // Cargo Transfer Deposit
+  { declarationNo: '301-08821001-24', declarationDate: '10/21/2024', depositType: 'Cargo Transfer Deposit',            declarationCategory: 'Cargo Transfer from CTO to CH', depositAmount: 'Dh 1,500', depositMethod: 'Cash',               claimExpiry: '07/12/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
+  { declarationNo: '302-04490111-24', declarationDate: '11/02/2024', depositType: 'Cargo Transfer Deposit',            declarationCategory: 'Cargo Transfer from CH to CH',  depositAmount: 'Dh 2,000', depositMethod: 'Cash',               claimExpiry: '06/01/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
+  { declarationNo: '303-07731209-24', declarationDate: '09/18/2024', depositType: 'Cargo Transfer Deposit',            declarationCategory: 'Bonded Movement',              depositAmount: 'Dh 800',   depositMethod: 'Standing Guarantee', claimExpiry: '05/20/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
+  // Duty Deposit (Refund of Deposit context — direct)
+  { declarationNo: '108-05512790-24', declarationDate: '11/02/2024', depositType: 'Duty Deposit',                      declarationCategory: 'Import',                       depositAmount: 'Dh 3,200', depositMethod: 'Standing Guarantee', claimExpiry: '05/01/2025', exportExpiry: '04/01/2025', remarks: '—', kind: 'requestExt' },
+  // Document Deposit
+  { declarationNo: '101-04498436-24', declarationDate: '12/05/2024', depositType: 'Document Deposit',                  declarationCategory: null,                           depositAmount: 'Dh 1,000', depositMethod: 'Cash',               claimExpiry: '04/03/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
+  // CDM Deposit
+  { declarationNo: '202-08812205-24', declarationDate: '08/14/2024', depositType: 'CDM Deposit',                       declarationCategory: null,                           depositAmount: 'Dh 2,500', depositMethod: 'Cash',               claimExpiry: '06/15/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
+  // Declaration Amendment - Deposit
+  { declarationNo: '410-09912044-24', declarationDate: '07/15/2024', depositType: 'Declaration Amendment - Deposit',   declarationCategory: null,                           depositAmount: 'Dh 1,200', depositMethod: 'Cash',               claimExpiry: '07/01/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
+  // Declaration Cancellation - Deposit
+  { declarationNo: '510-03318821-24', declarationDate: '06/22/2024', depositType: 'Declaration Cancellation - Deposit',declarationCategory: null,                           depositAmount: 'Dh 4,000', depositMethod: 'Cash',               claimExpiry: '06/30/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
 
-  // Refund of Duty — cancelled/amended declarations + duty-exempted goods
-  { declarationNo: '506-02100934-24', declarationDate: '09/18/2024', depositType: 'Cancelled/Amended Declaration', depositAmount: 'Dh 1,800', depositMethod: 'Cash',                claimExpiry: '05/20/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
-  { declarationNo: '507-03219875-24', declarationDate: '08/03/2024', depositType: 'Duty Exempted',                 depositAmount: 'Dh 6,200', depositMethod: 'Cash',                claimExpiry: '06/05/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
-  { declarationNo: '511-04412309-24', declarationDate: '07/15/2024', depositType: 'Cancelled/Amended Declaration', depositAmount: 'Dh 2,400', depositMethod: 'Cash',                claimExpiry: '07/01/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
+  // ── Refund of Duty ─────────────────────────────────────────────────────────
+  // Duty Deposit + Import (needs refund type selection)
+  { declarationNo: '506-02100934-24', declarationDate: '09/18/2024', depositType: 'Duty Deposit',                               declarationCategory: 'Import',              depositAmount: 'Dh 1,800', depositMethod: 'Cash', claimExpiry: '05/20/2025', exportExpiry: 'N/A', remarks: '—', kind: 'request' },
+  // Declaration Amendment - Duty / Charges (direct)
+  { declarationNo: '507-03219875-24', declarationDate: '08/03/2024', depositType: 'Declaration Amendment - Duty / Charges',     declarationCategory: 'Import',              depositAmount: 'Dh 6,200', depositMethod: 'Cash', claimExpiry: '06/05/2025', exportExpiry: 'N/A', remarks: '—', kind: 'request' },
+  { declarationNo: '511-04412309-24', declarationDate: '07/15/2024', depositType: 'Declaration Amendment - Duty / Charges',     declarationCategory: 'Import For Re-Export',depositAmount: 'Dh 2,400', depositMethod: 'Cash', claimExpiry: '07/01/2025', exportExpiry: 'N/A', remarks: '—', kind: 'request' },
+  // Declaration Cancellation Refund - Duty / Charges (direct)
+  { declarationNo: '512-05501201-24', declarationDate: '10/10/2024', depositType: 'Declaration Cancellation Refund - Duty / Charges', declarationCategory: 'Import For Re-Export', depositAmount: 'Dh 3,000', depositMethod: 'Cash', claimExpiry: '05/15/2025', exportExpiry: 'N/A', remarks: '—', kind: 'request' },
 
-  // Non Remittance — FZ exports without deposit
-  { declarationNo: '303-02655456-24', declarationDate: '10/21/2024', depositType: 'Non Remittance Claim',          depositAmount: 'N/A',       depositMethod: 'N/A',                claimExpiry: '12/19/2024', exportExpiry: '11/19/2024', remarks: '—', kind: 'expired' },
-  { declarationNo: '305-08812345-24', declarationDate: '11/12/2024', depositType: 'Non Remittance Claim',          depositAmount: 'N/A',       depositMethod: 'N/A',                claimExpiry: '07/12/2025', exportExpiry: '06/12/2025', remarks: '—', kind: 'request' },
+  // ── Non Remittance ─────────────────────────────────────────────────────────
+  { declarationNo: '303-02655456-24', declarationDate: '10/21/2024', depositType: 'Non Remittance Claim', declarationCategory: 'Freezone Export', depositAmount: 'N/A', depositMethod: 'N/A', claimExpiry: '12/19/2024', exportExpiry: '11/19/2024', remarks: '—', kind: 'expired' },
+  { declarationNo: '305-08812345-24', declarationDate: '11/12/2024', depositType: 'Non Remittance Claim', declarationCategory: 'Freezone Export', depositAmount: 'N/A', depositMethod: 'N/A', claimExpiry: '07/12/2025', exportExpiry: '06/12/2025', remarks: '—', kind: 'request' },
 ];
 
 type Props = {
   onBack: () => void;
   initialClaimType?: ClaimType | null;
-  onProceed?: (row: Row) => void;
+  onProceed?: (rows: Row[], claimType: ClaimType) => void;
 };
 
 const CLAIM_TYPE_OPTIONS: { id: ClaimType; title: string; sub: string; icon: React.ReactNode }[] = [
@@ -595,15 +612,18 @@ const CLAIM_TYPE_LABEL: Record<ClaimType, string> = {
  */
 const CLAIM_TYPE_DEPOSITS: Record<ClaimType, string[]> = {
   refundDeposit: [
-    'Missing Document Deposit',
-    'Deposit Alternative Duty Rate',
-    'Anti Dumping Deposit',
+    'Alternative Duty Deposit',
+    'Cargo Transfer Deposit',
     'Duty Deposit',
-    'Exemption Deposit',
+    'Document Deposit',
+    'CDM Deposit',
+    'Declaration Amendment - Deposit',
+    'Declaration Cancellation - Deposit',
   ],
   refundDuty: [
-    'Duty Exempted',
-    'Cancelled/Amended Declaration',
+    'Duty Deposit',
+    'Declaration Amendment - Duty / Charges',
+    'Declaration Cancellation Refund - Duty / Charges',
   ],
   nonRemittance: [
     'Non Remittance Claim',
@@ -615,7 +635,7 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
-  const [selectedDecl, setSelectedDecl] = useState<string | null>(null);
+  const [selectedDecls, setSelectedDecls] = useState<Set<string>>(new Set());
 
   // First filter by claim type, then by search query
   const claimTypeFiltered = useMemo(() => {
@@ -630,16 +650,28 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
     return claimTypeFiltered.filter((r) => r.declarationNo.toLowerCase().includes(q));
   }, [query, claimTypeFiltered]);
 
-  const headers: { label: string; w: number }[] = [
-    { label: 'Declaration No.',   w: 170 },
-    { label: 'Declaration Date',  w: 140 },
-    { label: 'Deposit Type',      w: 220 },
-    { label: 'Deposit Amount',    w: 150 },
-    { label: 'Deposit Method',    w: 170 },
-    { label: 'Claim Expiry',      w: 130 },
-    { label: 'Export Expiry',     w: 130 },
-    { label: 'Remarks',           w: 110 },
-  ];
+  const isNonRemittance = claimType === 'nonRemittance';
+  const headers: { label: string; w: number }[] = isNonRemittance
+    ? [
+        { label: 'Declaration No.',      w: 170 },
+        { label: 'Declaration Date',     w: 140 },
+        { label: 'Declaration Category', w: 200 },
+        { label: 'Claim Expiry',         w: 130 },
+        { label: 'Export Expiry',        w: 130 },
+        { label: 'Remarks',              w: 110 },
+      ]
+    : [
+        { label: 'Declaration No.',      w: 170 },
+        { label: 'Declaration Date',     w: 140 },
+        { label: 'Deposit Type',         w: 200 },
+        { label: 'Declaration Category', w: 190 },
+        { label: 'Deposit Amount',       w: 150 },
+        { label: 'Deposit Method',       w: 160 },
+        { label: 'Claim Expiry',         w: 130 },
+        { label: 'Export Expiry',        w: 130 },
+        { label: 'Remarks',              w: 110 },
+      ];
+  const tableMinWidth = headers.reduce((s, h) => s + h.w, 0) + 48 + 130;
 
   const STATUS_STYLE = {
     Active:  { bg: 'rgba(40,167,69,0.10)',  color: '#28a745' },
@@ -648,28 +680,28 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
 
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full">
-      <div className="flex items-start justify-between px-[40px] pt-[24px] pb-[8px] flex-wrap gap-[12px]">
+      <div className="flex items-start justify-between px-4 sm:px-10 pt-[24px] pb-[8px] flex-wrap gap-[12px]">
         <div className="flex items-center gap-[6px]">
-          <button onClick={onBack} className="text-[14px] text-[#8f94ae] hover:underline" style={{ fontFamily: "'Dubai', sans-serif" }}>Home</button>
+          <button onClick={onBack} className="text-[16px] text-[#8f94ae] hover:underline" style={{ fontFamily: "'Dubai', sans-serif" }}>Home</button>
           <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: "'Dubai', sans-serif" }}>/</span>
-          <span className="text-[14px] text-[#8f94ae]" style={{ fontFamily: "'Dubai', sans-serif" }}>Import By Sea</span>
+          <span className="text-[16px] text-[#8f94ae]" style={{ fontFamily: "'Dubai', sans-serif" }}>Import By Sea</span>
           <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: "'Dubai', sans-serif" }}>/</span>
-          <span className="text-[14px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Integrated Clearance</span>
+          <span className="text-[16px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Integrated Clearance</span>
         </div>
         <div className="bg-[#e2ebf9] rounded-[4px] h-[28px] px-[12px] flex items-center">
-          <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>A180-IMPORTER SONY GULF UAE</span>
+          <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>A180-IMPORTER SONY GULF UAE</span>
         </div>
       </div>
 
-      <h1 className="px-[40px] pt-[8px] text-[32px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
+      <h1 className="px-4 sm:px-10 pt-[8px] text-2xl sm:text-3xl lg:text-[32px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
         Raise New Claim
       </h1>
 
-      <div className="px-[40px] pt-[16px]">
+      <div className="px-4 sm:px-10 pt-[16px]">
         <ClaimStepper activeIndex={0} />
       </div>
 
-      <div className="flex-1 overflow-y-auto px-[40px] py-[24px] flex flex-col gap-[20px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
+      <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px] flex flex-col gap-[20px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
         {/* Claim Type selection card */}
         <div className="bg-white rounded-[8px] flex flex-col gap-[18px] px-[24px] py-[22px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
           <div className="flex items-center gap-[12px]">
@@ -681,7 +713,7 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
               return (
                 <button
                   key={opt.id}
-                  onClick={() => { setClaimType(opt.id); setQuery(''); setPage(1); setSelectedDecl(null); }}
+                  onClick={() => { setClaimType(opt.id); setQuery(''); setPage(1); setSelectedDecls(new Set()); }}
                   className="flex items-start gap-[14px] px-[16px] py-[16px] rounded-[10px] text-left transition-colors h-full"
                   style={{ background: active ? '#f6f9fe' : '#fff', border: `1.5px solid ${active ? '#1360d2' : '#e0e6ef'}` }}
                 >
@@ -723,7 +755,7 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
                 <svg viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="#1360d2" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="14" cy="14" r="9" /><path d="M21 21l5 5" /></svg>
               </div>
               <p className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Select a claim type to view eligible declarations</p>
-              <p className="text-[14px] text-[#697498]">Choose Refund of Deposits, Refund of Duty, or Non Remittance above to see your eligible declarations.</p>
+              <p className="text-[16px] text-[#697498]">Choose Refund of Deposits, Refund of Duty, or Non Remittance above to see your eligible declarations.</p>
             </div>
           )}
 
@@ -738,7 +770,7 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
                   value={query}
                   onChange={(e) => { setQuery(e.target.value); setPage(1); }}
                   placeholder="Search Declaration Number"
-                  className="w-full h-[48px] pl-[42px] pr-[14px] rounded-[4px] border border-[#d5ddfb] bg-white text-[14px] text-[#0e1b3d] placeholder:text-[#697498] focus:outline-none focus:border-[#1360d2]"
+                  className="w-full h-[48px] pl-[42px] pr-[14px] rounded-[4px] border border-[#d5ddfb] bg-white text-[16px] text-[#0e1b3d] placeholder:text-[#697498] focus:outline-none focus:border-[#1360d2]"
                   style={{ fontFamily: "'Dubai', sans-serif" }}
                 />
               </div>
@@ -749,21 +781,49 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
           {claimType && (
           <>
           <div className="overflow-x-auto px-[16px] pt-[8px] pb-[16px]">
-            <table style={{ minWidth: 1380, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: "'Dubai', sans-serif" }} className="w-full eligible-table">
+            <table style={{ minWidth: tableMinWidth, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: "'Dubai', sans-serif" }} className="w-full eligible-table">
               <thead>
                 <tr>
-                  <th style={{ width: 48, minWidth: 48, background: '#e2ebf9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, borderTopLeftRadius: 8, borderBottomLeftRadius: 8 }} />
+                  <th style={{ width: 48, minWidth: 48, background: '#e2ebf9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, borderTopLeftRadius: 8, borderBottomLeftRadius: 8 }}>
+                    {(() => {
+                      const selectableRows = filtered.filter((r) => r.kind !== 'expired');
+                      const allSelected = selectableRows.length > 0 && selectableRows.every((r) => selectedDecls.has(r.declarationNo));
+                      const someSelected = !allSelected && selectableRows.some((r) => selectedDecls.has(r.declarationNo));
+                      return (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (allSelected) {
+                              setSelectedDecls(new Set());
+                            } else {
+                              setSelectedDecls(new Set(selectableRows.map((r) => r.declarationNo)));
+                            }
+                          }}
+                          className="size-[20px] rounded-[4px] inline-flex items-center justify-center"
+                          style={{ border: `2px solid ${allSelected || someSelected ? '#1360d2' : '#a7abb2'}`, background: allSelected ? '#1360d2' : '#fff', cursor: 'pointer' }}
+                          aria-label="Select all"
+                        >
+                          {allSelected && (
+                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8l3 3 7-7" /></svg>
+                          )}
+                          {someSelected && (
+                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#1360d2" strokeWidth="2.5" strokeLinecap="round"><path d="M4 8h8" /></svg>
+                          )}
+                        </button>
+                      );
+                    })()}
+                  </th>
                   {headers.map((col) => (
                     <th key={col.label} style={{ width: col.w, minWidth: col.w, background: '#e2ebf9', padding: '10px 12px', textAlign: 'left', fontWeight: 500 }}>
                       <div className="flex items-center gap-[4px]">
-                        <span className="text-[14px] text-[#455174] whitespace-nowrap" style={{ letterSpacing: '0.07px' }}>{col.label}</span>
+                        <span className="text-[16px] text-[#455174] whitespace-nowrap" style={{ letterSpacing: '0.07px' }}>{col.label}</span>
                         <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#8f94ae" strokeWidth="1.5" strokeLinecap="round"><path d="M3 4h10M5 8h6M7 12h2" /></svg>
                       </div>
                     </th>
                   ))}
                   <th style={{ position: 'sticky', right: 0, width: 130, minWidth: 130, background: '#e2ebf9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2, borderTopRightRadius: 8, borderBottomRightRadius: 8 }}>
                     <div className="flex items-center gap-[4px]">
-                      <span className="text-[14px] text-[#455174] whitespace-nowrap" style={{ letterSpacing: '0.07px' }}>Status</span>
+                      <span className="text-[16px] text-[#455174] whitespace-nowrap" style={{ letterSpacing: '0.07px' }}>Status</span>
                       <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#8f94ae" strokeWidth="1.5" strokeLinecap="round"><path d="M3 4h10M5 8h6M7 12h2" /></svg>
                     </div>
                   </th>
@@ -773,51 +833,66 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
                 {filtered.length === 0 ? (
                   <tr>
                     <td colSpan={headers.length + 2} style={{ background: '#fff', padding: '40px 12px', textAlign: 'center' }}>
-                      <span className="text-[14px] text-[#697498]">No matching declarations found.</span>
+                      <span className="text-[16px] text-[#697498]">No matching declarations found.</span>
                     </td>
                   </tr>
                 ) : (
                   filtered.map((row, i) => {
                     const expired = row.kind === 'expired';
-                    const isSelected = selectedDecl === row.declarationNo;
+                    const isSelected = selectedDecls.has(row.declarationNo);
+                    const toggleRow = () => {
+                      if (expired) return;
+                      setSelectedDecls((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(row.declarationNo)) next.delete(row.declarationNo); else next.add(row.declarationNo);
+                        return next;
+                      });
+                    };
                     const cell = (content: React.ReactNode, w: number) => (
-                      <td style={{ background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: w, opacity: expired ? 0.55 : 1 }}>{content}</td>
+                      <td style={{ background: isSelected ? '#f6f9fe' : '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: w, opacity: expired ? 0.55 : 1 }}>{content}</td>
                     );
-                    const txt = (v: React.ReactNode) => <span className="text-[14px] text-[#0e1b3d] whitespace-nowrap">{v}</span>;
+                    const txt = (v: React.ReactNode) => <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{v}</span>;
                     return (
-                      <tr key={i} className={`${expired ? 'is-disabled' : ''} ${isSelected ? 'is-selected' : ''}`.trim()} onClick={() => { if (!expired) setSelectedDecl(row.declarationNo); }} style={{ cursor: expired ? 'default' : 'pointer' }}>
-                        <td style={{ background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 48 }}>
+                      <tr key={i} className={`${expired ? 'is-disabled' : ''} ${isSelected ? 'is-selected' : ''}`.trim()} onClick={toggleRow} style={{ cursor: expired ? 'default' : 'pointer' }}>
+                        <td style={{ background: isSelected ? '#f6f9fe' : '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 48 }}>
                           <button
                             type="button"
                             disabled={expired}
-                            onClick={(e) => { e.stopPropagation(); if (!expired) setSelectedDecl(row.declarationNo); }}
-                            role="radio"
+                            onClick={(e) => { e.stopPropagation(); toggleRow(); }}
+                            role="checkbox"
                             aria-checked={isSelected}
-                            className="size-[20px] rounded-full inline-flex items-center justify-center"
-                            style={{ border: `2px solid ${isSelected ? '#1360d2' : '#a7abb2'}`, opacity: expired ? 0.5 : 1, cursor: expired ? 'not-allowed' : 'pointer', background: '#fff' }}
+                            className="size-[20px] rounded-[4px] inline-flex items-center justify-center"
+                            style={{ border: `2px solid ${isSelected ? '#1360d2' : '#a7abb2'}`, opacity: expired ? 0.5 : 1, cursor: expired ? 'not-allowed' : 'pointer', background: isSelected ? '#1360d2' : '#fff' }}
                           >
-                            {isSelected && <span className="size-[10px] rounded-full" style={{ background: '#1360d2' }} />}
+                            {isSelected && <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8l3 3 7-7" /></svg>}
                           </button>
                         </td>
-                        {cell(<span className="text-[14px] text-[#0e1b3d] whitespace-nowrap" style={{ fontWeight: 500 }}>{row.declarationNo}</span>, 170)}
+                        {cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ fontWeight: 500 }}>{row.declarationNo}</span>, 170)}
                         {cell(txt(row.declarationDate), 140)}
-                        {cell(<span className="text-[14px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3 }}>{row.depositType}</span>, 220)}
-                        {cell(
-                          <span className="text-[14px] whitespace-nowrap inline-flex items-baseline gap-[4px]" style={{ color: row.depositAmount === 'N/A' ? '#697498' : '#0e1b3d', fontWeight: row.depositAmount === 'N/A' ? 400 : 500 }}>
-                            {row.depositAmount === 'N/A' ? row.depositAmount : (<><Dh /> {row.depositAmount.replace(/^Dh\s*/, '')}</>)}
-                          </span>,
-                          150
+                        {isNonRemittance ? (
+                          cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.declarationCategory ?? 'Freezone Export'}</span>, 200)
+                        ) : (
+                          <>
+                            {cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3 }}>{row.depositType}</span>, 200)}
+                            {cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3 }}>{row.declarationCategory ?? '—'}</span>, 190)}
+                            {cell(
+                              <span className="text-[16px] whitespace-nowrap inline-flex items-baseline gap-[4px]" style={{ color: row.depositAmount === 'N/A' ? '#697498' : '#0e1b3d', fontWeight: row.depositAmount === 'N/A' ? 400 : 500 }}>
+                                {row.depositAmount === 'N/A' ? row.depositAmount : (<><Dh /> {row.depositAmount.replace(/^Dh\s*/, '')}</>)}
+                              </span>,
+                              150
+                            )}
+                            {cell(<span className="text-[16px]" style={{ color: row.depositMethod === 'N/A' ? '#697498' : '#0e1b3d' }}>{row.depositMethod}</span>, 160)}
+                          </>
                         )}
-                        {cell(<span className="text-[14px]" style={{ color: row.depositMethod === 'N/A' ? '#697498' : '#0e1b3d' }}>{row.depositMethod}</span>, 170)}
-                        {cell(<span className="text-[14px] whitespace-nowrap" style={{ color: '#dc3545', fontWeight: 500 }}>{row.claimExpiry}</span>, 130)}
-                        {cell(<span className="text-[14px] text-[#0e1b3d] whitespace-nowrap">{row.exportExpiry}</span>, 130)}
-                        {cell(<span className="text-[14px] text-[#697498]">{row.remarks}</span>, 110)}
-                        <td style={{ position: 'sticky', right: 0, background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 130, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', borderBottom: '1px solid #f8f8f8' }}>
+                        {cell(<span className="text-[16px] whitespace-nowrap" style={{ color: '#dc3545', fontWeight: 500 }}>{row.claimExpiry}</span>, 130)}
+                        {cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.exportExpiry}</span>, 130)}
+                        {cell(<span className="text-[16px] text-[#697498]">{row.remarks}</span>, 110)}
+                        <td style={{ position: 'sticky', right: 0, background: isSelected ? '#f6f9fe' : '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 130, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', borderBottom: '1px solid #f8f8f8' }}>
                           {(() => {
                             const st = expired ? STATUS_STYLE.Expired : STATUS_STYLE.Active;
                             const label = expired ? 'Expired' : 'Active';
                             return (
-                              <span className="text-[14px] font-medium whitespace-nowrap inline-flex items-center justify-center" style={{ background: st.bg, color: st.color, padding: '4px 12px', borderRadius: 4, lineHeight: '20px', fontFamily: "'Dubai', sans-serif" }}>
+                              <span className="text-[16px] font-medium whitespace-nowrap inline-flex items-center justify-center" style={{ background: st.bg, color: st.color, padding: '4px 12px', borderRadius: 4, lineHeight: '20px', fontFamily: "'Dubai', sans-serif" }}>
                                 {label}
                               </span>
                             );
@@ -844,23 +919,30 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
       <BackToListingBar
         onBack={onBack}
         rightContent={(() => {
-          const selectedRow = selectedDecl ? filtered.find((r) => r.declarationNo === selectedDecl) : null;
-          const enabled = !!selectedRow;
+          const selectedRows = filtered.filter((r) => selectedDecls.has(r.declarationNo));
+          const enabled = selectedRows.length > 0;
           return (
-            <button
-              disabled={!enabled}
-              onClick={() => { if (selectedRow) onProceed?.(selectedRow); }}
-              className="h-[48px] px-[28px] rounded-[4px] text-[14px] text-white transition-colors"
-              style={{
-                background: enabled ? '#1360d2' : '#a7c3eb',
-                cursor: enabled ? 'pointer' : 'not-allowed',
-                fontFamily: "'Dubai', sans-serif",
-                fontWeight: 500,
-                boxShadow: enabled ? '0px 0px 8px rgba(28,72,191,0.16)' : 'none',
-              }}
-            >
-              Next
-            </button>
+            <div className="flex items-center gap-[16px]">
+              {enabled && (
+                <span className="text-[16px] text-[#455174]" style={{ fontFamily: "'Dubai', sans-serif" }}>
+                  {selectedRows.length} declaration{selectedRows.length !== 1 ? 's' : ''} selected
+                </span>
+              )}
+              <button
+                disabled={!enabled}
+                onClick={() => { if (enabled && claimType) onProceed?.(selectedRows, claimType); }}
+                className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors"
+                style={{
+                  background: enabled ? '#1360d2' : '#a7c3eb',
+                  cursor: enabled ? 'pointer' : 'not-allowed',
+                  fontFamily: "'Dubai', sans-serif",
+                  fontWeight: 500,
+                  boxShadow: enabled ? '0px 0px 8px rgba(28,72,191,0.16)' : 'none',
+                }}
+              >
+                Next
+              </button>
+            </div>
           );
         })()}
       />

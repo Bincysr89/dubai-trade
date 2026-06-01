@@ -16,38 +16,38 @@ const Card = ({ children }: { children: React.ReactNode }) => (
 const Field = ({ k, v }: { k: string; v: React.ReactNode }) => (
   <div className="flex flex-col gap-[4px]">
     <span className="text-[12px] text-[#697498]">{k}</span>
-    <span className="text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{v}</span>
+    <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{v}</span>
   </div>
 );
 
 const Th = ({ children }: { children: React.ReactNode }) => (
-  <th className="text-left text-[13px] text-[#455174]" style={{ padding: '10px 12px', fontWeight: 500, whiteSpace: 'nowrap', background: '#e2ebf9' }}>{children}</th>
+  <th className="text-left text-[16px] text-[#455174]" style={{ padding: '10px 12px', fontWeight: 500, whiteSpace: 'nowrap', background: '#e2ebf9' }}>{children}</th>
 );
 const Td = ({ children }: { children: React.ReactNode }) => (
-  <td className="text-[13px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{children}</td>
+  <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{children}</td>
 );
 
 export default function CustomsDeclarationViewPage({ declarationNo, onBack, onServiceCatalogue, onHome }: Props) {
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full">
       {/* Sticky breadcrumb / agent banner — title + body scroll under it. */}
-      <div className="flex items-start justify-between px-[40px] pt-[24px] pb-[12px] flex-wrap gap-[12px] flex-shrink-0 bg-[#f8fafd]">
+      <div className="flex items-start justify-between px-4 sm:px-10 pt-[24px] pb-[12px] flex-wrap gap-[12px] flex-shrink-0 bg-[#f8fafd]">
         <div className="flex items-center gap-[6px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
-          <button onClick={onBack} className="text-[14px] text-[#8f94ae] hover:underline">VCC Listing</button>
+          <button onClick={onBack} className="text-[16px] text-[#8f94ae] hover:underline">VCC Listing</button>
           <span className="text-[16px] text-[#dc3545]">/</span>
-          <span className="text-[14px] text-[#111838]" style={{ fontWeight: 500 }}>Customs Declaration</span>
+          <span className="text-[16px] text-[#111838]" style={{ fontWeight: 500 }}>Customs Declaration</span>
         </div>
         <div className="bg-[#e2ebf9] rounded-[4px] h-[28px] px-[12px] flex items-center">
-          <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>AE-1019056 — Dubai Customs - Test LLC</span>
+          <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>AE-1019056 — Dubai Customs - Test LLC</span>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto" style={{ fontFamily: "'Dubai', sans-serif" }}>
-        <h1 className="px-[40px] pt-[8px] pb-[20px] text-[28px] text-[#111838]" style={{ fontWeight: 500 }}>
+        <h1 className="px-4 sm:px-10 pt-[8px] pb-[20px] text-xl sm:text-2xl lg:text-[28px] text-[#111838]" style={{ fontWeight: 500 }}>
           Customs Declaration Number ({declarationNo}) <span className="text-[16px] text-[#697498]">(Version 1)</span>
         </h1>
 
-        <div className="px-[40px] pb-[24px] flex flex-col gap-[20px]">
+        <div className="px-4 sm:px-10 pb-[24px] flex flex-col gap-[20px]">
         {/* Customs BIP */}
         <SectionTitle>Customs BIP</SectionTitle>
         <Card>
@@ -102,7 +102,7 @@ export default function CustomsDeclarationViewPage({ declarationNo, onBack, onSe
         {/* Invoice Details */}
         <SectionTitle>Invoice Details</SectionTitle>
         <Card>
-          <p className="text-[14px] text-[#697498] mb-[12px]">Invoice 1 of 3 · INV-202412001</p>
+          <p className="text-[16px] text-[#697498] mb-[12px]">Invoice 1 of 3 · INV-202412001</p>
           <div className="overflow-x-auto rounded-[6px] border border-[#eef1f6]">
             <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 1100 }}>
               <thead>
@@ -188,7 +188,7 @@ export default function CustomsDeclarationViewPage({ declarationNo, onBack, onSe
                   <tr key={r[1]} style={{ borderTop: '1px solid #eef1f6' }}>
                     {r.map((c, i) => <Td key={i}>{c}</Td>)}
                     <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>
-                      <button className="text-[#1360d2] hover:underline text-[13px]" style={{ fontWeight: 500 }}>Download</button>
+                      <button className="text-[#1360d2] hover:underline text-[16px]" style={{ fontWeight: 500 }}>Download</button>
                     </td>
                   </tr>
                 ))}

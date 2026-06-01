@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import VccDetailsModal, { type VccDetails } from './VccDetailsModal';
 
-type Status = 'Generated' | 'Printed/Downloaded';
+type Status = 'Generated' | 'Printed/Downloaded' | 'Cancelled';
 
 const STATUS_STYLE: Record<Status, { bg: string; color: string }> = {
-  'Generated':           { bg: 'rgba(40,167,69,0.10)', color: '#28a745' },
-  'Printed/Downloaded':  { bg: 'rgba(19,96,210,0.10)', color: '#1360d2' },
+  'Generated':           { bg: 'rgba(40,167,69,0.10)',  color: '#28a745' },
+  'Printed/Downloaded':  { bg: 'rgba(19,96,210,0.10)',  color: '#1360d2' },
+  'Cancelled':           { bg: 'rgba(74,79,96,0.10)',   color: '#4a4f60' },
 };
 
 type VehicleRow = {
@@ -113,7 +114,7 @@ export default function VccVehicleSearchTable({ searchTerm, searchType, onViewRe
             {['Request No.', 'VCC No.', 'Chassis No.', 'Request Date', 'Declaration No.', 'Requested For', 'VCC Date'].map((h, i, arr) => (
               <th
                 key={h}
-                className="text-[14px]"
+                className="text-[16px]"
                 style={{
                   background: '#e2ebf9',
                   color: '#455174',
@@ -128,7 +129,7 @@ export default function VccVehicleSearchTable({ searchTerm, searchType, onViewRe
               >{h}</th>
             ))}
             <th
-              className="text-[14px]"
+              className="text-[16px]"
               style={{
                 position: 'sticky', right: STICKY_ACTION_W, width: STICKY_STATUS_W, minWidth: STICKY_STATUS_W,
                 background: '#e2ebf9', color: '#455174', fontWeight: 500, textAlign: 'left',
@@ -137,7 +138,7 @@ export default function VccVehicleSearchTable({ searchTerm, searchType, onViewRe
               }}
             >VCC Status</th>
             <th
-              className="text-[14px]"
+              className="text-[16px]"
               style={{
                 position: 'sticky', right: 0, width: STICKY_ACTION_W, minWidth: STICKY_ACTION_W,
                 background: '#e2ebf9', color: '#455174', fontWeight: 500, textAlign: 'center',
@@ -151,7 +152,7 @@ export default function VccVehicleSearchTable({ searchTerm, searchType, onViewRe
           {filtered.length === 0 ? (
             <tr>
               <td colSpan={9} style={{ background: '#fff', padding: '40px 12px', textAlign: 'center' }}>
-                <span className="text-[14px] text-[#697498]">No vehicles match &ldquo;{searchTerm}&rdquo;.</span>
+                <span className="text-[16px] text-[#697498]">No vehicles match &ldquo;{searchTerm}&rdquo;.</span>
               </td>
             </tr>
           ) : filtered.map((row) => {
@@ -159,21 +160,21 @@ export default function VccVehicleSearchTable({ searchTerm, searchType, onViewRe
             const cellStyle: React.CSSProperties = { background: '#fff', padding: '14px 12px', verticalAlign: 'middle', whiteSpace: 'nowrap' };
             return (
               <tr key={row.vccNo}>
-                <td className="text-[14px] text-[#0e1b3d]" style={cellStyle}>{row.reqNo}</td>
+                <td className="text-[16px] text-[#0e1b3d]" style={cellStyle}>{row.reqNo}</td>
                 <td style={cellStyle}>
                   <button
                     onClick={() => setOpenVcc(row)}
-                    className="text-[14px] text-[#1360d2] hover:underline"
+                    className="text-[16px] text-[#1360d2] hover:underline"
                     style={{ fontWeight: 500 }}
                   >
                     {row.vccNo}
                   </button>
                 </td>
-                <td className="text-[14px] text-[#0e1b3d]" style={cellStyle}>{row.chassis}</td>
-                <td className="text-[14px] text-[#0e1b3d]" style={cellStyle}>{row.reqDate}</td>
-                <td className="text-[14px] text-[#0e1b3d]" style={cellStyle}>{row.declNo}</td>
-                <td className="text-[14px] text-[#0e1b3d]" style={{ ...cellStyle, whiteSpace: 'normal' }}>{row.requestedFor}</td>
-                <td className="text-[14px] text-[#0e1b3d]" style={cellStyle}>{row.vccDate}</td>
+                <td className="text-[16px] text-[#0e1b3d]" style={cellStyle}>{row.chassis}</td>
+                <td className="text-[16px] text-[#0e1b3d]" style={cellStyle}>{row.reqDate}</td>
+                <td className="text-[16px] text-[#0e1b3d]" style={cellStyle}>{row.declNo}</td>
+                <td className="text-[16px] text-[#0e1b3d]" style={{ ...cellStyle, whiteSpace: 'normal' }}>{row.requestedFor}</td>
+                <td className="text-[16px] text-[#0e1b3d]" style={cellStyle}>{row.vccDate}</td>
                 <td
                   style={{
                     ...cellStyle,
@@ -181,7 +182,7 @@ export default function VccVehicleSearchTable({ searchTerm, searchType, onViewRe
                     boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 1,
                   }}
                 >
-                  <span className="text-[13px] font-medium inline-flex items-center" style={{ background: st.bg, color: st.color, padding: '4px 10px', borderRadius: 4 }}>
+                  <span className="text-[16px] font-medium inline-flex items-center" style={{ background: st.bg, color: st.color, padding: '4px 10px', borderRadius: 4 }}>
                     {row.status}
                   </span>
                 </td>
@@ -217,7 +218,7 @@ export default function VccVehicleSearchTable({ searchTerm, searchType, onViewRe
                               <circle cx="10" cy="10" r="2.5" />
                             </svg>
                           </span>
-                          <span className="text-[14px] text-[#111838] group-hover:text-white leading-[20px]">View Request</span>
+                          <span className="text-[16px] text-[#111838] group-hover:text-white leading-[20px]">View Request</span>
                         </button>
                         <button
                           onClick={() => { setMenuFor(null); downloadOne(row); }}
@@ -228,7 +229,7 @@ export default function VccVehicleSearchTable({ searchTerm, searchType, onViewRe
                               <path d="M10 3v10" /><path d="M5 9l5 5 5-5" /><path d="M3 17h14" />
                             </svg>
                           </span>
-                          <span className="text-[14px] text-[#111838] group-hover:text-white leading-[20px]">Download VCC</span>
+                          <span className="text-[16px] text-[#111838] group-hover:text-white leading-[20px]">Download VCC</span>
                         </button>
                       </div>
                     )}

@@ -16,7 +16,7 @@ type Props = {
 export default function BackToListingBar({ onBack, onBackToListing, rightContent }: Props) {
   return (
     <div
-      className="bg-white px-[40px] py-[16px] flex items-center justify-between flex-shrink-0"
+      className="bg-white px-4 sm:px-10 py-[16px] flex items-center justify-between flex-shrink-0"
       style={{ boxShadow: '0px -4px 12px rgba(0,0,0,0.08)', position: 'sticky', bottom: 0, zIndex: 10 }}
     >
       <div className="flex items-center gap-[12px]">

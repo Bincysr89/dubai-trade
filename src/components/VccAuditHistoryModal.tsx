@@ -65,9 +65,9 @@ export default function VccAuditHistoryModal({ open, vccNo, rows = SAMPLE_ROWS, 
             <table className="dt-table">
               <thead>
                 <tr>
-                  <th className="text-[14px]" style={{ width: 220 }}>Action Date</th>
-                  <th className="text-[14px]" style={{ width: 240 }}>Action Type</th>
-                  <th className="text-[14px]">Action Reason</th>
+                  <th className="text-[16px]" style={{ width: 220 }}>Action Date</th>
+                  <th className="text-[16px]" style={{ width: 240 }}>Action Type</th>
+                  <th className="text-[16px]">Action Reason</th>
                 </tr>
               </thead>
               <tbody>
@@ -75,10 +75,10 @@ export default function VccAuditHistoryModal({ open, vccNo, rows = SAMPLE_ROWS, 
                   const ev = EVENT_STYLE[row.actionType] || { bg: 'rgba(105,116,152,0.10)', color: '#697498' };
                   return (
                     <tr key={i}>
-                      <td className="text-[14px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{row.actionDate}</td>
+                      <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{row.actionDate}</td>
                       <td style={{ whiteSpace: 'nowrap' }}>
                         <span
-                          className="text-[14px] inline-flex items-center justify-center whitespace-nowrap"
+                          className="text-[16px] inline-flex items-center justify-center whitespace-nowrap"
                           style={{ background: ev.bg, color: ev.color, padding: '4px 12px', borderRadius: 4, fontWeight: 500, lineHeight: '20px' }}
                         >
                           {row.actionType}
@@ -86,8 +86,8 @@ export default function VccAuditHistoryModal({ open, vccNo, rows = SAMPLE_ROWS, 
                       </td>
                       <td>
                         {row.actionReason
-                          ? <span className="text-[14px] text-[#0e1b3d]">{row.actionReason}</span>
-                          : <span className="text-[14px] text-[#8f94ae]">—</span>}
+                          ? <span className="text-[16px] text-[#0e1b3d]">{row.actionReason}</span>
+                          : <span className="text-[16px] text-[#8f94ae]">—</span>}
                       </td>
                     </tr>
                   );

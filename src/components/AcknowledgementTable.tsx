@@ -151,7 +151,7 @@ export default function AcknowledgementTable({ onView, onAccept, onDecline, onHi
             {headers.map((col) => (
               <th key={col.label} style={{ width: col.w, minWidth: col.w, background: '#e2ebf9', padding: '10px 12px', textAlign: 'left', fontWeight: 500 }}>
                 <div className="flex items-center gap-[4px]">
-                  <span className="text-[14px] text-[#455174] whitespace-nowrap" style={{ letterSpacing: '0.07px' }}>{col.label}</span>
+                  <span className="text-[16px] text-[#455174] whitespace-nowrap" style={{ letterSpacing: '0.07px' }}>{col.label}</span>
                   <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#8f94ae" strokeWidth="1.5" strokeLinecap="round"><path d="M3 4h10M5 8h6M7 12h2" /></svg>
                 </div>
               </th>
@@ -166,7 +166,7 @@ export default function AcknowledgementTable({ onView, onAccept, onDecline, onHi
               />
             </th>
             <th style={{ position: 'sticky', right: 0, width: 79, minWidth: 79, background: '#e2ebf9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, zIndex: 2, borderTopRightRadius: 8, borderBottomRightRadius: 8 }}>
-              <span className="text-[14px] text-[#455174]" style={{ letterSpacing: '0.07px' }}>Actions</span>
+              <span className="text-[16px] text-[#455174]" style={{ letterSpacing: '0.07px' }}>Actions</span>
             </th>
           </tr>
         </thead>
@@ -176,18 +176,18 @@ export default function AcknowledgementTable({ onView, onAccept, onDecline, onHi
             const cell = (content: React.ReactNode, w: number) => (
               <td style={{ background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: w }}>{content}</td>
             );
-            const txt = (v: React.ReactNode) => <span className="text-[14px] text-[#0e1b3d] whitespace-nowrap">{v}</span>;
+            const txt = (v: React.ReactNode) => <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{v}</span>;
             return (
               <tr key={i}>
                 <td style={{ background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 48, borderTopLeftRadius: 8, borderBottomLeftRadius: 8 }}>
                   <Checkbox checked={selected.has(i)} onChange={() => toggleOne(i)} />
                 </td>
-                {cell(<a href="#" className="text-[14px] text-[#1360d2] hover:underline whitespace-nowrap" style={{ fontWeight: 500 }}>{row.declaration}</a>, 140)}
+                {cell(<a href="#" className="text-[16px] text-[#1360d2] hover:underline whitespace-nowrap" style={{ fontWeight: 500 }}>{row.declaration}</a>, 140)}
                 {cell(txt(row.reqType), 110)}
                 {cell(txt(row.clearanceDate), 130)}
                 {cell(
                   <div className="flex flex-col gap-[4px]">
-                    <span className="text-[14px] text-[#0e1b3d] whitespace-nowrap" style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 200, display: 'inline-block' }}>{row.importer}</span>
+                    <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 200, display: 'inline-block' }}>{row.importer}</span>
                     {row.importerTags && row.importerTags.length > 0 && (
                       <span className="inline-flex items-center px-[8px] py-[2px] rounded-[4px] text-[12px] self-start" style={{ background: 'rgba(19,96,210,0.10)', color: '#1360d2', fontWeight: 500 }}>
                         {row.importerTags.join(', ')}
@@ -195,13 +195,13 @@ export default function AcknowledgementTable({ onView, onAccept, onDecline, onHi
                     )}
                   </div>, 220
                 )}
-                {cell(<span className="text-[14px] text-[#0e1b3d] whitespace-nowrap" style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180, display: 'inline-block' }}>{row.exporter}</span>, 200)}
-                {cell(<span className="text-[14px] text-[#0e1b3d] whitespace-nowrap" style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180, display: 'inline-block' }}>{row.broker}</span>, 200)}
+                {cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180, display: 'inline-block' }}>{row.exporter}</span>, 200)}
+                {cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180, display: 'inline-block' }}>{row.broker}</span>, 200)}
                 {cell(txt(row.value), 120)}
-                {cell(<span className="text-[14px] text-[#0e1b3d] whitespace-nowrap" style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 140, display: 'inline-block' }}>{row.decReason}</span>, 150)}
+                {cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 140, display: 'inline-block' }}>{row.decReason}</span>, 150)}
                 {cell(txt(row.ackDate), 110)}
                 <td style={{ position: 'sticky', right: 79, background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 140, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', borderBottom: '1px solid #f8f8f8', zIndex: openFlyout === i ? 49 : 1 }}>
-                  <span className="text-[14px] font-medium whitespace-nowrap inline-flex items-center justify-center" style={{ background: st.bg, color: st.color, padding: '4px 12px', borderRadius: 4, lineHeight: '20px' }}>
+                  <span className="text-[16px] font-medium whitespace-nowrap inline-flex items-center justify-center" style={{ background: st.bg, color: st.color, padding: '4px 12px', borderRadius: 4, lineHeight: '20px' }}>
                     {row.ackStatus}
                   </span>
                 </td>
@@ -234,7 +234,7 @@ export default function AcknowledgementTable({ onView, onAccept, onDecline, onHi
                             }}
                           >
                             <span className={`flex-shrink-0 inline-flex items-center justify-center ${item.disabled ? 'text-[#c9cdd6]' : 'text-[#1360d2] group-hover:text-white'}`}>{ICONS[item.id]}</span>
-                            <span className={`text-[14px] leading-[20px] ${item.disabled ? 'text-[#c9cdd6]' : 'text-[#111838] group-hover:text-white'}`} style={{ fontFamily: "'Dubai', sans-serif" }}>{LABELS[item.id]}</span>
+                            <span className={`text-[16px] leading-[20px] ${item.disabled ? 'text-[#c9cdd6]' : 'text-[#111838] group-hover:text-white'}`} style={{ fontFamily: "'Dubai', sans-serif" }}>{LABELS[item.id]}</span>
                           </button>
                         ))}
                       </div>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Logo from '../components/Logo';
+import loginLogoSrc from '../assets/dt-logo-login.svg';
 import { setAuthenticated } from '../auth';
 
 const REQUIRED_PASSWORD = 'IntegratedClearance';
@@ -34,7 +34,7 @@ export default function LoginPage() {
     >
       <div className="bg-white rounded-2xl p-8 shadow-xl w-full max-w-[544px]">
         <div className="flex flex-col gap-7 items-center w-full max-w-[480px] mx-auto">
-          <Logo height={72} />
+          <img src={loginLogoSrc} alt="Dubai Trade" style={{ height: 72, width: 'auto' }} />
 
           <h1 className="text-[#181d27] text-[24px] font-semibold text-center">Login to Your Account</h1>
 
@@ -64,7 +64,7 @@ export default function LoginPage() {
                 style={{ borderColor: error ? '#dc3545' : '#e4e2e6' }}
                 aria-invalid={!!error}
               />
-              {error && <span className="text-[13px] text-[#dc3545]">{error}</span>}
+              {error && <span className="text-[16px] text-[#dc3545]">{error}</span>}
             </div>
 
             <button
@@ -105,7 +105,7 @@ export default function LoginPage() {
               Sign in with UAE PASS
             </button>
 
-            <p className="text-[#40484f] text-[14px] text-center leading-6">
+            <p className="text-[#40484f] text-[16px] text-center leading-6">
               By logging in, you confirm that you understand & agree to the Dubai Trade Platform's{' '}
               <a className="text-[#1360d2] underline cursor-pointer">Terms and Conditions</a> and{' '}
               <a className="text-[#1360d2] underline cursor-pointer">Privacy Policy.</a>

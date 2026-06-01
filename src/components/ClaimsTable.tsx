@@ -108,7 +108,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
             {headers.map((col) => (
               <th key={col.label} style={{ width: col.w, minWidth: col.w, background: '#e2ebf9', padding: '10px 12px', textAlign: 'left', fontWeight: 500 }}>
                 <div className="flex items-center gap-[4px]">
-                  <span className="text-[14px] text-[#455174] whitespace-nowrap" style={{ letterSpacing: '0.07px' }}>{col.label}</span>
+                  <span className="text-[16px] text-[#455174] whitespace-nowrap" style={{ letterSpacing: '0.07px' }}>{col.label}</span>
                   <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#8f94ae" strokeWidth="1.5" strokeLinecap="round"><path d="M3 4h10M5 8h6M7 12h2" /></svg>
                 </div>
               </th>
@@ -123,7 +123,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
               />
             </th>
             <th style={{ position: 'sticky', right: 0, width: 79, minWidth: 79, background: '#e2ebf9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, zIndex: 2, borderTopRightRadius: 8, borderBottomRightRadius: 8 }}>
-              <span className="text-[14px] text-[#455174]" style={{ letterSpacing: '0.07px' }}>Action</span>
+              <span className="text-[16px] text-[#455174]" style={{ letterSpacing: '0.07px' }}>Action</span>
             </th>
           </tr>
         </thead>
@@ -133,25 +133,25 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
             const cell = (content: React.ReactNode, w: number) => (
               <td style={{ background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: w }}>{content}</td>
             );
-            const txt = (v: React.ReactNode) => <span className="text-[14px] text-[#0e1b3d] whitespace-nowrap">{v}</span>;
+            const txt = (v: React.ReactNode) => <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{v}</span>;
             return (
               <tr key={i}>
-                {cell(<a href="#" className="text-[14px] text-[#1360d2] hover:underline" style={{ fontWeight: 500 }}>{row.reqNo}</a>, 150)}
+                {cell(<a href="#" className="text-[16px] text-[#1360d2] hover:underline" style={{ fontWeight: 500 }}>{row.reqNo}</a>, 150)}
                 {cell(txt(row.claimNo), 120)}
                 {cell(txt(row.ver), 70)}
-                {cell(<span className="text-[14px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3 }}>{row.claimType}</span>, 160)}
+                {cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3 }}>{row.claimType}</span>, 160)}
                 {cell(txt(row.declarationNo), 170)}
-                {cell(<span className="text-[14px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3 }}>{row.depositType}</span>, 220)}
+                {cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3 }}>{row.depositType}</span>, 220)}
                 {cell(
                   <div className="flex flex-col" style={{ lineHeight: 1.3 }}>
-                    <span className="text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{row.claimantName}</span>
+                    <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{row.claimantName}</span>
                     <span className="text-[12px] text-[#697498]">{row.claimantCode}</span>
                   </div>, 280
                 )}
                 {cell(txt(row.submissionDate), 170)}
-                {cell(<span className="text-[14px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3 }}>{row.remark}</span>, 200)}
+                {cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3 }}>{row.remark}</span>, 200)}
                 <td style={{ position: 'sticky', right: 79, background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 160, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', borderBottom: '1px solid #f8f8f8', zIndex: openFlyout === i ? 49 : 1 }}>
-                  <span className="text-[14px] font-medium whitespace-nowrap inline-flex items-center justify-center" style={{ background: st.bg, color: st.color, padding: '4px 12px', borderRadius: 4, lineHeight: '20px' }}>
+                  <span className="text-[16px] font-medium whitespace-nowrap inline-flex items-center justify-center" style={{ background: st.bg, color: st.color, padding: '4px 12px', borderRadius: 4, lineHeight: '20px' }}>
                     {row.status}
                   </span>
                 </td>
@@ -183,7 +183,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
                             }}
                           >
                             <span className="text-[#1360d2] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">{ICONS[id]}</span>
-                            <span className="text-[14px] text-[#111838] group-hover:text-white leading-[20px]" style={{ fontFamily: "'Dubai', sans-serif" }}>{LABELS[id]}</span>
+                            <span className="text-[16px] text-[#111838] group-hover:text-white leading-[20px]" style={{ fontFamily: "'Dubai', sans-serif" }}>{LABELS[id]}</span>
                           </button>
                         ))}
                       </div>

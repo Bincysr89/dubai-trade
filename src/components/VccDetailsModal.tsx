@@ -34,9 +34,9 @@ type Props = {
 
 const Field = ({ label, value }: { label: string; value: string }) => (
   <div className="grid items-baseline gap-[16px]" style={{ gridTemplateColumns: '180px 1fr' }}>
-    <span className="text-[14px] text-[#455174] whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>{label} :</span>
+    <span className="text-[16px] text-[#455174] whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>{label} :</span>
     <span
-      className="text-[14px] text-[#0e1b3d]"
+      className="text-[16px] text-[#0e1b3d]"
       style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 600, wordBreak: 'break-word' }}
     >
       {value || '-'}

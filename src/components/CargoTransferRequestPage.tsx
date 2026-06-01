@@ -58,7 +58,7 @@ const Stepper = ({ activeIndex, steps }: { activeIndex: number; steps: typeof CR
                     {i + 1}
                   </div>
                 )}
-                <span className="text-[14px] whitespace-nowrap" style={{ color: labelColor, fontFamily: "'Dubai', sans-serif", fontWeight: 700 }}>{s.label}</span>
+                <span className="text-[16px] whitespace-nowrap" style={{ color: labelColor, fontFamily: "'Dubai', sans-serif", fontWeight: 700 }}>{s.label}</span>
               </div>
               {i < steps.length - 1 && (
                 <div className="h-[2px] w-[80px]" style={{ background: trailColor(i) }} />
@@ -105,7 +105,7 @@ function GeneralInformation({ values, setValues }: { values: any; setValues: (v:
                 <span className="size-[20px] rounded-full inline-flex items-center justify-center flex-shrink-0" style={{ border: `2px solid ${active ? '#1360d2' : '#a7abb2'}` }}>
                   {active && <span className="size-[10px] rounded-full" style={{ background: '#1360d2' }} />}
                 </span>
-                <span className="flex flex-col gap-[6px] text-[14px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
+                <span className="flex flex-col gap-[6px] text-[16px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
                   <span className="text-[#0e1b3d]" style={{ fontWeight: 500 }}>{t.title}</span>
                   <span className="text-[#696f83]">{t.sub}</span>
                 </span>
@@ -163,21 +163,21 @@ const OutboundDetails = () => (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-[20px]">
       <Card>
         <p className="text-[18px] text-[#111838] mb-[16px]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Transferor Details</p>
-        <div className="flex flex-col gap-[16px] text-[14px]">
+        <div className="flex flex-col gap-[16px] text-[16px]">
           <Row k="Transferor Business Name" v="Al Raffiq Trading" />
           <Row k="Transferor Premises Name" v="Raffiq premises" />
         </div>
       </Card>
       <Card>
         <p className="text-[18px] text-[#111838] mb-[16px]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Transferee Details</p>
-        <div className="flex flex-col gap-[16px] text-[14px]">
+        <div className="flex flex-col gap-[16px] text-[16px]">
           <Row k="Transferee Business Name" v="Al Raffiq Trading" />
           <Row k="License Expires on" v="20-11-2036" />
         </div>
       </Card>
       <Card>
         <p className="text-[18px] text-[#111838] mb-[16px]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Broker Details</p>
-        <div className="flex flex-col gap-[16px] text-[14px]">
+        <div className="flex flex-col gap-[16px] text-[16px]">
           <Row k="Broker Business Code" v="AE-9106286" />
           <Row k="Broker Business Name" v="SW Logistics LLC" />
           <Row k="License Expires on" v="15-11-2029" />
@@ -247,7 +247,7 @@ const ListCard = ({
     {fields.map((f, i) => (
       <div key={i} className={`flex flex-col gap-[6px] ${i === fields.length - 1 ? 'flex-1 min-w-0' : 'flex-shrink-0'}`} style={{ fontFamily: "'Dubai', sans-serif" }}>
         <span className="text-[12px] text-[#696f83] whitespace-nowrap">{f.label}</span>
-        <span className="text-[14px] text-[#051937] truncate">{f.value || '-'}</span>
+        <span className="text-[16px] text-[#051937] truncate">{f.value || '-'}</span>
       </div>
     ))}
     <DeleteIconBtn onClick={onDelete} />
@@ -282,11 +282,11 @@ function AddPackageModal({
         </div>
 
         <div className="flex gap-[8px] justify-end">
-          <button onClick={onClose} className="flex-1 border border-[#1360d2] rounded-[4px] py-[12px] text-[14px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>Cancel</button>
+          <button onClick={onClose} className="flex-1 border border-[#1360d2] rounded-[4px] py-[12px] text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>Cancel</button>
           <button
             onClick={() => { if (count && type) { onAdd({ count, type, marks }); setCount(''); setType(''); setMarks(''); onClose(); } }}
             disabled={!count || !type}
-            className="flex-1 bg-[#1360d2] hover:bg-[#0e4db8] disabled:opacity-50 disabled:cursor-not-allowed rounded-[4px] py-[12px] text-[14px] text-white transition-colors"
+            className="flex-1 bg-[#1360d2] hover:bg-[#0e4db8] disabled:opacity-50 disabled:cursor-not-allowed rounded-[4px] py-[12px] text-[16px] text-white transition-colors"
             style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}
           >
             Add
@@ -312,7 +312,7 @@ function PackageTypeDropdown({ value, onChange, options }: { value: string; onCh
         className="bg-white rounded-[4px] flex items-center px-[16px] w-full transition-colors"
         style={{ border: `1px solid ${borderColor}`, height: 56 }}
       >
-        <span className="flex-1 text-left text-[14px] text-[#0e1b3d]">{value || ''}</span>
+        <span className="flex-1 text-left text-[16px] text-[#0e1b3d]">{value || ''}</span>
         <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" className={`transition-transform ${open ? 'rotate-180' : ''}`}><path d="M5 8l5 5 5-5" /></svg>
       </button>
       <label
@@ -338,7 +338,7 @@ function PackageTypeDropdown({ value, onChange, options }: { value: string; onCh
               <li
                 key={o}
                 onClick={() => { onChange(o); setOpen(false); }}
-                className="px-[14px] py-[10px] text-[14px] cursor-pointer hover:bg-[#e2ebf9] hover:text-[#1360d2] transition-colors"
+                className="px-[14px] py-[10px] text-[16px] cursor-pointer hover:bg-[#e2ebf9] hover:text-[#1360d2] transition-colors"
                 style={{ color: active ? '#1360d2' : '#0e1b3d', background: active ? '#e2ebf9' : 'transparent', fontWeight: active ? 500 : 400 }}
               >
                 {o}
@@ -380,7 +380,7 @@ function ContainerPackageDetails({ containers, setContainers, packages, setPacka
             <button
               key={id}
               onClick={() => setTab(id)}
-              className="h-[40px] min-w-[140px] px-[16px] rounded-[4px] text-[14px] transition-colors"
+              className="h-[40px] min-w-[140px] px-[16px] rounded-[4px] text-[16px] transition-colors"
               style={{
                 background: tab === id ? '#fff' : 'transparent',
                 border: tab === id ? '1px solid #f1f3f7' : '1px solid transparent',
@@ -402,7 +402,7 @@ function ContainerPackageDetails({ containers, setContainers, packages, setPacka
           <div style={{ width: 280 }}>
             <FloatingField label="Enter Container No." required placeholder="Container No." value={containerInput} onChange={setContainerInput} />
           </div>
-          <button onClick={addContainer} className="border border-[#1360d2] rounded-[3px] px-[12px] py-[10px] inline-flex items-center gap-[4px] text-[14px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, height: 56 }}>
+          <button onClick={addContainer} className="border border-[#1360d2] rounded-[3px] px-[12px] py-[10px] inline-flex items-center gap-[4px] text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, height: 56 }}>
             <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M10 4v12M4 10h12" /></svg>
             Add
           </button>
@@ -432,7 +432,7 @@ function ContainerPackageDetails({ containers, setContainers, packages, setPacka
       <div className="bg-white rounded-[8px] p-[20px] flex flex-col gap-[16px]" style={{ boxShadow: '1px 2px 12px rgba(0,0,0,0.06)' }}>
         <div className="flex items-center justify-between">
           <p className="text-[18px] text-[#051937]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Package Details</p>
-          <button onClick={() => setShowPackageModal(true)} className="border border-[#1360d2] rounded-[4px] px-[16px] py-[8px] inline-flex items-center gap-[8px] text-[14px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
+          <button onClick={() => setShowPackageModal(true)} className="border border-[#1360d2] rounded-[4px] px-[16px] py-[8px] inline-flex items-center gap-[8px] text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
             <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M10 4v12M4 10h12" /></svg>
             Add Package Details
           </button>
@@ -506,9 +506,9 @@ function AmendmentDetails() {
             </thead>
             <tbody>
               <tr>
-                <td style={{ padding: '16px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[14px] text-[#0e1b3d]">No. of Containers</span></td>
-                <td style={{ padding: '16px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[14px] text-[#455174]">2</span></td>
-                <td style={{ padding: '16px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[14px] text-[#1360d2]" style={{ fontWeight: 500 }}>3</span></td>
+                <td style={{ padding: '16px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[16px] text-[#0e1b3d]">No. of Containers</span></td>
+                <td style={{ padding: '16px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[16px] text-[#455174]">2</span></td>
+                <td style={{ padding: '16px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[16px] text-[#1360d2]" style={{ fontWeight: 500 }}>3</span></td>
               </tr>
             </tbody>
           </table>
@@ -535,9 +535,9 @@ function AmendmentDetails() {
                 { charge: 'Declaration Amendment Charges', oldAmt: 'Dh 40.00', newAmt: 'Dh 25.00' },
               ].map((r, i) => (
                 <tr key={i}>
-                  <td style={{ padding: '16px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[14px] text-[#0e1b3d]">{r.charge}</span></td>
-                  <td style={{ padding: '16px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[14px] text-[#455174]">{r.oldAmt}</span></td>
-                  <td style={{ padding: '16px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[14px] text-[#1360d2]" style={{ fontWeight: 500 }}>{r.newAmt}</span></td>
+                  <td style={{ padding: '16px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[16px] text-[#0e1b3d]">{r.charge}</span></td>
+                  <td style={{ padding: '16px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[16px] text-[#455174]">{r.oldAmt}</span></td>
+                  <td style={{ padding: '16px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[16px] text-[#1360d2]" style={{ fontWeight: 500 }}>{r.newAmt}</span></td>
                 </tr>
               ))}
             </tbody>
@@ -553,14 +553,14 @@ function AmendmentDetails() {
           <FloatingField label="Cargo Status" required value={cargoStatus} onChange={setCargoStatus} placeholder="Please Select" trailingIcon={<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M5 8l5 5 5-5" /></svg>} />
         </div>
         <div className="mt-[20px]">
-          <p className="text-[14px] text-[#060c28] mb-[8px]" style={{ fontFamily: "'Dubai', sans-serif" }}><span style={{ color: '#dc3545' }}>*</span> Attachment</p>
+          <p className="text-[16px] text-[#060c28] mb-[8px]" style={{ fontFamily: "'Dubai', sans-serif" }}><span style={{ color: '#dc3545' }}>*</span> Attachment</p>
           <label className="bg-white border border-[#d5ddfb] rounded-[4px] flex items-center gap-[12px] px-[16px] py-[14px] cursor-pointer hover:border-[#1360d2] transition-colors">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1360d2" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
               <path d="M21 12.5l-8.5 8.5a5 5 0 01-7-7L14 5.5a3.5 3.5 0 014.95 4.95L11 18.5a2 2 0 01-2.83-2.83l7.07-7.07" />
             </svg>
             <input type="file" className="hidden" onChange={(e) => setFileName(e.target.files?.[0]?.name || '')} />
-            <span className="text-[14px] text-[#1360d2]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Upload</span>
-            <span className="text-[14px] text-[#697498] flex-1" style={{ fontFamily: "'Dubai', sans-serif" }}>{fileName || 'No files Selected'}</span>
+            <span className="text-[16px] text-[#1360d2]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Upload</span>
+            <span className="text-[16px] text-[#697498] flex-1" style={{ fontFamily: "'Dubai', sans-serif" }}>{fileName || 'No files Selected'}</span>
           </label>
         </div>
       </Card>
@@ -591,11 +591,11 @@ function PaymentDetails({ agreed, setAgreed }: { agreed: boolean; setAgreed: (v:
                     <span className="text-[20px] text-[#051937] inline-flex items-baseline gap-[4px]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 700 }}><Dh /> 100</span>
                   </div>
                   <div className="px-[12px] flex items-center gap-[12px]">
-                    <span className="text-[14px] text-[#696f83] flex-1" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Other charges</span>
+                    <span className="text-[16px] text-[#696f83] flex-1" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Other charges</span>
                     <span className="text-[16px] text-[#051937] inline-flex items-baseline gap-[4px]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 700 }}><Dh /> 80</span>
                   </div>
                   <div className="px-[12px] flex items-center gap-[12px]">
-                    <span className="text-[14px] text-[#696f83] flex-1" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Registration Fee</span>
+                    <span className="text-[16px] text-[#696f83] flex-1" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Registration Fee</span>
                     <span className="text-[16px] text-[#051937] inline-flex items-baseline gap-[4px]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 700 }}><Dh /> 20</span>
                   </div>
                 </div>
@@ -617,7 +617,7 @@ function PaymentDetails({ agreed, setAgreed }: { agreed: boolean; setAgreed: (v:
         <button onClick={() => setAgreed(!agreed)} role="checkbox" aria-checked={agreed} className="size-[24px] rounded-[4px] flex-shrink-0 inline-flex items-center justify-center" style={{ border: `2px solid ${agreed ? '#1360d2' : '#a7abb2'}`, background: agreed ? '#1360d2' : '#fff' }}>
           {agreed && <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8l3 3 7-7" /></svg>}
         </button>
-        <p className="text-[14px] text-[#455174]" style={{ fontFamily: "'Dubai', sans-serif", lineHeight: 1.32 }}>
+        <p className="text-[16px] text-[#455174]" style={{ fontFamily: "'Dubai', sans-serif", lineHeight: 1.32 }}>
           We, the undersigned hereby declare that the particulars given on this request are true and complete. And we hereby undertake the full accountability of cargo being transferred against this cargo transfer request and that no goods or cargo that are transferred to our custody will be delivered or released to any person or entity unless cleared by customs again on the relevant declaration. We further undertake to comply with all regulations and laws that are in force in the country in respect of the storage, delivery and disposal of this cargo.
         </p>
       </div>
@@ -658,7 +658,7 @@ function SubmitSummaryModal({ open, onClose, onConfirm }: { open: boolean; onClo
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-[24px] gap-y-[16px]">
             {fields.map((f) => (
               <div key={f.k} className="flex flex-col gap-[6px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
-                <span className="text-[14px] text-[#696f83]">{f.k}</span>
+                <span className="text-[16px] text-[#696f83]">{f.k}</span>
                 <span className="text-[16px] text-[#051937]" style={{ fontWeight: 500 }}>{f.v}</span>
               </div>
             ))}
@@ -676,7 +676,7 @@ function SubmitSummaryModal({ open, onClose, onConfirm }: { open: boolean; onClo
                 <span className="text-[18px] text-[#051a37]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Total Payment</span>
                 <span className="text-[18px] text-[#1360d2] inline-flex items-baseline gap-[4px]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}><Dh /> 90.00</span>
               </div>
-              <p className="text-[14px] text-[#696f83]" style={{ fontFamily: "'Dubai', sans-serif" }}>All fees are non-refundable. Payment may be subject to Knowledge/Innovation fees.</p>
+              <p className="text-[16px] text-[#696f83]" style={{ fontFamily: "'Dubai', sans-serif" }}>All fees are non-refundable. Payment may be subject to Knowledge/Innovation fees.</p>
             </div>
           </div>
         </div>
@@ -696,7 +696,6 @@ export default function CargoTransferRequestPage({ onBack, onSubmit, mode = 'cre
   const step = STEPS[stepIdx];
   const [values, setValues] = useState<any>({ transferType: 'cto-ch-same' });
   const [agreed, setAgreed] = useState(false);
-  const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [containers, setContainers] = useState<ContainerItem[]>(
     mode === 'amend'
       ? [
@@ -716,28 +715,28 @@ export default function CargoTransferRequestPage({ onBack, onSubmit, mode = 'cre
 
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full">
-      <div className="flex items-start justify-between px-[40px] pt-[24px] pb-[8px] flex-wrap gap-[12px]">
+      <div className="flex items-start justify-between px-4 sm:px-10 pt-[24px] pb-[8px] flex-wrap gap-[12px]">
         <div className="flex items-center gap-[6px]">
-          <span className="text-[14px] text-[#8f94ae]" style={{ fontFamily: "'Dubai', sans-serif" }}>Home</span>
+          <span className="text-[16px] text-[#8f94ae]" style={{ fontFamily: "'Dubai', sans-serif" }}>Home</span>
           <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: "'Dubai', sans-serif" }}>/</span>
-          <span className="text-[14px] text-[#8f94ae]" style={{ fontFamily: "'Dubai', sans-serif" }}>Import By Sea</span>
+          <span className="text-[16px] text-[#8f94ae]" style={{ fontFamily: "'Dubai', sans-serif" }}>Import By Sea</span>
           <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: "'Dubai', sans-serif" }}>/</span>
-          <span className="text-[14px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Integrated Clearance</span>
+          <span className="text-[16px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Integrated Clearance</span>
         </div>
         <div className="bg-[#e2ebf9] rounded-[4px] h-[28px] px-[12px] flex items-center">
-          <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>A180-IMPORTER SONY GULF UAE</span>
+          <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>A180-IMPORTER SONY GULF UAE</span>
         </div>
       </div>
 
-      <h1 className="px-[40px] pt-[8px] text-[32px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
+      <h1 className="px-4 sm:px-10 pt-[8px] text-2xl sm:text-3xl lg:text-[32px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
         {mode === 'amend' ? 'Amend Cargo Transfer Request' : 'New Cargo Transfer Request'}
       </h1>
 
-      <div className="px-[40px] pt-[16px]">
+      <div className="px-4 sm:px-10 pt-[16px]">
         <Stepper activeIndex={stepIdx} steps={STEPS} />
       </div>
 
-      <div className="flex-1 overflow-y-auto px-[40px] py-[24px]">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
         {step.id === 'general' && <GeneralInformation values={values} setValues={setValues} />}
         {step.id === 'shipping' && <ShippingDetails />}
         {step.id === 'container' && (
@@ -751,7 +750,7 @@ export default function CargoTransferRequestPage({ onBack, onSubmit, mode = 'cre
         {step.id === 'payment' && <PaymentDetails agreed={agreed} setAgreed={setAgreed} />}
       </div>
 
-      <div className="bg-white px-[40px] py-[20px] flex items-center justify-between flex-shrink-0" style={{ boxShadow: '0px -1px 20px rgba(0,0,0,0.08)', position: 'sticky', bottom: 0, zIndex: 10 }}>
+      <div className="bg-white px-4 sm:px-10 py-[20px] flex items-center justify-between flex-shrink-0" style={{ boxShadow: '0px -1px 20px rgba(0,0,0,0.08)', position: 'sticky', bottom: 0, zIndex: 10 }}>
         <button
           onClick={() => stepIdx === 0 ? onBack() : setStepIdx((i) => i - 1)}
           className="h-[48px] px-[20px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#f0f4ff]"
@@ -769,7 +768,7 @@ export default function CargoTransferRequestPage({ onBack, onSubmit, mode = 'cre
           </button>
         ) : (
           <button
-            onClick={() => agreed && setShowSubmitModal(true)}
+            onClick={() => agreed && onSubmit()}
             disabled={!agreed}
             className="h-[48px] px-[40px] rounded-[4px] bg-[#1360d2] text-white text-[16px] hover:bg-[#0E4DB8] disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}
@@ -778,12 +777,6 @@ export default function CargoTransferRequestPage({ onBack, onSubmit, mode = 'cre
           </button>
         )}
       </div>
-
-      <SubmitSummaryModal
-        open={showSubmitModal}
-        onClose={() => setShowSubmitModal(false)}
-        onConfirm={() => { setShowSubmitModal(false); onSubmit(); }}
-      />
     </div>
   );
 }

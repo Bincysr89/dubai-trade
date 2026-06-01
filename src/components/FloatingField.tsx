@@ -83,7 +83,7 @@ export default function FloatingField({
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
             placeholder={effectivePlaceholder}
-            className="flex-1 text-[14px] text-[#0e1b3d] focus:outline-none bg-transparent placeholder:text-[#697498]"
+            className="flex-1 text-[16px] text-[#0e1b3d] focus:outline-none bg-transparent placeholder:text-[#697498]"
           />
           {effectiveTrailing}
         </div>
@@ -96,8 +96,8 @@ export default function FloatingField({
             transform: floated ? 'none' : 'translateY(-50%)',
             background: floated ? '#fff' : 'transparent',
             padding: floated ? '0 4px' : 0,
-            fontSize: floated ? 12 : 14,
-            color: floated ? (focused ? '#1360d2' : '#0e1b3d') : '#455174',
+            fontSize: floated ? 12 : 16,
+            color: floated ? (focused ? '#1360d2' : '#000') : '#000',
             transitionDuration: '120ms',
             transitionProperty: 'top, left, font-size, transform, padding, background, color',
             fontFamily: "'Dubai', sans-serif",

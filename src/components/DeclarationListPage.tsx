@@ -8,6 +8,8 @@ import RequestVccPage from './RequestVccPage';
 import VccSearchResultPage from './VccSearchResultPage';
 import VccViewRequestPage from './VccViewRequestPage';
 import VccPaymentSuccessPage from './VccPaymentSuccessPage';
+import VccEPaymentPendingPage from './VccEPaymentPendingPage';
+import VccEPaymentSuccessPage from './VccEPaymentSuccessPage';
 import VccAuditHistoryPage from './VccAuditHistoryPage';
 import CargoTransferTable from './CargoTransferTable';
 import ClaimsTable from './ClaimsTable';
@@ -17,9 +19,15 @@ import StatusFilterHeader from './StatusFilterHeader';
 import EligibleDeclarationsPage from './EligibleDeclarationsPage';
 import RaiseClaimRequestPage from './RaiseClaimRequestPage';
 import type { ClaimType } from './ClaimTypeSelectionPage';
-import { RefundTypePage, OutboundDeclarationPage, MissingDocDepositPage, DocumentUploadPage, PaymentDetailsPage, type RefundType } from './ClaimSubPages';
+import { RefundTypePage, OutboundDeclarationPage, MissingDocDepositPage, DocumentUploadPage, PaymentDetailsPage, REFUND_TYPE_LABEL, type RefundType } from './ClaimSubPages';
+import CargoTransferPrePage from './CargoTransferPrePage';
 import CargoTransferRequestPage from './CargoTransferRequestPage';
+import CargoTransferNewRequestPage from './CargoTransferNewRequestPage';
 import CargoTransferSuccessPage from './CargoTransferSuccessPage';
+import CargoTransferDocumentPage from './CargoTransferDocumentPage';
+import CargoTransferStepperPage from './CargoTransferStepperPage';
+import CargoTransferPaymentReviewPage from './CargoTransferPaymentReviewPage';
+import CargoTransferViewPage from './CargoTransferViewPage';
 import ClaimSubmittedSuccessPage from './ClaimSubmittedSuccessPage';
 // @ts-ignore
 import importBySeaSrc from '../assets/importbysea.svg';
@@ -138,14 +146,17 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
   }, [toolbarStatusOpen]);
-  const [vccStep, setVccStep] = useState<'list' | 'create' | 'searchResult' | 'amend' | 'viewRequest' | 'paymentSuccess' | 'auditHistory' | 'declarationView'>('list');
+  const [vccStep, setVccStep] = useState<'list' | 'create' | 'searchResult' | 'amend' | 'viewRequest' | 'paymentSuccess' | 'ePaymentPending' | 'ePaymentSuccess' | 'auditHistory' | 'declarationView'>('list');
   const [vccListPopupRow, setVccListPopupRow] = useState<VccRow | null>(null);
   const [vccDeclNo, setVccDeclNo] = useState<string>('');
-  const [cargoStep, setCargoStep] = useState<'list' | 'create' | 'amend' | 'success' | 'amendSuccess'>('list');
+  const [cargoStep, setCargoStep] = useState<'list' | 'pre' | 'create' | 'amend' | 'success' | 'amendSuccess' | 'document' | 'stepper' | 'paymentReview' | 'viewRequest'>('list');
+  const [cargoFlowMode, setCargoFlowMode] = useState<'create' | 'amend'>('create');
+  const [cargoPreValues, setCargoPreValues] = useState<{ cargoChannel: string; clientRef: string; carrierReg: string; transferType: string }>({ cargoChannel: 'Sea', clientRef: '', carrierReg: '', transferType: '' });
+  const [cargoFormValues, setCargoFormValues] = useState<{ clientRef: string; carrierReg: string; mawb: string; transferorBizCode: string; transferorPremCode: string; transfereeBizCode: string; transfereePremCode: string }>({ clientRef: '', carrierReg: '', mawb: '', transferorBizCode: '', transferorPremCode: '', transfereeBizCode: '', transfereePremCode: '' });
   type ClaimSubStep = 'list' | 'eligible' | 'refundType' | 'outbound' | 'missingDoc' | 'documents' | 'payment' | 'success';
   const [claimDeclViewOpen, setClaimDeclViewOpen] = useState(false);
   const [claimStep, setClaimStep] = useState<ClaimSubStep>('list');
-  const [claimContext, setClaimContext] = useState<{ claimType: ClaimType; declarationNo: string; depositType: string; refundType?: RefundType } | null>(null);
+  const [claimContext, setClaimContext] = useState<{ claimType: ClaimType; declarationNo: string; depositType: string; declarationCategory: string | null; refundType?: RefundType; allowedRefundTypes?: RefundType[] } | null>(null);
   const [ackStep, setAckStep] = useState<'list' | 'acceptSuccess' | 'declineSuccess'>('list');
   const [ackSelected, setAckSelected] = useState<Set<number>>(new Set());
   const [ackAcceptOpen, setAckAcceptOpen] = useState(false);
@@ -179,7 +190,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
 
   // Reset the search-type dropdown when switching modules so options stay consistent
   useEffect(() => {
-    setSearchType(activeMenu === 'VCC' ? 'Request Number' : 'Declaration');
+    setSearchType(activeMenu === 'VCC' ? 'Request Number' : activeMenu === 'Cargo Transfer' ? 'Cargo Transfer Number' : activeMenu === 'Refund & Claims' ? 'Declaration Number' : 'Declaration');
     setSearchTypeOpen(false);
     setSearchValue('');
     setSearchQuery('');
@@ -230,20 +241,39 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           {claimStep === 'eligible' && (
             <EligibleDeclarationsPage
               onBack={() => setClaimStep('list')}
-              onProceed={(row) => {
-                const claimType: ClaimType =
-                  row.depositType === 'Non Remittance Claim' ? 'nonRemittance'
-                  : (row.depositType === 'Cancelled/Amended Declaration' || row.depositType === 'Duty Exempted') ? 'refundDuty'
-                  : 'refundDeposit';
-                setClaimContext({ claimType, declarationNo: row.declarationNo, depositType: row.depositType });
-                // Branch by deposit type
-                if (row.depositType === 'Missing Document Deposit') {
-                  setClaimStep('missingDoc');
-                } else if (row.depositType === 'Deposit Alternative Duty Rate') {
+              onProceed={(rows, selectedClaimType) => {
+                // Use the first selected row to determine routing
+                const row = rows[0];
+                const cat = row.declarationCategory;
+
+                // Determine which refund types are allowed (null = direct refund, no selection needed)
+                let allowedRefundTypes: RefundType[] | null = null;
+
+                if (selectedClaimType === 'refundDeposit' && row.depositType === 'Alternative Duty Deposit') {
+                  if (cat === 'Import for Re Export') {
+                    allowedRefundTypes = ['full', 'partial', 'no'];
+                  } else if (cat === 'Temporary Admission') {
+                    allowedRefundTypes = ['full', 'fullImport', 'partialImport', 'partial'];
+                  } else if (cat === 'Transit (ROW to ROW)' || cat === 'FZ Export') {
+                    allowedRefundTypes = ['full'];
+                  }
+                } else if (selectedClaimType === 'refundDuty' && row.depositType === 'Duty Deposit') {
+                  allowedRefundTypes = ['full', 'partial'];
+                }
+                // All other combinations → direct refund
+
+                setClaimContext({
+                  claimType: selectedClaimType,
+                  declarationNo: rows.map((r) => r.declarationNo).join(', '),
+                  depositType: row.depositType,
+                  declarationCategory: cat,
+                  allowedRefundTypes: allowedRefundTypes ?? undefined,
+                });
+
+                if (allowedRefundTypes) {
                   setClaimStep('refundType');
                 } else {
-                  // Other deposits → still ask refund type
-                  setClaimStep('refundType');
+                  setClaimStep('missingDoc');
                 }
               }}
             />
@@ -259,7 +289,9 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                 claimType: claimContext.claimType === 'refundDeposit' ? 'Refund of Deposits' : claimContext.claimType === 'refundDuty' ? 'Refund of Duty' : 'Non Remittance',
                 declarationNo: claimContext.declarationNo,
                 depositType: claimContext.depositType,
+                declarationCategory: claimContext.declarationCategory,
               }}
+              allowedTypes={claimContext.allowedRefundTypes}
               onViewDeclaration={() => setClaimDeclViewOpen(true)}
             />
           )}
@@ -284,7 +316,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                 depositType: claimContext.depositType || 'Missing Document Deposit',
                 depositAmount: 'Dh 1,000',
                 depositMethod: 'Cash (ePayment)',
-                refundType: claimContext.refundType === 'partial' ? 'Partial Export' : claimContext.refundType === 'full' ? 'Full Export' : 'No Export',
+                refundType: claimContext.refundType ? REFUND_TYPE_LABEL[claimContext.refundType] : 'N/A',
                 hsCount: 10,
                 outboundDeclarationNo: 'E: 2080004915824',
                 totalRefundAmount: 'Dh 200.0',
@@ -345,25 +377,62 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           <Header onServiceCatalogue={onServiceCatalogue} onHome={onClose} />
         </div>
         <div className="flex-1 overflow-hidden">
-          {cargoStep === 'create' && (
-            <CargoTransferRequestPage
-              mode="create"
+          {cargoStep === 'pre' && (
+            <CargoTransferPrePage
               onBack={() => setCargoStep('list')}
-              onSubmit={() => setCargoStep('success')}
+              onStartJourney={(values) => { setCargoPreValues(values); setCargoStep('create'); }}
+              initialValues={cargoFlowMode === 'amend' ? cargoPreValues : undefined}
             />
           )}
-          {cargoStep === 'amend' && (
-            <CargoTransferRequestPage
-              mode="amend"
+          {cargoStep === 'create' && (
+            <CargoTransferNewRequestPage
+              onBack={() => setCargoStep('pre')}
+              onSave={(values) => { setCargoFormValues(values); setCargoStep('stepper'); }}
+              initialCargoChannel={cargoPreValues.cargoChannel}
+              initialClientRef={cargoPreValues.clientRef}
+              initialCarrierReg={cargoPreValues.carrierReg}
+              initialTransferType={cargoPreValues.transferType}
+            />
+          )}
+          {cargoStep === 'document' && (
+            <CargoTransferDocumentPage
+              onBack={() => setCargoStep('create')}
+              onProceed={() => setCargoStep('stepper')}
+            />
+          )}
+          {cargoStep === 'stepper' && (
+            <CargoTransferStepperPage
+              onBack={() => setCargoStep('create')}
+              onSubmit={() => setCargoStep('paymentReview')}
+              mode={cargoFlowMode}
+              initTransferType={cargoPreValues.transferType}
+              initCargoChannel={cargoPreValues.cargoChannel}
+              initClientRef={cargoFormValues.clientRef}
+              initCarrierReg={cargoFormValues.carrierReg}
+              initMasterDoc={cargoFormValues.mawb}
+              initTransferorBiz={cargoFormValues.transferorBizCode}
+              initTransferorPrem={cargoFormValues.transferorPremCode}
+              initTransfereeBiz={cargoFormValues.transfereeBizCode}
+              initTransfereePrem={cargoFormValues.transfereePremCode}
+            />
+          )}
+          {cargoStep === 'paymentReview' && (
+            <CargoTransferPaymentReviewPage
+              onBack={() => setCargoStep(cargoFlowMode === 'amend' ? 'amend' : 'stepper')}
+              onSubmit={() => setCargoStep(cargoFlowMode === 'amend' ? 'amendSuccess' : 'success')}
+            />
+          )}
+          {cargoStep === 'viewRequest' && (
+            <CargoTransferViewPage
               onBack={() => setCargoStep('list')}
-              onSubmit={() => setCargoStep('amendSuccess')}
+              onSubmit={() => setCargoStep(cargoFlowMode === 'amend' ? 'amendSuccess' : 'success')}
             />
           )}
           {cargoStep === 'success' && (
-            <CargoTransferSuccessPage mode="create" onBack={() => setCargoStep('list')} />
+            <CargoTransferSuccessPage mode="create" onBack={() => setCargoStep('list')} onViewDetails={() => setCargoStep('viewRequest')} />
           )}
           {cargoStep === 'amendSuccess' && (
-            <CargoTransferSuccessPage mode="amend" onBack={() => setCargoStep('list')} />
+            <CargoTransferSuccessPage mode="amend" onBack={() => setCargoStep('list')} onViewDetails={() => setCargoStep('viewRequest')} />
           )}
         </div>
       </div>
@@ -386,7 +455,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           {vccStep === 'searchResult' && (
             <VccSearchResultPage
               onBack={() => setVccStep('create')}
-              onSubmit={() => setVccStep('paymentSuccess')}
+              onSubmit={(mode) => setVccStep(mode === 'epayment' ? 'ePaymentPending' : 'paymentSuccess')}
             />
           )}
           {vccStep === 'amend' && (
@@ -394,7 +463,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               mode="amend"
               initialSelected={['v0', 'v2', 'v4']}
               onBack={() => setVccStep('list')}
-              onSubmit={() => setVccStep('paymentSuccess')}
+              onSubmit={(mode) => setVccStep(mode === 'epayment' ? 'ePaymentPending' : 'paymentSuccess')}
             />
           )}
           {vccStep === 'viewRequest' && (
@@ -402,6 +471,15 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           )}
           {vccStep === 'paymentSuccess' && (
             <VccPaymentSuccessPage onBackToListing={() => setVccStep('list')} />
+          )}
+          {vccStep === 'ePaymentPending' && (
+            <VccEPaymentPendingPage
+              onBackToListing={() => setVccStep('list')}
+              onMakePayment={() => setVccStep('ePaymentSuccess')}
+            />
+          )}
+          {vccStep === 'ePaymentSuccess' && (
+            <VccEPaymentSuccessPage onBackToListing={() => setVccStep('list')} />
           )}
           {vccStep === 'auditHistory' && (
             <VccAuditHistoryPage onBack={() => setVccStep('list')} />
@@ -443,18 +521,18 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
         <div className="flex items-center justify-between px-4 md:px-10 pt-[14px] pb-[10px] flex-wrap gap-y-[6px]">
           <div className="flex items-center gap-[6px]">
             <span
-              className="text-[#8f94ae] text-[14px] cursor-pointer hover:text-[#1360d2] transition-colors"
+              className="text-[#8f94ae] text-[16px] cursor-pointer hover:text-[#1360d2] transition-colors"
               style={{ fontFamily: "'Dubai', sans-serif" }}
               onClick={onClose}
             >Home</span>
             <span className="text-[#dc3545] text-[15px] leading-none">/</span>
-            <span className="text-[#8f94ae] text-[13px]" style={{ fontFamily: "'Dubai', sans-serif" }}>Service Catalog</span>
+            <span className="text-[#8f94ae] text-[16px]" style={{ fontFamily: "'Dubai', sans-serif" }}>Service Catalog</span>
             <span className="text-[#dc3545] text-[15px] leading-none">/</span>
-            <span className="text-[#111838] text-[14px] font-medium" style={{ fontFamily: "'Dubai', sans-serif" }}>Integrated Clearance</span>
+            <span className="text-[#111838] text-[16px] font-medium" style={{ fontFamily: "'Dubai', sans-serif" }}>Integrated Clearance</span>
           </div>
           {/* Agent banner */}
           <div
-            className="px-[16px] py-[4px] rounded-[4px] text-[14px] text-[#0e1b3d]"
+            className="px-[16px] py-[4px] rounded-[4px] text-[16px] text-[#0e1b3d]"
             style={{ background: '#e2ebf9', fontFamily: "'Dubai', sans-serif" }}
           >
             AE-1019056 — Dubai Customs - Test LLC
@@ -470,7 +548,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             {/* Import by Sea label */}
             <div className="flex items-center gap-[10px] flex-shrink-0">
               <img src={importBySeaSrc} alt="Import by Sea" className="h-[30px] w-auto flex-shrink-0" />
-              <span className="text-[14px] font-medium text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>
+              <span className="text-[16px] font-medium text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>
                 Import by Sea
               </span>
             </div>
@@ -569,10 +647,10 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           {/* Items */}
           {([
             { src: declarationSrc,    label: 'Declaration'     as const },
-            { src: acknowledgementSrc,label: 'Acknowledgement' as const },
-            { src: vccSrc,            label: 'VCC'             as const },
-            { src: refundsSrc,        label: 'Refund & Claims' as const },
             { src: cargoTransferSrc,  label: 'Cargo Transfer'  as const },
+            { src: acknowledgementSrc,label: 'Acknowledgement' as const },
+            { src: refundsSrc,        label: 'Refund & Claims' as const },
+            { src: vccSrc,            label: 'VCC'             as const },
           ]).map((action, i) => {
             const isActive = activeMenu === action.label;
             return (
@@ -598,7 +676,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               </div>
               {!panelCollapsed && (
                 <span
-                  className="text-[14px] text-[#0e1b3d] leading-tight whitespace-nowrap overflow-hidden"
+                  className="text-[16px] text-[#0e1b3d] leading-tight whitespace-nowrap overflow-hidden"
                   style={{ fontFamily: "'Dubai', sans-serif", fontWeight: isActive ? 700 : 400 }}
                 >
                   {action.label}
@@ -617,14 +695,14 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           {/* Left: advance filters button */}
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-[8px] h-[48px] px-[16px] py-[12px] rounded-[4px] border text-[14px] transition-colors flex-shrink-0 ${
+            className={`flex items-center gap-[8px] h-[48px] px-[12px] sm:px-[16px] py-[12px] rounded-[4px] border text-[16px] transition-colors flex-shrink-0 ${
               showFilters
                 ? 'bg-[#e2ebf9] border-[#1360d2] text-[#1360d2]'
                 : 'bg-white border-[#d4dcfa] text-[#696f83]'
             }`}
             style={{ fontFamily: "'Dubai', sans-serif" }}
           >
-            Advance Filters
+            <span className="hidden sm:inline">Advance Filters</span>
             <svg viewBox="0 0 24 24" className="size-[20px]" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M3 6h18M7 12h10M11 18h2" strokeLinecap="round" />
             </svg>
@@ -638,7 +716,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               onClick={() => setSearchTypeOpen(o => !o)}
               className="flex items-center gap-[6px] border-r border-[#d5ddfb] px-[12px] h-full cursor-pointer flex-shrink-0 hover:bg-[#f7faff] transition-colors"
             >
-              <span className="text-[14px] text-[#1360d2] font-medium whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>
+              <span className="text-[16px] text-[#1360d2] font-medium whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>
                 {searchType}
               </span>
               <svg viewBox="0 0 24 24" className={`size-[18px] text-[#1360d2] transition-transform ${searchTypeOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -651,12 +729,14 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   ? ['Request Number', 'VCC Number', 'Chasis Number', 'Declaration Number']
                   : activeMenu === 'Refund & Claims'
                   ? ['Declaration Number', 'Claim Number']
+                  : activeMenu === 'Cargo Transfer'
+                  ? ['Cargo Transfer Number', 'Client Reference Number', 'Container Number', 'MAWB/MBOL', 'Request Number']
                   : ['Declaration', 'Request No.', 'Client Ref.', 'MAWB/MBOL']
                 ).map(opt => (
                   <button
                     key={opt}
                     onClick={() => { setSearchType(opt); setSearchTypeOpen(false); setSearchValue(''); setSearchQuery(''); }}
-                    className="block w-full text-left px-[14px] py-[8px] text-[14px] hover:bg-[#e2ebf9] transition-colors"
+                    className="block w-full text-left px-[14px] py-[8px] text-[16px] hover:bg-[#e2ebf9] transition-colors"
                     style={{ color: opt === searchType ? '#1360d2' : '#0e1b3d', fontFamily: "'Dubai', sans-serif", fontWeight: opt === searchType ? 500 : 400 }}
                   >{opt}</button>
                 ))}
@@ -674,7 +754,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                     ? `Enter ${searchType.toLowerCase()} and press Enter`
                     : `${searchType.toLowerCase()}`
                 }
-                className="flex-1 text-[14px] text-[#0e1b3d] focus:outline-none bg-transparent placeholder:text-[#697498]"
+                className="flex-1 text-[16px] text-[#0e1b3d] focus:outline-none bg-transparent placeholder:text-[#697498]"
                 style={{ fontFamily: "'Dubai', sans-serif" }}
               />
               {searchValue !== '' && (
@@ -712,7 +792,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               aria-haspopup="listbox"
               aria-expanded={toolbarStatusOpen}
             >
-              <span className="text-[14px] text-[#1360d2] font-medium whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>
+              <span className="text-[16px] text-[#1360d2] font-medium whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>
                 {toolbarStatus ?? 'Status'}
               </span>
               <svg viewBox="0 0 24 24" className={`size-[22px] text-[#1360d2] transition-transform ${toolbarStatusOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -727,7 +807,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               >
                 <button
                   onClick={() => { setToolbarStatus(null); setToolbarStatusOpen(false); }}
-                  className="block w-full text-left px-[14px] py-[8px] text-[14px] hover:bg-[#e2ebf9] transition-colors"
+                  className="block w-full text-left px-[14px] py-[8px] text-[16px] hover:bg-[#e2ebf9] transition-colors"
                   style={{ color: toolbarStatus === null ? '#1360d2' : '#0e1b3d', fontFamily: "'Dubai', sans-serif", fontWeight: toolbarStatus === null ? 500 : 400 }}
                 >
                   All statuses
@@ -736,7 +816,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   <button
                     key={opt}
                     onClick={() => { setToolbarStatus(opt); setToolbarStatusOpen(false); }}
-                    className="block w-full text-left px-[14px] py-[8px] text-[14px] hover:bg-[#e2ebf9] transition-colors"
+                    className="block w-full text-left px-[14px] py-[8px] text-[16px] hover:bg-[#e2ebf9] transition-colors"
                     style={{ color: opt === toolbarStatus ? '#1360d2' : '#0e1b3d', fontFamily: "'Dubai', sans-serif", fontWeight: opt === toolbarStatus ? 500 : 400 }}
                   >
                     {opt}
@@ -750,7 +830,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           <div className="flex items-center gap-[12px] ml-auto flex-wrap">
             {/* Need Help */}
             <button className="flex items-center gap-[4px] h-[48px] px-[2px] flex-shrink-0">
-              <span className="text-[14px] text-[#2950e5] font-medium" style={{ fontFamily: "'Dubai', sans-serif" }}>Need Help</span>
+              <span className="text-[16px] text-[#2950e5] font-medium" style={{ fontFamily: "'Dubai', sans-serif" }}>Need Help</span>
               <svg viewBox="0 0 24 24" className="size-[20px] text-[#2950e5]" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="9" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><circle cx="12" cy="17" r=".5" fill="currentColor" />
               </svg>
@@ -758,7 +838,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
 
             {/* Reports dropdown */}
             <div className="flex items-center gap-[8px] bg-white border border-[#d5ddfb] rounded-[4px] h-[48px] px-[16px] flex-shrink-0 cursor-pointer">
-              <span className="text-[14px] text-[#1360d2] font-medium" style={{ fontFamily: "'Dubai', sans-serif" }}>Reports</span>
+              <span className="text-[16px] text-[#1360d2] font-medium" style={{ fontFamily: "'Dubai', sans-serif" }}>Reports</span>
               <svg viewBox="0 0 24 24" className="size-[22px] text-[#1360d2]" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M6 9l6 6 6-6" />
               </svg>
@@ -773,11 +853,11 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   disabled={ackDisabled}
                   onClick={() => {
                     if (activeMenu === 'VCC') setVccStep('create');
-                    if (activeMenu === 'Cargo Transfer') setCargoStep('create');
+                    if (activeMenu === 'Cargo Transfer') setCargoStep('pre');
                     if (activeMenu === 'Refund & Claims') setClaimStep('eligible');
                     if (activeMenu === 'Acknowledgement' && ackSelected.size > 0) setAckAcceptOpen(true);
                   }}
-                  className="h-[48px] px-[22px] rounded-[4px] text-[14px] text-white flex-shrink-0 transition-colors"
+                  className="h-[48px] px-[22px] rounded-[4px] text-[16px] text-white flex-shrink-0 transition-colors"
                   style={{
                     background: ackDisabled ? '#a7c3eb' : '#1360d2',
                     cursor: ackDisabled ? 'not-allowed' : 'pointer',
@@ -838,7 +918,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onBlur={() => blurField('ackDeclType')}
                     >
                       <span style={floatLabel(isFloated('ackDeclType'))}>Declaration Type</span>
-                      <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ackDeclType'] || 'Declaration Type'}</span>
+                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ackDeclType'] || 'Declaration Type'}</span>
                       <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
                     </div>
                   </div>
@@ -852,7 +932,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onBlur={() => blurField('ackStatus')}
                     >
                       <span style={floatLabel(isFloated('ackStatus'))}>Acknowledgement Status</span>
-                      <span className="text-[14px] text-[#697498]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ackStatus'] || 'Select'}</span>
+                      <span className="text-[16px] text-[#697498]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ackStatus'] || 'Select'}</span>
                       <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
                     </div>
                   </div>
@@ -866,7 +946,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onBlur={() => blurField('ackPartyType')}
                     >
                       <span style={floatLabel(isFloated('ackPartyType'))}><span style={{ color: '#e8212e' }}>*</span>Party Type</span>
-                      <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ackPartyType'] || 'Both'}</span>
+                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ackPartyType'] || 'Both'}</span>
                       <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
                     </div>
                   </div>
@@ -879,7 +959,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onChange={e => setFilterValues(v => ({ ...v, ackBusinessCode: e.target.value }))}
                       onFocus={() => focusField('ackBusinessCode')}
                       onBlur={() => blurField('ackBusinessCode')}
-                      className={`h-[56px] w-full border rounded-[4px] pl-[12px] pr-[40px] text-[14px] text-[#697498] focus:outline-none transition-colors ${filterFocused['ackBusinessCode'] ? 'border-[#1360d2] bg-white' : 'border-[#d5ddfb] bg-[#f5f6f8]'}`}
+                      className={`h-[56px] w-full border rounded-[4px] pl-[12px] pr-[40px] text-[16px] text-[#697498] focus:outline-none transition-colors ${filterFocused['ackBusinessCode'] ? 'border-[#1360d2] bg-white' : 'border-[#d5ddfb] bg-[#f5f6f8]'}`}
                       style={{ fontFamily: "'Dubai', sans-serif" }}
                     />
                     <span style={floatLabel(true)}><span style={{ color: '#e8212e' }}>*</span>Business Code</span>
@@ -895,7 +975,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onBlur={() => blurField('ackDateType')}
                     >
                       <span style={floatLabel(isFloated('ackDateType'))}><span style={{ color: '#e8212e' }}>*</span>Date Type</span>
-                      <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ackDateType'] || 'Clearance Date'}</span>
+                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ackDateType'] || 'Clearance Date'}</span>
                       <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
                     </div>
                   </div>
@@ -909,7 +989,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onBlur={() => blurField('ackFromDate')}
                     >
                       <span style={floatLabel(isFloated('ackFromDate'))}><span style={{ color: '#e8212e' }}>*</span>From Date</span>
-                      <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ackFromDate'] || '23-Aug-25'}</span>
+                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ackFromDate'] || '23-Aug-25'}</span>
                       <img src="https://www.figma.com/api/mcp/asset/08e2d6c0-9c2f-47ea-bd6b-8226369056e8" alt="" className="absolute right-[12px] size-[20px]" />
                     </div>
                   </div>
@@ -923,7 +1003,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onBlur={() => blurField('ackToDate')}
                     >
                       <span style={floatLabel(isFloated('ackToDate'))}><span style={{ color: '#e8212e' }}>*</span>To Date</span>
-                      <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ackToDate'] || '23-Sep-25'}</span>
+                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ackToDate'] || '23-Sep-25'}</span>
                       <img src="https://www.figma.com/api/mcp/asset/08e2d6c0-9c2f-47ea-bd6b-8226369056e8" alt="" className="absolute right-[12px] size-[20px]" />
                     </div>
                   </div>
@@ -939,7 +1019,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onBlur={() => blurField('vccDateFrom')}
                     >
                       <span style={floatLabel(isFloated('vccDateFrom'))}><span style={{ color: '#e8212e' }}>*</span>Request Date From</span>
-                      <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['vccDateFrom'] || ''}</span>
+                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['vccDateFrom'] || ''}</span>
                       <img src="https://www.figma.com/api/mcp/asset/08e2d6c0-9c2f-47ea-bd6b-8226369056e8" alt="" className="absolute right-[12px] size-[20px]" />
                     </div>
                   </div>
@@ -953,7 +1033,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onBlur={() => blurField('vccDateTo')}
                     >
                       <span style={floatLabel(isFloated('vccDateTo'))}><span style={{ color: '#e8212e' }}>*</span>Request Date To</span>
-                      <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['vccDateTo'] || ''}</span>
+                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['vccDateTo'] || ''}</span>
                       <img src="https://www.figma.com/api/mcp/asset/08e2d6c0-9c2f-47ea-bd6b-8226369056e8" alt="" className="absolute right-[12px] size-[20px]" />
                     </div>
                   </div>
@@ -967,7 +1047,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onBlur={() => blurField('vccStatus')}
                     >
                       <span style={floatLabel(isFloated('vccStatus'))}>Status</span>
-                      <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['vccStatus'] || ''}</span>
+                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['vccStatus'] || ''}</span>
                       <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
                     </div>
                   </div>
@@ -982,7 +1062,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                         onBlur={() => blurField('vccCustomerType')}
                       >
                         <span style={floatLabel(isFloated('vccCustomerType'))}>Customer Type</span>
-                        <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['vccCustomerType'] || ''}</span>
+                        <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['vccCustomerType'] || ''}</span>
                         <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
                       </div>
                     </div>
@@ -997,7 +1077,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                         onChange={e => setFilterValues(v => ({ ...v, vccCustomerCode: e.target.value }))}
                         onFocus={() => focusField('vccCustomerCode')}
                         onBlur={() => blurField('vccCustomerCode')}
-                        className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[14px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['vccCustomerCode'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
+                        className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['vccCustomerCode'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
                         style={{ fontFamily: "'Dubai', sans-serif" }}
                       />
                       <span style={floatLabel(isFloated('vccCustomerCode'))}>Customer Code</span>
@@ -1012,7 +1092,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onChange={e => setFilterValues(v => ({ ...v, vccVehicleBrand: e.target.value }))}
                       onFocus={() => focusField('vccVehicleBrand')}
                       onBlur={() => blurField('vccVehicleBrand')}
-                      className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[14px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['vccVehicleBrand'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
+                      className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['vccVehicleBrand'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
                       style={{ fontFamily: "'Dubai', sans-serif" }}
                     />
                     <span style={floatLabel(isFloated('vccVehicleBrand'))}>Vehicle Brand</span>
@@ -1026,7 +1106,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onChange={e => setFilterValues(v => ({ ...v, vccVehicleModel: e.target.value }))}
                       onFocus={() => focusField('vccVehicleModel')}
                       onBlur={() => blurField('vccVehicleModel')}
-                      className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[14px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['vccVehicleModel'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
+                      className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['vccVehicleModel'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
                       style={{ fontFamily: "'Dubai', sans-serif" }}
                     />
                     <span style={floatLabel(isFloated('vccVehicleModel'))}>Vehicle Model</span>
@@ -1040,7 +1120,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onChange={e => setFilterValues(v => ({ ...v, vccVehicleType: e.target.value }))}
                       onFocus={() => focusField('vccVehicleType')}
                       onBlur={() => blurField('vccVehicleType')}
-                      className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[14px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['vccVehicleType'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
+                      className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['vccVehicleType'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
                       style={{ fontFamily: "'Dubai', sans-serif" }}
                     />
                     <span style={floatLabel(isFloated('vccVehicleType'))}>Vehicle Type</span>
@@ -1054,7 +1134,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onChange={e => setFilterValues(v => ({ ...v, vccSpecStandard: e.target.value }))}
                       onFocus={() => focusField('vccSpecStandard')}
                       onBlur={() => blurField('vccSpecStandard')}
-                      className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[14px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['vccSpecStandard'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
+                      className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['vccSpecStandard'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
                       style={{ fontFamily: "'Dubai', sans-serif" }}
                     />
                     <span style={floatLabel(isFloated('vccSpecStandard'))}>Specification Standard Name</span>
@@ -1068,7 +1148,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onChange={e => setFilterValues(v => ({ ...v, vccYearBuild: e.target.value }))}
                       onFocus={() => focusField('vccYearBuild')}
                       onBlur={() => blurField('vccYearBuild')}
-                      className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[14px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['vccYearBuild'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
+                      className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['vccYearBuild'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
                       style={{ fontFamily: "'Dubai', sans-serif" }}
                     />
                     <span style={floatLabel(isFloated('vccYearBuild'))}>Vehicle Year Build</span>
@@ -1085,7 +1165,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onBlur={() => blurField('rcClaimType')}
                     >
                       <span style={floatLabel(isFloated('rcClaimType'))}>Claim Type</span>
-                      <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcClaimType'] || ''}</span>
+                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcClaimType'] || ''}</span>
                       <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
                     </div>
                   </div>
@@ -1099,7 +1179,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onBlur={() => blurField('rcClaimStatus')}
                     >
                       <span style={floatLabel(isFloated('rcClaimStatus'))}>Claim Status</span>
-                      <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcClaimStatus'] || ''}</span>
+                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcClaimStatus'] || ''}</span>
                       <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
                     </div>
                   </div>
@@ -1112,7 +1192,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onChange={e => setFilterValues(v => ({ ...v, rcDeclNumber: e.target.value }))}
                       onFocus={() => focusField('rcDeclNumber')}
                       onBlur={() => blurField('rcDeclNumber')}
-                      className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[14px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['rcDeclNumber'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
+                      className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['rcDeclNumber'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
                       style={{ fontFamily: "'Dubai', sans-serif" }}
                     />
                     <span style={floatLabel(isFloated('rcDeclNumber'))}>Declaration Number</span>
@@ -1127,7 +1207,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onBlur={() => blurField('rcTimeInterval')}
                     >
                       <span style={floatLabel(isFloated('rcTimeInterval'))}>Time Interval</span>
-                      <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcTimeInterval'] || ''}</span>
+                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcTimeInterval'] || ''}</span>
                       <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
                     </div>
                   </div>
@@ -1141,7 +1221,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onBlur={() => blurField('rcFromDate')}
                     >
                       <span style={floatLabel(isFloated('rcFromDate'))}>From Date</span>
-                      <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcFromDate'] || ''}</span>
+                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcFromDate'] || ''}</span>
                       <img src="https://www.figma.com/api/mcp/asset/08e2d6c0-9c2f-47ea-bd6b-8226369056e8" alt="" className="absolute right-[12px] size-[20px]" />
                     </div>
                   </div>
@@ -1155,7 +1235,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onBlur={() => blurField('rcToDate')}
                     >
                       <span style={floatLabel(isFloated('rcToDate'))}>To Date</span>
-                      <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcToDate'] || ''}</span>
+                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcToDate'] || ''}</span>
                       <img src="https://www.figma.com/api/mcp/asset/08e2d6c0-9c2f-47ea-bd6b-8226369056e8" alt="" className="absolute right-[12px] size-[20px]" />
                     </div>
                   </div>
@@ -1169,7 +1249,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onBlur={() => blurField('rcClaimantType')}
                     >
                       <span style={floatLabel(isFloated('rcClaimantType'))}>Claimant Type</span>
-                      <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcClaimantType'] || ''}</span>
+                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcClaimantType'] || ''}</span>
                       <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
                     </div>
                   </div>
@@ -1182,7 +1262,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onChange={e => setFilterValues(v => ({ ...v, rcCode: e.target.value }))}
                       onFocus={() => focusField('rcCode')}
                       onBlur={() => blurField('rcCode')}
-                      className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[14px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['rcCode'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
+                      className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['rcCode'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
                       style={{ fontFamily: "'Dubai', sans-serif" }}
                     />
                     <span style={floatLabel(isFloated('rcCode'))}>Code</span>
@@ -1196,7 +1276,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onChange={e => setFilterValues(v => ({ ...v, rcName: e.target.value }))}
                       onFocus={() => focusField('rcName')}
                       onBlur={() => blurField('rcName')}
-                      className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[14px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['rcName'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
+                      className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['rcName'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
                       style={{ fontFamily: "'Dubai', sans-serif" }}
                     />
                     <span style={floatLabel(isFloated('rcName'))}>Name</span>
@@ -1211,7 +1291,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onBlur={() => blurField('rcSubclaimStatus')}
                     >
                       <span style={floatLabel(isFloated('rcSubclaimStatus'))}>Subclaim Status</span>
-                      <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcSubclaimStatus'] || ''}</span>
+                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcSubclaimStatus'] || ''}</span>
                       <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
                     </div>
                   </div>
@@ -1225,11 +1305,145 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onBlur={() => blurField('rcSubmissionMode')}
                     >
                       <span style={floatLabel(isFloated('rcSubmissionMode'))}>Submission Mode</span>
-                      <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcSubmissionMode'] || ''}</span>
+                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcSubmissionMode'] || ''}</span>
                       <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
                     </div>
                   </div>
                 </>
+              ) : activeMenu === 'Cargo Transfer' ? (
+              <>
+
+              {/* Cargo Channel — dropdown */}
+              <div className="relative">
+                <div
+                  tabIndex={0}
+                  className={`h-[56px] border rounded-[4px] flex items-center px-[12px] cursor-pointer transition-colors bg-white focus:outline-none ${filterFocused['ctCargoChannel'] ? 'border-[#1360d2]' : 'border-[#d5ddfb] hover:border-[#1360d2]'}`}
+                  onClick={() => focusField('ctCargoChannel')}
+                  onBlur={() => blurField('ctCargoChannel')}
+                >
+                  <span style={floatLabel(isFloated('ctCargoChannel'))}>Cargo Channel</span>
+                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ctCargoChannel'] || ''}</span>
+                  <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                </div>
+              </div>
+
+              {/* Cargo Transfer Type — dropdown */}
+              <div className="relative">
+                <div
+                  tabIndex={0}
+                  className={`h-[56px] border rounded-[4px] flex items-center px-[12px] cursor-pointer transition-colors bg-white focus:outline-none ${filterFocused['ctTransferType'] ? 'border-[#1360d2]' : 'border-[#d5ddfb] hover:border-[#1360d2]'}`}
+                  onClick={() => focusField('ctTransferType')}
+                  onBlur={() => blurField('ctTransferType')}
+                >
+                  <span style={floatLabel(isFloated('ctTransferType'))}>Cargo Transfer Type</span>
+                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ctTransferType'] || ''}</span>
+                  <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                </div>
+              </div>
+
+              {/* Cargo Transfer Status — dropdown */}
+              <div className="relative">
+                <div
+                  tabIndex={0}
+                  className={`h-[56px] border rounded-[4px] flex items-center px-[12px] cursor-pointer transition-colors bg-white focus:outline-none ${filterFocused['ctStatus'] ? 'border-[#1360d2]' : 'border-[#d5ddfb] hover:border-[#1360d2]'}`}
+                  onClick={() => focusField('ctStatus')}
+                  onBlur={() => blurField('ctStatus')}
+                >
+                  <span style={floatLabel(isFloated('ctStatus'))}>Cargo Transfer Status</span>
+                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ctStatus'] || ''}</span>
+                  <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                </div>
+              </div>
+
+              {/* Transferee (Owner) — text input */}
+              <div className="relative">
+                <input
+                  type="text"
+                  value={filterValues['ctTransferee'] || ''}
+                  onChange={e => setFilterValues(v => ({ ...v, ctTransferee: e.target.value }))}
+                  onFocus={() => focusField('ctTransferee')}
+                  onBlur={() => blurField('ctTransferee')}
+                  className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['ctTransferee'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
+                  style={{ fontFamily: "'Dubai', sans-serif" }}
+                />
+                <span style={floatLabel(isFloated('ctTransferee'))}>Transferee (Owner)</span>
+              </div>
+
+              {/* Transferer — text input */}
+              <div className="relative">
+                <input
+                  type="text"
+                  value={filterValues['ctTransferer'] || ''}
+                  onChange={e => setFilterValues(v => ({ ...v, ctTransferer: e.target.value }))}
+                  onFocus={() => focusField('ctTransferer')}
+                  onBlur={() => blurField('ctTransferer')}
+                  className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['ctTransferer'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
+                  style={{ fontFamily: "'Dubai', sans-serif" }}
+                />
+                <span style={floatLabel(isFloated('ctTransferer'))}>Transferer</span>
+              </div>
+
+              {/* *From Date — calendar */}
+              <div className="relative">
+                <div
+                  tabIndex={0}
+                  className={`h-[56px] border rounded-[4px] flex items-center px-[12px] cursor-pointer transition-colors bg-white focus:outline-none ${filterFocused['ctFromDate'] ? 'border-[#1360d2]' : 'border-[#d5ddfb] hover:border-[#1360d2]'}`}
+                  onClick={() => focusField('ctFromDate')}
+                  onBlur={() => blurField('ctFromDate')}
+                >
+                  <span style={floatLabel(isFloated('ctFromDate'))}><span style={{ color: '#e8212e' }}>*</span>From Date (15 days)</span>
+                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ctFromDate'] || ''}</span>
+                  <img src="https://www.figma.com/api/mcp/asset/08e2d6c0-9c2f-47ea-bd6b-8226369056e8" alt="" className="absolute right-[12px] size-[20px]" />
+                </div>
+              </div>
+
+              {/* *To Date — calendar */}
+              <div className="relative">
+                <div
+                  tabIndex={0}
+                  className={`h-[56px] border rounded-[4px] flex items-center px-[12px] cursor-pointer transition-colors bg-white focus:outline-none ${filterFocused['ctToDate'] ? 'border-[#1360d2]' : 'border-[#d5ddfb] hover:border-[#1360d2]'}`}
+                  onClick={() => focusField('ctToDate')}
+                  onBlur={() => blurField('ctToDate')}
+                >
+                  <span style={floatLabel(isFloated('ctToDate'))}><span style={{ color: '#e8212e' }}>*</span>To Date</span>
+                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ctToDate'] || ''}</span>
+                  <img src="https://www.figma.com/api/mcp/asset/08e2d6c0-9c2f-47ea-bd6b-8226369056e8" alt="" className="absolute right-[12px] size-[20px]" />
+                </div>
+              </div>
+
+              {/* Carrier Registration No. — text input */}
+              <div className="relative">
+                <input
+                  type="text"
+                  value={filterValues['ctCarrierReg'] || ''}
+                  onChange={e => setFilterValues(v => ({ ...v, ctCarrierReg: e.target.value }))}
+                  onFocus={() => focusField('ctCarrierReg')}
+                  onBlur={() => blurField('ctCarrierReg')}
+                  className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['ctCarrierReg'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
+                  style={{ fontFamily: "'Dubai', sans-serif" }}
+                />
+                <span style={floatLabel(isFloated('ctCarrierReg'))}>Carrier Registration No.</span>
+              </div>
+
+              {/* Importer Code / Broker Code — disabled */}
+              <div className="relative">
+                <div
+                  className="h-[56px] border border-[#d5ddfb] rounded-[4px] flex items-center px-[12px] cursor-not-allowed"
+                  style={{ background: '#e8e8e8' }}
+                >
+                  <span
+                    style={{
+                      position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
+                      fontSize: 14, color: '#aaa', background: 'transparent', pointerEvents: 'none',
+                      fontFamily: "'Dubai', sans-serif", whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Importer Code / Broker Code
+                  </span>
+                </div>
+              </div>
+
+              </>
               ) : (
               <>
 
@@ -1242,7 +1456,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   onBlur={() => blurField('cargoChannel')}
                 >
                   <span style={floatLabel(isFloated('cargoChannel'))}>Cargo Channel</span>
-                  <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['cargoChannel'] || ''}</span>
+                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['cargoChannel'] || ''}</span>
                   <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
                 </div>
               </div>
@@ -1256,7 +1470,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   onBlur={() => blurField('regimeType')}
                 >
                   <span style={floatLabel(isFloated('regimeType'))}>Regime Type</span>
-                  <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['regimeType'] || ''}</span>
+                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['regimeType'] || ''}</span>
                   <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
                 </div>
               </div>
@@ -1270,7 +1484,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   onBlur={() => blurField('declType')}
                 >
                   <span style={floatLabel(isFloated('declType'))}>Declaration Type</span>
-                  <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['declType'] || ''}</span>
+                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['declType'] || ''}</span>
                   <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
                 </div>
               </div>
@@ -1284,7 +1498,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   onBlur={() => blurField('permit')}
                 >
                   <span style={floatLabel(isFloated('permit'))}>Permit</span>
-                  <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['permit'] || ''}</span>
+                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['permit'] || ''}</span>
                   <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
                 </div>
               </div>
@@ -1298,7 +1512,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   onBlur={() => blurField('declStatus')}
                 >
                   <span style={floatLabel(isFloated('declStatus'))}>Declaration Status</span>
-                  <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['declStatus'] || ''}</span>
+                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['declStatus'] || ''}</span>
                   <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
                 </div>
               </div>
@@ -1312,7 +1526,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   onBlur={() => blurField('fromDate')}
                 >
                   <span style={floatLabel(isFloated('fromDate'))}><span style={{ color: '#e8212e' }}>*</span>From Date (15 days)</span>
-                  <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['fromDate'] || ''}</span>
+                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['fromDate'] || ''}</span>
                   <img src="https://www.figma.com/api/mcp/asset/08e2d6c0-9c2f-47ea-bd6b-8226369056e8" alt="" className="absolute right-[12px] size-[20px]" />
                 </div>
               </div>
@@ -1326,7 +1540,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   onBlur={() => blurField('toDate')}
                 >
                   <span style={floatLabel(isFloated('toDate'))}><span style={{ color: '#e8212e' }}>*</span>To Date</span>
-                  <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['toDate'] || ''}</span>
+                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['toDate'] || ''}</span>
                   <img src="https://www.figma.com/api/mcp/asset/08e2d6c0-9c2f-47ea-bd6b-8226369056e8" alt="" className="absolute right-[12px] size-[20px]" />
                 </div>
               </div>
@@ -1339,7 +1553,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   onChange={e => setFilterValues(v => ({ ...v, carrierReg: e.target.value }))}
                   onFocus={() => focusField('carrierReg')}
                   onBlur={() => blurField('carrierReg')}
-                  className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[14px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['carrierReg'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
+                  className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['carrierReg'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
                   style={{ fontFamily: "'Dubai', sans-serif" }}
                 />
                 <span style={floatLabel(isFloated('carrierReg'))}>Carrier Registration No.</span>
@@ -1353,7 +1567,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   onChange={e => setFilterValues(v => ({ ...v, customerType: e.target.value }))}
                   onFocus={() => focusField('customerType')}
                   onBlur={() => blurField('customerType')}
-                  className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[14px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['customerType'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
+                  className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['customerType'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
                   style={{ fontFamily: "'Dubai', sans-serif" }}
                 />
                 <span style={floatLabel(isFloated('customerType'))}>Customer Type</span>
@@ -1368,7 +1582,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   onBlur={() => blurField('customerCode')}
                 >
                   <span style={floatLabel(isFloated('customerCode'))}>Customer Code</span>
-                  <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['customerCode'] || ''}</span>
+                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['customerCode'] || ''}</span>
                   <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
                 </div>
               </div>
@@ -1398,13 +1612,13 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             {/* Footer: Reset + Apply */}
             <div className="flex justify-end gap-[12px] mt-[24px]">
               <button
-                className="h-[48px] rounded-[4px] text-[14px] font-medium transition-colors hover:bg-[#f0f4ff]"
+                className="h-[48px] rounded-[4px] text-[16px] font-medium transition-colors hover:bg-[#f0f4ff]"
                 style={{ width: 146, border: '1.5px solid #2950e5', color: '#2950e5', fontFamily: "'Dubai', sans-serif" }}
               >
                 Reset
               </button>
               <button
-                className="h-[48px] rounded-[4px] text-[14px] font-medium text-white transition-colors hover:opacity-90"
+                className="h-[48px] rounded-[4px] text-[16px] font-medium text-white transition-colors hover:opacity-90"
                 style={{ width: 146, background: '#1360d2', fontFamily: "'Dubai', sans-serif" }}
               >
                 Apply
@@ -1415,12 +1629,12 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
 
         {/* Tabs row + date filter + show drafts */}
         <div className="flex items-center mb-[12px] gap-[12px] flex-wrap">
-          {/* Tabs (hidden in VCC view) */}
-          {activeMenu !== 'VCC' && activeMenu !== 'Cargo Transfer' && activeMenu !== 'Refund & Claims' && activeMenu !== 'Acknowledgement' && (
+          {/* Tabs — Declaration only */}
+          {activeMenu === 'Declaration' && (
           <div className="bg-white flex items-center gap-[12px] h-[48px] px-[16px] py-[8px] rounded-[6px] flex-shrink-0" style={{ boxShadow: '0px 4px 10px rgba(0,0,0,0.08)' }}>
             <button
               onClick={() => setActiveTab('all')}
-              className={`h-[40px] px-[16px] rounded-[4px] text-[14px] font-medium transition-colors ${
+              className={`h-[40px] px-[16px] rounded-[4px] text-[16px] font-medium transition-colors ${
                 activeTab === 'all'
                   ? 'bg-[#1360d2] text-white'
                   : 'bg-[#f7faff] text-[#697498] border border-[#e5efff]'
@@ -1431,7 +1645,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             </button>
             <button
               onClick={() => setActiveTab('epay')}
-              className={`h-[40px] px-[16px] rounded-[4px] text-[14px] font-medium transition-colors ${
+              className={`h-[40px] px-[16px] rounded-[4px] text-[16px] font-medium transition-colors ${
                 activeTab === 'epay'
                   ? 'bg-[#1360d2] text-white'
                   : 'bg-[#f7faff] text-[#697498] border border-[#e5efff]'
@@ -1443,17 +1657,17 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           </div>
           )}
 
-          {/* Date range pill — centered */}
+          {/* Date range pill */}
           <div className="flex-1 flex justify-center">
             <div
               className="bg-white border border-[#d5ddfb] rounded-[8px] h-[49px] px-[16px] py-[8px] flex items-center gap-[12px] flex-shrink-0"
               style={{ boxShadow: '0px 4px 10px rgba(0,0,0,0.08)' }}
             >
-              <span className="text-[14px] text-[#4c4c4c] whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>
+              <span className="text-[16px] text-[#4c4c4c] whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>
                 Status As On 28-Dec-22 To 10-Jan-23
               </span>
               <div className="flex items-center gap-[6px]">
-                <span className="text-[14px] text-[#1360d2] font-medium" style={{ fontFamily: "'Dubai', sans-serif" }}>Modify</span>
+                <span className="text-[16px] text-[#1360d2] font-medium" style={{ fontFamily: "'Dubai', sans-serif" }}>Modify</span>
                 <svg viewBox="0 0 18 18" className="size-[18px]" fill="none" stroke="#1360d2" strokeWidth="1.8">
                   <path d="M12 3l3 3-9 9H3v-3L12 3z" />
                 </svg>
@@ -1461,20 +1675,18 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             </div>
           </div>
 
-          {/* Show Drafts toggle (hidden in VCC view) */}
-          {activeMenu !== 'VCC' && activeMenu !== 'Cargo Transfer' && activeMenu !== 'Refund & Claims' && activeMenu !== 'Acknowledgement' && (
+          {/* Drafts toggle — always on right */}
           <div className="flex items-center gap-[8px] flex-shrink-0">
+            <span className="text-[16px] text-[#0e1b3d] font-medium whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>
+              Drafts
+            </span>
             <button
               onClick={() => setShowDrafts(!showDrafts)}
               className={`relative w-[48px] h-[28px] rounded-full transition-colors ${showDrafts ? 'bg-[#1360d2]' : 'bg-[#e2ebf9]'}`}
             >
               <div className={`absolute top-[3px] size-[22px] rounded-full bg-white shadow transition-transform ${showDrafts ? 'translate-x-[22px]' : 'translate-x-[3px]'}`} />
             </button>
-            <span className="text-[14px] text-[#0e1b3d] font-medium whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>
-              Show Drafts
-            </span>
           </div>
-          )}
         </div>
 
         {/* Table swap based on active sidebar menu */}
@@ -1497,7 +1709,14 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           )
         ) : activeMenu === 'Cargo Transfer' ? (
           <CargoTransferTable
-            onAmend={() => setCargoStep('amend')}
+            showDrafts={showDrafts}
+            onViewRequest={() => setCargoStep('viewRequest')}
+            onAmend={() => {
+              setCargoPreValues({ transferType: 'From CTO to CH - Same Location', cargoChannel: 'Sea', clientRef: 'CT-2024-00112', carrierReg: 'AE-9876543' });
+              setCargoFormValues({ clientRef: 'CT-2024-00112', carrierReg: 'AE-9876543', mawb: 'AWB-987654321', transferorBizCode: 'AE-1019056', transferorPremCode: 'PRE-001', transfereeBizCode: 'AE-1019057', transfereePremCode: 'PRE-002' });
+              setCargoFlowMode('amend');
+              setCargoStep('pre');
+            }}
           />
         ) : activeMenu === 'Refund & Claims' ? (
           <ClaimsTable />
@@ -1544,7 +1763,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       style={{ width: col.w, minWidth: col.w, background: '#e2ebf9', padding: '10px 8px', textAlign: 'left', fontWeight: 500 }}
                     >
                       <div className="flex items-center gap-[4px]">
-                        <span className="text-[14px] text-[#455174] whitespace-nowrap">{col.label}</span>
+                        <span className="text-[16px] text-[#455174] whitespace-nowrap">{col.label}</span>
                         <svg viewBox="0 0 10 14" width="9" height="12" fill="none" stroke="#8f94ae" strokeWidth="1.3" strokeLinecap="round">
                           <path d="M5 1v12M2 4l3-3 3 3M2 10l3 3 3-3" />
                         </svg>
@@ -1570,7 +1789,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                     position: 'sticky', right: 0, width: 76, minWidth: 76,
                     background: '#e2ebf9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, zIndex: 2,
                   }}>
-                    <span className="text-[14px] text-[#455174]">Actions</span>
+                    <span className="text-[16px] text-[#455174]">Actions</span>
                   </th>
                 </tr>
               </thead>
@@ -1585,7 +1804,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                     </td>
                   );
                   const txt = (v: string) => (
-                    <span className="text-[14px] text-[#0e1b3d] whitespace-nowrap">{v}</span>
+                    <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{v}</span>
                   );
                   return (
                     <tr key={i}>
@@ -1600,7 +1819,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                               <img src={aeoLogoSrc} alt="AEO" style={{ height: 8 }} />
                             )}
                           </div>
-                          <span className="text-[14px] text-[#0e1b3d] whitespace-nowrap">{decl.no}</span>
+                          <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{decl.no}</span>
                         </div>
                       </td>
                       {cell(txt(decl.type),       210)}
@@ -1617,8 +1836,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       {/* Permit */}
                       <td style={{ background: '#fff', padding: '0 8px', height: 46, verticalAlign: 'middle', width: 72 }}>
                         {decl.permit
-                          ? <span className="text-[14px] text-[#1360d2] cursor-pointer hover:underline">Yes</span>
-                          : <span className="text-[14px] text-[#0e1b3d]">No</span>
+                          ? <span className="text-[16px] text-[#1360d2] cursor-pointer hover:underline">Yes</span>
+                          : <span className="text-[16px] text-[#0e1b3d]">No</span>
                         }
                       </td>
                       {cell(txt(decl.broker),      110)}
@@ -1634,7 +1853,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       }}>
                         <div className="flex items-center gap-[6px]">
                           <span
-                            className="text-[13px] font-medium px-[10px] py-[4px] rounded-[4px] whitespace-nowrap"
+                            className="text-[16px] font-medium px-[10px] py-[4px] rounded-[4px] whitespace-nowrap"
                             style={{ background: st.bg, color: st.color, border: `1px solid ${st.border}` }}
                           >
                             {decl.status}
@@ -1687,7 +1906,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                                   >
                                     <img src={item.icon} alt="" className="size-[20px] object-contain flex-shrink-0 group-hover:brightness-0 group-hover:invert" />
                                     <span
-                                      className="text-[14px] text-[#111838] leading-[20px] group-hover:text-white"
+                                      className="text-[16px] text-[#111838] leading-[20px] group-hover:text-white"
                                       style={{ fontFamily: "'Dubai', sans-serif" }}
                                     >
                                       {item.label}

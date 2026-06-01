@@ -54,10 +54,10 @@ export default function Pagination({
     <div className="flex items-center justify-end gap-[20px] flex-wrap" style={{ fontFamily: "'Dubai', sans-serif" }}>
       {/* Result + page-size pill */}
       <div className="inline-flex items-center gap-[16px]">
-        <span className="text-[14px] text-[#111838]" style={{ fontWeight: 500 }}>Result</span>
+        <span className="text-[16px] text-[#111838]" style={{ fontWeight: 500 }}>Result</span>
         <div ref={wrapRef} className="relative">
           <div className="flex items-stretch h-[48px] bg-white border border-[#d5ddfb] rounded-[10px] overflow-hidden">
-            <span className="flex items-center px-[14px] text-[14px] text-[#8f94ae]" style={{ fontWeight: 500 }}>
+            <span className="flex items-center px-[14px] text-[16px] text-[#8f94ae]" style={{ fontWeight: 500 }}>
               {start} <span className="mx-[4px]">-</span> {end}
             </span>
             <button
@@ -87,7 +87,7 @@ export default function Pagination({
                     role="option"
                     aria-selected={active}
                     onClick={() => { onPageSizeChange(n); setOpen(false); }}
-                    className="px-[14px] py-[8px] text-[14px] cursor-pointer hover:bg-[#e2ebf9] hover:text-[#1360d2] transition-colors"
+                    className="px-[14px] py-[8px] text-[16px] cursor-pointer hover:bg-[#e2ebf9] hover:text-[#1360d2] transition-colors"
                     style={{
                       color: active ? '#1360d2' : '#111838',
                       background: active ? '#e2ebf9' : 'transparent',

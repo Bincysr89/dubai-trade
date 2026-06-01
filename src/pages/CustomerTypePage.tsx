@@ -40,7 +40,7 @@ export default function CustomerTypePage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center px-[60px] py-12 bg-[#f8fafd]">
+    <div className="min-h-screen w-full flex items-center justify-center px-4 sm:px-10 lg:px-[60px] py-12 bg-[#f8fafd]">
       <div className="bg-white w-full max-w-[1280px] rounded-lg overflow-hidden shadow-2xl">
         <div className="bg-[#0e1b3d] px-6 py-5">
           <h2 className="text-[#f8fafd] font-medium text-[20px]">Customer Type</h2>
@@ -49,7 +49,7 @@ export default function CustomerTypePage() {
           <h3 className="text-[#0e1b3d] text-[24px] font-semibold text-center mb-12">
             Hi User, Select Your Customer Type to Access the Services
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-[1080px] mx-auto place-items-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 max-w-[1080px] mx-auto place-items-center">
             <CustomerCard
               label="Trader"
               selected={selected === 'trader'}

@@ -25,8 +25,8 @@ export default function ClaimantBrokerDetail({
 }: Props) {
   const Field = ({ k, v }: { k: string; v: string }) => (
     <div className="flex flex-col gap-[4px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
-      <span className="text-[13px] text-[#696f83]">{k}</span>
-      <span className="text-[14px] text-[#051937]" style={{ fontWeight: 500 }}>{v}</span>
+      <span className="text-[16px] text-[#696f83]">{k}</span>
+      <span className="text-[16px] text-[#051937]" style={{ fontWeight: 500 }}>{v}</span>
     </div>
   );
 

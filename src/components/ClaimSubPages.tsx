@@ -7,7 +7,7 @@ import DTSelect from './DTSelect';
 import Dh, { DhAmount } from './Dh';
 
 /* ───────── Shared types ───────── */
-export type RefundType = 'full' | 'partial' | 'no';
+export type RefundType = 'full' | 'partial' | 'no' | 'fullImport' | 'partialImport';
 export type DepositMethod = 'standing' | 'cash' | 'epayment';
 
 const DEPOSIT_METHOD_LABEL: Record<DepositMethod, string> = {
@@ -16,11 +16,21 @@ const DEPOSIT_METHOD_LABEL: Record<DepositMethod, string> = {
   epayment: 'e-Payment',
 };
 
-const REFUND_OPTIONS: { id: RefundType; title: string; sub: string }[] = [
-  { id: 'full',    title: 'Full Export',    sub: 'All goods have been re-exported.' },
-  { id: 'partial', title: 'Partial Export', sub: 'Some goods have been re-exported.' },
-  { id: 'no',      title: 'No Export',      sub: 'Goods have not been exported.' },
+const ALL_REFUND_OPTIONS: { id: RefundType; title: string; sub: string }[] = [
+  { id: 'full',         title: 'Full Export',    sub: 'All goods have been re-exported.' },
+  { id: 'partial',      title: 'Partial Export', sub: 'Some goods have been re-exported.' },
+  { id: 'no',           title: 'No Export',      sub: 'Goods have not been exported.' },
+  { id: 'fullImport',   title: 'Full Import',    sub: 'All goods have been fully imported.' },
+  { id: 'partialImport',title: 'Partial Import', sub: 'Some goods have been imported.' },
 ];
+
+export const REFUND_TYPE_LABEL: Record<RefundType, string> = {
+  full:         'Full Export',
+  partial:      'Partial Export',
+  no:           'No Export',
+  fullImport:   'Full Import',
+  partialImport:'Partial Import',
+};
 
 /* ───────── Common DT page shell ───────── */
 const PageShell: React.FC<{
@@ -35,28 +45,28 @@ const PageShell: React.FC<{
 }> = ({ title, children, onBack, onBackToListing, rightContent, activeIndex = 0 }) => (
   <div className="flex flex-col bg-[#f8fafd] h-full" style={{ fontFamily: "'Dubai', sans-serif" }}>
     {/* Sticky breadcrumb / agent banner — content below scrolls under it. */}
-    <div className="flex items-start justify-between px-[40px] pt-[24px] pb-[12px] flex-wrap gap-[12px] flex-shrink-0 bg-[#f8fafd]">
+    <div className="flex items-start justify-between px-4 sm:px-10 pt-[24px] pb-[12px] flex-wrap gap-[12px] flex-shrink-0 bg-[#f8fafd]">
       <div className="flex items-center gap-[6px]">
-        <span className="text-[14px] text-[#8f94ae]">Home</span>
+        <span className="text-[16px] text-[#8f94ae]">Home</span>
         <span className="text-[16px] text-[#dc3545]">/</span>
-        <span className="text-[14px] text-[#8f94ae]">Import By Sea</span>
+        <span className="text-[16px] text-[#8f94ae]">Import By Sea</span>
         <span className="text-[16px] text-[#dc3545]">/</span>
-        <span className="text-[14px] text-[#111838]" style={{ fontWeight: 500 }}>Integrated Clearance</span>
+        <span className="text-[16px] text-[#111838]" style={{ fontWeight: 500 }}>Integrated Clearance</span>
       </div>
       <div className="bg-[#e2ebf9] rounded-[4px] h-[28px] px-[12px] flex items-center">
-        <span className="text-[14px] text-[#0e1b3d]">A180-IMPORTER SONY GULF UAE</span>
+        <span className="text-[16px] text-[#0e1b3d]">A180-IMPORTER SONY GULF UAE</span>
       </div>
     </div>
 
     {/* Title + stepper + body all scroll together below the breadcrumb. */}
     <div className="flex-1 overflow-y-auto">
-      <h1 className="px-[40px] pt-[8px] text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>{title}</h1>
+      <h1 className="px-4 sm:px-10 pt-[8px] text-2xl sm:text-3xl lg:text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>{title}</h1>
 
-      <div className="px-[40px] pt-[16px]">
+      <div className="px-4 sm:px-10 pt-[16px]">
         <ClaimStepper activeIndex={activeIndex} />
       </div>
 
-      <div className="px-[40px] py-[24px] flex flex-col gap-[20px]">
+      <div className="px-4 sm:px-10 py-[24px] flex flex-col gap-[20px]">
         {children}
         <ClaimantBrokerDetail />
       </div>
@@ -84,7 +94,7 @@ const PrimaryBtn = (
   <button
     disabled={disabled}
     onClick={onClick}
-    className="h-[48px] px-[28px] rounded-[4px] text-[14px] text-white transition-colors"
+    className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors"
     style={{
       background: disabled ? '#a7c3eb' : '#1360d2',
       cursor: disabled ? 'not-allowed' : 'pointer',
@@ -117,13 +127,14 @@ const SAMPLE_OUTBOUND: OutboundRow[] = [
 
 /* ───────── Refund Type page (with inline Partial Invoice picker) ───────── */
 export function RefundTypePage({
-  onBack, onBackToListing, onContinue, declaration, onViewDeclaration,
+  onBack, onBackToListing, onContinue, declaration, onViewDeclaration, allowedTypes,
 }: {
   onBack: () => void;
   onBackToListing?: () => void;
   onContinue: (type: RefundType, partial?: PartialExportSelection) => void;
-  declaration?: { claimType: string; declarationNo: string; depositType: string };
+  declaration?: { claimType: string; declarationNo: string; depositType: string; declarationCategory?: string | null };
   onViewDeclaration?: () => void;
+  allowedTypes?: RefundType[];
 }) {
   const [selected, setSelected] = useState<RefundType | null>(null);
   type CustomsAuthority = 'dubai' | 'other' | 'gcc';
@@ -164,8 +175,13 @@ export function RefundTypePage({
     setExpanded(e);
   };
 
+  const refundOptions = allowedTypes
+    ? allowedTypes.map((id) => ALL_REFUND_OPTIONS.find((o) => o.id === id)!).filter(Boolean)
+    : ALL_REFUND_OPTIONS.filter((o) => o.id === 'full' || o.id === 'partial' || o.id === 'no');
+
   const partialValid = selectedHs.size > 0;
-  const outboundValid = selected === 'no' || outboundRows.length > 0;
+  const needsOutbound = selected === 'full' || selected === 'partial';
+  const outboundValid = !needsOutbound || outboundRows.length > 0;
   const valid = selected !== null && outboundValid && (selected !== 'partial' || partialValid);
 
   // Auto-populate eligible HS codes (intersection of inbound invoices + outbound)
@@ -233,17 +249,18 @@ export function RefundTypePage({
               style={{ gap: 20, gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))' }}
             >
               {[
-                { k: 'Declaration Number', v: declaration.declarationNo, accent: true },
-                { k: 'Declaration Date',   v: '12-May-24' },
-                { k: 'Deposit Type',       v: declaration.depositType },
-                { k: 'Deposit Amount',     v: <DhAmount value="1,000" /> },
-                { k: 'Deposit Method',     v: 'Cash (ePayment)' },
-                { k: 'Claim Expiry',       v: '04-Mar-25' },
-                { k: 'Export Expiry',      v: '15-Apr-25' },
+                { k: 'Declaration Number',   v: declaration.declarationNo, accent: true },
+                { k: 'Declaration Date',     v: '12-May-24' },
+                { k: 'Deposit Type',         v: declaration.depositType },
+                ...(declaration.declarationCategory ? [{ k: 'Declaration Category', v: declaration.declarationCategory }] : []),
+                { k: 'Deposit Amount',       v: <DhAmount value="1,000" /> },
+                { k: 'Deposit Method',       v: 'Cash (ePayment)' },
+                { k: 'Claim Expiry',         v: '04-Mar-25' },
+                { k: 'Export Expiry',        v: '15-Apr-25' },
               ].map((f) => (
                 <div key={f.k} className="flex flex-col gap-[4px] min-w-0">
                   <span className="text-[12px] text-[#697498]">{f.k}</span>
-                  <span className="text-[14px] truncate" style={{ color: f.accent ? '#1360d2' : '#0e1b3d', fontWeight: 500 }}>{f.v}</span>
+                  <span className="text-[16px] truncate" style={{ color: f.accent ? '#1360d2' : '#0e1b3d', fontWeight: 500 }}>{f.v}</span>
                 </div>
               ))}
             </div>
@@ -251,7 +268,7 @@ export function RefundTypePage({
               <div className="mt-[20px]">
                 <button
                   onClick={onViewDeclaration}
-                  className="h-[40px] px-[18px] rounded-[4px] border border-[#1360d2] bg-white text-[14px] text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors inline-flex items-center gap-[8px]"
+                  className="h-[40px] px-[18px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors inline-flex items-center gap-[8px]"
                   style={{ fontWeight: 500 }}
                 >
                   <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -268,9 +285,9 @@ export function RefundTypePage({
 
       <SectionHeader>Refund Type</SectionHeader>
       <Card>
-        <p className="text-[14px] text-[#455174] mb-[16px]">Please choose the refund type to begin your claim.</p>
+        <p className="text-[16px] text-[#455174] mb-[16px]">Please choose the refund type to begin your claim.</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-[16px]">
-          {REFUND_OPTIONS.map((opt) => {
+          {refundOptions.map((opt) => {
             const active = selected === opt.id;
             return (
               <button
@@ -284,7 +301,7 @@ export function RefundTypePage({
                 </span>
                 <span className="flex flex-col gap-[6px]">
                   <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{opt.title}</span>
-                  <span className="text-[13px] text-[#696f83]" style={{ lineHeight: 1.4 }}>{opt.sub}</span>
+                  <span className="text-[16px] text-[#696f83]" style={{ lineHeight: 1.4 }}>{opt.sub}</span>
                 </span>
               </button>
             );
@@ -350,14 +367,14 @@ export function RefundTypePage({
                   {showSuggestions && (
                     <div className="absolute left-0 right-0 mt-[4px] bg-white border border-[#d5ddfb] rounded-[4px] z-10 max-h-[260px] overflow-auto" style={{ boxShadow: '0px 8px 24px rgba(0,0,0,0.08)' }}>
                       {suggestions.length === 0 ? (
-                        <div className="px-[16px] py-[12px] text-[13px] text-[#697498]">No matches.</div>
+                        <div className="px-[16px] py-[12px] text-[16px] text-[#697498]">No matches.</div>
                       ) : suggestions.map((r) => (
                         <button
                           key={r.id}
                           onClick={() => { setOutboundRows([...outboundRows, { ...r, customsAuthority: 'Dubai Customs' }]); setOutboundSearch(''); }}
                           className="block w-full text-left px-[16px] py-[10px] hover:bg-[#f4f7fc]"
                         >
-                          <span className="text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{r.declarationNo}</span>
+                          <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{r.declarationNo}</span>
                           <span className="text-[12px] text-[#697498] ml-[8px]">{r.exportType} · {r.exitPoint} → {r.reExportTo} · {r.departureDate}</span>
                         </button>
                       ))}
@@ -395,7 +412,7 @@ export function RefundTypePage({
                 <button
                   onClick={addManualRow}
                   disabled={!manualValid}
-                  className="h-[40px] px-[20px] rounded-[4px] text-[14px] text-white inline-flex items-center gap-[8px]"
+                  className="h-[40px] px-[20px] rounded-[4px] text-[16px] text-white inline-flex items-center gap-[8px]"
                   style={{ background: manualValid ? '#1360d2' : '#a7c3eb', cursor: manualValid ? 'pointer' : 'not-allowed', fontWeight: 500 }}
                 >
                   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M12 5v14M5 12h14" strokeLinecap="round" /></svg>
@@ -405,10 +422,10 @@ export function RefundTypePage({
             )}
 
             {customsAuthority === 'dubai' && (
-              <p className="text-[13px] text-[#697498] mb-[20px]">Search the outbound declaration number — system will fetch and add the details automatically.</p>
+              <p className="text-[16px] text-[#697498] mb-[20px]">Search the outbound declaration number — system will fetch and add the details automatically.</p>
             )}
             {(customsAuthority === 'other' || customsAuthority === 'gcc') && (
-              <p className="text-[13px] text-[#697498] mb-[20px] hidden">Manual entry copy.</p>
+              <p className="text-[16px] text-[#697498] mb-[20px] hidden">Manual entry copy.</p>
             )}
 
             {outboundRows.length > 0 && (
@@ -416,28 +433,28 @@ export function RefundTypePage({
                 <table className="dt-table" style={{ minWidth: 1100 }}>
                   <thead>
                     <tr>
-                      <th className="text-[13px]">Outbound Declaration No.</th>
-                      <th className="text-[13px]">Export Declaration Type</th>
-                      <th className="text-[13px]">Exit Point</th>
-                      <th className="text-[13px]">Re-Export To</th>
-                      <th className="text-[13px]">Actual Departure Date</th>
-                      <th className="text-[13px]">Weight</th>
-                      <th className="text-[13px]">Statistical Quantity</th>
-                      <th className="text-[13px]">Customs Authority</th>
+                      <th className="text-[16px]">Outbound Declaration No.</th>
+                      <th className="text-[16px]">Export Declaration Type</th>
+                      <th className="text-[16px]">Exit Point</th>
+                      <th className="text-[16px]">Re-Export To</th>
+                      <th className="text-[16px]">Actual Departure Date</th>
+                      <th className="text-[16px]">Weight</th>
+                      <th className="text-[16px]">Statistical Quantity</th>
+                      <th className="text-[16px]">Customs Authority</th>
                       <th style={{ width: 60 }} />
                     </tr>
                   </thead>
                   <tbody>
                     {outboundRows.map((r, idx) => (
                       <tr key={r.id}>
-                        <td className="text-[13px] text-[#0e1b3d]" style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>{r.declarationNo}</td>
-                        <td className="text-[13px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{r.exportType}</td>
-                        <td className="text-[13px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{r.exitPoint}</td>
-                        <td className="text-[13px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{r.reExportTo}</td>
-                        <td className="text-[13px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{r.departureDate}</td>
-                        <td className="text-[13px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{r.weight}</td>
-                        <td className="text-[13px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{r.statQty}</td>
-                        <td className="text-[13px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{r.customsAuthority}</td>
+                        <td className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>{r.declarationNo}</td>
+                        <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{r.exportType}</td>
+                        <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{r.exitPoint}</td>
+                        <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{r.reExportTo}</td>
+                        <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{r.departureDate}</td>
+                        <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{r.weight}</td>
+                        <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{r.statQty}</td>
+                        <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{r.customsAuthority}</td>
                         <td>
                           <button
                             onClick={() => setOutboundRows(outboundRows.filter((_, i) => i !== idx))}
@@ -466,7 +483,7 @@ export function RefundTypePage({
             <div className="flex items-start justify-between gap-[16px] mb-[16px] flex-wrap">
               <div className="flex items-start gap-[10px] rounded-[6px] px-[14px] py-[10px] flex-1 min-w-[280px]" style={{ background: '#e2ebf9', border: '1px solid #d5ddfb' }}>
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#1360d2" strokeWidth="2" className="flex-shrink-0 mt-[1px]"><circle cx="12" cy="12" r="9" /><path d="M12 8h.01M11 12h1v4h1" strokeLinecap="round" /></svg>
-                <p className="text-[13px] text-[#0e1b3d]" style={{ lineHeight: '18px' }}>
+                <p className="text-[16px] text-[#0e1b3d]" style={{ lineHeight: '18px' }}>
                   Eligible HS codes are auto-populated by matching the inbound declaration with the outbound declaration. Select the HS codes you want to include in this claim — you can edit any line-item details.
                   {hsEntries.length > 0 && (
                     <> &nbsp;<span style={{ fontWeight: 500 }}>{selectedHs.size}</span> of <span style={{ fontWeight: 500 }}>{hsEntries.length}</span> selected.</>
@@ -478,8 +495,8 @@ export function RefundTypePage({
             {hsEntries.length === 0 ? (
               <div className="border border-dashed border-[#d5ddfb] rounded-[8px] py-[40px] flex flex-col items-center gap-[8px]">
                 <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#a7c3eb" strokeWidth="1.5"><path d="M3 6h18M6 6v12a2 2 0 002 2h8a2 2 0 002-2V6M9 11l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                <p className="text-[14px] text-[#697498]">No eligible HS codes yet</p>
-                <p className="text-[13px] text-[#a7abb2]">Add an outbound declaration above to auto-populate the eligible HS codes.</p>
+                <p className="text-[16px] text-[#697498]">No eligible HS codes yet</p>
+                <p className="text-[16px] text-[#a7abb2]">Add an outbound declaration above to auto-populate the eligible HS codes.</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -504,16 +521,16 @@ export function RefundTypePage({
                           )}
                         </button>
                       </th>
-                      <th className="text-left text-[14px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Invoice</th>
-                      <th className="text-left text-[14px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>HS Code</th>
-                      <th className="text-left text-[14px] text-[#455174]" style={{ padding: '12px', fontWeight: 500 }}>Goods Description</th>
-                      <th className="text-left text-[14px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Weight (Kg)</th>
-                      <th className="text-left text-[14px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Stat./Exported Qty</th>
-                      <th className="text-left text-[14px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Supp. Qty</th>
-                      <th className="text-left text-[14px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Import Unit Price (Dh)</th>
-                      <th className="text-left text-[14px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Allocation Method</th>
-                      <th className="text-left text-[14px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Export Value (Dh)</th>
-                      <th className="text-left text-[14px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Claim Amount (Dh)</th>
+                      <th className="text-left text-[16px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Invoice</th>
+                      <th className="text-left text-[16px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>HS Code</th>
+                      <th className="text-left text-[16px] text-[#455174]" style={{ padding: '12px', fontWeight: 500 }}>Goods Description</th>
+                      <th className="text-left text-[16px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Weight (Kg)</th>
+                      <th className="text-left text-[16px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Stat./Exported Qty</th>
+                      <th className="text-left text-[16px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Supp. Qty</th>
+                      <th className="text-left text-[16px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Import Unit Price (Dh)</th>
+                      <th className="text-left text-[16px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Allocation Method</th>
+                      <th className="text-left text-[16px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Export Value (Dh)</th>
+                      <th className="text-left text-[16px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Claim Amount (Dh)</th>
                       <th style={{ padding: '12px', width: 60 }} />
                     </tr>
                   </thead>
@@ -538,13 +555,13 @@ export function RefundTypePage({
                               {isSelected && <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7l3 3 5-6" /></svg>}
                             </button>
                           </td>
-                          <td className="text-[14px] text-[#1360d2]" style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>{inv?.invoiceNo}</td>
-                          <td className="text-[14px] text-[#051937]" style={{ whiteSpace: 'nowrap', fontWeight: 500 }}>{e.code}</td>
-                          <td className="text-[14px] text-[#051937]">{e.description}</td>
-                          <td className="text-[14px] text-[#051937]" style={{ whiteSpace: 'nowrap' }}>{e.weight}</td>
-                          <td className="text-[14px] text-[#051937]" style={{ whiteSpace: 'nowrap' }}>{e.statQty}</td>
-                          <td className="text-[14px] text-[#051937]" style={{ whiteSpace: 'nowrap' }}>{e.suppQty}</td>
-                          <td className="text-[14px] text-[#051937]" style={{ whiteSpace: 'nowrap' }}>{e.importPrice}</td>
+                          <td className="text-[16px] text-[#1360d2]" style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>{inv?.invoiceNo}</td>
+                          <td className="text-[16px] text-[#051937]" style={{ whiteSpace: 'nowrap', fontWeight: 500 }}>{e.code}</td>
+                          <td className="text-[16px] text-[#051937]">{e.description}</td>
+                          <td className="text-[16px] text-[#051937]" style={{ whiteSpace: 'nowrap' }}>{e.weight}</td>
+                          <td className="text-[16px] text-[#051937]" style={{ whiteSpace: 'nowrap' }}>{e.statQty}</td>
+                          <td className="text-[16px] text-[#051937]" style={{ whiteSpace: 'nowrap' }}>{e.suppQty}</td>
+                          <td className="text-[16px] text-[#051937]" style={{ whiteSpace: 'nowrap' }}>{e.importPrice}</td>
                           <td style={{ whiteSpace: 'nowrap' }}>
                             <span
                               className="inline-flex items-center px-[10px] py-[3px] rounded-[12px] text-[12px]"
@@ -558,8 +575,8 @@ export function RefundTypePage({
                               {e.allocation}
                             </span>
                           </td>
-                          <td className="text-[14px] text-[#051937]" style={{ whiteSpace: 'nowrap', fontWeight: 500 }}><DhAmount value={e.exportValue} /></td>
-                          <td className="text-[14px] text-[#1360d2]" style={{ whiteSpace: 'nowrap', fontWeight: 600 }}><DhAmount value={e.claimAmount} /></td>
+                          <td className="text-[16px] text-[#051937]" style={{ whiteSpace: 'nowrap', fontWeight: 500 }}><DhAmount value={e.exportValue} /></td>
+                          <td className="text-[16px] text-[#1360d2]" style={{ whiteSpace: 'nowrap', fontWeight: 600 }}><DhAmount value={e.claimAmount} /></td>
                           <td>
                             <button
                               onClick={() => { setEditingIndex(idx); setDraftEntry(e); setHsSearch(''); setHsModalOpen(true); }}
@@ -593,7 +610,7 @@ export function RefundTypePage({
                 value={draftEntry[key]}
                 onChange={(e) => setDraftEntry({ ...draftEntry, [key]: e.target.value })}
                 placeholder={placeholder}
-                className="flex-1 text-[14px] text-[#0e1b3d] focus:outline-none bg-transparent placeholder:text-[#697498]"
+                className="flex-1 text-[16px] text-[#0e1b3d] focus:outline-none bg-transparent placeholder:text-[#697498]"
               />
             </div>
             <label className="absolute pointer-events-none" style={{ left: 10, top: -9, background: '#fff', padding: '0 4px', fontSize: 12, color: '#0e1b3d' }}>
@@ -608,7 +625,7 @@ export function RefundTypePage({
               <div className="flex items-center justify-between px-[24px] py-[18px] border-b border-[#eef1f6]">
                 <div>
                   <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{editingIndex !== null ? 'Edit HS Code Details' : 'Add HS Code Details'}</p>
-                  <p className="text-[13px] text-[#697498]">Pick an invoice, search the HS code, and enter the line-item details.</p>
+                  <p className="text-[16px] text-[#697498]">Pick an invoice, search the HS code, and enter the line-item details.</p>
                 </div>
                 <button onClick={() => setHsModalOpen(false)} aria-label="Close" className="size-[32px] rounded-[4px] inline-flex items-center justify-center hover:bg-[#f4f7fc] text-[#697498]">
                   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 6l12 12M18 6l-12 12" strokeLinecap="round" /></svg>
@@ -632,7 +649,7 @@ export function RefundTypePage({
                       value={draftEntry.code || hsSearch}
                       onChange={(e) => { setHsSearch(e.target.value); setDraftEntry({ ...draftEntry, code: '', description: '' }); }}
                       placeholder="Enter HS code or goods description"
-                      className="flex-1 text-[14px] text-[#0e1b3d] focus:outline-none bg-transparent placeholder:text-[#697498]"
+                      className="flex-1 text-[16px] text-[#0e1b3d] focus:outline-none bg-transparent placeholder:text-[#697498]"
                     />
                     <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><circle cx="9" cy="9" r="6" /><path d="M14 14l4 4" strokeLinecap="round" /></svg>
                   </div>
@@ -643,15 +660,15 @@ export function RefundTypePage({
                   {!draftEntry.code && hsSearch.trim() !== '' && (
                     <div className="absolute left-0 right-0 mt-[4px] bg-white border border-[#d5ddfb] rounded-[4px] z-10 max-h-[220px] overflow-auto" style={{ boxShadow: '0px 8px 24px rgba(0,0,0,0.08)' }}>
                       {matches.length === 0 ? (
-                        <div className="px-[16px] py-[12px] text-[13px] text-[#697498]">No matches.</div>
+                        <div className="px-[16px] py-[12px] text-[16px] text-[#697498]">No matches.</div>
                       ) : matches.map((hs) => (
                         <button
                           key={hs.code}
                           onClick={() => { setDraftEntry({ ...draftEntry, code: hs.code, description: hs.description }); setHsSearch(''); }}
                           className="block w-full text-left px-[16px] py-[10px] hover:bg-[#f4f7fc]"
                         >
-                          <span className="text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{hs.code}</span>
-                          <span className="text-[13px] text-[#697498] ml-[8px]">{hs.description}</span>
+                          <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{hs.code}</span>
+                          <span className="text-[16px] text-[#697498] ml-[8px]">{hs.description}</span>
                         </button>
                       ))}
                     </div>
@@ -662,7 +679,7 @@ export function RefundTypePage({
                 {draftEntry.description && (
                   <div className="bg-[#e2ebf9] rounded-[4px] px-[12px] py-[8px]">
                     <p className="text-[12px] text-[#697498] mb-[2px]">Goods Description</p>
-                    <p className="text-[14px] text-[#0e1b3d]" style={{ lineHeight: '20px' }}>{draftEntry.description}</p>
+                    <p className="text-[16px] text-[#0e1b3d]" style={{ lineHeight: '20px' }}>{draftEntry.description}</p>
                   </div>
                 )}
 
@@ -687,14 +704,14 @@ export function RefundTypePage({
 
                 <div className="flex items-start gap-[10px] rounded-[6px] px-[14px] py-[12px]" style={{ background: '#e2ebf9', border: '1px solid #d5ddfb' }}>
                   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#1360d2" strokeWidth="2" className="flex-shrink-0 mt-[1px]"><circle cx="12" cy="12" r="9" /><path d="M12 8h.01M11 12h1v4h1" strokeLinecap="round" /></svg>
-                  <p className="text-[13px] text-[#0e1b3d]" style={{ lineHeight: '18px' }}>Export Value and Claim Amount will be auto-calculated from unit price × exported qty × duty rate.</p>
+                  <p className="text-[16px] text-[#0e1b3d]" style={{ lineHeight: '18px' }}>Export Value and Claim Amount will be auto-calculated from unit price × exported qty × duty rate.</p>
                 </div>
               </div>
 
               <div className="flex items-center justify-end gap-[12px] px-[24px] py-[16px] border-t border-[#eef1f6]">
                 <button
                   onClick={() => setHsModalOpen(false)}
-                  className="h-[40px] px-[20px] rounded-[4px] border text-[14px] text-[#1360d2] bg-white"
+                  className="h-[40px] px-[20px] rounded-[4px] border text-[16px] text-[#1360d2] bg-white"
                   style={{ borderColor: '#1360d2', fontWeight: 500 }}
                 >
                   Cancel
@@ -721,7 +738,7 @@ export function RefundTypePage({
                     setEditingIndex(null);
                   }}
                   disabled={!formValid}
-                  className="h-[40px] px-[20px] rounded-[4px] text-[14px] text-white"
+                  className="h-[40px] px-[20px] rounded-[4px] text-[16px] text-white"
                   style={{ background: !formValid ? '#a7c3eb' : '#1360d2', cursor: !formValid ? 'not-allowed' : 'pointer', fontWeight: 500 }}
                 >
                   {editingIndex !== null ? 'Update Line Item' : 'Add Line Item'}
@@ -766,7 +783,7 @@ export function OutboundDeclarationPage({
     >
       <SectionHeader>Outbound Declaration</SectionHeader>
       <Card>
-        <p className="text-[14px] text-[#455174] mb-[20px]">For a full re-export refund, provide the outbound declaration number and supporting details so the claim can be matched to the export shipment.</p>
+        <p className="text-[16px] text-[#455174] mb-[20px]">For a full re-export refund, provide the outbound declaration number and supporting details so the claim can be matched to the export shipment.</p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[20px]">
           <FloatingField label="Outbound Declaration Number" required placeholder="Enter Declaration Number" value={v.outboundDeclNumber} onChange={(val) => set('outboundDeclNumber', val)} searchable />
           <FloatingField label="Outbound Declaration Date" required placeholder="Select Date" type="date" value={v.outboundDate} onChange={(val) => set('outboundDate', val)} trailingIcon={<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><rect x="3" y="5" width="14" height="13" rx="2" /><path d="M3 8h14M7 3v4M13 3v4" strokeLinecap="round" /></svg>} />
@@ -904,7 +921,7 @@ export function PartialExportPage({
     >
       <SectionHeader>Invoices &amp; HS Codes</SectionHeader>
       <Card>
-        <p className="text-[14px] text-[#455174] mb-[16px]">Choose the invoices that contain the partially exported goods, then select the HS codes within each invoice that were re-exported.</p>
+        <p className="text-[16px] text-[#455174] mb-[16px]">Choose the invoices that contain the partially exported goods, then select the HS codes within each invoice that were re-exported.</p>
         <div className="flex flex-col gap-[12px]">
           {SAMPLE_INVOICES.map((inv) => {
             const invSelected = selectedInvoices.has(inv.id);
@@ -922,9 +939,9 @@ export function PartialExportPage({
                     {invSelected && <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8l3 3 7-7" /></svg>}
                   </button>
                   <div className="flex-1 flex items-center gap-[16px]">
-                    <span className="text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{inv.invoiceNo}</span>
-                    <span className="text-[13px] text-[#697498]">Date: {inv.date}</span>
-                    <span className="text-[13px] text-[#697498]">{inv.hsCodes.length} HS code{inv.hsCodes.length !== 1 ? 's' : ''}</span>
+                    <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{inv.invoiceNo}</span>
+                    <span className="text-[16px] text-[#697498]">Date: {inv.date}</span>
+                    <span className="text-[16px] text-[#697498]">{inv.hsCodes.length} HS code{inv.hsCodes.length !== 1 ? 's' : ''}</span>
                   </div>
                   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 120ms' }}>
                     <path d="M6 9l6 6 6-6" />
@@ -937,10 +954,10 @@ export function PartialExportPage({
                         <thead>
                           <tr style={{ background: '#f4f7fc' }}>
                             <th style={{ padding: '8px 12px', width: 36 }} />
-                            <th className="text-left text-[13px] text-[#455174]" style={{ padding: '8px 12px', fontWeight: 600 }}>HS Code</th>
-                            <th className="text-left text-[13px] text-[#455174]" style={{ padding: '8px 12px', fontWeight: 600 }}>Description</th>
-                            <th className="text-left text-[13px] text-[#455174]" style={{ padding: '8px 12px', fontWeight: 600 }}>Quantity</th>
-                            <th className="text-left text-[13px] text-[#455174]" style={{ padding: '8px 12px', fontWeight: 600 }}>Value</th>
+                            <th className="text-left text-[16px] text-[#455174]" style={{ padding: '8px 12px', fontWeight: 600 }}>HS Code</th>
+                            <th className="text-left text-[16px] text-[#455174]" style={{ padding: '8px 12px', fontWeight: 600 }}>Description</th>
+                            <th className="text-left text-[16px] text-[#455174]" style={{ padding: '8px 12px', fontWeight: 600 }}>Quantity</th>
+                            <th className="text-left text-[16px] text-[#455174]" style={{ padding: '8px 12px', fontWeight: 600 }}>Value</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -961,10 +978,10 @@ export function PartialExportPage({
                                     {hsSelected && <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7l3 3 5-6" /></svg>}
                                   </button>
                                 </td>
-                                <td className="text-[13px] text-[#0e1b3d]" style={{ padding: '8px 12px', fontWeight: 500 }}>{hs.code}</td>
-                                <td className="text-[13px] text-[#0e1b3d]" style={{ padding: '8px 12px' }}>{hs.description}</td>
-                                <td className="text-[13px] text-[#0e1b3d]" style={{ padding: '8px 12px' }}>{hs.quantity}</td>
-                                <td className="text-[13px] text-[#0e1b3d]" style={{ padding: '8px 12px' }}>{hs.value}</td>
+                                <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '8px 12px', fontWeight: 500 }}>{hs.code}</td>
+                                <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '8px 12px' }}>{hs.description}</td>
+                                <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '8px 12px' }}>{hs.quantity}</td>
+                                <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '8px 12px' }}>{hs.value}</td>
                               </tr>
                             );
                           })}
@@ -1042,7 +1059,7 @@ export function DocumentUploadPage({
           {/* Left — doc type selection */}
           <div className="flex flex-col gap-[16px]">
             <p className="text-[20px] text-[#060c28]" style={{ fontWeight: 500 }}>Upload Documents</p>
-            <p className="text-[14px] text-[#455174]">Select the document type and upload the file. We will share the documents with the relevant authorities.</p>
+            <p className="text-[16px] text-[#455174]">Select the document type and upload the file. We will share the documents with the relevant authorities.</p>
 
             <p className="text-[16px] text-[#060c28] mt-[8px]" style={{ fontWeight: 500 }}>Dubai Customs</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-[24px] gap-y-[14px]">
@@ -1074,9 +1091,9 @@ export function DocumentUploadPage({
           {/* Right — upload zone */}
           <div className="rounded-[8px] p-[20px]" style={{ background: '#fff', border: '1px solid #eef1f6' }}>
             <p className="text-[20px] text-[#060c28] mb-[12px]" style={{ fontWeight: 500 }}>Upload File</p>
-            <p className="text-[13px] text-[#455174] mb-[4px]">*Supported file type: .pdf, .jpg etc, max file size 50 MB</p>
-            <p className="text-[13px] text-[#455174] mb-[16px]">*Only 5 files allowed per document type</p>
-            <div className="text-[13px] text-[#455174] mb-[16px] inline-flex items-center gap-[8px]">
+            <p className="text-[16px] text-[#455174] mb-[4px]">*Supported file type: .pdf, .jpg etc, max file size 50 MB</p>
+            <p className="text-[16px] text-[#455174] mb-[16px]">*Only 5 files allowed per document type</p>
+            <div className="text-[16px] text-[#455174] mb-[16px] inline-flex items-center gap-[8px]">
               *Number in <span className="inline-block size-[16px] rounded-[4px]" style={{ background: '#c8f4d2' }} /> indicates the number of documents uploaded
             </div>
 
@@ -1094,7 +1111,7 @@ export function DocumentUploadPage({
               <input ref={fileInputRef} type="file" multiple className="hidden" onChange={(e) => handleFiles(e.target.files)} />
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="h-[44px] px-[20px] rounded-[4px] border text-[14px] text-[#1360d2] bg-white"
+                className="h-[44px] px-[20px] rounded-[4px] border text-[16px] text-[#1360d2] bg-white"
                 style={{ borderColor: '#1360d2', fontWeight: 500 }}
               >
                 Choose File
@@ -1108,28 +1125,28 @@ export function DocumentUploadPage({
       <SectionHeader>Documents Uploaded</SectionHeader>
       <Card>
         {docs.length === 0 ? (
-          <p className="text-[14px] text-[#697498] text-center py-[24px]">No documents uploaded yet.</p>
+          <p className="text-[16px] text-[#697498] text-center py-[24px]">No documents uploaded yet.</p>
         ) : (
           <div className="border border-[#d5ddfb] rounded-[8px] overflow-x-auto">
             <table className="w-full" style={{ borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ background: '#e2ebf9' }}>
-                  <th className="text-left text-[14px] text-[#696f83]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Document Name</th>
-                  <th className="text-left text-[14px] text-[#696f83]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Authority Name</th>
-                  <th className="text-left text-[14px] text-[#696f83]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Document Type</th>
-                  <th className="text-left text-[14px] text-[#696f83]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Uploaded Size</th>
-                  <th className="text-left text-[14px] text-[#696f83]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Uploaded On</th>
-                  <th className="text-left text-[14px] text-[#696f83]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap', width: 120 }}>Action</th>
+                  <th className="text-left text-[16px] text-[#696f83]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Document Name</th>
+                  <th className="text-left text-[16px] text-[#696f83]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Authority Name</th>
+                  <th className="text-left text-[16px] text-[#696f83]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Document Type</th>
+                  <th className="text-left text-[16px] text-[#696f83]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Uploaded Size</th>
+                  <th className="text-left text-[16px] text-[#696f83]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Uploaded On</th>
+                  <th className="text-left text-[16px] text-[#696f83]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap', width: 120 }}>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {docs.map((d) => (
                   <tr key={d.id} style={{ borderTop: '1px solid #eef1f6' }}>
-                    <td className="text-[14px] text-[#051937]" style={{ padding: '12px' }}>{d.fileName}</td>
-                    <td className="text-[14px] text-[#051937]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{d.authority}</td>
-                    <td className="text-[14px] text-[#051937]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{d.docType}</td>
-                    <td className="text-[14px] text-[#051937]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{d.sizeMb}</td>
-                    <td className="text-[14px] text-[#051937]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{d.uploadedOn}</td>
+                    <td className="text-[16px] text-[#051937]" style={{ padding: '12px' }}>{d.fileName}</td>
+                    <td className="text-[16px] text-[#051937]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{d.authority}</td>
+                    <td className="text-[16px] text-[#051937]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{d.docType}</td>
+                    <td className="text-[16px] text-[#051937]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{d.sizeMb}</td>
+                    <td className="text-[16px] text-[#051937]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{d.uploadedOn}</td>
                     <td style={{ padding: '12px' }}>
                       <div className="inline-flex items-center gap-[12px]">
                         <button
@@ -1208,7 +1225,7 @@ export function PaymentDetailsPage({
     { k: 'Deposit Type',          v: summary.depositType },
     { k: 'Deposit Amount',        v: <span className="inline-flex items-baseline gap-[4px]"><Dh /> {String(summary.depositAmount).replace(/^Dh\s*/, '')}</span> },
     { k: 'Deposit Method',        v: depositMethodField },
-    { k: 'Refund Type',           v: <span>{summary.refundType}{summary.refundType.toLowerCase().includes('partial') && <span className="text-[14px] text-[#696f83] ml-[8px]">No. of HS Codes — {summary.hsCount}</span>}</span> },
+    { k: 'Refund Type',           v: <span>{summary.refundType}{summary.refundType.toLowerCase().includes('partial') && <span className="text-[16px] text-[#696f83] ml-[8px]">No. of HS Codes — {summary.hsCount}</span>}</span> },
     { k: 'Outbound Declaration',  v: summary.outboundDeclarationNo },
     { k: 'Total Refund Amount',   v: <span className="inline-flex items-baseline gap-[4px]" style={{ color: '#1360d2', fontWeight: 600 }}><Dh /> {String(summary.totalRefundAmount).replace(/^Dh\s*/, '')}</span> },
   ];
@@ -1226,7 +1243,7 @@ export function PaymentDetailsPage({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-[24px] gap-y-[20px]">
           {fields.map((f) => (
             <div key={f.k} className="flex flex-col gap-[6px]">
-              <span className="text-[13px] text-[#696f83]">{f.k}</span>
+              <span className="text-[16px] text-[#696f83]">{f.k}</span>
               <span className="text-[16px] text-[#051937]" style={{ fontWeight: 500 }}>{f.v}</span>
             </div>
           ))}
@@ -1237,9 +1254,9 @@ export function PaymentDetailsPage({
       <Card>
         <div className="overflow-hidden rounded-[8px]">
           <div className="grid" style={{ gridTemplateColumns: 'minmax(360px, 1fr) minmax(220px, 1fr) minmax(240px, 1fr)', background: '#e2ebf9' }}>
-            <div className="text-left text-[14px] text-[#455174]" style={{ padding: '12px 20px', fontWeight: 500 }}>Charges</div>
-            <div className="text-left text-[14px] text-[#455174]" style={{ padding: '12px 16px', fontWeight: 500 }}>Payment Mode</div>
-            <div className="text-left text-[14px] text-[#455174]" style={{ padding: '12px 16px', fontWeight: 500 }}>Credit / Debit Account No.</div>
+            <div className="text-left text-[16px] text-[#455174]" style={{ padding: '12px 20px', fontWeight: 500 }}>Charges</div>
+            <div className="text-left text-[16px] text-[#455174]" style={{ padding: '12px 16px', fontWeight: 500 }}>Payment Mode</div>
+            <div className="text-left text-[16px] text-[#455174]" style={{ padding: '12px 16px', fontWeight: 500 }}>Credit / Debit Account No.</div>
           </div>
           <div className="grid items-start" style={{ gridTemplateColumns: 'minmax(360px, 1fr) minmax(220px, 1fr) minmax(240px, 1fr)', gap: 20, padding: 20, background: '#fff', boxShadow: '1px 2px 12px 0 rgba(0,0,0,0.06)' }}>
             <div className="flex flex-col gap-[10px]">
@@ -1248,11 +1265,11 @@ export function PaymentDetailsPage({
                 <span className="text-[20px]" style={{ color: '#051937', fontWeight: 700 }}><DhAmount value="70" /></span>
               </div>
               <div className="flex items-start gap-[12px]" style={{ padding: '0 12px' }}>
-                <span className="text-[14px]" style={{ color: '#696f83', fontWeight: 500, flex: 1 }}>Claim Registration Charge</span>
+                <span className="text-[16px]" style={{ color: '#696f83', fontWeight: 500, flex: 1 }}>Claim Registration Charge</span>
                 <span className="text-[16px]" style={{ color: '#051937', fontWeight: 700, minWidth: 80 }}><DhAmount value="50" /></span>
               </div>
               <div className="flex items-start gap-[12px]" style={{ padding: '0 12px' }}>
-                <span className="text-[14px]" style={{ color: '#696f83', fontWeight: 500, flex: 1 }}>Knowledge-Innovation Dirham</span>
+                <span className="text-[16px]" style={{ color: '#696f83', fontWeight: 500, flex: 1 }}>Knowledge-Innovation Dirham</span>
                 <span className="text-[16px]" style={{ color: '#051937', fontWeight: 700, minWidth: 80 }}><DhAmount value="20" /></span>
               </div>
             </div>
@@ -1322,14 +1339,14 @@ export function MissingDocDepositPage({
     >
       <SectionHeader>Refund &amp; Deposit Method</SectionHeader>
       <Card>
-        <p className="text-[14px] text-[#455174] mb-[20px]">Provide the refund amount and the original deposit method used for this declaration.</p>
+        <p className="text-[16px] text-[#455174] mb-[20px]">Provide the refund amount and the original deposit method used for this declaration.</p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[20px]">
           <div className="relative" style={{ fontFamily: "'Dubai', sans-serif" }}>
             <div
               className="h-[56px] rounded-[4px] flex items-center px-[16px]"
               style={{ border: '1px solid #d5ddfb', background: '#f5f6f8' }}
             >
-              <span className="flex-1 text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{refundAmount}</span>
+              <span className="flex-1 text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{refundAmount}</span>
               <span className="text-[12px] text-[#697498] ml-[8px]">Auto</span>
             </div>
             <label className="absolute pointer-events-none" style={{ left: 10, top: -9, background: '#fff', padding: '0 4px', fontSize: 12, color: '#0e1b3d' }}>
@@ -1344,7 +1361,7 @@ export function MissingDocDepositPage({
               onClick={() => setOpen2(!open2)}
               className={`h-[56px] border rounded-[4px] flex items-center px-[14px] cursor-pointer transition-colors bg-white ${open2 ? 'border-[#1360d2]' : 'border-[#d5ddfb] hover:border-[#1360d2]'}`}
             >
-              <span className="text-[14px] flex-1" style={{ color: depositMethod ? '#0e1b3d' : '#697498' }}>
+              <span className="text-[16px] flex-1" style={{ color: depositMethod ? '#0e1b3d' : '#697498' }}>
                 {depositMethod ? DEPOSIT_METHOD_LABEL[depositMethod] : 'Select'}
               </span>
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
@@ -1371,7 +1388,7 @@ export function MissingDocDepositPage({
                         {m === 'epayment' && <><rect x="3" y="6" width="14" height="9" rx="1.5" /><path d="M3 10h14" /><path d="M6 13h3" /></>}
                       </svg>
                     </span>
-                    <span className="text-[14px] text-[#111838] group-hover:text-white">{DEPOSIT_METHOD_LABEL[m]}</span>
+                    <span className="text-[16px] text-[#111838] group-hover:text-white">{DEPOSIT_METHOD_LABEL[m]}</span>
                   </button>
                 ))}
               </div>

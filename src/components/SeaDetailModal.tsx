@@ -185,7 +185,7 @@ export default function SeaDetailModal({ onClose }: Props) {
 
         {/* Search bar */}
         <div className="flex justify-center pb-5">
-          <div className="relative w-[440px]">
+          <div className="relative w-full sm:w-[440px]">
             <input
               type="text"
               value={search}
@@ -206,7 +206,7 @@ export default function SeaDetailModal({ onClose }: Props) {
       </div>
 
       {/* Service columns — whole card scrolls */}
-      <div className="relative z-10 flex-1 overflow-y-auto px-[60px] pt-6 pb-6">
+      <div className="relative z-10 flex-1 overflow-y-auto px-4 sm:px-10 lg:px-[60px] pt-6 pb-6">
         {/* Gradient border wrapper */}
         <div
           className="rounded-[14px] p-[3px]"
@@ -236,7 +236,7 @@ export default function SeaDetailModal({ onClose }: Props) {
                     {col.items.map(item => (
                       <button
                         key={item}
-                        className="text-left h-[40px] px-[10px] rounded-[4px] text-[14px] text-[#0e1b3d] bg-[#f7faff] hover:bg-[#d6e6ff] transition-colors"
+                        className="text-left h-[40px] px-[10px] rounded-[4px] text-[16px] text-[#0e1b3d] bg-[#f7faff] hover:bg-[#d6e6ff] transition-colors"
                         style={{
                           fontFamily: "'Dubai', sans-serif",
                           letterSpacing: '0.14px',

@@ -64,33 +64,33 @@ export default function SearchPickerModal({
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') setHasSearched(true); }}
               placeholder={placeholder}
-              className="flex-1 ml-[8px] text-[14px] text-[#0e1b3d] focus:outline-none bg-transparent"
+              className="flex-1 ml-[8px] text-[16px] text-[#0e1b3d] focus:outline-none bg-transparent"
               style={{ fontFamily: "'Dubai', sans-serif" }}
             />
           </div>
           <button
             onClick={() => { setHasSearched(true); setPage(1); }}
-            className="border border-[#1360d2] rounded-[4px] px-[32px] text-[14px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors"
+            className="border border-[#1360d2] rounded-[4px] px-[32px] text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors"
             style={{ height: 48, fontFamily: "'Dubai', sans-serif", fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}
           >
             Search
           </button>
         </div>
 
-        <div className="bg-[#f8fafd] rounded-[8px] overflow-hidden">
+        <div className="bg-[#f8fafd] rounded-[8px] overflow-x-auto">
           <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontFamily: "'Dubai', sans-serif" }}>
             <thead>
               <tr>
                 {columns.map((c) => (
                   <th key={c.key} style={{ background: '#a7c2e9', height: 44, padding: '0 12px', textAlign: 'left' }}>
                     <div className="flex items-center gap-[4px]">
-                      <span className="text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500, letterSpacing: '0.07px' }}>{c.label}</span>
+                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500, letterSpacing: '0.07px' }}>{c.label}</span>
                       <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#0e1b3d" strokeWidth="1.5" strokeLinecap="round"><path d="M3 4h10M5 8h6M7 12h2" /></svg>
                     </div>
                   </th>
                 ))}
                 <th style={{ background: '#a7c2e9', height: 44, padding: '0 12px', textAlign: 'center', width: 100 }}>
-                  <span className="text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Action</span>
+                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Action</span>
                 </th>
               </tr>
             </thead>
@@ -121,7 +121,7 @@ export default function SearchPickerModal({
                     <td style={{ background: '#fff', height: 54, padding: '0 12px', textAlign: 'center' }}>
                       <button
                         onClick={() => { onSelect(row); onClose(); }}
-                        className="text-[14px] text-[#1360d2] hover:underline"
+                        className="text-[16px] text-[#1360d2] hover:underline"
                         style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}
                       >
                         Select
@@ -137,9 +137,9 @@ export default function SearchPickerModal({
         {visible.length > 0 && (
           <div className="flex items-center justify-between flex-wrap gap-[12px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
             <div className="flex items-center gap-[16px]">
-              <span className="text-[14px] text-[#111838]" style={{ fontWeight: 500 }}>Result</span>
+              <span className="text-[16px] text-[#111838]" style={{ fontWeight: 500 }}>Result</span>
               <div className="flex items-stretch h-[48px] bg-white border border-[#d5ddfb] rounded-[10px] overflow-hidden">
-                <span className="flex items-center px-[14px] text-[14px] text-[#8f94ae]" style={{ fontWeight: 500 }}>
+                <span className="flex items-center px-[14px] text-[16px] text-[#8f94ae]" style={{ fontWeight: 500 }}>
                   {(page - 1) * pageSize + 1} - {Math.min(page * pageSize, rows.length)}
                 </span>
                 <span className="flex items-center gap-[6px] border-l border-[#d5ddfb] px-[14px]">

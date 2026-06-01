@@ -4,6 +4,8 @@ import Header from '../components/Header';
 import ServiceCatalogueModal from '../components/ServiceCatalogueModal';
 import IntegratedClearanceModal from '../components/IntegratedClearanceModal';
 import DeclarationListPage from '../components/DeclarationListPage';
+import DdoFlow from '../components/ddo/DdoFlow';
+import DdoRecordsPage, { type DdoRecordStatus } from '../components/ddo/DdoRecordsPage';
 import {
   TradePlusIcon,
   IntegratedClearanceIcon,
@@ -107,6 +109,14 @@ export default function LandingPage() {
   const [showServiceCatalogue, setShowServiceCatalogue] = useState(false);
   const [showIntegratedClearance, setShowIntegratedClearance] = useState(false);
   const [showDeclarationList, setShowDeclarationList] = useState(false);
+  const [showDdoFlow, setShowDdoFlow] = useState(false);
+  const [showDdoRecords, setShowDdoRecords] = useState(false);
+  const [ddoRecordStatus, setDdoRecordStatus] = useState<DdoRecordStatus>('nearing-expiry');
+
+  const openDdoRecords = (status: DdoRecordStatus) => {
+    setDdoRecordStatus(status);
+    setShowDdoRecords(true);
+  };
 
   // Air tab always shows airline agent journey cards
   const activeCards = mode === 'air' ? JOURNEYS['airline-agent'].cards : config.cards;
@@ -116,10 +126,10 @@ export default function LandingPage() {
     <div className="min-h-screen" style={{ backgroundImage: `url(${bgSrc})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
       <Header onServiceCatalogue={() => setShowServiceCatalogue(true)} />
 
-      <div className="w-full px-[60px] pt-10">
-        <div className="flex gap-[30px] mb-10 items-stretch">
+      <div className="w-full px-4 sm:px-8 lg:px-[60px] pt-10">
+        <div className="flex flex-col sm:flex-row gap-[30px] mb-10 items-stretch">
           {/* Profile card */}
-          <div className="bg-white border border-[#ddd] rounded w-[305px] relative overflow-hidden flex flex-col">
+          <div className="bg-white border border-[#ddd] rounded w-full sm:w-[305px] relative overflow-hidden flex flex-col">
             {/* Eclipse dome image */}
             <img src={eclipseSrc} alt="" className="absolute top-0 left-0 w-full object-cover object-top pointer-events-none" />
             {/* JS circle — center aligned with eclipse bottom edge */}
@@ -137,7 +147,7 @@ export default function LandingPage() {
               >
                 {LABELS[agent]}
               </button>
-              <button className="bg-[#1360d2] text-white h-[35px] w-full rounded flex items-center justify-center gap-1 font-medium text-[14px] capitalize">
+              <button className="bg-[#1360d2] text-white h-[35px] w-full rounded flex items-center justify-center gap-1 font-medium text-[16px] capitalize">
                 <svg viewBox="0 0 14 14" className="size-[14px]" fill="currentColor"><rect x="1" y="1" width="5" height="5" /><rect x="8" y="1" width="5" height="5" /><rect x="1" y="8" width="5" height="5" /><rect x="8" y="8" width="5" height="5" /></svg>
                 My Dashboard
               </button>
@@ -150,9 +160,9 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <div className="flex gap-[30px] items-start pb-12">
+        <div className="flex flex-col sm:flex-row gap-[30px] items-start pb-12">
           {/* Favourite services */}
-          <div className="w-[305px] flex flex-col gap-6">
+          <div className="w-full sm:w-[305px] flex flex-col gap-6">
             <div>
               <h3 className="text-[#051937] text-[24px] font-medium">Favourite Services</h3>
               <div className="w-[32px] h-[3px] bg-[#ea2428] mt-1" />
@@ -161,7 +171,7 @@ export default function LandingPage() {
               {FAVOURITE_SERVICES.map((s, i) => (
                 <button
                   key={s}
-                  className={`flex items-center gap-2 px-2 py-3 rounded text-[14px] text-[#060c28] text-left ${
+                  className={`flex items-center gap-2 px-2 py-3 rounded text-[16px] text-[#060c28] text-left ${
                     i === 0 ? 'bg-[rgba(17,24,56,0.07)] rounded-lg' : 'hover:bg-gray-50'
                   }`}
                 >
@@ -177,9 +187,44 @@ export default function LandingPage() {
                 </button>
               ))}
             </div>
-            <button className="bg-[rgba(14,27,61,0.8)] text-white h-[35px] rounded font-medium text-[14px] capitalize">
+            <button className="bg-[rgba(14,27,61,0.8)] text-white h-[35px] rounded font-medium text-[16px] capitalize">
               Load More
             </button>
+
+            {/* DDO Trade+ Widget */}
+            <div className="bg-white border border-[#ddd] rounded p-4 flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[#051937] text-[16px] font-medium">Trade +</span>
+                <button
+                  onClick={() => setShowDdoFlow(true)}
+                  className="flex items-center gap-1 text-[#1360d2] text-[16px] font-semibold hover:opacity-70 transition-opacity"
+                >
+                  REQUEST DDO
+                  <svg viewBox="0 0 24 24" className="size-3" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
+                </button>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                {([
+                  { status: 'nearing-expiry' as DdoRecordStatus, count: 5,  label: 'Nearing Expiry', color: '#d67e74' },
+                  { status: 'submitted'      as DdoRecordStatus, count: 12, label: 'Submitted',      color: '#6a7bc7' },
+                  { status: 'pending'        as DdoRecordStatus, count: 3,  label: 'Pending',        color: '#d3ab40' },
+                  { status: 'completed'      as DdoRecordStatus, count: 5,  label: 'Completed',      color: '#5cb78f' },
+                ]).map(item => (
+                  <button
+                    key={item.status}
+                    onClick={() => openDdoRecords(item.status)}
+                    className="bg-white border border-[#eee] rounded-[10px] flex flex-col items-center gap-1 py-3 px-1 hover:border-[#1360d2] hover:shadow-sm transition-all"
+                  >
+                    <span className="text-[#27314b] font-bold text-[18px] leading-none">{item.count}</span>
+                    <span className="font-semibold text-[9px] text-center leading-tight" style={{ color: item.color }}>
+                      {item.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Journey */}
@@ -235,16 +280,16 @@ export default function LandingPage() {
             <div className="border-t border-[#ddd] mb-8" />
 
             {/* Journey cards */}
-            <div className="relative flex justify-between items-start w-full">
+            <div className="relative flex flex-wrap sm:flex-nowrap justify-between items-start w-full gap-4 sm:gap-0">
               {/* Dashed line: from centre of first circle to centre of last circle */}
               {activeCards.length > 1 && (
-                <div className="absolute top-[27px] left-[100px] right-[100px] z-0 pointer-events-none" style={{ height: '1.5px', backgroundImage: 'repeating-linear-gradient(to right, #0e1b3d 0px, #0e1b3d 10px, transparent 10px, transparent 20px)' }} />
+                <div className="absolute top-[27px] left-[100px] right-[100px] z-0 pointer-events-none hidden sm:block" style={{ height: '1.5px', backgroundImage: 'repeating-linear-gradient(to right, #0e1b3d 0px, #0e1b3d 10px, transparent 10px, transparent 20px)' }} />
               )}
 
               {activeCards.map((card, idx) => (
                 <div
                   key={card.step}
-                  className="group flex flex-col items-center w-[200px] cursor-pointer"
+                  className="group flex flex-col items-center w-full sm:w-[200px] cursor-pointer"
                   onClick={() => card.title === 'Integrated Clearance' && setShowIntegratedClearance(true)}
                 >
 
@@ -290,6 +335,11 @@ export default function LandingPage() {
         </div>
       </div>
 
+      {showDdoFlow && <DdoFlow onClose={() => setShowDdoFlow(false)} />}
+      {showDdoRecords && (
+        <DdoRecordsPage status={ddoRecordStatus} onClose={() => setShowDdoRecords(false)} />
+      )}
+
       {showServiceCatalogue && <ServiceCatalogueModal onClose={() => setShowServiceCatalogue(false)} />}
 
       {showDeclarationList && (
@@ -318,7 +368,7 @@ export default function LandingPage() {
               <h3 className="text-[#0e1b3d] text-[24px] font-normal text-center mb-12">
                 Hi User, Select Your Customer Type to Access the Services
               </h3>
-              <div className="grid grid-cols-4 gap-8 place-items-center">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-8 place-items-center">
                 {AGENT_TYPE_OPTIONS.map(opt => (
                   <button
                     key={opt.id}

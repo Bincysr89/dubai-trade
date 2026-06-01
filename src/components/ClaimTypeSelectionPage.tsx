@@ -51,27 +51,27 @@ export default function ClaimTypeSelectionPage({ onBack, onContinue }: Props) {
 
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full" style={{ fontFamily: "'Dubai', sans-serif" }}>
-      <div className="flex items-start justify-between px-[40px] pt-[24px] pb-[8px] flex-wrap gap-[12px]">
+      <div className="flex items-start justify-between px-4 sm:px-10 pt-[24px] pb-[8px] flex-wrap gap-[12px]">
         <div className="flex items-center gap-[6px]">
-          <button onClick={onBack} className="text-[14px] text-[#8f94ae] hover:underline">Home</button>
+          <button onClick={onBack} className="text-[16px] text-[#8f94ae] hover:underline">Home</button>
           <span className="text-[16px] text-[#dc3545]">/</span>
-          <span className="text-[14px] text-[#8f94ae]">Import By Sea</span>
+          <span className="text-[16px] text-[#8f94ae]">Import By Sea</span>
           <span className="text-[16px] text-[#dc3545]">/</span>
-          <span className="text-[14px] text-[#111838]" style={{ fontWeight: 500 }}>Integrated Clearance</span>
+          <span className="text-[16px] text-[#111838]" style={{ fontWeight: 500 }}>Integrated Clearance</span>
         </div>
         <div className="bg-[#e2ebf9] rounded-[4px] h-[28px] px-[12px] flex items-center">
-          <span className="text-[14px] text-[#0e1b3d]">A180-IMPORTER SONY GULF UAE</span>
+          <span className="text-[16px] text-[#0e1b3d]">A180-IMPORTER SONY GULF UAE</span>
         </div>
       </div>
 
-      <h1 className="px-[40px] pt-[8px] text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>Raise New Claim</h1>
+      <h1 className="px-4 sm:px-10 pt-[8px] text-2xl sm:text-3xl lg:text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>Raise New Claim</h1>
 
-      <div className="flex-1 overflow-y-auto px-[40px] py-[24px]">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
         <div className="bg-white rounded-[8px] flex flex-col gap-[24px] px-[24px] py-[28px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
           <div className="flex items-center gap-[12px]">
             <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Select Claim Type</p>
           </div>
-          <p className="text-[14px] text-[#455174]">Choose the type of claim you would like to raise. The list of eligible declarations will be filtered based on your selection.</p>
+          <p className="text-[16px] text-[#455174]">Choose the type of claim you would like to raise. The list of eligible declarations will be filtered based on your selection.</p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[16px]">
             {OPTIONS.map((opt) => {
@@ -92,7 +92,7 @@ export default function ClaimTypeSelectionPage({ onBack, onContinue }: Props) {
                     </span>
                   </div>
                   <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{opt.title}</span>
-                  <span className="text-[13px] text-[#696f83]" style={{ lineHeight: 1.4 }}>{opt.sub}</span>
+                  <span className="text-[16px] text-[#696f83]" style={{ lineHeight: 1.4 }}>{opt.sub}</span>
                 </button>
               );
             })}
@@ -106,7 +106,7 @@ export default function ClaimTypeSelectionPage({ onBack, onContinue }: Props) {
           <button
             disabled={!selected}
             onClick={() => selected && onContinue(selected)}
-            className="h-[48px] px-[28px] rounded-[4px] text-[14px] text-white transition-colors"
+            className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors"
             style={{ background: selected ? '#1360d2' : '#a7c3eb', cursor: selected ? 'pointer' : 'not-allowed', fontWeight: 500, boxShadow: selected ? '0px 0px 8px rgba(28,72,191,0.16)' : 'none' }}
           >
             Continue

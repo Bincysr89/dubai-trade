@@ -55,9 +55,9 @@ function HistoryTable({ rows }: { rows: Row[] }) {
       <table className="dt-table" style={{ fontFamily: "'Dubai', sans-serif" }}>
         <thead>
           <tr>
-            <th className="text-[14px]" style={{ width: 220 }}>Action Date</th>
-            <th className="text-[14px]" style={{ width: 240 }}>Action Type</th>
-            <th className="text-[14px]">Action Reason</th>
+            <th className="text-[16px]" style={{ width: 220 }}>Action Date</th>
+            <th className="text-[16px]" style={{ width: 240 }}>Action Type</th>
+            <th className="text-[16px]">Action Reason</th>
           </tr>
         </thead>
         <tbody>
@@ -65,10 +65,10 @@ function HistoryTable({ rows }: { rows: Row[] }) {
             const ev = EVENT_STYLE[row.actionType] || { bg: 'rgba(105,116,152,0.10)', color: '#697498' };
             return (
               <tr key={i}>
-                <td className="text-[14px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{row.actionDate}</td>
+                <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{row.actionDate}</td>
                 <td style={{ whiteSpace: 'nowrap' }}>
                   <span
-                    className="text-[14px] inline-flex items-center justify-center whitespace-nowrap"
+                    className="text-[16px] inline-flex items-center justify-center whitespace-nowrap"
                     style={{ background: ev.bg, color: ev.color, padding: '4px 12px', borderRadius: 4, fontWeight: 500, lineHeight: '20px' }}
                   >
                     {row.actionType}
@@ -76,8 +76,8 @@ function HistoryTable({ rows }: { rows: Row[] }) {
                 </td>
                 <td>
                   {row.actionReason
-                    ? <span className="text-[14px] text-[#0e1b3d]">{row.actionReason}</span>
-                    : <span className="text-[14px] text-[#8f94ae]">—</span>}
+                    ? <span className="text-[16px] text-[#0e1b3d]">{row.actionReason}</span>
+                    : <span className="text-[16px] text-[#8f94ae]">—</span>}
                 </td>
               </tr>
             );
@@ -109,30 +109,30 @@ export default function VccAuditHistoryPage({ onBack, requestNumber = '25365' }:
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full">
       {/* Sticky breadcrumb / agent banner */}
-      <div className="flex items-start justify-between px-[40px] pt-[24px] pb-[12px] flex-wrap gap-[12px] flex-shrink-0 bg-[#f8fafd]">
+      <div className="flex items-start justify-between px-4 sm:px-10 pt-[24px] pb-[12px] flex-wrap gap-[12px] flex-shrink-0 bg-[#f8fafd]">
         <div className="flex items-center gap-[6px]">
-          <span className="text-[14px] text-[#8f94ae]" style={{ fontFamily: "'Dubai', sans-serif" }}>Home</span>
+          <span className="text-[16px] text-[#8f94ae]" style={{ fontFamily: "'Dubai', sans-serif" }}>Home</span>
           <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: "'Dubai', sans-serif" }}>/</span>
-          <span className="text-[14px] text-[#8f94ae]" style={{ fontFamily: "'Dubai', sans-serif" }}>Integrated Clearance</span>
+          <span className="text-[16px] text-[#8f94ae]" style={{ fontFamily: "'Dubai', sans-serif" }}>Integrated Clearance</span>
           <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: "'Dubai', sans-serif" }}>/</span>
-          <span className="text-[14px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Audit History</span>
+          <span className="text-[16px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Audit History</span>
         </div>
         <div className="bg-[#e2ebf9] rounded-[4px] h-[28px] px-[12px] flex items-center">
-          <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>AE-1019056- Dubai Customs - Test LLC</span>
+          <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>AE-1019056- Dubai Customs - Test LLC</span>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto" style={{ fontFamily: "'Dubai', sans-serif" }}>
-        <div className="px-[40px] pt-[8px] flex items-end justify-between flex-wrap gap-[12px]">
+        <div className="px-4 sm:px-10 pt-[8px] flex items-end justify-between flex-wrap gap-[12px]">
           <div>
             <h1 className="text-[32px] text-[#111838]" style={{ fontWeight: 700 }}>Audit History</h1>
-            <p className="text-[14px] text-[#455174]">Activity log for Request #{requestNumber}</p>
+            <p className="text-[16px] text-[#455174]">Activity log for Request #{requestNumber}</p>
           </div>
           <div className="flex items-center gap-[8px]">
             <button
               onClick={expandAll}
               disabled={allOpen}
-              className="h-[36px] px-[14px] rounded-[4px] border border-[#1360d2] bg-white text-[13px] text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-[6px]"
+              className="h-[36px] px-[14px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-[6px]"
               style={{ fontWeight: 500 }}
             >
               <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -144,7 +144,7 @@ export default function VccAuditHistoryPage({ onBack, requestNumber = '25365' }:
             <button
               onClick={collapseAll}
               disabled={allClosed}
-              className="h-[36px] px-[14px] rounded-[4px] border border-[#1360d2] bg-white text-[13px] text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-[6px]"
+              className="h-[36px] px-[14px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-[6px]"
               style={{ fontWeight: 500 }}
             >
               <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -156,7 +156,7 @@ export default function VccAuditHistoryPage({ onBack, requestNumber = '25365' }:
           </div>
         </div>
 
-        <div className="px-[40px] py-[24px] flex flex-col gap-[12px]">
+        <div className="px-4 sm:px-10 py-[24px] flex flex-col gap-[12px]">
           {GROUPS.map((g) => {
             const open = openSet.has(g.vccNo);
             return (
@@ -186,7 +186,7 @@ export default function VccAuditHistoryPage({ onBack, requestNumber = '25365' }:
                       <path d="M7 5l6 5-6 5" />
                     </svg>
                     <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 600 }}>VCC #{g.vccNo}</span>
-                    <span className="text-[13px] text-[#697498]">Created {g.vccCreatedDate}</span>
+                    <span className="text-[16px] text-[#697498]">Created {g.vccCreatedDate}</span>
                     <span
                       className="text-[12px] inline-flex items-center px-[10px] py-[3px] rounded-[12px]"
                       style={{ background: 'rgba(19,96,210,0.10)', color: '#1360d2', fontWeight: 500 }}
@@ -194,7 +194,7 @@ export default function VccAuditHistoryPage({ onBack, requestNumber = '25365' }:
                       {g.rows.length} {g.rows.length === 1 ? 'event' : 'events'}
                     </span>
                   </div>
-                  <span className="text-[13px] text-[#1360d2]" style={{ fontWeight: 500 }}>
+                  <span className="text-[16px] text-[#1360d2]" style={{ fontWeight: 500 }}>
                     {open ? 'Hide' : 'Show'} history
                   </span>
                 </button>

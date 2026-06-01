@@ -31,7 +31,7 @@ export const AckAcceptConfirmModal: React.FC<AcceptProps> = ({ open, count, onCl
   if (!open) return null;
   return (
     <Backdrop onClose={onClose}>
-      <div className="bg-white rounded-[10px] flex flex-col items-center gap-[24px] py-[40px] px-[40px]" style={{ width: 'min(560px, 100%)', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', fontFamily: "'Dubai', sans-serif" }}>
+      <div className="bg-white rounded-[10px] flex flex-col items-center gap-[24px] py-[40px] px-4 sm:px-10" style={{ width: 'min(560px, 100%)', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', fontFamily: "'Dubai', sans-serif" }}>
         <WarnIcon />
         <p className="text-[20px] text-[#0e1b3d] text-center" style={{ fontWeight: 500, lineHeight: 1.45 }}>
           Are you sure you want to accept acknowledgment for <br />({count}) declarations?
@@ -40,11 +40,11 @@ export const AckAcceptConfirmModal: React.FC<AcceptProps> = ({ open, count, onCl
           <button onClick={() => setAgreed(!agreed)} role="checkbox" aria-checked={agreed} className="size-[20px] rounded-[4px] flex-shrink-0 inline-flex items-center justify-center mt-[2px]" style={{ border: `2px solid ${agreed ? '#1360d2' : '#a7abb2'}`, background: agreed ? '#1360d2' : '#fff' }}>
             {agreed && <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8l3 3 7-7" /></svg>}
           </button>
-          <span className="text-[14px] text-[#455174]" style={{ lineHeight: 1.4 }}>I/We hereby confirm the transfer of goods as described in the selected declaration's</span>
+          <span className="text-[16px] text-[#455174]" style={{ lineHeight: 1.4 }}>I/We hereby confirm the transfer of goods as described in the selected declaration's</span>
         </label>
         <div className="flex items-center gap-[12px]">
-          <button onClick={onClose} className="h-[44px] px-[28px] rounded-[4px] border border-[#1360d2] bg-white text-[14px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors" style={{ fontWeight: 500 }}>Cancel</button>
-          <button disabled={!agreed} onClick={onConfirm} className="h-[44px] px-[28px] rounded-[4px] text-[14px] text-white transition-colors" style={{ background: agreed ? '#1360d2' : '#a7c3eb', fontWeight: 500, boxShadow: agreed ? '0px 0px 8px rgba(28,72,191,0.16)' : 'none' }}>Accept</button>
+          <button onClick={onClose} className="h-[44px] px-[28px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors" style={{ fontWeight: 500 }}>Cancel</button>
+          <button disabled={!agreed} onClick={onConfirm} className="h-[44px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors" style={{ background: agreed ? '#1360d2' : '#a7c3eb', fontWeight: 500, boxShadow: agreed ? '0px 0px 8px rgba(28,72,191,0.16)' : 'none' }}>Accept</button>
         </div>
       </div>
     </Backdrop>
@@ -80,7 +80,7 @@ export const AckDeclineReasonModal: React.FC<DeclineReasonProps> = ({ open, onCl
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="9" /><path d="M9 9l6 6M15 9l-6 6" /></svg>
           </button>
         </div>
-        <div className="px-[40px] py-[28px] flex flex-col gap-[24px]">
+        <div className="px-4 sm:px-10 py-[28px] flex flex-col gap-[24px]">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-[20px]">
             {/* Reason dropdown — floating label */}
             {(() => {
@@ -92,7 +92,7 @@ export const AckDeclineReasonModal: React.FC<DeclineReasonProps> = ({ open, onCl
                     onClick={() => setOpen2(!open2)}
                     className={`h-[56px] border rounded-[4px] flex items-center px-[14px] cursor-pointer transition-colors bg-white ${open2 ? 'border-[#1360d2]' : 'border-[#d5ddfb] hover:border-[#1360d2]'}`}
                   >
-                    <span className="text-[14px] text-[#0e1b3d] flex-1">{reason}</span>
+                    <span className="text-[16px] text-[#0e1b3d] flex-1">{reason}</span>
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
                   </div>
                   <span
@@ -121,7 +121,7 @@ export const AckDeclineReasonModal: React.FC<DeclineReasonProps> = ({ open, onCl
                           <span className="text-[#1360d2] group-hover:text-white flex-shrink-0">
                             <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="3" width="12" height="14" rx="1.5" /><path d="M7 7h6M7 10h6M7 13h4" /></svg>
                           </span>
-                          <span className="text-[14px] text-[#111838] group-hover:text-white">{opt}</span>
+                          <span className="text-[16px] text-[#111838] group-hover:text-white">{opt}</span>
                         </button>
                       ))}
                     </div>
@@ -143,7 +143,7 @@ export const AckDeclineReasonModal: React.FC<DeclineReasonProps> = ({ open, onCl
                     onFocus={() => setOtherFocused(true)}
                     onBlur={() => setOtherFocused(false)}
                     onChange={(e) => setOther(e.target.value)}
-                    className="w-full h-[56px] border rounded-[4px] px-[14px] text-[14px] focus:outline-none transition-colors"
+                    className="w-full h-[56px] border rounded-[4px] px-[14px] text-[16px] focus:outline-none transition-colors"
                     style={{
                       fontFamily: "'Dubai', sans-serif",
                       background: bg,
@@ -174,8 +174,8 @@ export const AckDeclineReasonModal: React.FC<DeclineReasonProps> = ({ open, onCl
             })()}
           </div>
           <div className="flex items-center justify-center gap-[12px]">
-            <button onClick={onClose} className="h-[44px] px-[28px] rounded-[4px] border border-[#1360d2] bg-white text-[14px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors" style={{ fontWeight: 500 }}>Close</button>
-            <button onClick={() => onDecline(reason, other)} className="h-[44px] px-[28px] rounded-[4px] text-[14px] text-white transition-colors hover:bg-[#0E4DB8]" style={{ background: '#1360d2', fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>Decline</button>
+            <button onClick={onClose} className="h-[44px] px-[28px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors" style={{ fontWeight: 500 }}>Close</button>
+            <button onClick={() => onDecline(reason, other)} className="h-[44px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors hover:bg-[#0E4DB8]" style={{ background: '#1360d2', fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>Decline</button>
           </div>
         </div>
       </div>
@@ -193,15 +193,15 @@ export const AckDeclineConfirmModal: React.FC<DeclineConfirmProps> = ({ open, on
   if (!open) return null;
   return (
     <Backdrop onClose={onClose}>
-      <div className="bg-white rounded-[10px] flex flex-col items-center gap-[20px] py-[40px] px-[40px]" style={{ width: 'min(540px, 100%)', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', fontFamily: "'Dubai', sans-serif" }}>
+      <div className="bg-white rounded-[10px] flex flex-col items-center gap-[20px] py-[40px] px-4 sm:px-10" style={{ width: 'min(540px, 100%)', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', fontFamily: "'Dubai', sans-serif" }}>
         <WarnIcon />
         <div className="text-center text-[20px] text-[#0e1b3d]" style={{ fontWeight: 500, lineHeight: 1.5 }}>
           <p>Are you sure!</p>
           <p>you want to Decline the Acknowledgement?</p>
         </div>
         <div className="flex items-center gap-[12px]">
-          <button onClick={onClose} className="h-[44px] px-[28px] rounded-[4px] border border-[#1360d2] bg-white text-[14px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors" style={{ fontWeight: 500 }}>Cancel</button>
-          <button onClick={onConfirm} className="h-[44px] px-[28px] rounded-[4px] text-[14px] text-white transition-colors hover:bg-[#0E4DB8]" style={{ background: '#1360d2', fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>Decline</button>
+          <button onClick={onClose} className="h-[44px] px-[28px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors" style={{ fontWeight: 500 }}>Cancel</button>
+          <button onClick={onConfirm} className="h-[44px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors hover:bg-[#0E4DB8]" style={{ background: '#1360d2', fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>Decline</button>
         </div>
       </div>
     </Backdrop>
@@ -222,20 +222,20 @@ export const AckSuccessPage: React.FC<SuccessProps> = ({ mode, count, declaratio
 
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full" style={{ fontFamily: "'Dubai', sans-serif" }}>
-      <div className="flex items-start justify-between px-[40px] pt-[24px] pb-[8px] flex-wrap gap-[12px]">
+      <div className="flex items-start justify-between px-4 sm:px-10 pt-[24px] pb-[8px] flex-wrap gap-[12px]">
         <div className="flex items-center gap-[6px]">
-          <span className="text-[14px] text-[#8f94ae]">Home</span>
+          <span className="text-[16px] text-[#8f94ae]">Home</span>
           <span className="text-[16px] text-[#dc3545]">/</span>
-          <span className="text-[14px] text-[#8f94ae]">Service Catalog</span>
+          <span className="text-[16px] text-[#8f94ae]">Service Catalog</span>
           <span className="text-[16px] text-[#dc3545]">/</span>
-          <span className="text-[14px] text-[#111838]" style={{ fontWeight: 500 }}>Acknowledgement</span>
+          <span className="text-[16px] text-[#111838]" style={{ fontWeight: 500 }}>Acknowledgement</span>
         </div>
         <div className="bg-[#e2ebf9] rounded-[4px] h-[28px] px-[12px] flex items-center">
-          <span className="text-[14px] text-[#0e1b3d]">AE-1019056- Dubai Customs - Test LLC</span>
+          <span className="text-[16px] text-[#0e1b3d]">AE-1019056- Dubai Customs - Test LLC</span>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-[40px] py-[60px]">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[60px]">
         <div className="flex flex-col items-center gap-[28px]">
           <div className="size-[100px] rounded-full inline-flex items-center justify-center" style={{ background: '#28A745' }}>
             <svg viewBox="0 0 100 100" width="60" height="60" fill="none">
@@ -245,21 +245,21 @@ export const AckSuccessPage: React.FC<SuccessProps> = ({ mode, count, declaratio
           <p className="text-[20px] text-[#28a745] text-center" style={{ fontWeight: 500 }}>{headline}</p>
 
           <div className="bg-white rounded-[8px] px-[28px] py-[20px] text-center max-w-[820px] w-full" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
-            <p className="text-[14px] text-[#1360d2]" style={{ fontWeight: 500 }}>Please find the Declaration Numbers below for reference.</p>
-            <p className="text-[14px] text-[#455174] mt-[6px]">Delcaration Number: {declarationNumbers.join(', ')}</p>
+            <p className="text-[16px] text-[#1360d2]" style={{ fontWeight: 500 }}>Please find the Declaration Numbers below for reference.</p>
+            <p className="text-[16px] text-[#455174] mt-[6px]">Delcaration Number: {declarationNumbers.join(', ')}</p>
           </div>
 
           {mode === 'accept' && (
             <div className="flex items-center gap-[12px]">
-              <button className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[14px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors inline-flex items-center gap-[8px]" style={{ fontWeight: 500 }}>
+              <button className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors inline-flex items-center gap-[8px]" style={{ fontWeight: 500 }}>
                 <span>Download</span>
                 <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M10 3v11M5 10l5 5 5-5M3 17h14" /></svg>
               </button>
-              <button className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[14px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors inline-flex items-center gap-[8px]" style={{ fontWeight: 500 }}>
+              <button className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors inline-flex items-center gap-[8px]" style={{ fontWeight: 500 }}>
                 <span>Share</span>
                 <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="5" cy="10" r="2.2" /><circle cx="15" cy="5" r="2.2" /><circle cx="15" cy="15" r="2.2" /><path d="M7 9l6-3M7 11l6 3" /></svg>
               </button>
-              <button className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[14px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors" style={{ fontWeight: 500 }}>
+              <button className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors" style={{ fontWeight: 500 }}>
                 View Declaration
               </button>
             </div>
@@ -267,8 +267,8 @@ export const AckSuccessPage: React.FC<SuccessProps> = ({ mode, count, declaratio
         </div>
       </div>
 
-      <div className="bg-white px-[40px] py-[16px] flex items-center justify-start flex-shrink-0" style={{ boxShadow: '0px -4px 12px rgba(0,0,0,0.08)', position: 'sticky', bottom: 0, zIndex: 10 }}>
-        <button onClick={onBack} className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[14px] text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors" style={{ fontWeight: 500 }}>
+      <div className="bg-white px-4 sm:px-10 py-[16px] flex items-center justify-start flex-shrink-0" style={{ boxShadow: '0px -4px 12px rgba(0,0,0,0.08)', position: 'sticky', bottom: 0, zIndex: 10 }}>
+        <button onClick={onBack} className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors" style={{ fontWeight: 500 }}>
           Back To Listing
         </button>
       </div>

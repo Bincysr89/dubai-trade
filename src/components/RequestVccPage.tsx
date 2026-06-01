@@ -30,26 +30,26 @@ export default function RequestVccPage({ onBack, onSearch }: Props) {
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full">
       {/* Breadcrumb + agent strip */}
-      <div className="flex items-start justify-between px-[40px] pt-[24px] pb-[8px] flex-wrap gap-[12px]">
+      <div className="flex items-start justify-between px-4 sm:px-10 pt-[24px] pb-[8px] flex-wrap gap-[12px]">
         <div className="flex items-center gap-[6px]">
-          <span className="text-[14px] text-[#8f94ae]" style={{ fontFamily: "'Dubai', sans-serif" }}>Home</span>
+          <span className="text-[16px] text-[#8f94ae]" style={{ fontFamily: "'Dubai', sans-serif" }}>Home</span>
           <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: "'Dubai', sans-serif" }}>/</span>
-          <span className="text-[14px] text-[#8f94ae]" style={{ fontFamily: "'Dubai', sans-serif" }}>Import By Sea</span>
+          <span className="text-[16px] text-[#8f94ae]" style={{ fontFamily: "'Dubai', sans-serif" }}>Import By Sea</span>
           <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: "'Dubai', sans-serif" }}>/</span>
-          <span className="text-[14px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Integrated Clearance</span>
+          <span className="text-[16px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Integrated Clearance</span>
         </div>
         <div className="bg-[#e2ebf9] rounded-[4px] h-[28px] px-[12px] flex items-center">
-          <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>AE-1019056- Dubai Customs - Test LLC</span>
+          <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>AE-1019056- Dubai Customs - Test LLC</span>
         </div>
       </div>
 
       {/* Page title */}
-      <h1 className="px-[40px] pt-[8px] text-[32px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
+      <h1 className="px-4 sm:px-10 pt-[8px] text-2xl sm:text-3xl lg:text-[32px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
         Request VCC
       </h1>
 
       {/* Main scroll area */}
-      <div className="flex-1 overflow-y-auto px-[40px] py-[24px] flex flex-col gap-[60px]">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px] flex flex-col gap-[60px]">
         {/* Declaration Details card */}
         <div className="bg-white rounded-[8px] px-[24px] py-[20px] flex flex-col gap-[20px]" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
           <p className="text-[20px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 700 }}>
@@ -102,7 +102,7 @@ export default function RequestVccPage({ onBack, onSearch }: Props) {
                   className="flex flex-col items-start pb-[20px] pt-[16px] px-[6px] min-w-[140px]"
                   style={{ borderBottom: active ? '3px solid #1360d2' : 'none' }}
                 >
-                  <span className="text-[14px] whitespace-nowrap" style={{ color: active ? '#1360d2' : '#051937', fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
+                  <span className="text-[16px] whitespace-nowrap" style={{ color: active ? '#1360d2' : '#051937', fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
                     {tab}
                   </span>
                 </button>
@@ -113,10 +113,10 @@ export default function RequestVccPage({ onBack, onSearch }: Props) {
           {/* About */}
           <div className="flex flex-col gap-[24px]">
             <p className="text-[20px] text-[#060c28]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>About the Service</p>
-            <p className="text-[14px] text-black" style={{ fontFamily: "'Dubai', sans-serif" }}>
+            <p className="text-[16px] text-black" style={{ fontFamily: "'Dubai', sans-serif" }}>
               Integrated Clearance is a service that enables customers to complete the entire customs clearance process, including obtaining permits from the relevant issuing authorities.
             </p>
-            <p className="text-[14px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
+            <p className="text-[16px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
               <span className="text-black">View the declaration assistanct. </span>
               <a href="#" className="text-[#1360d2] hover:underline">Click here</a>
             </p>
@@ -137,7 +137,7 @@ export default function RequestVccPage({ onBack, onSearch }: Props) {
                   </div>
                   <div className="flex flex-col gap-[8px]">
                     <p className="text-[16px] text-[#060c28]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>{s.title}</p>
-                    <p className="text-[14px] text-black" style={{ fontFamily: "'Dubai', sans-serif" }}>{s.body}</p>
+                    <p className="text-[16px] text-black" style={{ fontFamily: "'Dubai', sans-serif" }}>{s.body}</p>
                   </div>
                 </div>
               ))}

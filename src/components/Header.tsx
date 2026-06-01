@@ -10,6 +10,7 @@ export default function Header({ onServiceCatalogue, onHome }: Props) {
   const navigate = useNavigate();
   const { agent } = useParams<{ agent?: string }>();
   const [profileOpen, setProfileOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 
   const goHome = () => {
@@ -33,8 +34,8 @@ export default function Header({ onServiceCatalogue, onHome }: Props) {
   };
 
   return (
-    <header className="bg-[#0e1b3d] h-[88px] w-full shadow-[0_2px_32px_0_rgba(0,0,0,0.08)] sticky top-0 z-40">
-      <div className="w-full h-full px-[60px] flex items-center justify-between gap-6">
+    <header className="bg-[#0e1b3d] w-full shadow-[0_2px_32px_0_rgba(0,0,0,0.08)] sticky top-0 z-40">
+      <div className="w-full h-[88px] px-4 sm:px-8 lg:px-[60px] flex items-center justify-between gap-6">
         <Link to="/customer-type" className="flex-shrink-0">
           <Logo height={48} white />
         </Link>
@@ -53,6 +54,17 @@ export default function Header({ onServiceCatalogue, onHome }: Props) {
         </nav>
 
         <div className="flex items-center gap-[10px]">
+          {/* Hamburger — mobile only */}
+          <button
+            onClick={() => setMobileOpen(v => !v)}
+            className="flex lg:hidden size-[40px] rounded-full border border-[rgba(213,221,251,0.4)] items-center justify-center text-white hover:bg-white/10"
+            aria-label="Toggle menu"
+            aria-expanded={mobileOpen}
+          >
+            <svg viewBox="0 0 24 24" className="size-[20px]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M3 6h18M3 12h18M3 18h18" />
+            </svg>
+          </button>
           <button className="size-[40px] rounded-full border border-[rgba(213,221,251,0.4)] flex items-center justify-center text-white hover:bg-white/10">
             <svg viewBox="0 0 24 24" className="size-[18px]" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg>
           </button>
@@ -89,13 +101,30 @@ export default function Header({ onServiceCatalogue, onHome }: Props) {
                     <path d="M16 17l5-5-5-5" />
                     <path d="M21 12H9" />
                   </svg>
-                  <span className="text-[14px] text-[#111838] group-hover:text-white leading-[20px]">Logout</span>
+                  <span className="text-[16px] text-[#111838] group-hover:text-white leading-[20px]">Logout</span>
                 </button>
               </div>
             )}
           </div>
         </div>
       </div>
+
+      {/* Mobile nav dropdown */}
+      {mobileOpen && (
+        <nav className="absolute top-full left-0 right-0 bg-[#0e1b3d] shadow-lg z-50 flex flex-col p-4 gap-3 lg:hidden">
+          <button onClick={() => { goHome(); setMobileOpen(false); }} className="flex items-center gap-2 text-white text-[15px] hover:opacity-80 text-left">
+            <img src={homeIconSrc} alt="Home" className="size-[20px]" />
+            Home
+          </button>
+          <button className="text-white text-[15px] hover:opacity-80 text-left" onClick={() => { onServiceCatalogue?.(); setMobileOpen(false); }}>Service Catalogue</button>
+          <button className="text-white text-[15px] hover:opacity-80 text-left flex items-center gap-1">
+            Trade Service Providers
+            <svg viewBox="0 0 16 16" className="size-[14px]" fill="currentColor"><path d="M4 6l4 4 4-4z" /></svg>
+          </button>
+          <button className="text-white text-[15px] hover:opacity-80 text-left">Take a Tour</button>
+          <button className="text-white text-[15px] hover:opacity-80 text-left">Knowledge Hub</button>
+        </nav>
+      )}
     </header>
   );
 }

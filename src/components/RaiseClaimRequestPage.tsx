@@ -45,8 +45,8 @@ const Card: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 
 const Field = ({ k, v }: { k: string; v: React.ReactNode }) => (
   <div className="flex flex-col gap-[4px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
-    <span className="text-[13px] text-[#696f83]">{k}</span>
-    <span className="text-[14px] text-[#051937]" style={{ fontWeight: 500 }}>{v}</span>
+    <span className="text-[16px] text-[#696f83]">{k}</span>
+    <span className="text-[16px] text-[#051937]" style={{ fontWeight: 500 }}>{v}</span>
   </div>
 );
 
@@ -91,7 +91,7 @@ function ClaimDetailsStep({
             <path d="M21 5v5h5" />
             <path d="M14 18l2-2 2 2M16 16v6" />
           </svg>
-          <p className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Drag &amp; drop files or <span className="text-[#1360d2] underline cursor-pointer">browse</span></p>
+          <p className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Drag &amp; drop files or <span className="text-[#1360d2] underline cursor-pointer">browse</span></p>
           <p className="text-[12px] text-[#697498]" style={{ fontFamily: "'Dubai', sans-serif" }}>PDF, JPG, PNG up to 10 MB</p>
         </div>
       </Card>
@@ -124,7 +124,7 @@ function PaymentDetailsStep({ values, setValues }: { values: any; setValues: (v:
             { k: 'Net Refund Payable',  v: '975.00', total: true },
           ].map((row) => (
             <div key={row.k} className="flex items-center justify-between border-b border-[#eef1f6] last:border-0 pb-[10px] last:pb-0">
-              <span className={`text-[14px] ${row.total ? 'text-[#0e1b3d]' : 'text-[#696f83]'}`} style={{ fontWeight: row.total ? 600 : 400 }}>{row.k}</span>
+              <span className={`text-[16px] ${row.total ? 'text-[#0e1b3d]' : 'text-[#696f83]'}`} style={{ fontWeight: row.total ? 600 : 400 }}>{row.k}</span>
               <span className={`text-[16px] inline-flex items-baseline gap-[4px] ${row.total ? 'text-[#1360d2]' : 'text-[#051937]'}`} style={{ fontWeight: row.total ? 700 : 500 }}><Dh /> {row.v}</span>
             </div>
           ))}
@@ -171,7 +171,7 @@ function ReviewStep({
           <button role="checkbox" aria-checked className="size-[20px] rounded-[4px] flex-shrink-0 inline-flex items-center justify-center mt-[2px]" style={{ background: '#1360d2', border: '2px solid #1360d2' }}>
             <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8l3 3 7-7" /></svg>
           </button>
-          <span className="text-[14px] text-[#455174]" style={{ fontFamily: "'Dubai', sans-serif" }}>I confirm that the information provided is true and complete to the best of my knowledge.</span>
+          <span className="text-[16px] text-[#455174]" style={{ fontFamily: "'Dubai', sans-serif" }}>I confirm that the information provided is true and complete to the best of my knowledge.</span>
         </div>
       </Card>
     </div>
@@ -190,28 +190,28 @@ export default function RaiseClaimRequestPage({ claimType, declarationNo, onBack
 
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full" style={{ fontFamily: "'Dubai', sans-serif" }}>
-      <div className="flex items-start justify-between px-[40px] pt-[24px] pb-[8px] flex-wrap gap-[12px]">
+      <div className="flex items-start justify-between px-4 sm:px-10 pt-[24px] pb-[8px] flex-wrap gap-[12px]">
         <div className="flex items-center gap-[6px]">
-          <span className="text-[14px] text-[#8f94ae]">Home</span>
+          <span className="text-[16px] text-[#8f94ae]">Home</span>
           <span className="text-[16px] text-[#dc3545]">/</span>
-          <span className="text-[14px] text-[#8f94ae]">Import By Sea</span>
+          <span className="text-[16px] text-[#8f94ae]">Import By Sea</span>
           <span className="text-[16px] text-[#dc3545]">/</span>
-          <span className="text-[14px] text-[#111838]" style={{ fontWeight: 500 }}>Integrated Clearance</span>
+          <span className="text-[16px] text-[#111838]" style={{ fontWeight: 500 }}>Integrated Clearance</span>
         </div>
         <div className="bg-[#e2ebf9] rounded-[4px] h-[28px] px-[12px] flex items-center">
-          <span className="text-[14px] text-[#0e1b3d]">A180-IMPORTER SONY GULF UAE</span>
+          <span className="text-[16px] text-[#0e1b3d]">A180-IMPORTER SONY GULF UAE</span>
         </div>
       </div>
 
-      <h1 className="px-[40px] pt-[8px] text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>Raise New Claim</h1>
+      <h1 className="px-4 sm:px-10 pt-[8px] text-2xl sm:text-3xl lg:text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>Raise New Claim</h1>
 
       {/* Stepper */}
-      <div className="px-[40px] pt-[16px]">
+      <div className="px-4 sm:px-10 pt-[16px]">
         <ClaimStepper activeIndex={stepIndex} />
       </div>
 
       {/* Step body */}
-      <div className="flex-1 overflow-y-auto px-[40px] py-[24px] flex flex-col gap-[20px]">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px] flex flex-col gap-[20px]">
         {step.id === 'claim'   && <ClaimDetailsStep values={claimValues} setValues={setClaimValues} claimType={claimType} declarationNo={declarationNo} />}
         {step.id === 'payment' && <PaymentDetailsStep values={paymentValues} setValues={setPaymentValues} />}
         {step.id === 'review'  && <ReviewStep values={claimValues} payment={paymentValues} claimType={claimType} declarationNo={declarationNo} />}
@@ -225,7 +225,7 @@ export default function RaiseClaimRequestPage({ claimType, declarationNo, onBack
         rightContent={
           <button
             onClick={next}
-            className="h-[48px] px-[28px] rounded-[4px] text-[14px] text-white transition-colors hover:bg-[#0E4DB8]"
+            className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors hover:bg-[#0E4DB8]"
             style={{ background: '#1360d2', fontFamily: "'Dubai', sans-serif", fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}
           >
             {stepIndex === STEPS.length - 1 ? 'Submit Claim' : 'Next'}

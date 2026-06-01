@@ -41,7 +41,7 @@ export default function ClaimStepper({ activeIndex }: { activeIndex: number }) {
                     {i + 1}
                   </div>
                 )}
-                <span className="text-[14px] whitespace-nowrap" style={{ color: labelColor, fontFamily: "'Dubai', sans-serif", fontWeight: 700 }}>{s.label}</span>
+                <span className="text-[16px] whitespace-nowrap" style={{ color: labelColor, fontFamily: "'Dubai', sans-serif", fontWeight: 700 }}>{s.label}</span>
               </div>
               {i < CLAIM_STEPS.length - 1 && (
                 <div className="h-[2px] w-[80px]" style={{ background: trailColor(i) }} />

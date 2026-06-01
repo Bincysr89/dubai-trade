@@ -43,7 +43,7 @@ export default function DTSelect({
         aria-haspopup="listbox"
         aria-expanded={open}
       >
-        <span className="flex-1 text-[14px]" style={{ color: selected ? '#0e1b3d' : '#697498' }}>
+        <span className="flex-1 text-[16px]" style={{ color: selected ? '#0e1b3d' : '#697498' }}>
           {selected ? selected.label : (open ? placeholder : '')}
         </span>
         <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" className={`transition-transform ${open ? 'rotate-180' : ''}`}><path d="M5 8l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -56,8 +56,8 @@ export default function DTSelect({
           transform: floated ? 'none' : 'translateY(-50%)',
           background: floated ? '#fff' : 'transparent',
           padding: floated ? '0 4px' : 0,
-          fontSize: floated ? 12 : 14,
-          color: floated ? (open ? '#1360d2' : '#0e1b3d') : '#455174',
+          fontSize: floated ? 12 : 16,
+          color: floated ? (open ? '#1360d2' : '#000') : '#000',
           transitionDuration: '120ms',
         }}
       >
@@ -79,7 +79,7 @@ export default function DTSelect({
                 role="option"
                 aria-selected={isSelected}
                 onClick={() => { onChange(opt.value); setOpen(false); }}
-                className="block w-full text-left px-[14px] py-[10px] text-[14px] transition-colors hover:bg-[#e2ebf9]"
+                className="block w-full text-left px-[14px] py-[10px] text-[16px] transition-colors hover:bg-[#e2ebf9]"
                 style={{
                   background: isSelected ? '#e2ebf9' : 'transparent',
                   color: isSelected ? '#1360d2' : '#0e1b3d',

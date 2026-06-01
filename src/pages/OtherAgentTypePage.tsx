@@ -42,7 +42,7 @@ export default function OtherAgentTypePage() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center px-[60px] py-12 bg-[#f8fafd]">
+    <div className="min-h-screen w-full flex items-center justify-center px-4 sm:px-10 lg:px-[60px] py-12 bg-[#f8fafd]">
       <div className="bg-white w-full max-w-[1280px] rounded-lg overflow-hidden shadow-2xl">
         <div className="bg-[#0e1b3d] px-6 py-5 flex items-center justify-between">
           <h2 className="text-[#f8fafd] font-medium text-[20px]">Customer List</h2>

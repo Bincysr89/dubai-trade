@@ -80,9 +80,9 @@ const SectionHeading = ({ children }: { children: React.ReactNode }) => (
 
 const Field = ({ label, value }: { label: string; value: string }) => (
   <div className="flex flex-col min-w-0 leading-tight" style={{ rowGap: 2 }}>
-    <span className="text-[14px] text-[#8f94ae]" style={{ fontFamily: "'Dubai', sans-serif", lineHeight: '18px' }}>{label}</span>
+    <span className="text-[16px] text-[#8f94ae]" style={{ fontFamily: "'Dubai', sans-serif", lineHeight: '18px' }}>{label}</span>
     <span
-      className="text-[14px] text-[#0e1b3d]"
+      className="text-[16px] text-[#0e1b3d]"
       style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, lineHeight: '20px', wordBreak: 'break-word' }}
     >
       {value}
@@ -137,25 +137,25 @@ export default function VccViewRequestPage({ onBack, requestNumber = '25365' }: 
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full">
       {/* Breadcrumb + agent badge */}
-      <div className="flex items-start justify-between px-[40px] pt-[24px] pb-[8px] flex-wrap gap-[12px]">
+      <div className="flex items-start justify-between px-4 sm:px-10 pt-[24px] pb-[8px] flex-wrap gap-[12px]">
         <div className="flex items-center gap-[6px]">
-          <span className="text-[14px] text-[#8f94ae]" style={{ fontFamily: "'Dubai', sans-serif" }}>Home</span>
+          <span className="text-[16px] text-[#8f94ae]" style={{ fontFamily: "'Dubai', sans-serif" }}>Home</span>
           <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: "'Dubai', sans-serif" }}>/</span>
-          <span className="text-[14px] text-[#8f94ae]" style={{ fontFamily: "'Dubai', sans-serif" }}>Integrated Clearance</span>
+          <span className="text-[16px] text-[#8f94ae]" style={{ fontFamily: "'Dubai', sans-serif" }}>Integrated Clearance</span>
           <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: "'Dubai', sans-serif" }}>/</span>
-          <span className="text-[14px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>View VCC Details</span>
+          <span className="text-[16px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>View VCC Details</span>
         </div>
         <div className="bg-[#e2ebf9] rounded-[4px] h-[28px] px-[12px] flex items-center">
-          <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>AE-1019056- Dubai Customs - Test LLC</span>
+          <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>AE-1019056- Dubai Customs - Test LLC</span>
         </div>
       </div>
 
-      <h1 className="px-[40px] pt-[8px] text-[32px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
+      <h1 className="px-4 sm:px-10 pt-[8px] text-2xl sm:text-3xl lg:text-[32px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
         Request #{requestNumber}
       </h1>
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto px-[40px] py-[24px] flex flex-col gap-[24px]">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px] flex flex-col gap-[24px]">
         {/* VCC Request Details */}
         <div className="bg-white rounded-[8px] px-[24px] py-[16px]" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
           <SectionHeading>VCC Request Details</SectionHeading>
@@ -187,12 +187,12 @@ export default function VccViewRequestPage({ onBack, requestNumber = '25365' }: 
               <tbody>
                 {CHARGES.map((c, i) => (
                   <tr key={i}>
-                    <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[14px] text-[#0e1b3d]">{c.ser}</span></td>
-                    <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[14px] text-[#0e1b3d]">{c.type}</span></td>
-                    <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[14px] text-[#0e1b3d]">{c.mode}</span></td>
-                    <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[14px] text-[#0e1b3d] inline-flex items-baseline gap-[4px]"><Dh /> {c.amount}</span></td>
-                    <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[14px] text-[#0e1b3d]">{c.account}</span></td>
-                    <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><a className="text-[14px] text-[#1360d2] hover:underline" href="#">{c.ref}</a></td>
+                    <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[16px] text-[#0e1b3d]">{c.ser}</span></td>
+                    <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[16px] text-[#0e1b3d]">{c.type}</span></td>
+                    <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[16px] text-[#0e1b3d]">{c.mode}</span></td>
+                    <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[16px] text-[#0e1b3d] inline-flex items-baseline gap-[4px]"><Dh /> {c.amount}</span></td>
+                    <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[16px] text-[#0e1b3d]">{c.account}</span></td>
+                    <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><a className="text-[16px] text-[#1360d2] hover:underline" href="#">{c.ref}</a></td>
                   </tr>
                 ))}
               </tbody>
@@ -236,7 +236,7 @@ export default function VccViewRequestPage({ onBack, requestNumber = '25365' }: 
                     <Checkbox checked={allChecked} indeterminate={someChecked} onChange={toggleAll} />
                   </th>
                   {['VCC Number', 'Chassis No.', 'Engine No.', 'Brand', 'Make', 'Model Year', 'VCC Date', 'VCC Status', 'Declaration Type', 'Remarks', 'Action'].map((h) => (
-                    <th key={h} className="text-[14px]" style={{ textAlign: h === 'Action' ? 'center' : 'left' }}>{h}</th>
+                    <th key={h} className="text-[16px]" style={{ textAlign: h === 'Action' ? 'center' : 'left' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -249,22 +249,22 @@ export default function VccViewRequestPage({ onBack, requestNumber = '25365' }: 
                       <td>
                         <Checkbox checked={checked} onChange={() => toggleOne(v.vccNo)} />
                       </td>
-                      <td><button type="button" onClick={() => setOpenVccNo(v.vccNo)} className="text-[14px] text-[#1360d2] hover:underline" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>{v.vccNo}</button></td>
-                      <td><span className="text-[14px] text-[#0e1b3d]">{v.chassis}</span></td>
-                      <td><span className="text-[14px] text-[#0e1b3d]">{v.engine}</span></td>
+                      <td><button type="button" onClick={() => setOpenVccNo(v.vccNo)} className="text-[16px] text-[#1360d2] hover:underline" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>{v.vccNo}</button></td>
+                      <td><span className="text-[16px] text-[#0e1b3d]">{v.chassis}</span></td>
+                      <td><span className="text-[16px] text-[#0e1b3d]">{v.engine}</span></td>
                       <td style={{ maxWidth: 320 }}>
-                        <span className="text-[14px] text-[#0e1b3d]" style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={v.brand}>{v.brand}</span>
+                        <span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={v.brand}>{v.brand}</span>
                       </td>
-                      <td><span className="text-[14px] text-[#0e1b3d]">{v.make}</span></td>
-                      <td><span className="text-[14px] text-[#0e1b3d]">{v.year}</span></td>
-                      <td><span className="text-[14px] text-[#0e1b3d] whitespace-nowrap">{v.vccDate}</span></td>
+                      <td><span className="text-[16px] text-[#0e1b3d]">{v.make}</span></td>
+                      <td><span className="text-[16px] text-[#0e1b3d]">{v.year}</span></td>
+                      <td><span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{v.vccDate}</span></td>
                       <td>
-                        <span className="text-[14px] font-medium inline-flex items-center justify-center whitespace-nowrap" style={{ background: st.bg, color: st.color, padding: '4px 12px', borderRadius: 4, lineHeight: '20px' }}>
+                        <span className="text-[16px] font-medium inline-flex items-center justify-center whitespace-nowrap" style={{ background: st.bg, color: st.color, padding: '4px 12px', borderRadius: 4, lineHeight: '20px' }}>
                           {v.status}
                         </span>
                       </td>
-                      <td><span className="text-[14px] text-[#0e1b3d] whitespace-nowrap">{v.declType}</span></td>
-                      <td><span className="text-[14px] text-[#0e1b3d]">{v.remarks}</span></td>
+                      <td><span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{v.declType}</span></td>
+                      <td><span className="text-[16px] text-[#0e1b3d]">{v.remarks}</span></td>
                       <td style={{ textAlign: 'center', position: 'relative' }}>
                         <div className="relative inline-block" ref={actionMenuFor === v.vccNo ? actionMenuRef : undefined}>
                           <button
@@ -298,7 +298,7 @@ export default function VccViewRequestPage({ onBack, requestNumber = '25365' }: 
                                     <path d="M10 3v10" /><path d="M5 9l5 5 5-5" /><path d="M3 17h14" />
                                   </svg>
                                 </span>
-                                <span className="text-[14px] text-[#111838] group-hover:text-white leading-[20px]">Download VCC</span>
+                                <span className="text-[16px] text-[#111838] group-hover:text-white leading-[20px]">Download VCC</span>
                               </button>
                               <button
                                 onClick={() => { setActionMenuFor(null); setHistoryVccNo(v.vccNo); }}
@@ -310,7 +310,7 @@ export default function VccViewRequestPage({ onBack, requestNumber = '25365' }: 
                                     <path d="M10 6v4l2.5 2" />
                                   </svg>
                                 </span>
-                                <span className="text-[14px] text-[#111838] group-hover:text-white leading-[20px]">Audit History</span>
+                                <span className="text-[16px] text-[#111838] group-hover:text-white leading-[20px]">Audit History</span>
                               </button>
                             </div>
                           )}

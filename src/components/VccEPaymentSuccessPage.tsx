@@ -4,13 +4,11 @@ import BackToListingBar from './BackToListingBar';
 type Props = {
   onBackToListing: () => void;
   requestNumber?: string;
-  vccCount?: number;
 };
 
-export default function VccPaymentSuccessPage({
+export default function VccEPaymentSuccessPage({
   onBackToListing,
-  requestNumber = '25365',
-  vccCount = 2,
+  requestNumber = '12345',
 }: Props) {
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full">
@@ -57,16 +55,16 @@ export default function VccPaymentSuccessPage({
             className="text-center text-[26px] text-[#0e1b3d]"
             style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 700, lineHeight: 1.3 }}
           >
-            VCC Request Created - Payment Confirmation
+            VCC Request Received - ePayment Processing
           </p>
 
-          {/* Content block — Request Number 20px, line-height 1.9 */}
+          {/* Content block — same style as credit/debit success */}
           <div
             className="text-center text-[#0e1b3d] max-w-[640px]"
             style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 400, lineHeight: 1.9 }}
           >
             <span style={{ fontSize: 16 }}>
-              Your VCC request is accepted and {vccCount} VCC&apos;s generated successfully.
+              Your request has been received. Your ePayment transaction is under processing and will be completed shortly.
             </span>
             <br />
             <span style={{ fontSize: 20, fontWeight: 700 }}>
@@ -74,11 +72,11 @@ export default function VccPaymentSuccessPage({
             </span>
             <br />
             <span style={{ fontSize: 16 }}>
-              Please download the digital VCC from listing page. In case VCC&apos;s are not found, please try after sometime by searching with your request number.
+              You can download digital VCC from the listing page with request number after successful ePayment processing.
             </span>
           </div>
 
-          {/* Action buttons — no Download VCC */}
+          {/* Action buttons — Share + Back to Listing, matching credit success */}
           <div className="flex flex-wrap gap-[16px] justify-center pt-[8px]">
             <button
               className="h-[48px] px-[20px] inline-flex items-center justify-center gap-[8px] rounded-[4px] border border-[#1360d2] bg-white text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
@@ -92,7 +90,6 @@ export default function VccPaymentSuccessPage({
                 <path d="M7 9l6-3M7 11l6 3" />
               </svg>
             </button>
-
             <button
               onClick={onBackToListing}
               className="h-[48px] px-[20px] rounded-[4px] bg-[#1360d2] text-white hover:bg-[#0E4DB8] transition-colors"

@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  font-size: 16px;
+}
+
 html, body, #root {
   height: 100%;
   margin: 0;
@@ -9,8 +13,13 @@ html, body, #root {
 
 body {
   font-family: 'Dubai', 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 16px;
   background: #f8fafd;
   color: #0e1b3d;
+}
+
+label {
+  color: #000;
 }
 
 /* Thin scrollbar for service columns */

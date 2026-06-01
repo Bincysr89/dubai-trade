@@ -65,7 +65,7 @@ export default function VccListPopup({ row, onClose }: Props) {
               <thead>
                 <tr style={{ background: '#e2ebf9' }}>
                   {['VCC No.', 'Chassis No.', 'Engine No.', 'Brand', 'Make', 'Year', 'VCC Date', 'Status'].map((h) => (
-                    <th key={h} className="text-left text-[14px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
+                    <th key={h} className="text-left text-[16px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -74,15 +74,15 @@ export default function VccListPopup({ row, onClose }: Props) {
                   const st = STATUS_STYLE[r.status];
                   return (
                     <tr key={r.vccNo} style={{ borderTop: '1px solid #eef1f6' }}>
-                      <td className="text-[14px] text-[#1360d2]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>{r.vccNo}</td>
-                      <td className="text-[14px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{r.chassis}</td>
-                      <td className="text-[14px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{r.engine}</td>
-                      <td className="text-[14px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{r.brand}</td>
-                      <td className="text-[14px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{r.make}</td>
-                      <td className="text-[14px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{r.year}</td>
-                      <td className="text-[14px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{r.vccDate}</td>
+                      <td className="text-[16px] text-[#1360d2]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>{r.vccNo}</td>
+                      <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{r.chassis}</td>
+                      <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{r.engine}</td>
+                      <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{r.brand}</td>
+                      <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{r.make}</td>
+                      <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{r.year}</td>
+                      <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{r.vccDate}</td>
                       <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>
-                        <span className="text-[13px] font-medium inline-flex items-center" style={{ background: st.bg, color: st.color, padding: '4px 10px', borderRadius: 4 }}>
+                        <span className="text-[16px] font-medium inline-flex items-center" style={{ background: st.bg, color: st.color, padding: '4px 10px', borderRadius: 4 }}>
                           {r.status}
                         </span>
                       </td>
