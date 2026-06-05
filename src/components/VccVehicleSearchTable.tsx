@@ -116,8 +116,8 @@ export default function VccVehicleSearchTable({ searchTerm, searchType, onViewRe
                 key={h}
                 className="text-[16px]"
                 style={{
-                  background: '#e2ebf9',
-                  color: '#455174',
+                  background: '#a7c2e9',
+                  color: '#000',
                   fontWeight: 500,
                   textAlign: 'left',
                   padding: '10px 12px',
@@ -132,7 +132,7 @@ export default function VccVehicleSearchTable({ searchTerm, searchType, onViewRe
               className="text-[16px]"
               style={{
                 position: 'sticky', right: STICKY_ACTION_W, width: STICKY_STATUS_W, minWidth: STICKY_STATUS_W,
-                background: '#e2ebf9', color: '#455174', fontWeight: 500, textAlign: 'left',
+                background: '#a7c2e9', color: '#000', fontWeight: 500, textAlign: 'left',
                 padding: '10px 12px', whiteSpace: 'nowrap', letterSpacing: '0.07px',
                 boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2,
               }}
@@ -141,7 +141,7 @@ export default function VccVehicleSearchTable({ searchTerm, searchType, onViewRe
               className="text-[16px]"
               style={{
                 position: 'sticky', right: 0, width: STICKY_ACTION_W, minWidth: STICKY_ACTION_W,
-                background: '#e2ebf9', color: '#455174', fontWeight: 500, textAlign: 'center',
+                background: '#a7c2e9', color: '#000', fontWeight: 500, textAlign: 'center',
                 padding: '10px 12px', whiteSpace: 'nowrap', letterSpacing: '0.07px',
                 borderTopRightRadius: 8, borderBottomRightRadius: 8, zIndex: 2,
               }}

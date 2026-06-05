@@ -40,16 +40,14 @@ const VCC_DETAILS_MAP: Record<string, VccDetails> = {
 type Props = { onBack: () => void; requestNumber?: string };
 
 const REQUEST_DETAILS: { label: string; value: string }[] = [
-  { label: 'Request No.',        value: '25365' },
-  { label: 'Declaration No.',    value: '1030001766425' },
+  { label: 'Request No.',        value: '213233' },
   { label: 'Request Date',       value: '04-05-2026' },
+  { label: 'Declaration No.',    value: '1030001766425' },
   { label: 'Declaration Date',   value: '17-10-2025' },
+  { label: 'Declaration Type',   value: 'Re-Export to ROW' },
   { label: 'Request Type',       value: 'New VCC Request' },
-  { label: 'Delivery Mode',      value: 'Hand delivery' },
   { label: 'Request Status',     value: 'Under Processing' },
-  { label: 'Shipment Ref No.',   value: '-' },
   { label: 'Requested For',      value: 'AE-8123187 - VIKRAM SINGH CTO GULF DENIM LIMITED (L.L.C)' },
-  { label: 'Delivery Address',   value: '-' },
   { label: 'Requested By',       value: 'AE-8123109 - SWBRO01 M&M Private L.L.C' },
   { label: 'Remarks',            value: '-' },
   { label: 'No. of Vehicle(s)',  value: '2' },
@@ -175,8 +173,8 @@ export default function VccViewRequestPage({ onBack, requestNumber = '25365' }: 
                     <th
                       key={h}
                       style={{
-                        background: '#e2ebf9', padding: '12px', textAlign: 'left', fontWeight: 500,
-                        color: '#455174', fontSize: 14, letterSpacing: '0.07px',
+                        background: '#a7c2e9', padding: '12px', textAlign: 'left', fontWeight: 500,
+                        color: '#000', fontSize: 14, letterSpacing: '0.07px',
                         borderTopLeftRadius: i === 0 ? 6 : 0,
                         borderTopRightRadius: i === arr.length - 1 ? 6 : 0,
                       }}
@@ -192,7 +190,7 @@ export default function VccViewRequestPage({ onBack, requestNumber = '25365' }: 
                     <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[16px] text-[#0e1b3d]">{c.mode}</span></td>
                     <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[16px] text-[#0e1b3d] inline-flex items-baseline gap-[4px]"><Dh /> {c.amount}</span></td>
                     <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[16px] text-[#0e1b3d]">{c.account}</span></td>
-                    <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><a className="text-[16px] text-[#1360d2] hover:underline" href="#">{c.ref}</a></td>
+                    <td style={{ padding: '14px 12px', borderBottom: '1px solid #f0f3fa' }}><span className="text-[16px] text-[#0e1b3d]">{c.ref}</span></td>
                   </tr>
                 ))}
               </tbody>
@@ -235,7 +233,7 @@ export default function VccViewRequestPage({ onBack, requestNumber = '25365' }: 
                   <th style={{ width: 48 }}>
                     <Checkbox checked={allChecked} indeterminate={someChecked} onChange={toggleAll} />
                   </th>
-                  {['VCC Number', 'Chassis No.', 'Engine No.', 'Brand', 'Make', 'Model Year', 'VCC Date', 'VCC Status', 'Declaration Type', 'Remarks', 'Action'].map((h) => (
+                  {['VCC Number', 'Chassis No.', 'Engine No.', 'Brand', 'Make', 'Model Year', 'VCC Date', 'VCC Status', 'Remarks', 'Action'].map((h) => (
                     <th key={h} className="text-[16px]" style={{ textAlign: h === 'Action' ? 'center' : 'left' }}>{h}</th>
                   ))}
                 </tr>
@@ -263,7 +261,6 @@ export default function VccViewRequestPage({ onBack, requestNumber = '25365' }: 
                           {v.status}
                         </span>
                       </td>
-                      <td><span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{v.declType}</span></td>
                       <td><span className="text-[16px] text-[#0e1b3d]">{v.remarks}</span></td>
                       <td style={{ textAlign: 'center', position: 'relative' }}>
                         <div className="relative inline-block" ref={actionMenuFor === v.vccNo ? actionMenuRef : undefined}>

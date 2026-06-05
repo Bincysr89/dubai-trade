@@ -28,6 +28,12 @@ import CargoTransferDocumentPage from './CargoTransferDocumentPage';
 import CargoTransferStepperPage from './CargoTransferStepperPage';
 import CargoTransferPaymentReviewPage from './CargoTransferPaymentReviewPage';
 import CargoTransferViewPage from './CargoTransferViewPage';
+import CargoTransferCancelFlow from './CargoTransferCancelFlow';
+import CargoTransferHistoryPage from './CargoTransferHistoryPage';
+import SuspensionHistoryPage from './SuspensionHistoryPage';
+import SuspensionHistoryViewPage from './SuspensionHistoryViewPage';
+import SuspensionResponsePage from './SuspensionResponsePage';
+import SuspensionSuccessModal from './SuspensionSuccessModal';
 import ClaimSubmittedSuccessPage from './ClaimSubmittedSuccessPage';
 // @ts-ignore
 import importBySeaSrc from '../assets/importbysea.svg';
@@ -149,8 +155,12 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
   const [vccStep, setVccStep] = useState<'list' | 'create' | 'searchResult' | 'amend' | 'viewRequest' | 'paymentSuccess' | 'ePaymentPending' | 'ePaymentSuccess' | 'auditHistory' | 'declarationView'>('list');
   const [vccListPopupRow, setVccListPopupRow] = useState<VccRow | null>(null);
   const [vccDeclNo, setVccDeclNo] = useState<string>('');
-  const [cargoStep, setCargoStep] = useState<'list' | 'pre' | 'create' | 'amend' | 'success' | 'amendSuccess' | 'document' | 'stepper' | 'paymentReview' | 'viewRequest'>('list');
+  const [cargoStep, setCargoStep] = useState<'list' | 'pre' | 'create' | 'amend' | 'success' | 'amendSuccess' | 'document' | 'stepper' | 'paymentReview' | 'viewRequest' | 'cancel' | 'cargoHistory' | 'suspensionHistory' | 'suspensionHistoryView' | 'suspensionResponse'>('list');
+  const [showSuspensionSuccess, setShowSuspensionSuccess] = useState(false);
+  const [suspensionHistoryFrom, setSuspensionHistoryFrom] = useState<'list' | 'cargoHistory'>('list');
   const [cargoFlowMode, setCargoFlowMode] = useState<'create' | 'amend'>('create');
+  const [cargoTransferNumber, setCargoTransferNumber] = useState('');
+  const [stepperReturnStep, setStepperReturnStep] = useState(0);
   const [cargoPreValues, setCargoPreValues] = useState<{ cargoChannel: string; clientRef: string; carrierReg: string; transferType: string }>({ cargoChannel: 'Sea', clientRef: '', carrierReg: '', transferType: '' });
   const [cargoFormValues, setCargoFormValues] = useState<{ clientRef: string; carrierReg: string; mawb: string; transferorBizCode: string; transferorPremCode: string; transfereeBizCode: string; transfereePremCode: string }>({ clientRef: '', carrierReg: '', mawb: '', transferorBizCode: '', transferorPremCode: '', transfereeBizCode: '', transfereePremCode: '' });
   type ClaimSubStep = 'list' | 'eligible' | 'refundType' | 'outbound' | 'missingDoc' | 'documents' | 'payment' | 'success';
@@ -382,16 +392,25 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               onBack={() => setCargoStep('list')}
               onStartJourney={(values) => { setCargoPreValues(values); setCargoStep('create'); }}
               initialValues={cargoFlowMode === 'amend' ? cargoPreValues : undefined}
+              mode={cargoFlowMode}
+              transferNumber={cargoTransferNumber}
             />
           )}
           {cargoStep === 'create' && (
             <CargoTransferNewRequestPage
               onBack={() => setCargoStep('pre')}
-              onSave={(values) => { setCargoFormValues(values); setCargoStep('stepper'); }}
+              onSave={(values) => { setCargoFormValues(values); setStepperReturnStep(0); setCargoStep('stepper'); }}
               initialCargoChannel={cargoPreValues.cargoChannel}
               initialClientRef={cargoPreValues.clientRef}
               initialCarrierReg={cargoPreValues.carrierReg}
+              initialMawb={cargoFormValues.mawb}
+              initialTransferorBizCode={cargoFormValues.transferorBizCode}
+              initialTransferorPremCode={cargoFormValues.transferorPremCode}
+              initialTransfereeBizCode={cargoFormValues.transfereeBizCode}
+              initialTransfereePremCode={cargoFormValues.transfereePremCode}
               initialTransferType={cargoPreValues.transferType}
+              mode={cargoFlowMode}
+              transferNumber={cargoTransferNumber}
             />
           )}
           {cargoStep === 'document' && (
@@ -403,9 +422,12 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           {cargoStep === 'stepper' && (
             <CargoTransferStepperPage
               onBack={() => setCargoStep('create')}
-              onSubmit={() => setCargoStep('paymentReview')}
+              onSubmit={() => { setStepperReturnStep(cargoFlowMode === 'amend' ? 4 : 3); setCargoStep('paymentReview'); }}
+              onSaveExit={() => setCargoStep('list')}
               mode={cargoFlowMode}
+              initialStep={stepperReturnStep}
               initTransferType={cargoPreValues.transferType}
+              initTransferNumber={cargoTransferNumber}
               initCargoChannel={cargoPreValues.cargoChannel}
               initClientRef={cargoFormValues.clientRef}
               initCarrierReg={cargoFormValues.carrierReg}
@@ -418,21 +440,70 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           )}
           {cargoStep === 'paymentReview' && (
             <CargoTransferPaymentReviewPage
-              onBack={() => setCargoStep(cargoFlowMode === 'amend' ? 'amend' : 'stepper')}
+              onBack={() => setCargoStep('stepper')}
               onSubmit={() => setCargoStep(cargoFlowMode === 'amend' ? 'amendSuccess' : 'success')}
+              onSaveExit={() => { setStepperReturnStep(0); setCargoStep('list'); }}
+              mode={cargoFlowMode}
+              onViewRequest={() => setCargoStep('viewRequest')}
+              transferType={cargoPreValues.transferType}
+              transferNumber={cargoTransferNumber}
             />
           )}
           {cargoStep === 'viewRequest' && (
             <CargoTransferViewPage
               onBack={() => setCargoStep('list')}
               onSubmit={() => setCargoStep(cargoFlowMode === 'amend' ? 'amendSuccess' : 'success')}
+              transferNumber={cargoTransferNumber}
+              onRefresh={() => setCargoStep('viewRequest')}
             />
           )}
           {cargoStep === 'success' && (
             <CargoTransferSuccessPage mode="create" onBack={() => setCargoStep('list')} onViewDetails={() => setCargoStep('viewRequest')} />
           )}
           {cargoStep === 'amendSuccess' && (
-            <CargoTransferSuccessPage mode="amend" onBack={() => setCargoStep('list')} onViewDetails={() => setCargoStep('viewRequest')} />
+            <CargoTransferSuccessPage mode="amend" transferType={cargoPreValues.transferType} transferNumber={cargoTransferNumber} onBack={() => setCargoStep('list')} onViewDetails={() => setCargoStep('viewRequest')} />
+          )}
+          {cargoStep === 'cancel' && (
+            <CargoTransferCancelFlow onBack={() => setCargoStep('list')} />
+          )}
+          {cargoStep === 'cargoHistory' && (
+            <CargoTransferHistoryPage
+              onBack={() => setCargoStep('list')}
+              onSuspensionHistory={() => { setSuspensionHistoryFrom('cargoHistory'); setCargoStep('suspensionHistory'); }}
+              onSuspensionResponse={() => setCargoStep('suspensionResponse')}
+              onViewRequest={() => setCargoStep('viewRequest')}
+              onAmend={() => {
+                setCargoPreValues({ transferType: 'From CTO to CH - Same Location', cargoChannel: 'Sea', clientRef: 'CT-2024-00112', carrierReg: 'AE-9876543' });
+                setCargoFormValues({ clientRef: 'CT-2024-00112', carrierReg: 'AE-9876543', mawb: 'AWB-987654321', transferorBizCode: 'AE-1019056', transferorPremCode: 'PRE-001', transfereeBizCode: 'AE-1019057', transfereePremCode: 'PRE-002' });
+                setCargoFlowMode('amend');
+                setCargoTransferNumber('601001745352');
+                setCargoStep('pre');
+              }}
+              onCancel={() => setCargoStep('cancel')}
+            />
+          )}
+          {cargoStep === 'suspensionHistory' && (
+            <SuspensionHistoryPage
+              onBack={() => setCargoStep(suspensionHistoryFrom)}
+              onView={() => setCargoStep('suspensionHistoryView')}
+            />
+          )}
+          {cargoStep === 'suspensionHistoryView' && (
+            <SuspensionHistoryViewPage
+              onBack={() => setCargoStep('suspensionHistory')}
+            />
+          )}
+          {cargoStep === 'suspensionResponse' && (
+            <SuspensionResponsePage
+              onBack={() => setCargoStep('cargoHistory')}
+              onSubmit={() => setShowSuspensionSuccess(true)}
+            />
+          )}
+          {showSuspensionSuccess && (
+            <SuspensionSuccessModal
+              onClose={() => { setShowSuspensionSuccess(false); setCargoStep('cargoHistory'); }}
+              onBackToListing={() => { setShowSuspensionSuccess(false); setCargoStep('list'); }}
+            />
           )}
         </div>
       </div>
@@ -898,7 +969,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                 className="size-[28px] flex items-center justify-center rounded hover:bg-[#f0f4ff] transition-colors"
               >
                 <img
-                  src="https://www.figma.com/api/mcp/asset/f8d15f0b-a626-4a91-9f19-e9a8abad7112"
+                  src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNjk3NDk4IiBzdHJva2Utd2lkdGg9IjEuOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48cGF0aCBkPSJNMiAybDE0IDE0TTE2IDJMMiAxNiIvPjwvc3ZnPg=="
                   alt="Close"
                   className="size-[18px]"
                 />
@@ -990,7 +1061,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                     >
                       <span style={floatLabel(isFloated('ackFromDate'))}><span style={{ color: '#e8212e' }}>*</span>From Date</span>
                       <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ackFromDate'] || '23-Aug-25'}</span>
-                      <img src="https://www.figma.com/api/mcp/asset/08e2d6c0-9c2f-47ea-bd6b-8226369056e8" alt="" className="absolute right-[12px] size-[20px]" />
+                      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNjk3NDk4IiBzdHJva2Utd2lkdGg9IjEuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIyIiB5PSI0IiB3aWR0aD0iMTYiIGhlaWdodD0iMTQiIHJ4PSIyIi8+PHBhdGggZD0iTTYgMnY0TTE0IDJ2NE0yIDloMTYiLz48L3N2Zz4=" alt="" className="absolute right-[12px] size-[20px]" />
                     </div>
                   </div>
 
@@ -1004,7 +1075,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                     >
                       <span style={floatLabel(isFloated('ackToDate'))}><span style={{ color: '#e8212e' }}>*</span>To Date</span>
                       <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ackToDate'] || '23-Sep-25'}</span>
-                      <img src="https://www.figma.com/api/mcp/asset/08e2d6c0-9c2f-47ea-bd6b-8226369056e8" alt="" className="absolute right-[12px] size-[20px]" />
+                      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNjk3NDk4IiBzdHJva2Utd2lkdGg9IjEuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIyIiB5PSI0IiB3aWR0aD0iMTYiIGhlaWdodD0iMTQiIHJ4PSIyIi8+PHBhdGggZD0iTTYgMnY0TTE0IDJ2NE0yIDloMTYiLz48L3N2Zz4=" alt="" className="absolute right-[12px] size-[20px]" />
                     </div>
                   </div>
                 </>
@@ -1020,7 +1091,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                     >
                       <span style={floatLabel(isFloated('vccDateFrom'))}><span style={{ color: '#e8212e' }}>*</span>Request Date From</span>
                       <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['vccDateFrom'] || ''}</span>
-                      <img src="https://www.figma.com/api/mcp/asset/08e2d6c0-9c2f-47ea-bd6b-8226369056e8" alt="" className="absolute right-[12px] size-[20px]" />
+                      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNjk3NDk4IiBzdHJva2Utd2lkdGg9IjEuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIyIiB5PSI0IiB3aWR0aD0iMTYiIGhlaWdodD0iMTQiIHJ4PSIyIi8+PHBhdGggZD0iTTYgMnY0TTE0IDJ2NE0yIDloMTYiLz48L3N2Zz4=" alt="" className="absolute right-[12px] size-[20px]" />
                     </div>
                   </div>
 
@@ -1034,7 +1105,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                     >
                       <span style={floatLabel(isFloated('vccDateTo'))}><span style={{ color: '#e8212e' }}>*</span>Request Date To</span>
                       <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['vccDateTo'] || ''}</span>
-                      <img src="https://www.figma.com/api/mcp/asset/08e2d6c0-9c2f-47ea-bd6b-8226369056e8" alt="" className="absolute right-[12px] size-[20px]" />
+                      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNjk3NDk4IiBzdHJva2Utd2lkdGg9IjEuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIyIiB5PSI0IiB3aWR0aD0iMTYiIGhlaWdodD0iMTQiIHJ4PSIyIi8+PHBhdGggZD0iTTYgMnY0TTE0IDJ2NE0yIDloMTYiLz48L3N2Zz4=" alt="" className="absolute right-[12px] size-[20px]" />
                     </div>
                   </div>
 
@@ -1222,7 +1293,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                     >
                       <span style={floatLabel(isFloated('rcFromDate'))}>From Date</span>
                       <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcFromDate'] || ''}</span>
-                      <img src="https://www.figma.com/api/mcp/asset/08e2d6c0-9c2f-47ea-bd6b-8226369056e8" alt="" className="absolute right-[12px] size-[20px]" />
+                      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNjk3NDk4IiBzdHJva2Utd2lkdGg9IjEuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIyIiB5PSI0IiB3aWR0aD0iMTYiIGhlaWdodD0iMTQiIHJ4PSIyIi8+PHBhdGggZD0iTTYgMnY0TTE0IDJ2NE0yIDloMTYiLz48L3N2Zz4=" alt="" className="absolute right-[12px] size-[20px]" />
                     </div>
                   </div>
 
@@ -1236,7 +1307,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                     >
                       <span style={floatLabel(isFloated('rcToDate'))}>To Date</span>
                       <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcToDate'] || ''}</span>
-                      <img src="https://www.figma.com/api/mcp/asset/08e2d6c0-9c2f-47ea-bd6b-8226369056e8" alt="" className="absolute right-[12px] size-[20px]" />
+                      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNjk3NDk4IiBzdHJva2Utd2lkdGg9IjEuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIyIiB5PSI0IiB3aWR0aD0iMTYiIGhlaWdodD0iMTQiIHJ4PSIyIi8+PHBhdGggZD0iTTYgMnY0TTE0IDJ2NE0yIDloMTYiLz48L3N2Zz4=" alt="" className="absolute right-[12px] size-[20px]" />
                     </div>
                   </div>
 
@@ -1313,7 +1384,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               ) : activeMenu === 'Cargo Transfer' ? (
               <>
 
-              {/* Cargo Channel — dropdown */}
+              {/* Cargo Channel (inbound) — dropdown */}
               <div className="relative">
                 <div
                   tabIndex={0}
@@ -1321,10 +1392,24 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   onClick={() => focusField('ctCargoChannel')}
                   onBlur={() => blurField('ctCargoChannel')}
                 >
-                  <span style={floatLabel(isFloated('ctCargoChannel'))}>Cargo Channel</span>
+                  <span style={floatLabel(isFloated('ctCargoChannel'))}>Cargo Channel (inbound)</span>
                   <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ctCargoChannel'] || ''}</span>
                   <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
                 </div>
+              </div>
+
+              {/* Carrier Reg No.(inbound) — text input */}
+              <div className="relative">
+                <input
+                  type="text"
+                  value={filterValues['ctCarrierReg'] || ''}
+                  onChange={e => setFilterValues(v => ({ ...v, ctCarrierReg: e.target.value }))}
+                  onFocus={() => focusField('ctCarrierReg')}
+                  onBlur={() => blurField('ctCarrierReg')}
+                  className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['ctCarrierReg'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
+                  style={{ fontFamily: "'Dubai', sans-serif" }}
+                />
+                <span style={floatLabel(isFloated('ctCarrierReg'))}>Carrier Reg No.(inbound)</span>
               </div>
 
               {/* Cargo Transfer Type — dropdown */}
@@ -1393,7 +1478,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                 >
                   <span style={floatLabel(isFloated('ctFromDate'))}><span style={{ color: '#e8212e' }}>*</span>From Date (15 days)</span>
                   <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ctFromDate'] || ''}</span>
-                  <img src="https://www.figma.com/api/mcp/asset/08e2d6c0-9c2f-47ea-bd6b-8226369056e8" alt="" className="absolute right-[12px] size-[20px]" />
+                  <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNjk3NDk4IiBzdHJva2Utd2lkdGg9IjEuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIyIiB5PSI0IiB3aWR0aD0iMTYiIGhlaWdodD0iMTQiIHJ4PSIyIi8+PHBhdGggZD0iTTYgMnY0TTE0IDJ2NE0yIDloMTYiLz48L3N2Zz4=" alt="" className="absolute right-[12px] size-[20px]" />
                 </div>
               </div>
 
@@ -1407,40 +1492,22 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                 >
                   <span style={floatLabel(isFloated('ctToDate'))}><span style={{ color: '#e8212e' }}>*</span>To Date</span>
                   <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ctToDate'] || ''}</span>
-                  <img src="https://www.figma.com/api/mcp/asset/08e2d6c0-9c2f-47ea-bd6b-8226369056e8" alt="" className="absolute right-[12px] size-[20px]" />
+                  <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNjk3NDk4IiBzdHJva2Utd2lkdGg9IjEuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIyIiB5PSI0IiB3aWR0aD0iMTYiIGhlaWdodD0iMTQiIHJ4PSIyIi8+PHBhdGggZD0iTTYgMnY0TTE0IDJ2NE0yIDloMTYiLz48L3N2Zz4=" alt="" className="absolute right-[12px] size-[20px]" />
                 </div>
               </div>
 
-              {/* Carrier Registration No. — text input */}
+              {/* Broker Code — text input */}
               <div className="relative">
                 <input
                   type="text"
-                  value={filterValues['ctCarrierReg'] || ''}
-                  onChange={e => setFilterValues(v => ({ ...v, ctCarrierReg: e.target.value }))}
-                  onFocus={() => focusField('ctCarrierReg')}
-                  onBlur={() => blurField('ctCarrierReg')}
-                  className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['ctCarrierReg'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
+                  value={filterValues['ctBrokerCode'] || ''}
+                  onChange={e => setFilterValues(v => ({ ...v, ctBrokerCode: e.target.value }))}
+                  onFocus={() => focusField('ctBrokerCode')}
+                  onBlur={() => blurField('ctBrokerCode')}
+                  className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['ctBrokerCode'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
                   style={{ fontFamily: "'Dubai', sans-serif" }}
                 />
-                <span style={floatLabel(isFloated('ctCarrierReg'))}>Carrier Registration No.</span>
-              </div>
-
-              {/* Importer Code / Broker Code — disabled */}
-              <div className="relative">
-                <div
-                  className="h-[56px] border border-[#d5ddfb] rounded-[4px] flex items-center px-[12px] cursor-not-allowed"
-                  style={{ background: '#e8e8e8' }}
-                >
-                  <span
-                    style={{
-                      position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
-                      fontSize: 14, color: '#aaa', background: 'transparent', pointerEvents: 'none',
-                      fontFamily: "'Dubai', sans-serif", whiteSpace: 'nowrap',
-                    }}
-                  >
-                    Importer Code / Broker Code
-                  </span>
-                </div>
+                <span style={floatLabel(isFloated('ctBrokerCode'))}>Broker Code</span>
               </div>
 
               </>
@@ -1527,7 +1594,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                 >
                   <span style={floatLabel(isFloated('fromDate'))}><span style={{ color: '#e8212e' }}>*</span>From Date (15 days)</span>
                   <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['fromDate'] || ''}</span>
-                  <img src="https://www.figma.com/api/mcp/asset/08e2d6c0-9c2f-47ea-bd6b-8226369056e8" alt="" className="absolute right-[12px] size-[20px]" />
+                  <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNjk3NDk4IiBzdHJva2Utd2lkdGg9IjEuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIyIiB5PSI0IiB3aWR0aD0iMTYiIGhlaWdodD0iMTQiIHJ4PSIyIi8+PHBhdGggZD0iTTYgMnY0TTE0IDJ2NE0yIDloMTYiLz48L3N2Zz4=" alt="" className="absolute right-[12px] size-[20px]" />
                 </div>
               </div>
 
@@ -1541,7 +1608,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                 >
                   <span style={floatLabel(isFloated('toDate'))}><span style={{ color: '#e8212e' }}>*</span>To Date</span>
                   <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['toDate'] || ''}</span>
-                  <img src="https://www.figma.com/api/mcp/asset/08e2d6c0-9c2f-47ea-bd6b-8226369056e8" alt="" className="absolute right-[12px] size-[20px]" />
+                  <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNjk3NDk4IiBzdHJva2Utd2lkdGg9IjEuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIyIiB5PSI0IiB3aWR0aD0iMTYiIGhlaWdodD0iMTQiIHJ4PSIyIi8+PHBhdGggZD0iTTYgMnY0TTE0IDJ2NE0yIDloMTYiLz48L3N2Zz4=" alt="" className="absolute right-[12px] size-[20px]" />
                 </div>
               </div>
 
@@ -1705,16 +1772,22 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               onVccCountOpen={(row) => setVccListPopupRow(row)}
               onDeclarationOpen={(declNo) => { setVccDeclNo(declNo); setVccStep('declarationView'); }}
               externalStatus={toolbarStatus}
+              showDrafts={showDrafts}
             />
           )
         ) : activeMenu === 'Cargo Transfer' ? (
           <CargoTransferTable
             showDrafts={showDrafts}
             onViewRequest={() => setCargoStep('viewRequest')}
+            onCancel={() => setCargoStep('cancel')}
+            onCargoHistory={() => setCargoStep('cargoHistory')}
+            onSuspensionHistory={() => { setSuspensionHistoryFrom('list'); setCargoStep('suspensionHistory'); }}
+            onSuspensionResponse={() => setCargoStep('suspensionResponse')}
             onAmend={() => {
               setCargoPreValues({ transferType: 'From CTO to CH - Same Location', cargoChannel: 'Sea', clientRef: 'CT-2024-00112', carrierReg: 'AE-9876543' });
               setCargoFormValues({ clientRef: 'CT-2024-00112', carrierReg: 'AE-9876543', mawb: 'AWB-987654321', transferorBizCode: 'AE-1019056', transferorPremCode: 'PRE-001', transfereeBizCode: 'AE-1019057', transfereePremCode: 'PRE-002' });
               setCargoFlowMode('amend');
+              setCargoTransferNumber('601001745352');
               setCargoStep('pre');
             }}
           />

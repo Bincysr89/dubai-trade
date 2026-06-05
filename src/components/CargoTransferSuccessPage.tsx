@@ -1,13 +1,31 @@
 import React from 'react';
 
-type Props = { onBack: () => void; requestNumber?: string; mode?: 'create' | 'amend'; onViewDetails?: () => void };
+type Props = { onBack: () => void; requestNumber?: string; cargoTransferNumber?: string; mode?: 'create' | 'amend' | 'cancel'; onViewDetails?: () => void; transferType?: string; transferNumber?: string };
 
-export default function CargoTransferSuccessPage({ onBack, requestNumber = '12345678', mode = 'create', onViewDetails }: Props) {
-  const headline = mode === 'amend' ? 'Amendment Submitted Successfully' : 'Request Submitted Successfully';
-  const body = 'Your cargo transfer request submitted successfully, please click on view details button for the details';
+function formatTransferTypeTitle(type: string): string {
+  if (!type) return 'Cargo Transfer';
+  const parts = type.split(' - ');
+  if (parts.length === 2) {
+    const main = parts[0].replace(/^From\s+/, 'from ');
+    return `Cargo Transfer ${main} (${parts[1]})`;
+  }
+  return type;
+}
+
+export default function CargoTransferSuccessPage({ onBack, requestNumber = '12345678', cargoTransferNumber, mode = 'create', onViewDetails, transferType = '', transferNumber = '' }: Props) {
+  const headline = mode === 'amend'
+    ? 'Cargo Transfer Amendment Request Submitted Successfully'
+    : mode === 'cancel'
+      ? 'Cargo Transfer Cancellation Request Submitted Successfully'
+      : 'Cargo Transfer Request Submitted Successfully';
+  const body = mode === 'amend'
+    ? 'Your cargo transfer amendment request has been submitted successfully and sent for approval.'
+    : mode === 'cancel'
+      ? 'Your cargo transfer cancellation request has been submitted successfully and sent for approval.'
+      : 'Your cargo transfer request submitted successfully. Please click on view details button for the details.';
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full">
-      <div className="flex items-start justify-between px-4 sm:px-10 pt-[24px] pb-[8px] flex-wrap gap-[12px]">
+      <div className="flex items-center justify-between px-4 sm:px-10 pt-[20px] pb-[6px] flex-wrap gap-[12px] flex-shrink-0">
         <div className="flex items-center gap-[6px]">
           <span className="text-[16px] text-[#8f94ae]" style={{ fontFamily: "'Dubai', sans-serif" }}>Home</span>
           <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: "'Dubai', sans-serif" }}>/</span>
@@ -16,12 +34,16 @@ export default function CargoTransferSuccessPage({ onBack, requestNumber = '1234
           <span className="text-[16px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Integrated Clearance</span>
         </div>
         <div className="bg-[#e2ebf9] rounded-[4px] h-[28px] px-[12px] flex items-center">
-          <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>A180-IMPORTER SONY GULF UAE</span>
+          <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>AE-1019056 — Dubai Customs - Test LLC</span>
         </div>
       </div>
 
-      <h1 className="px-4 sm:px-10 pt-[8px] text-2xl sm:text-3xl lg:text-[32px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
-        New Cargo Transfer Request
+      <h1 className="px-4 sm:px-10 pt-[6px] pb-[16px] text-2xl sm:text-3xl lg:text-[28px] text-[#111838] flex-shrink-0" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
+        {mode === 'amend'
+          ? `Amend - ${formatTransferTypeTitle(transferType)}${transferNumber ? ` - ${transferNumber}` : ''}`
+          : mode === 'cancel'
+          ? 'Cancel Cargo Transfer Request'
+          : 'Cargo Transfer - New Request'}
       </h1>
 
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
@@ -57,9 +79,17 @@ export default function CargoTransferSuccessPage({ onBack, requestNumber = '1234
             <p>{body}</p>
           </div>
 
-          <div className="border border-[#ebebeb] rounded-[5px] px-[12px] py-[8px] flex items-center gap-[6px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
-            <span className="text-[16px] text-[#696f83]">Request Number is:</span>
-            <span className="text-[16px] text-[#1360d2]" style={{ fontWeight: 500 }}>{requestNumber}</span>
+          <div className="flex flex-col items-center gap-[8px]">
+            <div className="border border-[#ebebeb] rounded-[5px] px-[12px] py-[8px] flex items-center gap-[6px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
+              <span className="text-[16px] text-[#696f83]">Request Number:</span>
+              <span className="text-[16px] text-[#1360d2]" style={{ fontWeight: 500 }}>{requestNumber}</span>
+            </div>
+            {(mode === 'amend' || mode === 'cancel' || cargoTransferNumber) && (
+              <div className="border border-[#ebebeb] rounded-[5px] px-[12px] py-[8px] flex items-center gap-[6px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
+                <span className="text-[16px] text-[#696f83]">Cargo Transfer Number:</span>
+                <span className="text-[16px] text-[#1360d2]" style={{ fontWeight: 500 }}>{cargoTransferNumber || 'CT-2024-00112'}</span>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-[16px]">
@@ -75,7 +105,7 @@ export default function CargoTransferSuccessPage({ onBack, requestNumber = '1234
               className="h-[52px] px-[40px] rounded-[4px] bg-[#1360d2] text-[16px] text-white hover:bg-[#0f4fb5] transition-colors"
               style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, textTransform: 'capitalize' }}
             >
-              View Details
+              View Cargo Transfer Details
             </button>
           </div>
         </div>

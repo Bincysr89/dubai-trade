@@ -96,7 +96,7 @@ export default function FloatingField({
             transform: floated ? 'none' : 'translateY(-50%)',
             background: floated ? '#fff' : 'transparent',
             padding: floated ? '0 4px' : 0,
-            fontSize: floated ? 12 : 16,
+            fontSize: floated ? 12 : 14,
             color: floated ? (focused ? '#1360d2' : '#000') : '#000',
             transitionDuration: '120ms',
             transitionProperty: 'top, left, font-size, transform, padding, background, color',

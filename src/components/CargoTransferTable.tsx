@@ -68,7 +68,7 @@ const FLYOUT_ITEMS: { id: FlyoutItemId; label: string; Icon: React.FC }[] = [
   { id: 'history',            label: 'Cargo Transfer History', Icon: HistoryIcon },
   { id: 'suspensionResponse', label: 'Suspension Response',    Icon: HistoryIcon },
   { id: 'suspensionHistory',  label: 'Suspension History',     Icon: HistoryIcon },
-  { id: 'print',              label: 'Print Request',          Icon: PrintIcon },
+  { id: 'print',              label: 'Print Cargo Transfer',   Icon: PrintIcon },
 ];
 
 // ── Row data ──────────────────────────────────────────────────────────────────
@@ -106,8 +106,8 @@ const ROWS: Row[] = [
 ];
 
 const DRAFT_ROWS: DraftRow[] = [
-  { reqNo: '34510', cargoTransferNo: 'CT-1029370', cargoTransferType: 'CTO → CH (Same Location)',       submittedDate: '28-Apr-2026', transferee: 'code + name', cargoChannel: 'Sea', requestType: 'New', clientRef: 'DFT001', carrierReg: 'DFT001', mawb: 'MAWB/MBOL', transferer: 'code + name X', broker: 'code + name. S', createdBy: 'Username', statusDate: '28-Apr-2026', status: 'Draft' },
-  { reqNo: '34509', cargoTransferNo: 'CT-1029369', cargoTransferType: 'CH → CH (Different Location)',   submittedDate: '27-Apr-2026', transferee: 'code + name', cargoChannel: 'Air', requestType: 'New', clientRef: 'DFT002', carrierReg: 'DFT002', mawb: 'MAWB/MBOL', transferer: 'code + name Y', broker: 'code + name. S', createdBy: 'Username', statusDate: '27-Apr-2026', status: 'Draft' },
+  { reqNo: '-', cargoTransferNo: '-', cargoTransferType: 'CTO → CH (Same Location)',       submittedDate: '28-Apr-2026', transferee: 'code + name', cargoChannel: 'Sea', requestType: 'New', clientRef: 'DFT001', carrierReg: 'DFT001', mawb: 'MAWB/MBOL', transferer: 'code + name X', broker: 'code + name. S', createdBy: 'Username', statusDate: '28-Apr-2026', status: 'Draft' },
+  { reqNo: '-', cargoTransferNo: '-', cargoTransferType: 'CH → CH (Different Location)',   submittedDate: '27-Apr-2026', transferee: 'code + name', cargoChannel: 'Air', requestType: 'New', clientRef: 'DFT002', carrierReg: 'DFT002', mawb: 'MAWB/MBOL', transferer: 'code + name Y', broker: 'code + name. S', createdBy: 'Username', statusDate: '27-Apr-2026', status: 'Draft' },
 ];
 
 // ── Props ─────────────────────────────────────────────────────────────────────
@@ -117,9 +117,12 @@ type Props = {
   onViewRequest?: () => void;
   onAmend?: () => void;
   onCancel?: () => void;
+  onCargoHistory?: () => void;
+  onSuspensionHistory?: () => void;
+  onSuspensionResponse?: () => void;
 };
 
-export default function CargoTransferTable({ showDrafts = false, onViewRequest, onAmend, onCancel }: Props) {
+export default function CargoTransferTable({ showDrafts = false, onViewRequest, onAmend, onCancel, onCargoHistory, onSuspensionHistory, onSuspensionResponse }: Props) {
   const [openFlyout, setOpenFlyout] = useState<number | null>(null);
   const flyoutRef = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState(1);
@@ -151,11 +154,11 @@ export default function CargoTransferTable({ showDrafts = false, onViewRequest, 
     { label: 'Submitted Date',      w: 120 },
     { label: 'Transferee (Owner)',   w: 140 },
     { label: 'Transferer',          w: 140 },
-    { label: 'Cargo Channel',       w: 110 },
+    { label: 'Cargo Channel (inbound)',       w: 150 },
     { label: 'Request No.',         w: 110 },
     { label: 'Request Type',        w: 105 },
     { label: 'Client Ref. No.',     w: 140 },
-    { label: 'Carrier Reg No.',     w: 140 },
+    { label: 'Carrier Reg No.(inbound)',     w: 160 },
     { label: 'MAWB/MBOL',          w: 110 },
     { label: 'Broker',              w: 120 },
     { label: 'Created By',          w: 110 },
@@ -170,9 +173,9 @@ export default function CargoTransferTable({ showDrafts = false, onViewRequest, 
         <thead>
           <tr>
             {headers.map((col) => (
-              <th key={col.label} style={{ width: col.w, minWidth: col.w, background: '#e2ebf9', padding: '10px 8px', textAlign: 'left', fontWeight: 500 }}>
+              <th key={col.label} style={{ width: col.w, minWidth: col.w, background: '#a7c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500 }}>
                 <div className="flex items-center gap-[4px]">
-                  <span className="text-[16px] text-[#455174] whitespace-nowrap" style={{ letterSpacing: '0.07px' }}>{col.label}</span>
+                  <span className="text-[16px] text-[#000000] whitespace-nowrap" style={{ letterSpacing: '0.07px' }}>{col.label}</span>
                   <svg viewBox="0 0 10 14" width="9" height="12" fill="none" stroke="#8f94ae" strokeWidth="1.3" strokeLinecap="round">
                     <path d="M5 1v12M2 4l3-3 3 3M2 10l3 3 3-3" />
                   </svg>
@@ -181,7 +184,7 @@ export default function CargoTransferTable({ showDrafts = false, onViewRequest, 
             ))}
             {/* Sticky: Status */}
             {!showDrafts ? (
-              <th style={{ position: 'sticky', right: 76, width: 190, minWidth: 190, background: '#e2ebf9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
+              <th style={{ position: 'sticky', right: 76, width: 190, minWidth: 190, background: '#a7c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
                 <StatusFilterHeader
                   label="Cargo Transfer Status"
                   options={Object.keys(STATUS_STYLE)}
@@ -191,13 +194,13 @@ export default function CargoTransferTable({ showDrafts = false, onViewRequest, 
                 />
               </th>
             ) : (
-              <th style={{ position: 'sticky', right: 76, width: 190, minWidth: 190, background: '#e2ebf9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
-                <span className="text-[16px] text-[#455174]" style={{ letterSpacing: '0.07px' }}>Cargo Transfer Status</span>
+              <th style={{ position: 'sticky', right: 76, width: 190, minWidth: 190, background: '#a7c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
+                <span className="text-[16px] text-[#000]" style={{ letterSpacing: '0.07px' }}>Cargo Transfer Status</span>
               </th>
             )}
             {/* Sticky: Actions */}
-            <th style={{ position: 'sticky', right: 0, width: 76, minWidth: 76, background: '#e2ebf9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, zIndex: 2 }}>
-              <span className="text-[16px] text-[#455174]" style={{ letterSpacing: '0.07px' }}>Actions</span>
+            <th style={{ position: 'sticky', right: 0, width: 76, minWidth: 76, background: '#a7c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, zIndex: 2 }}>
+              <span className="text-[16px] text-[#000]" style={{ letterSpacing: '0.07px' }}>Actions</span>
             </th>
           </tr>
         </thead>
@@ -269,11 +272,15 @@ export default function CargoTransferTable({ showDrafts = false, onViewRequest, 
                           <button
                             key={item.id}
                             className="group flex items-center gap-[10px] w-full px-[14px] h-[42px] text-left hover:bg-[#f4f7fd] transition-colors"
+                            style={item.id === 'view' ? { background: '#fff' } : undefined}
                             onClick={() => {
                               setOpenFlyout(null);
-                              if (item.id === 'view')   onViewRequest?.();
-                              if (item.id === 'amend')  onAmend?.();
-                              if (item.id === 'cancel') onCancel?.();
+                              if (item.id === 'view')               onViewRequest?.();
+                              if (item.id === 'amend')              onAmend?.();
+                              if (item.id === 'cancel')             onCancel?.();
+                              if (item.id === 'history')            onCargoHistory?.();
+                              if (item.id === 'suspensionHistory')  onSuspensionHistory?.();
+                              if (item.id === 'suspensionResponse') onSuspensionResponse?.();
                             }}
                           >
                             <span className="text-[#697498] flex-shrink-0 inline-flex items-center justify-center">

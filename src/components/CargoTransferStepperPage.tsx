@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 const font = "'Dubai', sans-serif";
 
@@ -7,6 +7,31 @@ function DirhamIcon({ size = 14, color = 'currentColor' }: { size?: number; colo
     <svg width={size} height={size * 0.85} viewBox="0 0 20 17" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'inline', verticalAlign: 'middle', flexShrink: 0 }}>
       <path d="M1.766 0.0195402C1.774 0.0312644 1.818 0.084023 1.86 0.134828C2.166 0.49046 2.396 1.06885 2.52 1.7977C2.602 2.27644 2.606 2.4269 2.606 4.25195V5.95195H1.77C1.006 5.95195 0.918 5.94805 0.768 5.91874C0.532 5.86988 0.288 5.73897 0.124 5.57092C-0.006 5.43609 -0.002 5.42828 0.006 5.83667C0.016 6.17471 0.02 6.21184 0.07 6.39552C0.15 6.68667 0.26 6.90356 0.426 7.09701C0.652 7.36276 0.882 7.51126 1.21 7.61092C1.28 7.63046 1.428 7.63828 1.952 7.64218L2.606 7.65195V8.49805V9.34609L1.684 9.34023L0.758 9.33437L0.598 9.27184C0.408 9.19759 0.322 9.14287 0.136 8.98069L0 8.86149L0.008 9.23471C0.018 9.58057 0.02 9.61965 0.07 9.79552C0.244 10.4169 0.664 10.8605 1.218 11.0051C1.356 11.0422 1.41 11.0441 1.988 11.052L2.606 11.0598V12.8106C2.606 13.8677 2.6 14.6474 2.59 14.7802C2.58 14.9014 2.548 15.128 2.52 15.2863C2.39 16.0152 2.156 16.5643 1.82 16.9199L1.752 16.9922H5.134C7.156 16.9922 8.668 16.9844 8.89 16.9746C9.28 16.9551 10.15 16.871 10.346 16.83C10.408 16.8183 10.524 16.8007 10.6 16.789C10.762 16.7655 11.03 16.7108 11.416 16.6151C11.96 16.4822 12.456 16.3161 12.942 16.1051C13.094 16.0386 13.53 15.8217 13.646 15.7533C13.708 15.7182 13.782 15.6752 13.81 15.6615C13.888 15.6205 14.018 15.5384 14.208 15.4055C14.302 15.3391 14.396 15.2746 14.416 15.2609C14.5 15.2062 14.79 14.9698 14.922 14.8506C15.424 14.3992 15.844 13.897 16.17 13.3597C16.216 13.2815 16.276 13.1838 16.302 13.1428C16.368 13.0333 16.64 12.4862 16.666 12.4041C16.678 12.367 16.694 12.3279 16.702 12.3201C16.754 12.2537 17.054 11.3314 17.09 11.1301C17.102 11.0656 17.108 11.0559 17.158 11.0461C17.19 11.0402 17.656 11.0402 18.194 11.0441C19.27 11.052 19.27 11.052 19.508 11.1594C19.642 11.22 19.682 11.2474 19.83 11.3783C20.024 11.5483 20.006 11.5756 19.994 11.1497C19.986 10.8995 19.976 10.7452 19.958 10.6826C19.89 10.4423 19.874 10.3915 19.814 10.2703C19.618 9.85218 19.29 9.55322 18.87 9.41057L18.706 9.35195L18.038 9.34414L17.372 9.33437L17.38 9.10575C17.388 8.80483 17.388 8.20885 17.378 7.90207L17.37 7.65586L18.262 7.65195C19.026 7.64805 19.168 7.65195 19.252 7.67345C19.504 7.74184 19.674 7.83563 19.882 8.02126L19.998 8.12678V7.83759C19.998 7.49368 19.98 7.34126 19.908 7.1146C19.766 6.6554 19.486 6.31345 19.086 6.10241C18.826 5.96563 18.81 5.96172 17.916 5.95586C17.392 5.95195 17.118 5.94414 17.104 5.93241C17.092 5.92069 17.082 5.90115 17.082 5.88552C17.082 5.86989 17.052 5.74678 17.012 5.61391C16.544 3.99793 15.67 2.71414 14.392 1.76253C14.218 1.63161 13.792 1.35609 13.62 1.2623C13.554 1.22517 13.482 1.18609 13.464 1.17437C13.38 1.12943 12.898 0.898851 12.778 0.85C12.706 0.818736 12.612 0.779655 12.57 0.764023C11.864 0.465057 10.68 0.181724 9.776 0.0937931C9.628 0.0801149 9.432 0.0586207 9.342 0.0508046C8.934 0.00586207 8.368 0 5.154 0C2.438 0 1.756 0.00586207 1.766 0.0195402ZM8.38 0.865632C9.056 0.904713 9.472 0.955517 9.958 1.0708C11.442 1.41471 12.486 2.14161 13.244 3.35701C13.314 3.47034 13.61 4.06046 13.654 4.17966C13.864 4.73264 13.966 5.06092 14.056 5.49471C14.078 5.60023 14.108 5.74092 14.122 5.80736C14.136 5.87184 14.142 5.93241 14.136 5.93828C14.126 5.94609 12.118 5.95 9.67 5.94805L5.22 5.94414L5.214 3.43322C5.212 2.05368 5.214 0.906667 5.22 0.885172L5.228 0.848046H6.65C7.43 0.848046 8.21 0.855862 8.38 0.865632ZM14.33 7.71057C14.344 7.7946 14.344 9.22103 14.33 9.29138L14.318 9.34414L9.768 9.34023L5.22 9.33437L5.216 8.50586C5.212 8.05057 5.216 7.67149 5.22 7.66368C5.226 7.65391 7.164 7.64805 9.774 7.64805H14.318L14.33 7.71057ZM14.126 11.0656C14.136 11.0949 14.088 11.3353 13.99 11.7261C13.878 12.1657 13.726 12.6093 13.572 12.9376C13.496 13.1056 13.306 13.4691 13.26 13.5375C13.238 13.5687 13.174 13.6684 13.118 13.7563C12.758 14.3074 12.244 14.8095 11.658 15.1808C11.444 15.3137 11.004 15.5403 10.886 15.5755C10.862 15.5814 10.836 15.5931 10.826 15.6009C10.812 15.6126 10.63 15.6791 10.418 15.7533C10.028 15.8882 9.286 16.0347 8.69 16.0953C8.304 16.1324 8.242 16.1344 6.756 16.1344H5.218V13.6V11.0637L9.636 11.0559C12.066 11.052 14.068 11.0461 14.084 11.0422C14.102 11.0402 14.12 11.052 14.126 11.0656Z" fill={color} />
     </svg>
+  );
+}
+
+function FiEditIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+      <path d="M9.16797 3.33203H3.33464C2.89261 3.33203 2.46868 3.50763 2.15612 3.82019C1.84356 4.13275 1.66797 4.55667 1.66797 4.9987V16.6654C1.66797 17.1074 1.84356 17.5313 2.15612 17.8439C2.46868 18.1564 2.89261 18.332 3.33464 18.332H15.0013C15.4433 18.332 15.8673 18.1564 16.1798 17.8439C16.4924 17.5313 16.668 17.1074 16.668 16.6654V10.832" stroke="#0E1B3D" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M15.418 2.08417C15.7495 1.75265 16.1991 1.56641 16.668 1.56641C17.1368 1.56641 17.5864 1.75265 17.918 2.08417C18.2495 2.41569 18.4357 2.86533 18.4357 3.33417C18.4357 3.80301 18.2495 4.25265 17.918 4.58417L10.0013 12.5008L6.66797 13.3342L7.5013 10.0008L15.418 2.08417Z" stroke="#0E1B3D" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+function PreFilledField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="relative">
+      <div className="flex items-center px-[12px] gap-[10px]"
+        style={{ height: 56, borderRadius: 4, border: '1px solid #d5ddfb', background: '#f4f4f4' }}>
+        <span className="flex-1 text-[16px] text-[#0e1b3d] truncate" style={{ fontFamily: font }}>{value}</span>
+        <FiEditIcon />
+      </div>
+      <label className="absolute pointer-events-none" style={{
+        left: 12, top: -9, background: '#f4f4f4', padding: '0 4px',
+        fontSize: 12, color: '#697498', fontFamily: font, whiteSpace: 'nowrap',
+      }}>{label}</label>
+    </div>
   );
 }
 
@@ -83,7 +108,7 @@ function GrossWeightInput({ value, onChange }: { value: string; onChange: (v: st
   return (
     <div className="relative">
       <div style={{
-        height: 48, border: `1px solid ${focused ? '#1360d2' : '#d5ddfb'}`,
+        height: 56, border: `1px solid ${focused ? '#1360d2' : '#d5ddfb'}`,
         borderRadius: 4, background: '#fff', display: 'flex', alignItems: 'stretch', overflow: 'hidden',
       }}>
         <input
@@ -112,22 +137,28 @@ function GrossWeightInput({ value, onChange }: { value: string; onChange: (v: st
   );
 }
 
-function FloatInput({ label, required, value, onChange, readOnly }: {
-  label: string; required?: boolean; value: string; onChange: (v: string) => void; readOnly?: boolean;
+function FloatInput({ label, required, value, onChange, readOnly, noEditIcon }: {
+  label: string; required?: boolean; value: string; onChange: (v: string) => void; readOnly?: boolean; noEditIcon?: boolean;
 }) {
   const [focused, setFocused] = useState(false);
   const floated = focused || value.length > 0;
+  const bg = readOnly ? '#f4f4f4' : '#fff';
   return (
     <div className="relative">
-      <div style={{ height: 48, border: `1px solid ${focused ? '#1360d2' : '#d5ddfb'}`, borderRadius: 4, background: readOnly ? '#f4f7fd' : '#fff', display: 'flex', alignItems: 'center', padding: '0 12px' }}>
+      <div style={{ height: 56, border: `1px solid ${focused ? '#1360d2' : '#d5ddfb'}`, borderRadius: 4, background: bg, display: 'flex', alignItems: 'center', padding: '0 12px', gap: 8 }}>
         <input value={value} onChange={e => onChange(e.target.value)}
           onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
           readOnly={readOnly}
           placeholder="" className="flex-1 text-[16px] text-[#051937] outline-none bg-transparent" style={{ fontFamily: font }} />
+        {readOnly && !noEditIcon && (
+          <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+            <path d="M13.586 2.586a2 2 0 0 1 2.828 2.828l-9.9 9.9-4.243 1.415 1.415-4.243 9.9-9.9z" />
+          </svg>
+        )}
       </div>
       <label className="absolute pointer-events-none transition-all" style={{
         left: floated ? 10 : 13, top: floated ? -9 : '50%', transform: floated ? 'none' : 'translateY(-50%)',
-        background: floated ? (readOnly ? '#f4f7fd' : '#fff') : 'transparent', padding: floated ? '0 3px' : '0',
+        background: floated ? bg : 'transparent', padding: floated ? '0 3px' : '0',
         fontSize: floated ? 11 : 14, color: focused ? '#1360d2' : '#0e1b3d', fontFamily: font,
         transitionDuration: '120ms', transitionProperty: 'top, left, font-size, transform',
       }}>
@@ -146,7 +177,7 @@ function FloatSelect({ label, required, value, onChange, options }: {
     <div className="relative">
       <button type="button" onClick={() => setOpen(o => !o)}
         className="w-full flex items-center px-[12px] bg-white"
-        style={{ height: 48, border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}`, borderRadius: 4, fontFamily: font }}>
+        style={{ height: 56, border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}`, borderRadius: 4, fontFamily: font }}>
         <span className="flex-1 text-left text-[16px]" style={{ color: value ? '#051937' : 'transparent' }}>{value || '_'}</span>
         <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#697498" strokeWidth="2" className={`flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}>
           <path d="M5 8l5 5 5-5" />
@@ -184,7 +215,7 @@ function DateInput({ label, required, value, onChange }: {
   const inputRef = useRef<HTMLInputElement>(null);
   return (
     <div className="relative">
-      <div style={{ height: 48, border: `1px solid ${focused ? '#1360d2' : '#d5ddfb'}`, borderRadius: 4, background: '#fff', display: 'flex', alignItems: 'center', padding: '0 12px' }}>
+      <div style={{ height: 56, border: `1px solid ${focused ? '#1360d2' : '#d5ddfb'}`, borderRadius: 4, background: '#fff', display: 'flex', alignItems: 'center', padding: '0 12px' }}>
         <input
           ref={inputRef}
           type="date"
@@ -223,7 +254,7 @@ function SearchInput({ label, required, value, onChange }: {
   const floated = focused || value.length > 0;
   return (
     <div className="relative">
-      <div style={{ height: 48, border: `1px solid ${focused ? '#1360d2' : '#d5ddfb'}`, borderRadius: 4, background: '#fff', display: 'flex', alignItems: 'center', padding: '0 12px' }}>
+      <div style={{ height: 56, border: `1px solid ${focused ? '#1360d2' : '#d5ddfb'}`, borderRadius: 4, background: '#fff', display: 'flex', alignItems: 'center', padding: '0 12px' }}>
         <input value={value} onChange={e => onChange?.(e.target.value)}
           onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
           placeholder="" className="flex-1 text-[16px] text-[#051937] outline-none bg-transparent" style={{ fontFamily: font }} />
@@ -246,13 +277,14 @@ function SearchInput({ label, required, value, onChange }: {
 }
 
 const BIZ_SUGGESTIONS = [
-  { code: 'AE1006', name: 'Sony Gulf FZE' },
-  { code: 'AE1007', name: 'Emirates Trading LLC' },
-  { code: 'AE1008', name: 'Dubai Cargo Co.' },
-  { code: 'AE-1019056', name: 'Dubai Trading Co. A' },
-  { code: 'AE-1019057', name: 'Dubai Trading Co. B' },
-  { code: 'AE-1019058', name: 'Dubai Trading Co. C' },
-  { code: 'AE-9106286', name: 'SW Logistics LLC' },
+  { code: 'AE1006',     name: 'Sony Gulf FZE',        expiryDate: '05-Aug-30', trnNumber: '100025424700001' },
+  { code: 'AE1007',     name: 'Emirates Trading LLC', expiryDate: '12-Mar-28', trnNumber: '100025424700002' },
+  { code: 'AE1008',     name: 'Dubai Cargo Co.',      expiryDate: '20-Jan-29', trnNumber: '100025424700003' },
+  { code: 'AE-1019056', name: 'Dubai Trading Co. A',  expiryDate: '01-Dec-27', trnNumber: '100025424700004' },
+  { code: 'AE-1019057', name: 'Dubai Trading Co. B',  expiryDate: '15-Nov-26', trnNumber: '100025424700005' },
+  { code: 'AE-1019058', name: 'Dubai Trading Co. C',  expiryDate: '30-Sep-28', trnNumber: '100025424700006' },
+  { code: 'AE-9106286', name: 'SW Logistics LLC',     expiryDate: '05-Aug-30', trnNumber: '100025424700009' },
+  { code: 'AE-9105364', name: 'U1DETBUS',             expiryDate: '05-Aug-30', trnNumber: '100025424700009' },
 ];
 
 const PREM_SUGGESTIONS = [
@@ -289,7 +321,7 @@ const PORT_SUGGESTIONS = [
 
 function SearchWithNameInput({ label, required, value, onChange, suggestions, onModalOpen }: {
   label: string; required?: boolean; value: string; onChange: (v: string) => void;
-  suggestions: { code: string; name: string }[];
+  suggestions: { code: string; name: string; expiryDate?: string; trnNumber?: string }[];
   onModalOpen?: () => void;
 }) {
   const [focused, setFocused] = useState(false);
@@ -307,7 +339,7 @@ function SearchWithNameInput({ label, required, value, onChange, suggestions, on
   return (
     <div className="flex flex-col gap-[4px]">
       <div className="relative">
-        <div style={{ height: 48, border: `1px solid ${focused ? '#1360d2' : '#d5ddfb'}`, borderRadius: 4, background: '#fff', display: 'flex', alignItems: 'center', padding: '0 12px' }}>
+        <div style={{ height: 56, border: `1px solid ${focused ? '#1360d2' : '#d5ddfb'}`, borderRadius: 4, background: '#fff', display: 'flex', alignItems: 'center', padding: '0 12px' }}>
           <input value={value}
             onChange={e => { onChange(e.target.value); setShowDropdown(true); }}
             onFocus={() => { setFocused(true); if (!selectedItem) setShowDropdown(true); }}
@@ -343,10 +375,26 @@ function SearchWithNameInput({ label, required, value, onChange, suggestions, on
         )}
       </div>
       {selectedItem && (
-        <div className="px-[12px] py-[8px] rounded-[4px]" style={{ background: '#e2ebf9' }}>
-          <span className="text-[16px]" style={{ color: '#051937', fontFamily: font, fontWeight: 600 }}>
-            {selectedItem.name}
-          </span>
+        <div className="flex flex-col gap-[4px]">
+          <div className="px-[12px] py-[8px] rounded-[4px]" style={{ background: '#e2ebf9' }}>
+            <span className="text-[16px]" style={{ color: '#051937', fontFamily: font, fontWeight: 600 }}>
+              {selectedItem.name}
+            </span>
+          </div>
+          {selectedItem.expiryDate && (
+            <div className="px-[12px] py-[8px] rounded-[4px]" style={{ background: '#e2ebf9' }}>
+              <span className="text-[14px]" style={{ color: '#051937', fontFamily: font, fontWeight: 600 }}>
+                Expiry Date: {selectedItem.expiryDate}
+              </span>
+            </div>
+          )}
+          {selectedItem.trnNumber && (
+            <div className="px-[12px] py-[8px] rounded-[4px]" style={{ background: '#e2ebf9' }}>
+              <span className="text-[14px]" style={{ color: '#051937', fontFamily: font, fontWeight: 600 }}>
+                TRN Number: {selectedItem.trnNumber}
+              </span>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -361,9 +409,11 @@ const BIZ_ROWS_MODAL = Array.from({ length: 8 }, (_, i) => ({
   name: `Dubai Trading Co. ${String.fromCharCode(65 + i)}`,
   type: 'Customs Agent',
   location: 'Jebel Ali',
+  expiryDate: '01-Dec-27',
+  trnNumber: `10002542470000${i + 4}`,
 }));
-BIZ_ROWS_MODAL.unshift({ code: 'AE1006', name: 'Sony Gulf FZE', type: 'Trader', location: 'Dubai Airport' });
-BIZ_ROWS_MODAL.unshift({ code: 'AE-9106286', name: 'SW Logistics LLC', type: 'Shipping Agent', location: 'Jebel Ali' });
+BIZ_ROWS_MODAL.unshift({ code: 'AE1006',     name: 'Sony Gulf FZE',    type: 'Trader',          location: 'Dubai Airport', expiryDate: '05-Aug-30', trnNumber: '100025424700001' });
+BIZ_ROWS_MODAL.unshift({ code: 'AE-9106286', name: 'SW Logistics LLC', type: 'Shipping Agent',  location: 'Jebel Ali',     expiryDate: '05-Aug-30', trnNumber: '100025424700009' });
 
 const PREM_ROWS_MODAL = [
   { code: 'PR-00017', name: 'Raffiq premises',             location: 'DUBAI AIRPORT (CARGO VILLAGE)',   bizName: 'Al Raffiq Trading' },
@@ -377,13 +427,22 @@ const PREM_ROWS_MODAL = [
 ];
 
 const CARRIER_ROWS_MODAL = [
-  { vesselName: 'STK 1026',        rotationNumber: '623595', date: '20/11/2024' },
-  { vesselName: 'STK 1026',        rotationNumber: '623600', date: '20/10/2024' },
-  { vesselName: 'APL QINGDAO',     rotationNumber: '623575', date: '10/10/2024' },
-  { vesselName: 'MOL ASANTE',      rotationNumber: '623608', date: '10/09/2024' },
-  { vesselName: 'MSC DIANA',       rotationNumber: '623512', date: '05/09/2024' },
-  { vesselName: 'EVER GIVEN',      rotationNumber: '623490', date: '01/09/2024' },
-  { vesselName: 'MAERSK KENTUCKY', rotationNumber: '623455', date: '25/08/2024' },
+  { vesselName: 'STK 1026',        rotationNumber: '623595',    date: '20/11/2024' },
+  { vesselName: 'STK 1026',        rotationNumber: '623600',    date: '20/10/2024' },
+  { vesselName: 'APL QINGDAO',     rotationNumber: '623575',    date: '10/10/2024' },
+  { vesselName: 'MOL ASANTE',      rotationNumber: '623608',    date: '10/09/2024' },
+  { vesselName: 'MSC DIANA',       rotationNumber: '623512',    date: '05/09/2024' },
+  { vesselName: 'EVER GIVEN',      rotationNumber: '623490',    date: '01/09/2024' },
+  { vesselName: 'MAERSK KENTUCKY', rotationNumber: '623455',    date: '25/08/2024' },
+  { vesselName: 'Al Raffiq Carrier', rotationNumber: 'AE-9876543', date: '15/06/2026' },
+  { vesselName: 'Emirates',        rotationNumber: 'EK0365',    date: '18/06/2026' },
+  { vesselName: 'Emirates',        rotationNumber: 'EK0863',    date: '18/06/2026' },
+  { vesselName: 'Emirates',        rotationNumber: 'EK0331',    date: '18/06/2026' },
+  { vesselName: 'Emirates',        rotationNumber: 'EK0826',    date: '18/06/2026' },
+  { vesselName: 'Emirates',        rotationNumber: 'EK0008',    date: '18/06/2026' },
+  { vesselName: 'Emirates',        rotationNumber: 'EK0503',    date: '18/06/2026' },
+  { vesselName: 'Emirates',        rotationNumber: 'EK0748',    date: '18/06/2026' },
+  { vesselName: 'Emirates',        rotationNumber: 'EK0720',    date: '18/06/2026' },
 ];
 
 const PORT_ROWS_MODAL = [
@@ -422,7 +481,7 @@ function BizSearchModal({ open, title, onClose, onSelect }: { open: boolean; tit
   if (!open) return null;
   const rows = query ? BIZ_ROWS_MODAL.filter(r => r.code.toLowerCase().includes(query.toLowerCase()) || r.name.toLowerCase().includes(query.toLowerCase())) : BIZ_ROWS_MODAL;
   const cols = ['Business Code', 'Business Name', 'Business Type', 'Location', 'Action'];
-  const thS: React.CSSProperties = { background: '#a7c2e9', padding: '12px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#0e1b3d', whiteSpace: 'nowrap' };
+  const thS: React.CSSProperties = { background: '#a7c2e9', padding: '12px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#000', whiteSpace: 'nowrap' };
   return (
     <SearchModalShell title={title} onClose={onClose}>
       <div className="flex gap-[12px] flex-shrink-0">
@@ -458,7 +517,7 @@ function PremSearchModal({ open, title, onClose, onSelect }: { open: boolean; ti
   if (!open) return null;
   const rows = query ? PREM_ROWS_MODAL.filter(r => r.code.toLowerCase().includes(query.toLowerCase()) || r.name.toLowerCase().includes(query.toLowerCase())) : PREM_ROWS_MODAL;
   const cols = ['Premises Code', 'Premises Name', 'Customs Location', 'Business Name', 'Action'];
-  const thS: React.CSSProperties = { background: '#a7c2e9', padding: '12px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#0e1b3d', whiteSpace: 'nowrap' };
+  const thS: React.CSSProperties = { background: '#a7c2e9', padding: '12px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#000', whiteSpace: 'nowrap' };
   return (
     <SearchModalShell title={title} onClose={onClose}>
       <div className="flex gap-[12px] flex-shrink-0">
@@ -508,7 +567,7 @@ function CarrierSearchModal({ open, onClose, onSelect }: { open: boolean; onClos
   const handleReset = () => { setVesselName(''); setCallingPort(''); setFromDate(''); setToDate(''); };
 
   if (!open) return null;
-  const thS: React.CSSProperties = { background: '#e2ebf9', padding: '12px 18px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#455174', whiteSpace: 'nowrap' };
+  const thS: React.CSSProperties = { background: '#a7c2e9', padding: '12px 18px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#000', whiteSpace: 'nowrap' };
   const tdS: React.CSSProperties = { padding: '0 18px', height: 54, background: '#fff', borderBottom: '1px solid #f0f3fa', fontSize: 15, color: '#0e1b3d' };
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center px-[16px]">
@@ -632,7 +691,7 @@ function PortSearchModal({ open, onClose, onSelect }: { open: boolean; onClose: 
   if (!open) return null;
   const rows = query ? PORT_ROWS_MODAL.filter(r => r.code.toLowerCase().includes(query.toLowerCase()) || r.name.toLowerCase().includes(query.toLowerCase())) : PORT_ROWS_MODAL;
   const cols = ['Port Code', 'Port Name', 'Country', 'Type', 'Action'];
-  const thS: React.CSSProperties = { background: '#a7c2e9', padding: '12px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#0e1b3d', whiteSpace: 'nowrap' };
+  const thS: React.CSSProperties = { background: '#a7c2e9', padding: '12px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#000', whiteSpace: 'nowrap' };
   return (
     <SearchModalShell title="Search Port of Loading" onClose={onClose}>
       <div className="flex gap-[12px] flex-shrink-0">
@@ -663,11 +722,14 @@ function PortSearchModal({ open, onClose, onSelect }: { open: boolean; onClose: 
   );
 }
 
+const SaveExitCtx = React.createContext<(() => void) | undefined>(undefined);
+
 function NavBar({ onBack, backLabel = 'Back', onNext, nextLabel = 'Next', centerLabel, onCenter }: {
   onBack?: () => void; backLabel?: string;
   onNext?: () => void; nextLabel?: string;
   centerLabel?: string; onCenter?: () => void;
 }) {
+  const onSaveExit = React.useContext(SaveExitCtx);
   return (
     <div className="flex-shrink-0 bg-white px-4 sm:px-10 py-[16px] flex items-center justify-between gap-[12px]"
       style={{ boxShadow: '0px -2px 8px rgba(0,0,0,0.08)' }}>
@@ -677,6 +739,13 @@ function NavBar({ onBack, backLabel = 'Back', onNext, nextLabel = 'Next', center
         {backLabel}
       </button>
       <div className="flex items-center gap-[12px]">
+        {onSaveExit && (
+          <button onClick={onSaveExit}
+            className="h-[48px] px-[28px] rounded-[4px] text-[16px] border hover:bg-[#f0f4ff] transition-colors"
+            style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
+            Save and Exit
+          </button>
+        )}
         {centerLabel && (
           <button onClick={onCenter}
             className="h-[48px] px-[20px] rounded-[4px] text-[16px] border hover:bg-[#f0f4ff] transition-colors"
@@ -798,10 +867,11 @@ function AddContainerModal({ onClose }: { onClose: () => void }) {
 /* ────────────────────────────────────────────────────────────
    Step 1 — General Information
    ──────────────────────────────────────────────────────────── */
-function Step1({ onBack, onNext, initTransferType = '', initTransferorBiz = '', initTransferorPrem = '', initTransfereeBiz = '', initTransfereePrem = '', initClientRef = '' }: {
+function Step1({ onBack, onNext, initTransferType = '', initTransferorBiz = '', initTransferorPrem = '', initTransfereeBiz = '', initTransfereePrem = '', initClientRef = '', isAmend = false }: {
   onBack: () => void; onNext: () => void;
   initTransferType?: string; initTransferorBiz?: string; initTransferorPrem?: string;
   initTransfereeBiz?: string; initTransfereePrem?: string; initClientRef?: string;
+  isAmend?: boolean;
 }) {
   const [transferType, setTransferType] = useState(initTransferType);
   const [transferorBiz, setTransferorBiz] = useState(initTransferorBiz);
@@ -826,22 +896,29 @@ function Step1({ onBack, onNext, initTransferType = '', initTransferorBiz = '', 
         <div className="flex flex-col gap-[24px]">
 
           {/* Cargo Transfer Type */}
-          <div className="bg-white rounded-[8px] p-[24px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.07)' }}>
+          <div>
             <SectionHeading>Cargo Transfer Type</SectionHeading>
-            <div className="mt-[16px] grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-[20px]">
-              <FloatSelect label="Cargo Transfer Type" required value={transferType} onChange={setTransferType} options={TYPES} />
+            <div className="bg-white rounded-[8px] p-[24px] mt-[12px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.07)' }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-[20px]">
+                {isAmend
+                  ? <FloatInput label="Cargo Transfer Type" value={transferType} onChange={() => {}} readOnly noEditIcon />
+                  : <FloatSelect label="Cargo Transfer Type" required value={transferType} onChange={setTransferType} options={TYPES} />
+                }
+              </div>
             </div>
           </div>
 
           {/* Transferor/Transferee Details */}
-          <div className="bg-white rounded-[8px] p-[24px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.07)' }}>
+          <div>
             <SectionHeading>Transferor/Transferee Details</SectionHeading>
-            <div className="mt-[16px] grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-[20px] items-start">
-              <SearchWithNameInput label="Transferor Business Code" required value={transferorBiz} onChange={setTransferorBiz} suggestions={BIZ_SUGGESTIONS} onModalOpen={() => setBizModal('transferor')} />
-              <SearchWithNameInput label="Transferor Premises Code" required value={transferorPrem} onChange={setTransferorPrem} suggestions={PREM_SUGGESTIONS} onModalOpen={() => setPremModal('transferor')} />
-              <SearchWithNameInput label="Transferee Business Code" required value={transfereeBiz} onChange={setTransfereeBiz} suggestions={BIZ_SUGGESTIONS} onModalOpen={() => setBizModal('transferee')} />
-              <SearchWithNameInput label="Transferee Premises Code" required value={transfereePrem} onChange={setTransfereePrem} suggestions={PREM_SUGGESTIONS} onModalOpen={() => setPremModal('transferee')} />
-              <FloatInput label="Client's Dec. Ref. No." required value={clientRef} onChange={setClientRef} />
+            <div className="bg-white rounded-[8px] p-[24px] mt-[12px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.07)' }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-[20px] items-start">
+                <SearchWithNameInput label="Transferor Business Code" required value={transferorBiz} onChange={setTransferorBiz} suggestions={BIZ_SUGGESTIONS} onModalOpen={() => setBizModal('transferor')} />
+                <SearchWithNameInput label="Transferor Premises Code" required value={transferorPrem} onChange={setTransferorPrem} suggestions={PREM_SUGGESTIONS} onModalOpen={() => setPremModal('transferor')} />
+                <SearchWithNameInput label="Transferee Business Code" required value={transfereeBiz} onChange={setTransfereeBiz} suggestions={BIZ_SUGGESTIONS} onModalOpen={() => setBizModal('transferee')} />
+                <SearchWithNameInput label="Transferee Premises Code" required value={transfereePrem} onChange={setTransfereePrem} suggestions={PREM_SUGGESTIONS} onModalOpen={() => setPremModal('transferee')} />
+                <FloatInput label="Client's Dec. Ref. No." required value={clientRef} onChange={setClientRef} />
+              </div>
             </div>
           </div>
 
@@ -857,9 +934,12 @@ function Step1({ onBack, onNext, initTransferType = '', initTransferorBiz = '', 
 /* ────────────────────────────────────────────────────────────
    Step 2 — Shipping Details
    ──────────────────────────────────────────────────────────── */
-function Step2({ onBack, onNext, initCargoChannel = '', initCarrierReg = '', initMasterDoc = '' }: {
+function Step2({ onBack, onNext, initCargoChannel = '', initCarrierReg = '', initMasterDoc = '', shippingSummary, onEditShipping, isAmend = false }: {
   onBack: () => void; onNext: () => void;
   initCargoChannel?: string; initCarrierReg?: string; initMasterDoc?: string;
+  shippingSummary?: { label: string; value: string }[];
+  onEditShipping?: () => void;
+  isAmend?: boolean;
 }) {
   const [inCargoChannel, setInCargoChannel] = useState(initCargoChannel);
   const [carrierReg, setCarrierReg] = useState(initCarrierReg);
@@ -873,10 +953,19 @@ function Step2({ onBack, onNext, initCargoChannel = '', initCarrierReg = '', ini
   const [customsSealNo, setCustomsSealNo] = useState('');
   const [outCargoChannel, setOutCargoChannel] = useState('Land');
   const [carrierNo, setCarrierNo] = useState('');
-  const [courierRampTransfer, setCourierRampTransfer] = useState('');
+  const [courierRampTransfer, setCourierRampTransfer] = useState('No');
   const [precedingClearanceNo, setPrecedingClearanceNo] = useState('');
   const [showCarrierModal, setShowCarrierModal] = useState(false);
   const [showPortModal, setShowPortModal] = useState(false);
+
+  useEffect(() => {
+    const vessel = CARRIER_ROWS_MODAL.find(r => r.rotationNumber === carrierReg);
+    if (vessel) {
+      setCarrierName(vessel.vesselName);
+      const parts = vessel.date.split('/');
+      if (parts.length === 3) setArrivalDate(`${parts[2]}-${parts[1]}-${parts[0]}`);
+    }
+  }, [carrierReg]);
 
   const CHANNELS = ['Sea', 'Air', 'Land'];
   const CARGO_TYPES = ['FCL', 'LCL'];
@@ -889,39 +978,75 @@ function Step2({ onBack, onNext, initCargoChannel = '', initCarrierReg = '', ini
         <div className="flex flex-col gap-[24px]">
 
           {/* Inbound Details */}
-          <div className="bg-white rounded-[8px] p-[24px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.07)' }}>
+          <div>
             <SectionHeading>Inbound Details</SectionHeading>
-            <div className="mt-[20px] grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-[20px] items-start">
-              <FloatSelect label="Cargo Channel" required value={inCargoChannel} onChange={setInCargoChannel} options={CHANNELS} />
-              <SearchWithNameInput label="Carrier Registration No" required value={carrierReg} onChange={setCarrierReg} suggestions={CARRIER_SUGGESTIONS} onModalOpen={() => setShowCarrierModal(true)} />
-              {inCargoChannel !== 'Air' && (
-                <FloatInput label="Carrier Name" value={carrierName} onChange={setCarrierName} />
-              )}
-              <DateInput label="Arrival Date" required value={arrivalDate} onChange={setArrivalDate} />
-              <FloatInput label="Master Transport Document No" required value={masterDoc} onChange={setMasterDoc} />
-              <SearchWithNameInput label="Port of Loading" required value={portOfLoading} onChange={setPortOfLoading} suggestions={PORT_SUGGESTIONS} onModalOpen={() => setShowPortModal(true)} />
-              <FloatInput label="Manifest Registration No" value={manifestReg} onChange={setManifestReg} />
-              <FloatInput label="Preceding Clearance No." value={precedingClearanceNo} onChange={setPrecedingClearanceNo} />
+            <div className="bg-white rounded-[8px] p-[24px] mt-[12px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.07)' }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-[20px] items-start">
+                {initCargoChannel
+                  ? <PreFilledField label="Cargo Channel (inbound)" value={initCargoChannel} />
+                  : <FloatSelect label="Cargo Channel (inbound)" required value={inCargoChannel} onChange={setInCargoChannel} options={CHANNELS} />
+                }
+                {initCarrierReg
+                  ? <PreFilledField label="Carrier Registration No. (Inbound)" value={initCarrierReg} />
+                  : <SearchWithNameInput label="Carrier Registration No. (Inbound)" required value={carrierReg} onChange={setCarrierReg} suggestions={CARRIER_SUGGESTIONS} onModalOpen={() => setShowCarrierModal(true)} />
+                }
+                <FloatInput label="Carrier Name" value={carrierName} onChange={setCarrierName} readOnly noEditIcon />
+                <div className="relative">
+                  <div style={{ height: 56, border: '1px solid #d5ddfb', borderRadius: 4, background: '#f4f4f4', display: 'flex', alignItems: 'center', padding: '0 12px' }}>
+                    <input readOnly value={arrivalDate ? arrivalDate.split('-').reverse().join('/') : ''} placeholder="" className="flex-1 text-[16px] text-[#051937] outline-none bg-transparent" style={{ fontFamily: font }} />
+                  </div>
+                  <label className="absolute pointer-events-none" style={{ left: 10, top: -9, background: '#f4f4f4', padding: '0 3px', fontSize: 11, color: '#0e1b3d', fontFamily: font }}>
+                    Arrival Date
+                  </label>
+                </div>
+                {initMasterDoc
+                  ? <PreFilledField label="MAWB/MBOL No." value={initMasterDoc} />
+                  : <FloatInput label="MAWB/MBOL No." required value={masterDoc} onChange={setMasterDoc} />
+                }
+                <SearchWithNameInput label="Port of Loading" required value={portOfLoading} onChange={setPortOfLoading} suggestions={PORT_SUGGESTIONS} onModalOpen={() => setShowPortModal(true)} />
+                <FloatInput label="Manifest Registration No" value={manifestReg} onChange={setManifestReg} />
+              </div>
             </div>
           </div>
 
           {/* Cargo Details */}
-          <div className="bg-white rounded-[8px] p-[24px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.07)' }}>
+          <div>
             <SectionHeading>Cargo Details</SectionHeading>
-            <div className="mt-[20px] grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-[20px]">
-              <FloatSelect label="Cargo Type" required value={cargoType} onChange={setCargoType} options={CARGO_TYPES} />
-              <GrossWeightInput value={grossWeight} onChange={setGrossWeight} />
-              <FloatInput label="Customs Seal No." value={customsSealNo} onChange={setCustomsSealNo} />
+            <div className="bg-white rounded-[8px] p-[24px] mt-[12px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.07)' }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-[20px]">
+                <FloatSelect label="Cargo Type" required value={cargoType} onChange={setCargoType} options={CARGO_TYPES} />
+                <GrossWeightInput value={grossWeight} onChange={setGrossWeight} />
+                <FloatInput label="Customs Seal No." value={customsSealNo} onChange={setCustomsSealNo} />
+                <FloatInput label="Preceding Clearance No." value={precedingClearanceNo} onChange={setPrecedingClearanceNo} />
+              </div>
             </div>
           </div>
 
           {/* Outbound Details */}
-          <div className="bg-white rounded-[8px] p-[24px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.07)' }}>
+          <div>
             <SectionHeading>Outbound Details</SectionHeading>
-            <div className="mt-[20px] grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-[20px]">
-              <FloatSelect label="Cargo Channel" required value={outCargoChannel} onChange={setOutCargoChannel} options={CHANNELS} />
-              <FloatInput label="Carrier No." value={carrierNo} onChange={setCarrierNo} />
-              <FloatSelect label="Courier Cargo Ramp Transfer" value={courierRampTransfer} onChange={setCourierRampTransfer} options={['Yes', 'No']} />
+            <div className="bg-white rounded-[8px] p-[24px] mt-[12px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.07)' }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-[20px] items-center">
+                <FloatInput label="Cargo Channel" value="Land" onChange={() => {}} readOnly noEditIcon />
+                <FloatInput label="Carrier No." value={carrierNo} onChange={setCarrierNo} />
+                <div className="flex flex-col gap-[8px]">
+                  <span className="text-[12px]" style={{ color: '#697498', fontFamily: font }}>Courier Cargo Ramp Transfer</span>
+                  <div className="flex items-center gap-[24px]">
+                    {['Yes', 'No'].map(opt => (
+                      <label key={opt} className="flex items-center gap-[8px] cursor-pointer">
+                        <div
+                          onClick={() => setCourierRampTransfer(opt)}
+                          className="flex-shrink-0 size-[18px] rounded-full border-[2px] flex items-center justify-center cursor-pointer"
+                          style={{ borderColor: courierRampTransfer === opt ? '#1360d2' : '#d5ddfb' }}
+                        >
+                          {courierRampTransfer === opt && <div className="size-[8px] rounded-full bg-[#1360d2]" />}
+                        </div>
+                        <span className="text-[16px] text-[#051937]" style={{ fontFamily: font }}>{opt}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -956,45 +1081,105 @@ const PARTY_CARDS = [
   {
     title: 'Transferor Details',
     rows: [
-      { label: 'Transferor Business Name', value: 'Al Raffiq Trading' },
-      { label: 'Transferor Premises Name', value: 'Raffiq premises' },
+      { label: 'Transferor Business Code & Name', value: 'AE12345 - Al Raffiq Trading' },
+      { label: 'Transferor Premises Code & Name', value: 'A324345 - Raffiq premises' },
+      { label: 'License Expires on', value: '20-11-2036' },
+      { label: 'VAT TRN', value: '100123456700003', newLine: true },
     ],
   },
   {
     title: 'Transferee Details',
     rows: [
-      { label: 'Transferee Business Name', value: 'Al Raffiq Trading' },
+      { label: 'Transferee Business Code & Name', value: 'A1223445 - Al Raffiq Trading' },
+      { label: 'Transferee Premises Code & Name', value: 'A1223445 - Al Raffiq Trading' },
       { label: 'License Expires on', value: '20-11-2036' },
-      { label: 'VAT TRN', value: '20-11-2036' },
+      { label: 'VAT TRN', value: '100987654300003', newLine: true },
     ],
   },
   {
     title: 'Broker Details',
     rows: [
-      { label: 'Broker Business Code', value: 'AE-9106286' },
-      { label: 'Broker Business Name', value: 'SW Logistics LLC' },
+      { label: 'Broker Business Code & Name', value: 'AE-9106286 - SW Logistics LLC' },
       { label: 'License Expires on', value: '15-11-2029' },
     ],
   },
 ];
 
+function EditPencilIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="1" y="1" width="18" height="18" rx="3.5" stroke="#1360d2" strokeWidth="1.4" />
+      <path d="M6 14h2.5l5.5-5.5L11.5 6 6 11.5V14z" stroke="#1360d2" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M10.5 7.5l2 2" stroke="#1360d2" strokeWidth="1.3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function GrayedSummary({ fields, onEdit }: { fields: { label: string; value: string }[]; onEdit: () => void }) {
+  return (
+    <div className="bg-white rounded-[8px] px-[24px] py-[20px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.07)', border: '1px solid #e8edf5' }}>
+      <div className="flex flex-wrap gap-[20px]">
+        {fields.map((f, i) => (
+          <div key={i} className="relative flex-shrink-0" style={{ minWidth: 180 }}>
+            <button
+              onClick={onEdit}
+              className="w-full flex items-center justify-between px-[12px] rounded-[4px] hover:border-[#1360d2] transition-colors"
+              style={{ height: 48, background: '#f4f7fd', border: '1px solid #e2ebf9' }}>
+              <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>{f.value || '—'}</span>
+              <span className="flex-shrink-0 ml-[8px]"><EditPencilIcon /></span>
+            </button>
+            <label className="absolute pointer-events-none" style={{ left: 10, top: -9, background: '#f4f7fd', padding: '0 4px', fontSize: 11, color: '#8f94ae', fontFamily: font }}>
+              {f.label}
+            </label>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PartyInfoCard({ items }: { items: { label: string; value: string; newLine?: boolean }[] }) {
+  const mainItems = items.filter(it => !it.newLine);
+  const newLineItems = items.filter(it => it.newLine);
+  return (
+    <div className="bg-white rounded-[8px] p-[20px] w-full" style={{ boxShadow: '1px 2px 12px rgba(0,0,0,0.06)' }}>
+      <div className="flex items-center flex-wrap gap-y-[12px]">
+        {mainItems.map((item, i) => (
+          <React.Fragment key={i}>
+            <div className="flex flex-col gap-[4px] px-[12px] py-[4px]">
+              <span style={{ fontSize: 14, color: '#696f83', fontFamily: font, fontWeight: 400, whiteSpace: 'nowrap' }}>{item.label}</span>
+              <span style={{ fontSize: 18, color: '#051937', fontFamily: font, fontWeight: 500 }}>{item.value}</span>
+            </div>
+            {i < mainItems.length - 1 && (
+              <div style={{ width: 1, height: 40, background: '#e8edf5', flexShrink: 0 }} />
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+      {newLineItems.map((item, i) => (
+        <React.Fragment key={i}>
+          <div style={{ height: 1, background: '#e8edf5', margin: '12px 0' }} />
+          <div className="flex flex-col gap-[4px] px-[12px] py-[4px]">
+            <span style={{ fontSize: 14, color: '#696f83', fontFamily: font, fontWeight: 400 }}>{item.label}</span>
+            <span style={{ fontSize: 18, color: '#051937', fontFamily: font, fontWeight: 500 }}>{item.value}</span>
+          </div>
+        </React.Fragment>
+      ))}
+    </div>
+  );
+}
+
 function PartyInfoSection() {
   return (
-    <div className="flex flex-col md:flex-row gap-[16px]">
-      {PARTY_CARDS.map(card => (
-        <div key={card.title} className="flex-1 bg-white rounded-[8px] p-[20px]"
-          style={{ border: '1px solid #e8edf5', boxShadow: '0px 1px 8px rgba(0,0,0,0.06)' }}>
-          <h3 className="text-[15px] text-[#0e1b3d] mb-[16px]" style={{ fontFamily: font, fontWeight: 700 }}>{card.title}</h3>
-          <div className="flex flex-col gap-[12px]">
-            {card.rows.map((r, i) => (
-              <div key={i} className="flex items-center justify-between gap-[16px]">
-                <span className="text-[16px] text-[#696f83]" style={{ fontFamily: font }}>{r.label}</span>
-                <span className="text-[16px] text-[#051937]" style={{ fontFamily: font, fontWeight: 600 }}>{r.value}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
+    <div className="flex flex-col gap-[20px]">
+      <h2 className="text-[24px] text-[#051937]" style={{ fontFamily: font, fontWeight: 500 }}>Party Information</h2>
+      <div className="flex flex-col xl:flex-row gap-[20px]">
+        <div className="flex-1"><PartyInfoCard items={PARTY_CARDS[0].rows} /></div>
+        <div className="flex-1"><PartyInfoCard items={PARTY_CARDS[1].rows} /></div>
+      </div>
+      <div className="w-full">
+        <PartyInfoCard items={PARTY_CARDS[2].rows} />
+      </div>
     </div>
   );
 }
@@ -1004,7 +1189,7 @@ function BulkUploadModal({ onClose }: { onClose: () => void }) {
   const [dragging, setDragging] = useState(false);
   return (
     <ModalOverlay onClose={onClose}>
-      <div className="bg-white rounded-[8px] overflow-hidden w-[95vw] sm:w-[520px]" style={{ boxShadow: '0px 8px 40px rgba(0,0,0,0.18)' }}>
+      <div className="bg-white rounded-[8px] overflow-hidden w-[500px] max-w-[95vw]" style={{ boxShadow: '0px 8px 40px rgba(0,0,0,0.18)' }}>
         <div className="flex items-center justify-between px-[24px] py-[16px]" style={{ background: '#0e1b3d' }}>
           <span className="text-[18px] text-white" style={{ fontFamily: font, fontWeight: 500 }}>Bulk Upload</span>
           <button onClick={onClose} className="size-[28px] flex items-center justify-center rounded hover:bg-white/10">
@@ -1061,179 +1246,340 @@ function BulkUploadModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-function Step3({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
+function Step3({ onBack, onNext, shippingSummary, onEditShipping }: {
+  onBack: () => void; onNext: () => void;
+  shippingSummary?: { label: string; value: string }[];
+  onEditShipping?: () => void;
+}) {
   const [activeTab, setActiveTab] = useState<'package' | 'container'>('package');
-  const [showAddPackage, setShowAddPackage] = useState(false);
-  const [showAddContainer, setShowAddContainer] = useState(false);
-  const [showBulkUpload, setShowBulkUpload] = useState(false);
-  const [uploadedFile, setUploadedFile] = useState<string>('');
-  const [draggingUpload, setDraggingUpload] = useState(false);
 
-  const thStyle = { background: '#e2ebf9', padding: '10px 12px', textAlign: 'left' as const, fontWeight: 500 };
+  // Package state
+  type PkgRow = { count: string; pkgType: string; marks: string };
+  const [packages, setPackages] = useState<PkgRow[]>([
+    { count: '5678', pkgType: 'BLOCKS', marks: '' },
+  ]);
+  const [pkgCount, setPkgCount] = useState('');
+  const [pkgType, setPkgType] = useState('');
+  const [pkgMarks, setPkgMarks] = useState('');
+  const [editPkgIdx, setEditPkgIdx] = useState<number | null>(null);
+
+  // Container state
+  type ContRow = { no: string; seal: string; size: string; contType: string };
+  const [containers, setContainers] = useState<ContRow[]>([
+    { no: 'ADIT1111123', seal: '', size: '40', contType: 'Special container' },
+  ]);
+  const [containerMode, setContainerMode] = useState<'upload' | 'manual' | null>(null);
+  const [uploadedFile, setUploadedFile] = useState('');
+  const [dragging, setDragging] = useState(false);
+  const [contNo, setContNo] = useState('');
+  const [contSeal, setContSeal] = useState('');
+  const [contSize, setContSize] = useState('');
+  const [contType, setContType] = useState('');
+  const [editContIdx, setEditContIdx] = useState<number | null>(null);
+
+  const PKG_TYPES = ['Boxes', 'Pallets', 'Bags', 'Drums', 'Rolls', 'Bundles', 'BLOCKS'];
+  const CONT_SIZES = ['20', '40', '45'];
+  const CONT_TYPES = ['Standard', 'Reefer', 'Open Top', 'Flat Rack', 'Special container'];
+
+  const thStyle = { background: '#a7c2e9', padding: '10px 12px', textAlign: 'left' as const, fontWeight: 500 };
   const tdStyle = { background: '#fff', padding: '10px 12px', borderBottom: '1px solid #f0f4ff' };
   const SortIcon = () => (
     <svg viewBox="0 0 10 14" width="9" height="12" fill="none" stroke="#8f94ae" strokeWidth="1.3" strokeLinecap="round">
       <path d="M5 1v12M2 4l3-3 3 3M2 10l3 3 3-3" />
     </svg>
   );
+  const EditIcon = () => (
+    <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#1360d2" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 17h3.5L16 7.5 12.5 4 3 13.5V17z" /><path d="M11.5 5l3.5 3.5" />
+    </svg>
+  );
+  const DeleteIcon = () => (
+    <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#dc3545" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 6h14M8 6V3.5a1 1 0 011-1h2a1 1 0 011 1V6M5 6l1 11a1.5 1.5 0 001.5 1.4h5A1.5 1.5 0 0014 17l1-11" />
+    </svg>
+  );
+
+  const handleSavePkg = () => {
+    if (!pkgCount || !pkgType) return;
+    if (editPkgIdx !== null) {
+      setPackages(ps => ps.map((p, i) => i === editPkgIdx ? { ...p, count: pkgCount, pkgType, marks: pkgMarks } : p));
+      setEditPkgIdx(null);
+    } else {
+      setPackages(ps => [...ps, { count: pkgCount, pkgType, marks: pkgMarks }]);
+    }
+    setPkgCount(''); setPkgType(''); setPkgMarks('');
+  };
+
+  const handleEditPkg = (i: number) => {
+    const p = packages[i];
+    setPkgCount(p.count); setPkgType(p.pkgType); setPkgMarks(p.marks);
+    setEditPkgIdx(i);
+  };
+
+  const handleSaveCont = () => {
+    if (!contNo) return;
+    if (editContIdx !== null) {
+      setContainers(cs => cs.map((c, i) => i === editContIdx ? { no: contNo, seal: contSeal, size: '', contType: '' } : c));
+      setEditContIdx(null);
+    } else {
+      setContainers(cs => [...cs, { no: contNo, seal: contSeal, size: '', contType: '' }]);
+    }
+    setContNo(''); setContSeal('');
+  };
+
+  const handleEditCont = (i: number) => {
+    const c = containers[i];
+    setContNo(c.no); setContSeal(c.seal);
+    setEditContIdx(i);
+    setContainerMode('manual');
+  };
 
   return (
     <div className="flex flex-col h-full">
-      {showAddPackage && <AddPackageModal onClose={() => setShowAddPackage(false)} />}
-      {showAddContainer && <AddContainerModal onClose={() => setShowAddContainer(false)} />}
-      {showBulkUpload && <BulkUploadModal onClose={() => setShowBulkUpload(false)} />}
-
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
         <div className="flex flex-col gap-[24px]">
 
-          {/* Tab switcher */}
-          <div className="bg-white rounded-[8px] p-[16px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.07)' }}>
-            <div className="flex items-center justify-between">
-              <div className="flex gap-[12px]">
-                {(['package', 'container'] as const).map(tab => (
-                  <button key={tab} onClick={() => setActiveTab(tab)}
-                    className="h-[40px] px-[20px] rounded-[4px] text-[16px] transition-colors"
-                    style={{
-                      fontFamily: font, fontWeight: 500,
-                      background: activeTab === tab ? '#1360d2' : '#f7faff',
-                      color: activeTab === tab ? '#fff' : '#696f83',
-                      border: `1px solid ${activeTab === tab ? '#1360d2' : '#e5efff'}`,
-                    }}>
-                    {tab === 'package' ? 'Package Details' : 'Container Details'}
-                  </button>
-                ))}
-              </div>
-              <div className="flex items-center gap-[8px]">
-                <button onClick={() => setShowBulkUpload(true)}
-                  className="h-[36px] px-[14px] rounded-[4px] text-[16px] flex items-center gap-[6px] hover:bg-[#f0f4ff] transition-colors"
-                  style={{ border: '1px solid #1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
-                  <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#1360d2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="4 14 4 17 16 17 16 14" /><polyline points="7 8 10 5 13 8" /><line x1="10" y1="5" x2="10" y2="13" />
-                  </svg>
-                  Bulk Upload
-                </button>
-                {activeTab === 'package' ? (
-                  <button onClick={() => setShowAddPackage(true)}
-                    className="h-[36px] px-[16px] rounded-[4px] text-[16px] flex items-center gap-[6px] hover:opacity-90 transition-opacity"
-                    style={{ background: '#1360d2', color: '#fff', fontFamily: font, fontWeight: 500 }}>
-                    <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round">
-                      <path d="M10 4v12M4 10h12" />
-                    </svg>
-                    Add Package
-                  </button>
-                ) : (
-                  <button onClick={() => setShowAddContainer(true)}
-                    className="h-[36px] px-[16px] rounded-[4px] text-[16px] flex items-center gap-[6px] hover:opacity-90 transition-opacity"
-                    style={{ background: '#1360d2', color: '#fff', fontFamily: font, fontWeight: 500 }}>
-                    <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round">
-                      <path d="M10 4v12M4 10h12" />
-                    </svg>
-                    Add Container
-                  </button>
-                )}
-              </div>
-            </div>
 
-            <div className="mt-[20px]">
-              {activeTab === 'package' ? (
-                <>
-                  <SectionHeading>Package Details</SectionHeading>
-                  <div className="mt-[16px] overflow-x-auto">
-                    <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 6px' }}>
-                      <thead>
-                        <tr>
-                          {['Number of Packages', 'Shipping Marks'].map(col => (
-                            <th key={col} style={thStyle}>
-                              <div className="flex items-center gap-[4px]">
-                                <span className="text-[16px] text-[#455174]" style={{ fontFamily: font }}>{col}</span>
-                                <SortIcon />
-                              </div>
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {PACKAGE_ROWS.map((row, i) => (
-                          <tr key={i}>
-                            <td style={tdStyle}><span className="text-[16px] text-[#051937]" style={{ fontFamily: font }}>{row.packages}</span></td>
-                            <td style={tdStyle}><span className="text-[16px] text-[#051937]" style={{ fontFamily: font }}>{row.marks}</span></td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+          {/* Tabs — Figma design: two separate pill buttons */}
+          <div className="flex gap-[8px]">
+            <button onClick={() => setActiveTab('package')}
+              className="h-[48px] px-[24px] text-[16px] rounded-[4px] transition-colors"
+              style={{
+                fontFamily: font, fontWeight: 500,
+                background: activeTab === 'package' ? '#1360d2' : '#fff',
+                color: activeTab === 'package' ? '#fff' : '#696f83',
+                border: `1px solid ${activeTab === 'package' ? '#1360d2' : '#d5ddfb'}`,
+                boxShadow: activeTab === 'package' ? '0px 0px 8px rgba(28,72,191,0.16)' : 'none',
+              }}>
+              Package Details
+            </button>
+            <button onClick={() => setActiveTab('container')}
+              className="h-[48px] px-[24px] text-[16px] rounded-[4px] transition-colors"
+              style={{
+                fontFamily: font, fontWeight: 500,
+                background: activeTab === 'container' ? '#1360d2' : '#fff',
+                color: activeTab === 'container' ? '#fff' : '#696f83',
+                border: `1px solid ${activeTab === 'container' ? '#1360d2' : '#d5ddfb'}`,
+                boxShadow: activeTab === 'container' ? '0px 0px 8px rgba(28,72,191,0.16)' : 'none',
+              }}>
+              Container Details
+            </button>
+          </div>
+
+          {/* Package Tab — Box 1: Add/Edit form | Box 2: Table */}
+          {activeTab === 'package' && (
+            <>
+              {/* Box 1: Add/Edit Package Details */}
+              <div className="bg-white rounded-[8px] p-[24px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.07)' }}>
+                <SectionHeading>Add / Edit Package Details</SectionHeading>
+                <div className="mt-[16px] flex flex-wrap items-end gap-[16px]">
+                  <div style={{ width: 180, flexShrink: 0 }}>
+                    <FloatInput label="No. of Packages" required value={pkgCount} onChange={setPkgCount} />
                   </div>
-                </>
-              ) : (
-                <>
-                  <SectionHeading>Container Details</SectionHeading>
-                  <div className="mt-[16px] overflow-x-auto">
-                    <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 6px' }}>
-                      <thead>
-                        <tr>
-                          {['Container No', 'Seal No', 'Action'].map(col => (
-                            <th key={col} style={thStyle}>
-                              <div className="flex items-center gap-[4px]">
-                                <span className="text-[16px] text-[#455174]" style={{ fontFamily: font }}>{col}</span>
-                                {col !== 'Action' && <SortIcon />}
-                              </div>
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {CONTAINER_ROWS.map((row, i) => (
-                          <tr key={i}>
-                            {[row.no, row.seal].map((v, j) => (
-                              <td key={j} style={tdStyle}><span className="text-[16px] text-[#051937]" style={{ fontFamily: font }}>{v}</span></td>
-                            ))}
-                            <td style={tdStyle}>
-                              <button onClick={() => setShowAddContainer(true)} className="size-[28px] flex items-center justify-center rounded hover:bg-[#f0f4ff]">
-                                <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#1360d2" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M3 17h3.5L16 7.5 12.5 4 3 13.5V17z" /><path d="M11.5 5l3.5 3.5" />
-                                </svg>
+                  <div style={{ width: 180, flexShrink: 0 }}>
+                    <FloatSelect label="Package Type" required value={pkgType} onChange={setPkgType} options={PKG_TYPES} />
+                  </div>
+                  <div style={{ width: 200, flexShrink: 0 }}>
+                    <FloatInput label="Shipping Marks" value={pkgMarks} onChange={setPkgMarks} />
+                  </div>
+                  <button
+                    onClick={handleSavePkg}
+                    className="h-[48px] px-[28px] rounded-[4px] text-white text-[16px] hover:opacity-90 flex-shrink-0"
+                    style={{ background: '#1360d2', fontFamily: font, fontWeight: 500 }}>
+                    Save
+                  </button>
+                </div>
+              </div>
+
+              {/* Box 2: Package table */}
+              <div className="bg-white rounded-[8px] p-[24px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.07)' }}>
+                <div className="overflow-x-auto">
+                  <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 6px' }}>
+                    <thead>
+                      <tr>
+                        {['Number of Packages', 'Shipping Marks', 'Action'].map(col => (
+                          <th key={col} style={thStyle}>
+                            <div className="flex items-center gap-[4px]">
+                              <span className="text-[16px] text-[#455174]" style={{ fontFamily: font }}>{col}</span>
+                              {col !== 'Action' && <SortIcon />}
+                            </div>
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {packages.map((row, i) => (
+                        <tr key={i}>
+                          <td style={tdStyle}>
+                            <span className="text-[16px] text-[#051937]" style={{ fontFamily: font }}>{row.count} - {row.pkgType}</span>
+                          </td>
+                          <td style={tdStyle}>
+                            <span className="text-[16px] text-[#051937]" style={{ fontFamily: font }}>{row.marks}</span>
+                          </td>
+                          <td style={tdStyle}>
+                            <div className="flex items-center gap-[8px]">
+                              <button onClick={() => handleEditPkg(i)} className="size-[28px] flex items-center justify-center rounded hover:bg-[#f0f4ff]">
+                                <DeleteIcon />
                               </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                              <button onClick={() => { setPackages(ps => ps.filter((_, j) => j !== i)); }} className="size-[28px] flex items-center justify-center rounded hover:bg-[#fdf2f3]">
+                                <EditIcon />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="mt-[12px] flex items-center justify-end gap-[8px]">
+                  <span className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>Results per page:</span>
+                  <div className="flex items-center border border-[#d5ddfb] rounded-[4px] px-[8px] h-[28px] gap-[4px]">
+                    <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: font }}>10</span>
+                    <svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="#697498" strokeWidth="2"><path d="M5 8l5 5 5-5" /></svg>
                   </div>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* File Upload */}
-          <div className="bg-white rounded-[8px] p-[24px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.07)' }}>
-            <h2 className="text-[18px] text-[#051937] mb-[12px]" style={{ fontFamily: font, fontWeight: 500 }}>Upload Container / Package File</h2>
-            <p className="text-[16px] text-[#323c64] mb-[16px]" style={{ fontFamily: font }}>*Supported file types: .xlsx, .csv, .pdf — max file size 50MB</p>
-            <div
-              onDragOver={e => { e.preventDefault(); setDraggingUpload(true); }}
-              onDragLeave={() => setDraggingUpload(false)}
-              onDrop={e => { e.preventDefault(); setDraggingUpload(false); const f = e.dataTransfer.files[0]; if (f) setUploadedFile(f.name); }}
-              className="flex flex-col items-center justify-center gap-[12px] rounded-[8px] py-[40px] transition-colors"
-              style={{ background: draggingUpload ? '#e2ebf9' : '#f8fafd', border: `2px dashed ${draggingUpload ? '#1360d2' : '#8f94ae'}` }}
-            >
-              <div className="size-[52px] rounded-full bg-[#e2ebf9] flex items-center justify-center">
-                <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#1360d2" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" />
-                  <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
-                </svg>
+                  <span className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>1 - {packages.length} of {packages.length}</span>
+                  <button className="size-[28px] flex items-center justify-center rounded border border-[#d5ddfb]">
+                    <svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="#697498" strokeWidth="2"><path d="M12 5l-7 5 7 5" /></svg>
+                  </button>
+                  <button className="size-[28px] flex items-center justify-center rounded text-[14px] text-white" style={{ background: '#1360d2', fontFamily: font }}>1</button>
+                  <button className="size-[28px] flex items-center justify-center rounded border border-[#d5ddfb]">
+                    <svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="#697498" strokeWidth="2"><path d="M8 5l7 5-7 5" /></svg>
+                  </button>
+                </div>
               </div>
-              <p className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>
-                {uploadedFile ? uploadedFile : 'Drag and drop or'}
-              </p>
-              {!uploadedFile && (
-                <label className="border border-[#1360d2] rounded-[4px] px-[20px] py-[8px] text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors cursor-pointer" style={{ fontFamily: font }}>
-                  Choose File
-                  <input type="file" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) setUploadedFile(f.name); }} />
-                </label>
+            </>
+          )}
+
+          {/* Container Tab */}
+          {activeTab === 'container' && (
+            <>
+              {/* Upload / Add Manually buttons — Figma design: separate pill buttons, 48px */}
+              <div className="flex gap-[8px]">
+                <button
+                  onClick={() => setContainerMode(containerMode === 'upload' ? null : 'upload')}
+                  className="h-[48px] px-[24px] text-[16px] rounded-[4px] transition-colors"
+                  style={{
+                    fontFamily: font, fontWeight: 500,
+                    background: containerMode === 'upload' ? '#1360d2' : '#fff',
+                    color: containerMode === 'upload' ? '#fff' : '#696f83',
+                    border: `1px solid ${containerMode === 'upload' ? '#1360d2' : '#d5ddfb'}`,
+                    boxShadow: containerMode === 'upload' ? '0px 0px 8px rgba(28,72,191,0.16)' : 'none',
+                  }}>
+                  Upload Text File
+                </button>
+                <button
+                  onClick={() => setContainerMode(containerMode === 'manual' ? null : 'manual')}
+                  className="h-[48px] px-[24px] text-[16px] rounded-[4px] transition-colors"
+                  style={{
+                    fontFamily: font, fontWeight: 500,
+                    background: containerMode === 'manual' ? '#1360d2' : '#fff',
+                    color: containerMode === 'manual' ? '#fff' : '#696f83',
+                    border: `1px solid ${containerMode === 'manual' ? '#1360d2' : '#d5ddfb'}`,
+                    boxShadow: containerMode === 'manual' ? '0px 0px 8px rgba(28,72,191,0.16)' : 'none',
+                  }}>
+                  Add Manually
+                </button>
+              </div>
+
+              {/* Upload panel — separate box */}
+              {containerMode === 'upload' && (
+                <div className="bg-white rounded-[8px] p-[24px] w-[500px] max-w-full" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.07)' }}>
+                  <div className="flex items-center justify-between mb-[8px]">
+                    <SectionHeading>Upload Text File</SectionHeading>
+                    <button className="text-[16px] text-[#1360d2] flex items-center gap-[6px] hover:underline" style={{ fontFamily: font }}>
+                      <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#1360d2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M10 3v10M6 10l4 4 4-4" /><path d="M3 16h14" />
+                      </svg>
+                      Download Template
+                    </button>
+                  </div>
+                  <p className="text-[14px] text-[#697498] mb-[16px]" style={{ fontFamily: font }}>*Supported file type of .TXT max file size up to 1MB</p>
+                  <div
+                    onDragOver={e => { e.preventDefault(); setDragging(true); }}
+                    onDragLeave={() => setDragging(false)}
+                    onDrop={e => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files[0]; if (f) setUploadedFile(f.name); }}
+                    className="flex flex-col items-center justify-center gap-[12px] rounded-[8px] py-[40px]"
+                    style={{ background: dragging ? '#e2ebf9' : '#f8fafd', border: `1px dashed ${dragging ? '#1360d2' : '#8f94ae'}` }}>
+                    <div className="size-[52px] rounded-full bg-[#e2ebf9] flex items-center justify-center">
+                      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#1360d2" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M18 15a6 6 0 0 0-6-6M6 15a6 6 0 0 1 6-6m0 0V3m-4 4l4-4 4 4" />
+                      </svg>
+                    </div>
+                    <p className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>{uploadedFile || 'Drag and Drop or'}</p>
+                    {!uploadedFile && (
+                      <label className="border border-[#1360d2] rounded-[4px] px-[20px] py-[8px] text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] cursor-pointer" style={{ fontFamily: font }}>
+                        Choose File
+                        <input type="file" accept=".txt" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) setUploadedFile(f.name); }} />
+                      </label>
+                    )}
+                    {uploadedFile && (
+                      <button onClick={() => setUploadedFile('')} className="text-[16px] text-[#dc3545] hover:underline" style={{ fontFamily: font }}>Remove</button>
+                    )}
+                  </div>
+                </div>
               )}
-              {uploadedFile && (
-                <button onClick={() => setUploadedFile('')} className="text-[16px] text-[#dc3545] hover:underline" style={{ fontFamily: font }}>Remove</button>
+
+              {/* Manual add form — separate box */}
+              {containerMode === 'manual' && (
+                <div className="bg-white rounded-[8px] p-[24px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.07)' }}>
+                  <SectionHeading>Add / Edit Container Details</SectionHeading>
+                  <div className="mt-[16px] flex flex-wrap items-end gap-[16px]">
+                    <div style={{ width: 200, flexShrink: 0 }}>
+                      <FloatInput label="Container Number" required value={contNo} onChange={setContNo} />
+                    </div>
+                    <div style={{ width: 200, flexShrink: 0 }}>
+                      <FloatInput label="Customs Seal Number" value={contSeal} onChange={setContSeal} />
+                    </div>
+                    <button
+                      onClick={handleSaveCont}
+                      className="h-[48px] px-[28px] rounded-[4px] text-white text-[16px] hover:opacity-90 flex-shrink-0"
+                      style={{ background: '#1360d2', fontFamily: font, fontWeight: 500 }}>
+                      Save
+                    </button>
+                  </div>
+                </div>
               )}
-            </div>
-          </div>
+
+              {/* Container table — separate box */}
+              <div className="bg-white rounded-[8px] p-[24px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.07)' }}>
+                <SectionHeading>Container Details</SectionHeading>
+                <div className="mt-[16px] overflow-x-auto">
+                  <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 6px' }}>
+                    <thead>
+                      <tr>
+                        {['Container No', 'Customs Seal Number', 'Action'].map(col => (
+                          <th key={col} style={thStyle}>
+                            <div className="flex items-center gap-[4px]">
+                              <span className="text-[16px] text-[#455174]" style={{ fontFamily: font }}>{col}</span>
+                              {col !== 'Action' && <svg viewBox="0 0 10 14" width="9" height="12" fill="none" stroke="#8f94ae" strokeWidth="1.3" strokeLinecap="round"><path d="M5 1v12M2 4l3-3 3 3M2 10l3 3 3-3" /></svg>}
+                            </div>
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {containers.map((row, i) => (
+                        <tr key={i}>
+                          <td style={tdStyle}><span className="text-[16px] text-[#051937]" style={{ fontFamily: font }}>{row.no}</span></td>
+                          <td style={tdStyle}><span className="text-[16px] text-[#051937]" style={{ fontFamily: font }}>{row.seal}</span></td>
+                          <td style={tdStyle}>
+                            <div className="flex items-center gap-[8px]">
+                              <button onClick={() => handleEditCont(i)} className="size-[28px] flex items-center justify-center rounded hover:bg-[#fdf2f3]">
+                                <DeleteIcon />
+                              </button>
+                              <button onClick={() => setContainers(cs => cs.filter((_, j) => j !== i))} className="size-[28px] flex items-center justify-center rounded hover:bg-[#f0f4ff]">
+                                <EditIcon />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          )}
 
           <PartyInfoSection />
         </div>
@@ -1250,7 +1596,7 @@ function Step3({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
    Step 4 — Documents
    ──────────────────────────────────────────────────────────── */
 const DOC_TYPES = [
-  { label: 'Other Documents', count: 0 },
+  { label: 'Supporting Documents', count: 0 },
 ];
 
 const UPLOADED_ROWS = [
@@ -1262,7 +1608,11 @@ const UPLOADED_ROWS = [
   { name: 'Laboratory 123234.pdf',                type: 'Laboratory Results',         size: '50 MB', date: '08-12-2024' },
 ];
 
-function Step4({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
+function Step4({ onBack, onNext, shippingSummary, onEditShipping }: {
+  onBack: () => void; onNext: () => void;
+  shippingSummary?: { label: string; value: string }[];
+  onEditShipping?: () => void;
+}) {
   const [selectedDoc, setSelectedDoc] = useState(0);
   const [dragging, setDragging] = useState(false);
   const TABLE_COLS = ['Document Name', 'Document Type', 'Uploaded size', 'Uploaded on', 'Action'];
@@ -1271,6 +1621,7 @@ function Step4({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
         <div className="flex flex-col gap-[24px]">
+
 
           <div className="flex flex-col lg:flex-row gap-[24px]">
             {/* Document Types — 66% */}
@@ -1290,7 +1641,7 @@ function Step4({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
                       {selectedDoc === i && <div className="size-[8px] rounded-full bg-[#1360d2]" />}
                     </div>
                     <span className="text-[16px] text-[#060c28] flex-1 flex items-center gap-[6px]" style={{ fontFamily: font }}>
-                      <span>{i === 0 && <span style={{ color: '#dc3545' }}>*</span>}{d.label}</span>
+                      <span>{d.label}</span>
                       {d.count > 0 && <span className="text-[11px] px-[6px] py-[1px] rounded-full flex-shrink-0" style={{ background: '#c8f4d2', color: '#219653', fontFamily: font, fontWeight: 600 }}>{d.count}</span>}
                     </span>
                   </label>
@@ -1329,7 +1680,7 @@ function Step4({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
                 <thead>
                   <tr>
                     {TABLE_COLS.map(col => (
-                      <th key={col} style={{ background: '#e2ebf9', padding: '10px 12px', textAlign: 'left', fontWeight: 500 }}>
+                      <th key={col} style={{ background: '#a7c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500 }}>
                         <div className="flex items-center gap-[4px]">
                           <span className="text-[16px] text-[#455174]" style={{ fontFamily: font }}>{col}</span>
                           {col !== 'Action' && (
@@ -1383,7 +1734,11 @@ function Step4({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
 /* ────────────────────────────────────────────────────────────
    Step 5 — Payment Details
    ──────────────────────────────────────────────────────────── */
-function Step5({ onBack, onSubmit }: { onBack: () => void; onSubmit: () => void }) {
+function Step5({ onBack, onSubmit, shippingSummary, onEditShipping }: {
+  onBack: () => void; onSubmit: () => void;
+  shippingSummary?: { label: string; value: string }[];
+  onEditShipping?: () => void;
+}) {
   const [paymentMode, setPaymentMode] = useState('Credit/Debit Account');
   const [paymentRef, setPaymentRef] = useState('Account Number');
   const [depositMode, setDepositMode] = useState('Credit/Debit Account');
@@ -1401,6 +1756,7 @@ function Step5({ onBack, onSubmit }: { onBack: () => void; onSubmit: () => void 
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
         <div className="flex flex-col gap-[24px]">
+
 
           {/* Payment table */}
           <div className="bg-white rounded-[8px] p-[24px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.07)' }}>
@@ -1515,9 +1871,8 @@ const CHARGE_ROWS = [
 function StepAmendment({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
   const [amendReason, setAmendReason] = useState('');
   const [cargoStatus, setCargoStatus] = useState('');
-  const [fileName, setFileName] = useState('');
 
-  const thStyle: React.CSSProperties = { background: '#a7c2e9', padding: '12px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#0e1b3d', fontFamily: font };
+  const thStyle: React.CSSProperties = { background: '#a7c2e9', padding: '12px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#000', fontFamily: font };
   const tdStyle: React.CSSProperties = { background: '#fff', padding: '0 12px', height: 54, borderBottom: '1px solid #f0f4ff', fontSize: 15, color: '#0e1b3d', fontFamily: font };
   const tdAltStyle: React.CSSProperties = { ...tdStyle, background: '#f5f5f5' };
 
@@ -1533,24 +1888,6 @@ function StepAmendment({ onBack, onNext }: { onBack: () => void; onNext: () => v
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[20px]">
                 <FloatSelect label="Amendment Reason" required value={amendReason} onChange={setAmendReason} options={AMENDMENT_REASONS} />
                 <FloatSelect label="Cargo Status" required value={cargoStatus} onChange={setCargoStatus} options={CARGO_STATUSES} />
-
-                {/* Attachment field */}
-                <div className="relative flex items-center justify-between px-[16px] py-[8px] bg-white rounded-[4px]"
-                  style={{ border: '1px solid #d5ddfb', minHeight: 56 }}>
-                  <span className="text-[16px] flex-1 truncate" style={{ fontFamily: font, color: fileName ? '#0e1b3d' : 'rgba(14,27,61,0.5)' }}>
-                    {fileName || 'No files Selected'}
-                  </span>
-                  <label className="flex items-center gap-[8px] px-[12px] py-[6px] rounded-[4px] cursor-pointer flex-shrink-0"
-                    style={{ border: '1px solid #1360d2', boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#1360d2" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 15V3M8 7l4-4 4 4" /><path d="M3 20h18" />
-                    </svg>
-                    <span className="text-[16px] text-[#1360d2]" style={{ fontFamily: font, fontWeight: 500 }}>Upload</span>
-                    <input type="file" className="hidden" onChange={e => setFileName(e.target.files?.[0]?.name ?? '')} />
-                  </label>
-                  <span className="absolute bg-white px-[4px] text-[12px] text-[#060c28]"
-                    style={{ fontFamily: font, left: 11, top: -9 }}>Attachment</span>
-                </div>
               </div>
             </div>
           </div>
@@ -1638,8 +1975,11 @@ function StepAmendment({ onBack, onNext }: { onBack: () => void; onNext: () => v
 type Props = {
   onBack: () => void;
   onSubmit: () => void;
+  onSaveExit?: () => void;
   mode?: 'create' | 'amend';
+  initialStep?: number;
   initTransferType?: string;
+  initTransferNumber?: string;
   initTransferorBiz?: string;
   initTransferorPrem?: string;
   initTransfereeBiz?: string;
@@ -1650,12 +1990,20 @@ type Props = {
   initMasterDoc?: string;
 };
 
-export default function CargoTransferStepperPage({ onBack, onSubmit, mode = 'create', initTransferType, initTransferorBiz, initTransferorPrem, initTransfereeBiz, initTransfereePrem, initClientRef, initCargoChannel, initCarrierReg, initMasterDoc }: Props) {
+export default function CargoTransferStepperPage({ onBack, onSubmit, onSaveExit, mode = 'create', initialStep, initTransferType, initTransferNumber, initTransferorBiz, initTransferorPrem, initTransfereeBiz, initTransfereePrem, initClientRef, initCargoChannel, initCarrierReg, initMasterDoc }: Props) {
   const isAmend = mode === 'amend';
   const steps = isAmend ? AMEND_STEPS : CREATE_STEPS;
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(initialStep ?? 0);
   const next = () => setStep(s => Math.min(s + 1, steps.length - 1));
   const prev = () => setStep(s => Math.max(s - 1, 0));
+
+  const shippingSummary = [
+    { label: 'Cargo Transfer Type', value: initTransferType || '' },
+    { label: 'Cargo Channel (inbound)', value: initCargoChannel || '' },
+    { label: 'Client Doc. Ref. Number', value: initClientRef || '' },
+    { label: 'Carrier Registration No.(inbound)', value: initCarrierReg || '' },
+    { label: 'MAWB/MBOL No.', value: initMasterDoc || '' },
+  ].filter(f => f.value);
 
   return (
     <div className="flex flex-col h-full bg-[#f8fafd] overflow-hidden">
@@ -1676,7 +2024,9 @@ export default function CargoTransferStepperPage({ onBack, onSubmit, mode = 'cre
       {/* Title */}
       <div className="px-4 sm:px-10 pb-[12px] flex-shrink-0">
         <h1 className="text-2xl sm:text-3xl lg:text-[28px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>
-          {isAmend ? 'Amend Cargo Transfer Request' : 'Cargo Transfer - New Request'}
+          {isAmend
+            ? `Amend - ${initTransferType || 'Cargo Transfer'}${initTransferNumber ? ` - ${initTransferNumber}` : ''}`
+            : `Cargo Transfer - ${initTransferType || 'New Request'}`}
         </h1>
       </div>
 
@@ -1686,14 +2036,16 @@ export default function CargoTransferStepperPage({ onBack, onSubmit, mode = 'cre
       </div>
 
       {/* Step content */}
-      <div className="flex-1 overflow-hidden flex flex-col">
-        {step === 0 && <Step2 onBack={onBack} onNext={next} initCargoChannel={initCargoChannel} initCarrierReg={initCarrierReg} initMasterDoc={initMasterDoc} />}
-        {step === 1 && <Step3 onBack={prev} onNext={next} />}
-        {step === 2 && <Step4 onBack={prev} onNext={next} />}
-        {step === 3 && isAmend && <StepAmendment onBack={prev} onNext={next} />}
-        {step === 3 && !isAmend && <Step5 onBack={prev} onSubmit={onSubmit} />}
-        {step === 4 && isAmend && <Step5 onBack={prev} onSubmit={onSubmit} />}
-      </div>
+      <SaveExitCtx.Provider value={!isAmend ? onSaveExit : undefined}>
+        <div className="flex-1 overflow-hidden flex flex-col">
+          {step === 0 && <Step2 onBack={onBack} onNext={next} initCargoChannel={initCargoChannel} initCarrierReg={initCarrierReg} initMasterDoc={initMasterDoc} shippingSummary={shippingSummary} onEditShipping={onBack} isAmend={isAmend} />}
+          {step === 1 && <Step3 onBack={prev} onNext={next} shippingSummary={shippingSummary} onEditShipping={() => setStep(0)} />}
+          {step === 2 && <Step4 onBack={prev} onNext={next} shippingSummary={shippingSummary} onEditShipping={() => setStep(0)} />}
+          {step === 3 && isAmend && <StepAmendment onBack={prev} onNext={next} />}
+          {step === 3 && !isAmend && <Step5 onBack={prev} onSubmit={onSubmit} shippingSummary={shippingSummary} onEditShipping={() => setStep(0)} />}
+          {step === 4 && isAmend && <Step5 onBack={prev} onSubmit={onSubmit} shippingSummary={shippingSummary} onEditShipping={() => setStep(0)} />}
+        </div>
+      </SaveExitCtx.Provider>
     </div>
   );
 }

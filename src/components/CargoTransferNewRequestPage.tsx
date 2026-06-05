@@ -11,13 +11,30 @@ type FormValues = {
   transfereePremCode: string;
 };
 
+function formatTransferTypeTitle(type: string): string {
+  if (!type) return 'Cargo Transfer';
+  const parts = type.split(' - ');
+  if (parts.length === 2) {
+    const main = parts[0].replace(/^From\s+/, 'from ');
+    return `Cargo Transfer ${main} (${parts[1]})`;
+  }
+  return type;
+}
+
 type Props = {
   onBack: () => void;
   onSave: (values: FormValues) => void;
   initialCargoChannel?: string;
   initialClientRef?: string;
   initialCarrierReg?: string;
+  initialMawb?: string;
+  initialTransferorBizCode?: string;
+  initialTransferorPremCode?: string;
+  initialTransfereeBizCode?: string;
+  initialTransfereePremCode?: string;
   initialTransferType?: string;
+  mode?: 'create' | 'amend';
+  transferNumber?: string;
 };
 
 /* ─── SVGs ─── */
@@ -74,7 +91,7 @@ function ReadOnlyField({ label, value }: { label: string; value: string }) {
 /* ─── Search picker field with inline flyout and name badge ─── */
 function SearchPickerField({ label, required, value, onChange, suggestions, onModalOpen }: {
   label: string; required?: boolean; value: string; onChange: (v: string) => void;
-  suggestions: { code: string; name: string }[];
+  suggestions: { code: string; name: string; expiryDate?: string; trnNumber?: string }[];
   onModalOpen?: () => void;
 }) {
   const [focused, setFocused] = useState(false);
@@ -139,10 +156,26 @@ function SearchPickerField({ label, required, value, onChange, suggestions, onMo
         )}
       </div>
       {selectedItem && (
-        <div className="px-[12px] py-[8px] rounded-[4px]" style={{ background: '#e2ebf9' }}>
-          <span className="text-[16px]" style={{ color: '#051937', fontFamily: "'Dubai', sans-serif", fontWeight: 600 }}>
-            {selectedItem.name}
-          </span>
+        <div className="flex flex-col gap-[4px]">
+          <div className="px-[12px] py-[8px] rounded-[4px]" style={{ background: '#e2ebf9' }}>
+            <span className="text-[16px]" style={{ color: '#051937', fontFamily: "'Dubai', sans-serif", fontWeight: 600 }}>
+              {selectedItem.name}
+            </span>
+          </div>
+          {selectedItem.expiryDate && (
+            <div className="px-[12px] py-[8px] rounded-[4px]" style={{ background: '#e2ebf9' }}>
+              <span className="text-[14px]" style={{ color: '#051937', fontFamily: "'Dubai', sans-serif", fontWeight: 600 }}>
+                Expiry Date: {selectedItem.expiryDate}
+              </span>
+            </div>
+          )}
+          {selectedItem.trnNumber && (
+            <div className="px-[12px] py-[8px] rounded-[4px]" style={{ background: '#e2ebf9' }}>
+              <span className="text-[14px]" style={{ color: '#051937', fontFamily: "'Dubai', sans-serif", fontWeight: 600 }}>
+                TRN Number: {selectedItem.trnNumber}
+              </span>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -381,16 +414,19 @@ function PremisesCodeModal({ open, onClose, onSelect, title }: {
 }
 
 const BIZ_SUGGESTIONS = [
-  { code: 'AE1006', name: 'Sony Gulf FZE' },
-  { code: 'AE1007', name: 'Emirates Trading LLC' },
-  { code: 'AE1008', name: 'Dubai Cargo Co.' },
-  { code: 'AE-1019056', name: 'Dubai Trading Co. A' },
-  { code: 'AE-1019057', name: 'Dubai Trading Co. B' },
-  { code: 'AE-1019058', name: 'Dubai Trading Co. C' },
-  { code: 'AE-9106286', name: 'SW Logistics LLC' },
+  { code: 'AE1006',     name: 'Sony Gulf FZE',        expiryDate: '05-Aug-30', trnNumber: '100025424700001' },
+  { code: 'AE1007',     name: 'Emirates Trading LLC', expiryDate: '12-Mar-28', trnNumber: '100025424700002' },
+  { code: 'AE1008',     name: 'Dubai Cargo Co.',      expiryDate: '20-Jan-29', trnNumber: '100025424700003' },
+  { code: 'AE-1019056', name: 'Dubai Trading Co. A',  expiryDate: '01-Dec-27', trnNumber: '100025424700004' },
+  { code: 'AE-1019057', name: 'Dubai Trading Co. B',  expiryDate: '15-Nov-26', trnNumber: '100025424700005' },
+  { code: 'AE-1019058', name: 'Dubai Trading Co. C',  expiryDate: '30-Sep-28', trnNumber: '100025424700006' },
+  { code: 'AE-9106286', name: 'SW Logistics LLC',     expiryDate: '05-Aug-30', trnNumber: '100025424700009' },
+  { code: 'AE-9105364', name: 'U1DETBUS',             expiryDate: '05-Aug-30', trnNumber: '100025424700009' },
 ];
 
 const PREM_SUGGESTIONS = [
+  { code: 'PRE-001', name: 'Dubai Airport Cargo Village' },
+  { code: 'PRE-002', name: 'Jebel Ali FZE Premises' },
   { code: 'PR-00017', name: 'Raffiq premises' },
   { code: 'PR-00074', name: 'Al rafffiq' },
   { code: 'PR-00088', name: 'ALTHAFF' },
@@ -441,7 +477,7 @@ function CarrierVesselModal({ open, onClose, onSelect }: {
   const handleReset = () => { setVesselName(''); setCallingPort(''); setFromDate(''); setToDate(''); };
 
   if (!open) return null;
-  const thS: React.CSSProperties = { background: '#e2ebf9', padding: '12px 18px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#455174', whiteSpace: 'nowrap' };
+  const thS: React.CSSProperties = { background: '#a7c2e9', padding: '12px 18px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#000', whiteSpace: 'nowrap' };
   const tdS: React.CSSProperties = { padding: '0 18px', height: 54, background: '#fff', borderBottom: '1px solid #f0f3fa', fontSize: 15, color: '#0e1b3d' };
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center px-[16px]">
@@ -555,25 +591,159 @@ function CarrierVesselModal({ open, onClose, onSelect }: {
   );
 }
 
+/* ─── Flight search modal ─── */
+const FLIGHT_ROWS = [
+  { flightNo: 'EK0365', date: '18-Jun-26' },
+  { flightNo: 'EK0863', date: '18-Jun-26' },
+  { flightNo: 'EK0331', date: '18-Jun-26' },
+  { flightNo: 'EK0826', date: '18-Jun-26' },
+  { flightNo: 'EK0008', date: '18-Jun-26' },
+  { flightNo: 'EK0503', date: '18-Jun-26' },
+  { flightNo: 'EK0748', date: '18-Jun-26' },
+  { flightNo: 'EK0720', date: '18-Jun-26' },
+];
+
+function FlightSearchModal({ open, onClose, onSelect }: {
+  open: boolean; onClose: () => void; onSelect: (flightNo: string, date: string) => void;
+}) {
+  const [flightNoFilter, setFlightNoFilter] = useState('');
+  const [fromDate, setFromDate] = useState('2026-06-05');
+  const [toDate, setToDate] = useState('2026-06-18');
+  const fromRef = useRef<HTMLInputElement>(null);
+  const toRef = useRef<HTMLInputElement>(null);
+  const f = "'Dubai', sans-serif";
+
+  const filtered = FLIGHT_ROWS.filter(r =>
+    !flightNoFilter || r.flightNo.toLowerCase().includes(flightNoFilter.toLowerCase())
+  );
+  const handleReset = () => { setFlightNoFilter(''); setFromDate('2026-06-05'); setToDate('2026-06-18'); };
+
+  if (!open) return null;
+  const thS: React.CSSProperties = { background: '#a7c2e9', padding: '12px 18px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#000', whiteSpace: 'nowrap' };
+  const tdS: React.CSSProperties = { padding: '0 18px', height: 54, background: '#fff', borderBottom: '1px solid #f0f3fa', fontSize: 15, color: '#0e1b3d' };
+
+  return (
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center px-[16px]">
+      <div className="absolute inset-0" style={{ background: 'rgba(14,27,61,0.45)', backdropFilter: 'blur(2px)' }} onClick={onClose} />
+      <div className="relative bg-white rounded-[8px] flex flex-col overflow-hidden"
+        style={{ width: 'min(900px,96vw)', maxHeight: '90vh', boxShadow: '0 20px 60px rgba(0,0,0,0.25)' }}>
+        {/* Dark header */}
+        <div className="flex items-center justify-between px-[20px] py-[20px] flex-shrink-0" style={{ background: '#0e1b3d' }}>
+          <p className="text-[20px] text-white" style={{ fontFamily: f, fontWeight: 500 }}>Search Flight</p>
+          <button onClick={onClose} className="size-[24px] flex items-center justify-center">
+            <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round">
+              <path d="M5 5l10 10M15 5L5 15" />
+            </svg>
+          </button>
+        </div>
+        {/* Filters */}
+        <div className="px-[20px] pt-[20px] pb-[8px] flex-shrink-0">
+          <div className="flex flex-wrap gap-[20px] items-end">
+            <div className="relative" style={{ flex: '1 1 220px', minWidth: 180 }}>
+              <div style={{ height: 56, border: '1px solid #d5ddfb', borderRadius: 4, background: '#fff', display: 'flex', alignItems: 'center', padding: '0 16px' }}>
+                <input value={flightNoFilter} onChange={e => setFlightNoFilter(e.target.value)} placeholder=""
+                  className="flex-1 text-[16px] text-[#051937] outline-none bg-transparent" style={{ fontFamily: f }} />
+              </div>
+              <label className="absolute pointer-events-none" style={{ left: 13, top: -8, background: '#fff', padding: '0 4px', fontSize: 12, color: '#060c28', fontFamily: f }}>Flight No</label>
+            </div>
+            <div className="relative" style={{ flex: '1 1 220px', minWidth: 180 }}>
+              <div style={{ height: 56, border: '1px solid #d5ddfb', borderRadius: 4, background: '#fff', display: 'flex', alignItems: 'center', paddingLeft: 16 }}>
+                <input ref={fromRef} type="date" value={fromDate} onChange={e => setFromDate(e.target.value)}
+                  className="flex-1 text-[16px] text-[#051937] outline-none bg-transparent" style={{ fontFamily: f, colorScheme: 'light' }} />
+                <button type="button" onClick={() => (fromRef.current as any)?.showPicker?.()} className="size-[48px] flex items-center justify-center flex-shrink-0">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#697498" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                </button>
+              </div>
+              <label className="absolute pointer-events-none" style={{ left: 13, top: -8, background: '#fff', padding: '0 4px', fontSize: 12, color: '#060c28', fontFamily: f }}>From Date</label>
+            </div>
+            <div className="relative" style={{ flex: '1 1 220px', minWidth: 180 }}>
+              <div style={{ height: 56, border: '1px solid #d5ddfb', borderRadius: 4, background: '#fff', display: 'flex', alignItems: 'center', paddingLeft: 16 }}>
+                <input ref={toRef} type="date" value={toDate} onChange={e => setToDate(e.target.value)}
+                  className="flex-1 text-[16px] text-[#051937] outline-none bg-transparent" style={{ fontFamily: f, colorScheme: 'light' }} />
+                <button type="button" onClick={() => (toRef.current as any)?.showPicker?.()} className="size-[48px] flex items-center justify-center flex-shrink-0">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#697498" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                </button>
+              </div>
+              <label className="absolute pointer-events-none" style={{ left: 13, top: -8, background: '#fff', padding: '0 4px', fontSize: 12, color: '#060c28', fontFamily: f }}>To Date</label>
+            </div>
+            <div className="flex gap-[16px] items-center">
+              <button type="button" onClick={handleReset}
+                className="flex items-center justify-center px-[20px]"
+                style={{ height: 48, border: '1px solid #1360d2', borderRadius: 3, background: '#fff', color: '#1360d2', fontFamily: f, fontWeight: 700, fontSize: 16, minWidth: 92 }}>
+                Reset
+              </button>
+              <button type="button"
+                className="flex items-center justify-center px-[20px]"
+                style={{ height: 48, borderRadius: 3, background: '#1360d2', color: '#fff', fontFamily: f, fontWeight: 500, fontSize: 16, minWidth: 120 }}>
+                Search
+              </button>
+            </div>
+          </div>
+        </div>
+        {/* Table */}
+        <div className="flex-1 overflow-auto px-[20px] pb-[30px]">
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: f }}>
+            <thead>
+              <tr>
+                <th style={thS}>Flight</th>
+                <th style={thS}>Date</th>
+                <th style={{ ...thS, borderRadius: '0 8px 8px 0' }}>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((row, i) => (
+                <tr key={i} className="hover:bg-[#f0f4ff] transition-colors">
+                  <td style={tdS}>{row.flightNo}</td>
+                  <td style={tdS}>{row.date}</td>
+                  <td style={{ ...tdS, paddingLeft: 18 }}>
+                    <button onClick={() => { onSelect(row.flightNo, row.date); onClose(); }}
+                      className="text-[16px] hover:underline" style={{ color: '#1360d2', fontFamily: f, fontWeight: 500 }}>Select</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Main Page ─── */
+
 export default function CargoTransferNewRequestPage({
   onBack, onSave,
   initialCargoChannel = '',
   initialClientRef = '',
   initialCarrierReg = '',
+  initialMawb = '',
+  initialTransferorBizCode = '',
+  initialTransferorPremCode = '',
+  initialTransfereeBizCode = '',
+  initialTransfereePremCode = '',
   initialTransferType = '',
+  mode = 'create',
+  transferNumber = '',
 }: Props) {
   const [clientRef, setClientRef] = useState(initialClientRef);
   const [carrierReg, setCarrierReg] = useState(initialCarrierReg);
   const [carrierVesselName, setCarrierVesselName] = useState('');
   const [showCarrierModal, setShowCarrierModal] = useState(false);
-  const [mawb, setMawb] = useState('');
-  const [transferorBizCode, setTransferorBizCode] = useState('');
-  const [transferorPremCode, setTransferorPremCode] = useState('');
-  const [transfereeBizCode, setTransfereeBizCode] = useState('');
-  const [transfereePremCode, setTransfereePremCode] = useState('');
+  const [mawb, setMawb] = useState(initialMawb);
+  const [transferorBizCode, setTransferorBizCode] = useState(initialTransferorBizCode);
+  const [transferorPremCode, setTransferorPremCode] = useState(initialTransferorPremCode);
+  const [transfereeBizCode, setTransfereeBizCode] = useState(initialTransfereeBizCode);
+  const [transfereePremCode, setTransfereePremCode] = useState(initialTransfereePremCode);
   const [bizModal, setBizModal] = useState<null | 'transferor' | 'transferee'>(null);
   const [premModal, setPremModal] = useState<null | 'transferor' | 'transferee'>(null);
+  const [hawb, setHawb] = useState('');
+  const [showFlightModal, setShowFlightModal] = useState(false);
+
+  const isAir = initialCargoChannel === 'Air';
 
 
   return (
@@ -592,33 +762,38 @@ export default function CargoTransferNewRequestPage({
         </div>
       </div>
 
-      <h1 className="px-4 sm:px-10 pt-[6px] pb-[16px] text-2xl sm:text-3xl lg:text-[32px] text-[#111838] flex-shrink-0" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
-        Cargo Transfer - New Request
+      <h1 className="px-4 sm:px-10 pt-[6px] pb-[16px] text-2xl sm:text-3xl lg:text-[28px] text-[#111838] flex-shrink-0" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
+        {mode === 'amend'
+          ? `Amend - ${formatTransferTypeTitle(initialTransferType)}${transferNumber ? ` - ${transferNumber}` : ''}`
+          : `Cargo Transfer - ${initialTransferType || 'New Request'}`}
       </h1>
 
       {/* Scrollable body */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 pb-[24px] flex flex-col gap-[20px]">
 
-        {/* Card 1 — read-only summary + editable ref */}
+        {/* Cargo Transfer Type / Cargo Channel / Client Ref */}
         <div className="bg-white rounded-[8px] px-[40px] py-[20px]" style={{ boxShadow: '0px 4px 16px rgba(0,0,0,0.08)' }}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-[20px]">
-            <ReadOnlyField label="Cargo Transfer Type" value={initialTransferType || '—'} />
-            <ReadOnlyField label="Cargo Channel" value={initialCargoChannel || '—'} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-[20px] items-start">
+            <ReadOnlyField label="Cargo Transfer Type" value={initialTransferType} />
+            <ReadOnlyField label="Cargo Channel (inbound)" value={initialCargoChannel} />
             <FloatingField label="Client Doc. Ref. Number" required value={clientRef} onChange={setClientRef} placeholder="Enter Ref. Number" />
           </div>
         </div>
 
-        {/* Card 2 — Carrier / MAWB */}
+        {/* Carrier / MAWB */}
         <div className="bg-white rounded-[8px] px-[40px] py-[20px]" style={{ boxShadow: '0px 4px 16px rgba(0,0,0,0.08)' }}>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-[20px] items-start">
             <SearchPickerField
-              label="Carrier Registration No" required
+              label="Carrier Registration No.(inbound)" required
               value={carrierReg}
               onChange={v => { setCarrierReg(v); if (!CARRIER_SUGGESTIONS.find(s => s.code === v)) setCarrierVesselName(''); }}
-              suggestions={CARRIER_SUGGESTIONS}
-              onModalOpen={() => setShowCarrierModal(true)}
+              suggestions={isAir ? [] : CARRIER_SUGGESTIONS}
+              onModalOpen={() => isAir ? setShowFlightModal(true) : setShowCarrierModal(true)}
             />
-            <FloatingField label="Master AWB / BOL No." required value={mawb} onChange={setMawb} placeholder="Enter MAWB / MBOL" />
+            <FloatingField label="MAWB/MBOL No." required value={mawb} onChange={setMawb} placeholder="Enter MAWB / MBOL" />
+            {isAir && (
+              <FloatingField label="HAWB" value={hawb} onChange={setHawb} placeholder="Enter HAWB" />
+            )}
           </div>
         </div>
 
@@ -668,6 +843,15 @@ export default function CargoTransferNewRequestPage({
         onClose={() => setShowCarrierModal(false)}
         onSelect={(rotNum, vesselName) => { setCarrierReg(rotNum); setCarrierVesselName(vesselName); setShowCarrierModal(false); }}
       />
+      <FlightSearchModal
+        open={showFlightModal}
+        onClose={() => setShowFlightModal(false)}
+        onSelect={(flightNo) => {
+          setCarrierReg(flightNo);
+          setCarrierVesselName('');
+          setShowFlightModal(false);
+        }}
+      />
       <BusinessCodeModal
         open={bizModal !== null}
         title={`Search ${bizModal === 'transferor' ? 'Transferor' : 'Transferee'} Business Code`}
@@ -689,7 +873,7 @@ export default function CargoTransferNewRequestPage({
           style={{ height: 48, padding: '0 20px', borderRadius: 4, border: '1px solid #1360d2', background: '#fff', fontFamily: "'Dubai', sans-serif" }}>
           <span className="text-[16px] text-[#1360d2] capitalize" style={{ fontWeight: 500 }}>Back</span>
         </button>
-        <button onClick={() => onSave({ clientRef, carrierReg, mawb, transferorBizCode, transferorPremCode, transfereeBizCode, transfereePremCode })}
+        <button onClick={() => onSave({ clientRef, carrierReg: carrierReg || initialCarrierReg, mawb, transferorBizCode, transferorPremCode, transfereeBizCode, transfereePremCode })}
           className="flex items-center justify-center hover:bg-[#0e4db8] transition-colors"
           style={{ height: 48, padding: '0 40px', borderRadius: 4, background: '#1360d2', fontFamily: "'Dubai', sans-serif" }}>
           <span className="text-[16px] text-white capitalize" style={{ fontWeight: 500 }}>Proceed</span>

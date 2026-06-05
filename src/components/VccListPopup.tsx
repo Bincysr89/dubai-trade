@@ -63,9 +63,9 @@ export default function VccListPopup({ row, onClose }: Props) {
           <div className="border border-[#eef1f6] rounded-[8px] overflow-x-auto">
             <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 980 }}>
               <thead>
-                <tr style={{ background: '#e2ebf9' }}>
-                  {['VCC No.', 'Chassis No.', 'Engine No.', 'Brand', 'Make', 'Year', 'VCC Date', 'Status'].map((h) => (
-                    <th key={h} className="text-left text-[16px] text-[#455174]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
+                <tr style={{ background: '#a7c2e9' }}>
+                  {['VCC No.', 'Chassis No.', 'Engine No.', 'Brand', 'Make', 'Year', 'VCC Date', 'Status', 'Action'].map((h) => (
+                    <th key={h} className="text-left text-[16px] text-[#000]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap', textAlign: h === 'Action' ? 'center' : 'left' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -74,7 +74,7 @@ export default function VccListPopup({ row, onClose }: Props) {
                   const st = STATUS_STYLE[r.status];
                   return (
                     <tr key={r.vccNo} style={{ borderTop: '1px solid #eef1f6' }}>
-                      <td className="text-[16px] text-[#1360d2]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>{r.vccNo}</td>
+                      <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>{r.vccNo}</td>
                       <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{r.chassis}</td>
                       <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{r.engine}</td>
                       <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{r.brand}</td>
@@ -85,6 +85,18 @@ export default function VccListPopup({ row, onClose }: Props) {
                         <span className="text-[16px] font-medium inline-flex items-center" style={{ background: st.bg, color: st.color, padding: '4px 10px', borderRadius: 4 }}>
                           {r.status}
                         </span>
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'center' }}>
+                        <button
+                          type="button"
+                          title="Download VCC Certificate"
+                          onClick={() => console.log('Download VCC', r.vccNo)}
+                          className="size-[32px] inline-flex items-center justify-center rounded-[4px] hover:bg-[#e2ebf9] transition-colors text-[#1360d2]"
+                        >
+                          <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M10 3v10" /><path d="M5 9l5 5 5-5" /><path d="M3 17h14" />
+                          </svg>
+                        </button>
                       </td>
                     </tr>
                   );

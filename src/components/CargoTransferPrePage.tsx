@@ -90,7 +90,7 @@ function VesselSearchModal({ open, onClose, onSelect }: {
   const handleReset = () => { setVesselName(''); setCallingPort(''); setFromDate(''); setToDate(''); };
 
   if (!open) return null;
-  const thS: React.CSSProperties = { background: '#e2ebf9', padding: '12px 18px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#455174', whiteSpace: 'nowrap' };
+  const thS: React.CSSProperties = { background: '#a7c2e9', padding: '12px 18px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#000', whiteSpace: 'nowrap' };
   const tdS: React.CSSProperties = { padding: '0 18px', height: 54, background: '#fff', borderBottom: '1px solid #f0f3fa', fontSize: 15, color: '#0e1b3d' };
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center px-[16px]">
@@ -229,9 +229,21 @@ type Props = {
   onBack: () => void;
   onStartJourney: (values: PrePageValues) => void;
   initialValues?: Partial<PrePageValues>;
+  mode?: 'create' | 'amend';
+  transferNumber?: string;
 };
 
-export default function CargoTransferPrePage({ onBack, onStartJourney, initialValues }: Props) {
+function formatTransferTypeTitle(type: string): string {
+  if (!type) return 'Cargo Transfer';
+  const parts = type.split(' - ');
+  if (parts.length === 2) {
+    const main = parts[0].replace(/^From\s+/, 'from ');
+    return `Cargo Transfer ${main} (${parts[1]})`;
+  }
+  return type;
+}
+
+export default function CargoTransferPrePage({ onBack, onStartJourney, initialValues, mode = 'create', transferNumber }: Props) {
   const [activeTab, setActiveTab]           = useState<Tab>('information');
   const [openAccordion, setOpenAccordion]   = useState<string | null>(null);
   const [transferType, setTransferType]     = useState(initialValues?.transferType ?? '');
@@ -272,15 +284,19 @@ const TRANSFER_TYPE_OPTIONS = [
 
       {/* Title + Need Help */}
       <div className="flex items-center gap-[16px] px-4 sm:px-10 pt-[6px] pb-[20px]">
-        <h1 className="text-2xl sm:text-3xl lg:text-[32px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
-          Cargo Transfer
+        <h1 className="text-2xl sm:text-3xl lg:text-[28px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
+          {mode === 'amend'
+            ? `Amend - ${formatTransferTypeTitle(transferType || initialValues?.transferType || '')}${transferNumber ? ` - ${transferNumber}` : ''}`
+            : 'Cargo Transfer'}
         </h1>
-        <button className="flex items-center gap-[4px]">
-          <span className="text-[16px] text-[#2950e5]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Need Help</span>
-          <svg viewBox="0 0 24 24" className="size-[20px] text-[#2950e5]" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="9" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><circle cx="12" cy="17" r=".5" fill="currentColor" />
-          </svg>
-        </button>
+        {mode !== 'amend' && (
+          <button className="flex items-center gap-[4px]">
+            <span className="text-[16px] text-[#2950e5]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Need Help</span>
+            <svg viewBox="0 0 24 24" className="size-[20px] text-[#2950e5]" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="9" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><circle cx="12" cy="17" r=".5" fill="currentColor" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Start Journey card — outside scroll container so dropdown isn't clipped */}
@@ -288,63 +304,83 @@ const TRANSFER_TYPE_OPTIONS = [
         <div className="bg-white rounded-[8px] p-[24px]" style={{ boxShadow: '0px 4px 16px 0px rgba(0,0,0,0.08)' }}>
           <div className="flex flex-wrap gap-[20px] items-end">
             <div style={{ flex: '1 1 240px', minWidth: 200, position: 'relative' }}>
-              <button
-                type="button"
-                onClick={() => setTransferTypeOpen(o => !o)}
-                className="bg-white w-full flex items-center px-[16px] transition-colors"
-                style={{
-                  height: 56,
-                  border: `1px solid ${transferTypeOpen ? '#1360d2' : '#d5ddfb'}`,
-                  borderRadius: 4,
-                  fontFamily: "'Dubai', sans-serif",
-                }}
-              >
-                <span className="flex-1 text-left text-[16px]" style={{ color: transferType ? '#0e1b3d' : '#697498' }}>
-                  {transferType || ''}
-                </span>
-                <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" className={`flex-shrink-0 transition-transform ${transferTypeOpen ? 'rotate-180' : ''}`}>
-                  <path d="M5 8l5 5 5-5" />
-                </svg>
-              </button>
-              {/* Floating label */}
-              <label
-                className="absolute pointer-events-none transition-all"
-                style={{
-                  left: (transferTypeOpen || transferType) ? 10 : 16,
-                  top: (transferTypeOpen || transferType) ? -9 : '50%',
-                  transform: (transferTypeOpen || transferType) ? 'none' : 'translateY(-50%)',
-                  background: (transferTypeOpen || transferType) ? '#fff' : 'transparent',
-                  padding: (transferTypeOpen || transferType) ? '0 4px' : '0',
-                  fontSize: (transferTypeOpen || transferType) ? 12 : 14,
-                  color: transferTypeOpen ? '#1360d2' : '#0e1b3d',
-                  fontFamily: "'Dubai', sans-serif",
-                  transitionDuration: '120ms',
-                  transitionProperty: 'top, left, font-size, transform, padding, background, color',
-                }}
-              >
-                <span style={{ color: '#dc3545' }}>*</span> Cargo Transfer Type
-              </label>
-              {transferTypeOpen && (
-                <ul
-                  className="absolute z-[50] left-0 right-0 bg-white rounded-[8px] py-[4px] overflow-hidden"
-                  style={{ top: 60, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}
-                >
-                  {TRANSFER_TYPE_OPTIONS.map(opt => (
-                    <li
-                      key={opt}
-                      onClick={() => { setTransferType(opt); setTransferTypeOpen(false); }}
-                      className="px-[14px] py-[10px] text-[16px] cursor-pointer hover:bg-[#e2ebf9] transition-colors"
-                      style={{
-                        color: opt === transferType ? '#1360d2' : '#0e1b3d',
-                        background: opt === transferType ? '#e2ebf9' : 'transparent',
-                        fontWeight: opt === transferType ? 500 : 400,
-                        fontFamily: "'Dubai', sans-serif",
-                      }}
+              {mode === 'amend' ? (
+                <>
+                  <div
+                    className="w-full flex items-center px-[16px]"
+                    style={{ height: 56, border: '1px solid #d5ddfb', borderRadius: 4, background: '#f4f4f4' }}
+                  >
+                    <span className="flex-1 text-left text-[16px]" style={{ color: '#0e1b3d', fontFamily: "'Dubai', sans-serif" }}>
+                      {transferType || ''}
+                    </span>
+                  </div>
+                  <label className="absolute pointer-events-none" style={{
+                    left: 10, top: -9, background: '#f4f4f4', padding: '0 3px',
+                    fontSize: 11, color: '#0e1b3d', fontFamily: "'Dubai', sans-serif",
+                  }}>
+                    <span style={{ color: '#dc3545' }}>*</span> Cargo Transfer Type
+                  </label>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setTransferTypeOpen(o => !o)}
+                    className="bg-white w-full flex items-center px-[16px] transition-colors"
+                    style={{
+                      height: 56,
+                      border: `1px solid ${transferTypeOpen ? '#1360d2' : '#d5ddfb'}`,
+                      borderRadius: 4,
+                      fontFamily: "'Dubai', sans-serif",
+                    }}
+                  >
+                    <span className="flex-1 text-left text-[16px]" style={{ color: transferType ? '#0e1b3d' : '#697498' }}>
+                      {transferType || ''}
+                    </span>
+                    <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" className={`flex-shrink-0 transition-transform ${transferTypeOpen ? 'rotate-180' : ''}`}>
+                      <path d="M5 8l5 5 5-5" />
+                    </svg>
+                  </button>
+                  <label
+                    className="absolute pointer-events-none transition-all"
+                    style={{
+                      left: (transferTypeOpen || transferType) ? 10 : 16,
+                      top: (transferTypeOpen || transferType) ? -9 : '50%',
+                      transform: (transferTypeOpen || transferType) ? 'none' : 'translateY(-50%)',
+                      background: (transferTypeOpen || transferType) ? '#fff' : 'transparent',
+                      padding: (transferTypeOpen || transferType) ? '0 4px' : '0',
+                      fontSize: (transferTypeOpen || transferType) ? 12 : 14,
+                      color: transferTypeOpen ? '#1360d2' : '#0e1b3d',
+                      fontFamily: "'Dubai', sans-serif",
+                      transitionDuration: '120ms',
+                      transitionProperty: 'top, left, font-size, transform, padding, background, color',
+                    }}
+                  >
+                    <span style={{ color: '#dc3545' }}>*</span> Cargo Transfer Type
+                  </label>
+                  {transferTypeOpen && (
+                    <ul
+                      className="absolute z-[50] left-0 right-0 bg-white rounded-[8px] py-[4px] overflow-hidden"
+                      style={{ top: 60, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}
                     >
-                      {opt}
-                    </li>
-                  ))}
-                </ul>
+                      {TRANSFER_TYPE_OPTIONS.map(opt => (
+                        <li
+                          key={opt}
+                          onClick={() => { setTransferType(opt); setTransferTypeOpen(false); }}
+                          className="px-[14px] py-[10px] text-[16px] cursor-pointer hover:bg-[#e2ebf9] transition-colors"
+                          style={{
+                            color: opt === transferType ? '#1360d2' : '#0e1b3d',
+                            background: opt === transferType ? '#e2ebf9' : 'transparent',
+                            fontWeight: opt === transferType ? 500 : 400,
+                            fontFamily: "'Dubai', sans-serif",
+                          }}
+                        >
+                          {opt}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </>
               )}
             </div>
             <div style={{ flex: '1 1 160px', minWidth: 140, position: 'relative' }}>
@@ -381,7 +417,7 @@ const TRANSFER_TYPE_OPTIONS = [
                   transitionProperty: 'top, left, font-size, transform, padding, background, color',
                 }}
               >
-                <span style={{ color: '#dc3545' }}>*</span> Cargo Channel
+                <span style={{ color: '#dc3545' }}>*</span> Cargo Channel (inbound)
               </label>
               {cargoChannelOpen && (
                 <ul

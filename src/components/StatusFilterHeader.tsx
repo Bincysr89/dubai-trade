@@ -34,7 +34,7 @@ export default function StatusFilterHeader({ label, options, value, onChange, co
         className="flex items-center gap-[4px] hover:text-[#1360d2] transition-colors"
         style={{ background: 'transparent' }}
       >
-        <span className="text-[16px] text-[#455174] whitespace-nowrap" style={{ letterSpacing: '0.07px', fontWeight: 500 }}>{label}</span>
+        <span className="text-[16px] text-[#000] whitespace-nowrap" style={{ letterSpacing: '0.07px', fontWeight: 500 }}>{label}</span>
         <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke={value ? '#1360d2' : '#8f94ae'} strokeWidth="1.5" strokeLinecap="round"><path d="M3 4h10M5 8h6M7 12h2" /></svg>
         {value && <span className="size-[6px] rounded-full" style={{ background: '#1360d2' }} />}
       </button>

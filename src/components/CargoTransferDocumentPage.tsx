@@ -129,7 +129,7 @@ export default function CargoTransferDocumentPage({ onBack, onProceed }: Props) 
                 <thead>
                   <tr>
                     {TABLE_COLS.map(col => (
-                      <th key={col} style={{ background: '#e2ebf9', padding: '10px 12px', textAlign: 'left', fontWeight: 500 }}>
+                      <th key={col} style={{ background: '#a7c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500 }}>
                         <div className="flex items-center gap-[4px]">
                           <span className="text-[16px] text-[#455174] whitespace-nowrap" style={{ fontFamily: font }}>{col}</span>
                           {col !== 'Action' && (

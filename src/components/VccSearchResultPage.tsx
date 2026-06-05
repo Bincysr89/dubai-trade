@@ -71,6 +71,7 @@ export default function VccSearchResultPage({ onBack, onSubmit, initialSelected,
   const [insufficientAccount, setInsufficientAccount] = useState<string | null>(null);
   const [vehicleQuery, setVehicleQuery] = useState('');
   const [selectionMode, setSelectionMode] = useState<'page' | 'all' | null>(null);
+  const [showUnselectWarning, setShowUnselectWarning] = useState(false);
 
   const filteredVehicles = useMemo(() => {
     const q = vehicleQuery.trim().toLowerCase();
@@ -206,7 +207,7 @@ export default function VccSearchResultPage({ onBack, onSubmit, initialSelected,
                   type="text"
                   value={vehicleQuery}
                   onChange={(e) => setVehicleQuery(e.target.value)}
-                  placeholder="Search chassis or brand"
+                  placeholder="Search by Chasis Number"
                   className="flex-1 text-[16px] text-[#0e1b3d] focus:outline-none bg-transparent placeholder:text-[#697498]"
                   style={{ fontFamily: "'Dubai', sans-serif" }}
                 />
@@ -237,6 +238,7 @@ export default function VccSearchResultPage({ onBack, onSubmit, initialSelected,
                   <label className="flex items-center gap-[8px] cursor-pointer select-none" style={{ fontFamily: "'Dubai', sans-serif" }}>
                     <span
                       onClick={() => {
+                        if (selectionMode === 'all') { setShowUnselectWarning(true); return; }
                         setSelectionMode('page');
                         setSelected((s) => {
                           const next = new Set(s);
@@ -259,6 +261,7 @@ export default function VccSearchResultPage({ onBack, onSubmit, initialSelected,
                       className="text-[15px] text-[#0e1b3d]"
                       style={{ cursor: 'pointer' }}
                       onClick={() => {
+                        if (selectionMode === 'all') { setShowUnselectWarning(true); return; }
                         setSelectionMode('page');
                         setSelected((s) => {
                           const next = new Set(s);
@@ -318,7 +321,7 @@ export default function VccSearchResultPage({ onBack, onSubmit, initialSelected,
                         <th
                           key={i}
                           style={{
-                            background: '#e2ebf9',
+                            background: '#a7c2e9',
                             padding: '12px 12px',
                             textAlign: 'left',
                             fontWeight: 500,
@@ -332,7 +335,7 @@ export default function VccSearchResultPage({ onBack, onSubmit, initialSelected,
                             <span style={{ display: 'inline-block', width: 20 }} />
                           ) : (
                             <div className="flex items-center gap-[6px]">
-                              <span className="text-[16px] text-[#455174]" style={{ letterSpacing: '0.07px' }}>{c.label}</span>
+                              <span className="text-[16px] text-[#000]" style={{ letterSpacing: '0.07px' }}>{c.label}</span>
                               <FilterIcon />
                             </div>
                           )}
@@ -398,17 +401,17 @@ export default function VccSearchResultPage({ onBack, onSubmit, initialSelected,
                   <p className="text-[20px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 700 }}>
                     Selected Vehicles
                   </p>
-                  <span className="text-[16px] text-[#455174]" style={{ fontFamily: "'Dubai', sans-serif" }}>
-                    <span style={{ color: '#1360d2', fontWeight: 600 }}>{count}</span> chassis number{count === 1 ? '' : 's'}
-                  </span>
                 </div>
-                <p className="text-[16px] text-[#697498] mt-[4px] mb-[16px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
+                <p className="text-[16px] text-[#697498] mt-[4px] mb-[4px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
                   Review the chassis numbers you&rsquo;ve added to this request.
+                </p>
+                <p className="text-[16px] text-[#455174] mb-[16px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
+                  <span style={{ color: '#0e1b3d', fontWeight: 600 }}>{VEHICLES.length}</span> chassis numbers available - <span style={{ color: '#1360d2', fontWeight: 600 }}>{count}</span> selected
                 </p>
                 {/* Fixed-height scrollable container — header sticky, shows ~10 rows */}
                 <div style={{ maxHeight: 480, overflowY: 'auto', overflowX: 'auto', border: '1px solid #e8edf5', borderRadius: 6 }}>
                   <table className="dt-table" style={{ fontFamily: "'Dubai', sans-serif", minWidth: '100%' }}>
-                    <thead style={{ position: 'sticky', top: 0, zIndex: 1, background: '#f0f4fb' }}>
+                    <thead style={{ position: 'sticky', top: 0, zIndex: 1, background: '#a7c2e9' }}>
                       <tr>
                         <th className="text-[16px]" style={{ width: 60 }}>#</th>
                         <th className="text-[16px]" style={{ width: 160 }}>Chassis Number</th>
@@ -542,6 +545,46 @@ export default function VccSearchResultPage({ onBack, onSubmit, initialSelected,
           )}
         </div>
       </div>
+
+      {/* Unselect warning modal */}
+      {showUnselectWarning && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center" style={{ background: 'rgba(14,27,61,0.45)' }}>
+          <div className="bg-white rounded-[12px] shadow-xl p-[32px] w-full max-w-[420px] flex flex-col items-center gap-[20px]">
+            <div className="size-[64px] rounded-full flex items-center justify-center" style={{ background: 'rgba(255,169,26,0.12)' }}>
+              <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#b45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                <path d="M12 9v4M12 17h.01" />
+              </svg>
+            </div>
+            <p className="text-[20px] text-[#0e1b3d] text-center" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 700 }}>
+              Unselect Vehicles?
+            </p>
+            <p className="text-[15px] text-[#455174] text-center" style={{ fontFamily: "'Dubai', sans-serif", lineHeight: 1.6 }}>
+              The selected vehicles will be unselected. Would you like to proceed?
+            </p>
+            <div className="flex gap-[12px] w-full mt-[4px]">
+              <button
+                onClick={() => setShowUnselectWarning(false)}
+                className="flex-1 h-[44px] rounded-[4px] border border-[#1360d2] text-[#1360d2] text-[15px] hover:bg-[#f0f5ff] transition-colors"
+                style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowUnselectWarning(false);
+                  setSelectionMode('page');
+                  setSelected(new Set(pageIds));
+                }}
+                className="flex-1 h-[44px] rounded-[4px] text-white text-[15px] hover:bg-[#0E4DB8] transition-colors"
+                style={{ background: '#1360d2', fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}
+              >
+                Proceed
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {step === 'select' ? (
         <BackToListingBar

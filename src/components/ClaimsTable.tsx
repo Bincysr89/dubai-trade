@@ -106,14 +106,14 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
         <thead>
           <tr>
             {headers.map((col) => (
-              <th key={col.label} style={{ width: col.w, minWidth: col.w, background: '#e2ebf9', padding: '10px 12px', textAlign: 'left', fontWeight: 500 }}>
+              <th key={col.label} style={{ width: col.w, minWidth: col.w, background: '#a7c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500 }}>
                 <div className="flex items-center gap-[4px]">
-                  <span className="text-[16px] text-[#455174] whitespace-nowrap" style={{ letterSpacing: '0.07px' }}>{col.label}</span>
+                  <span className="text-[16px] text-[#000] whitespace-nowrap" style={{ letterSpacing: '0.07px' }}>{col.label}</span>
                   <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#8f94ae" strokeWidth="1.5" strokeLinecap="round"><path d="M3 4h10M5 8h6M7 12h2" /></svg>
                 </div>
               </th>
             ))}
-            <th style={{ position: 'sticky', right: 79, width: 160, minWidth: 160, background: '#e2ebf9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
+            <th style={{ position: 'sticky', right: 79, width: 160, minWidth: 160, background: '#a7c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
               <StatusFilterHeader
                 label="Claim Status"
                 options={Object.keys(STATUS_STYLE)}
@@ -122,8 +122,8 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
                 colorMap={STATUS_COLOR}
               />
             </th>
-            <th style={{ position: 'sticky', right: 0, width: 79, minWidth: 79, background: '#e2ebf9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, zIndex: 2, borderTopRightRadius: 8, borderBottomRightRadius: 8 }}>
-              <span className="text-[16px] text-[#455174]" style={{ letterSpacing: '0.07px' }}>Action</span>
+            <th style={{ position: 'sticky', right: 0, width: 79, minWidth: 79, background: '#a7c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, zIndex: 2, borderTopRightRadius: 8, borderBottomRightRadius: 8 }}>
+              <span className="text-[16px] text-[#000]" style={{ letterSpacing: '0.07px' }}>Action</span>
             </th>
           </tr>
         </thead>

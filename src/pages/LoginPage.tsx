@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import loginLogoSrc from '../assets/dt-logo-login.svg';
+const loginLogoSrc = new URL('../assets/dt-logo-login.svg', import.meta.url).href;
+const uaePassLogoSrc = new URL('../assets/uaepass-logo.svg', import.meta.url).href;
 import { setAuthenticated } from '../auth';
 
 const REQUIRED_PASSWORD = 'IntegratedClearance';
@@ -99,9 +100,7 @@ export default function LoginPage() {
               type="button"
               className="bg-white border border-black rounded-full h-[56px] flex items-center justify-center gap-2 font-semibold text-[18px] shadow-[0_2px_1px_rgba(0,0,0,0.12)] hover:bg-gray-50"
             >
-              <svg viewBox="0 0 24 24" className="size-[24px]" fill="#0e1b3d">
-                <path d="M12 2a4 4 0 014 4v3a4 4 0 11-8 0V6a4 4 0 014-4zm-2 12h4a6 6 0 016 6v2H4v-2a6 6 0 016-6z" />
-              </svg>
+              <img src={uaePassLogoSrc} alt="UAE PASS" style={{ height: 24, width: 24 }} />
               Sign in with UAE PASS
             </button>
 

@@ -135,7 +135,7 @@ function ShippingDetails() {
       <Card>
         <p className="text-[18px] text-[#111838] mb-[16px]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Inbound Details</p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[20px]">
-          <FloatingField label="Cargo Channel" required placeholder="Choose Cargo Channel" trailingIcon={<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M5 8l5 5 5-5" /></svg>} />
+          <FloatingField label="Cargo Channel (inbound)" required placeholder="Choose Cargo Channel (inbound)" trailingIcon={<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M5 8l5 5 5-5" /></svg>} />
           <FloatingField label="Carrier Registration No" required placeholder="Enter Carrier Registration No" />
           <FloatingField label="Carrier Name" placeholder="Enter Carrier Name" />
           <FloatingField label="Arrival Date" required placeholder="Select" trailingIcon={<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><rect x="3" y="5" width="14" height="13" rx="2" /><path d="M3 8h14M7 3v4M13 3v4" strokeLinecap="round" /></svg>} />
@@ -498,7 +498,7 @@ function AmendmentDetails() {
             <thead>
               <tr>
                 {['Amended Attribute', 'Old Value', 'New Value'].map((h, i, arr) => (
-                  <th key={h} style={{ background: '#e2ebf9', padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#0e1b3d', fontSize: 14, borderTopLeftRadius: i === 0 ? 6 : 0, borderTopRightRadius: i === arr.length - 1 ? 6 : 0 }}>
+                  <th key={h} style={{ background: '#a7c2e9', padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#000', fontSize: 14, borderTopLeftRadius: i === 0 ? 6 : 0, borderTopRightRadius: i === arr.length - 1 ? 6 : 0 }}>
                     {h}
                   </th>
                 ))}
@@ -523,7 +523,7 @@ function AmendmentDetails() {
             <thead>
               <tr>
                 {['Charge', 'Old Amount', 'New Amount'].map((h, i, arr) => (
-                  <th key={h} style={{ background: '#e2ebf9', padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#0e1b3d', fontSize: 14, borderTopLeftRadius: i === 0 ? 6 : 0, borderTopRightRadius: i === arr.length - 1 ? 6 : 0 }}>
+                  <th key={h} style={{ background: '#a7c2e9', padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#000', fontSize: 14, borderTopLeftRadius: i === 0 ? 6 : 0, borderTopRightRadius: i === arr.length - 1 ? 6 : 0 }}>
                     {h}
                   </th>
                 ))}
@@ -578,7 +578,7 @@ function PaymentDetails({ agreed, setAgreed }: { agreed: boolean; setAgreed: (v:
           <thead>
             <tr>
               {['Charges', '', 'Payment Mode', 'Payment Reference'].map((h, i, arr) => (
-                <th key={i} style={{ background: '#e2ebf9', padding: '12px 16px', textAlign: 'left', color: '#455174', fontSize: 16, fontWeight: 500, borderTopLeftRadius: i === 0 ? 6 : 0, borderTopRightRadius: i === arr.length - 1 ? 6 : 0 }}>{h}</th>
+                <th key={i} style={{ background: '#a7c2e9', padding: '12px 16px', textAlign: 'left', color: '#000', fontSize: 16, fontWeight: 500, borderTopLeftRadius: i === 0 ? 6 : 0, borderTopRightRadius: i === arr.length - 1 ? 6 : 0 }}>{h}</th>
               ))}
             </tr>
           </thead>
@@ -641,7 +641,7 @@ function SubmitSummaryModal({ open, onClose, onConfirm }: { open: boolean; onClo
     { k: 'Inbound Carrier Registration No.', v: 'Declared' },
     { k: 'Inbound Carrier Registration Name', v: 'Declared' },
     { k: 'Arrival Date', v: '24-02-2013' },
-    { k: 'Inbound Master Transport Number', v: '24-02-2013' },
+    { k: 'MAWB/MBOL No.', v: '24-02-2013' },
     { k: 'Outbound Cargo Channel', v: '24-02-2013' },
   ];
   return (
