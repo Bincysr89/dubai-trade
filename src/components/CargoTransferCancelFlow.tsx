@@ -222,16 +222,10 @@ function Step1({ onBack, onProceed, onViewRequest }: { onBack: () => void; onPro
                   value={remarks}
                   onChange={e => setRemarks(e.target.value)}
                   rows={2}
-                  className="w-full rounded-[4px] px-[16px] pt-[20px] pb-[8px] text-[16px] resize-none focus:outline-none"
+                  className="w-full rounded-[4px] px-[16px] py-[12px] text-[16px] resize-none focus:outline-none"
                   style={{ border: '1px solid #d5ddfb', fontFamily: font, color: '#0e1b3d', background: 'white' }}
-                  placeholder=""
+                  placeholder="Reason"
                 />
-                <span
-                  className="absolute left-[17px] top-[-8px] bg-white px-[4px] text-[12px]"
-                  style={{ fontFamily: font, color: '#060c28' }}
-                >
-                  <span style={{ color: '#dc3545' }}>*</span> Reason
-                </span>
               </div>
             </div>
           </Card>
