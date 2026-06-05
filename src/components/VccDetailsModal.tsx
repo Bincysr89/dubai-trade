@@ -9,6 +9,9 @@ export type VccDetails = {
   vehicleDrive: string;
   countryOfOrigin: string;
   color: string;
+  color1: string;
+  color2: string;
+  color3: string;
   engineCapacity: string;
   carriageCapacity: string;
   passengerCapacity: string;
@@ -69,7 +72,6 @@ export default function VccDetailsModal({ open, details, onClose, onDownload }: 
     { label: 'VCC Status',            value: details.vccStatus },
     { label: 'Declaration Date',      value: details.declarationDate },
     { label: 'Owner Name',            value: details.ownerName },
-    { label: 'Shipment Reference Number', value: details.shipmentReferenceNumber },
   ];
 
   const rightCol: { label: string; value: string }[] = [
@@ -77,6 +79,7 @@ export default function VccDetailsModal({ open, details, onClose, onDownload }: 
     { label: 'Engine Number',         value: details.engineNumber },
     { label: 'Vehicle Drive',         value: details.vehicleDrive },
     { label: 'Color',                 value: details.color },
+    { label: 'Color 1-Color 2-Color 3', value: `${details.color1}-${details.color2}-${details.color3}` },
     { label: 'Carriage Capacity',     value: details.carriageCapacity },
     { label: 'Vehicle Model',         value: details.vehicleModel },
     { label: 'Vehicle Type',          value: details.vehicleType },
