@@ -35,7 +35,7 @@ export default function VccRecheckSuccessModal({ open, requestNumber = '25347', 
       >
         {/* Green check icon */}
         <div className="relative" aria-hidden>
-          <svg width="88" height="88" viewBox="0 0 96 96" fill="none">
+          <svg viewBox="0 0 96 96" fill="none" style={{ width: 72, height: 72, display: 'block' }}>
             <circle cx="48" cy="48" r="42" fill="#28A745" />
             <path
               d="M30 49 l13 13 23 -27"

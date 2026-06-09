@@ -41,7 +41,7 @@ export default function VccEPaymentFailedPage({
         >
           {/* Red X icon */}
           <div className="relative" aria-hidden>
-            <svg width="96" height="96" viewBox="0 0 96 96" fill="none">
+            <svg viewBox="0 0 96 96" fill="none" style={{ width: 72, height: 72, display: 'block' }}>
               <circle cx="48" cy="48" r="42" stroke="#dc3545" strokeWidth="7" fill="none"/>
               <path d="M32 32 L64 64 M64 32 L32 64" stroke="#dc3545" strokeWidth="7" strokeLinecap="round"/>
             </svg>

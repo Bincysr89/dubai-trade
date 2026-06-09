@@ -41,7 +41,7 @@ export default function VccEPaymentPendingPage({
         >
           {/* Yellow pending / warning icon — circle with exclamation */}
           <div className="relative" aria-hidden>
-            <svg width="96" height="96" viewBox="0 0 96 96" fill="none">
+            <svg viewBox="0 0 96 96" fill="none" style={{ width: 72, height: 72, display: 'block' }}>
               <circle cx="48" cy="48" r="42" fill="none" stroke="#FFC020" strokeWidth="7" />
               <rect x="44.5" y="24" width="7" height="34" rx="3.5" fill="#FFC020" />
               <circle cx="48" cy="70" r="4.5" fill="#FFC020" />
