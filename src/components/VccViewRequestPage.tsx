@@ -203,6 +203,7 @@ export default function VccViewRequestPage({ onBack, requestNumber = '25365', st
         <div className="bg-white rounded-[8px] px-[24px] py-[20px]" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
           <div className="flex items-center justify-between flex-wrap gap-[12px] mb-[12px]">
             <SectionHeading>VCC / Vehicle Details</SectionHeading>
+            {canDownload && (
             <div className="flex items-center gap-[12px] flex-wrap">
               <button
                 onClick={downloadSelected}
@@ -226,14 +227,13 @@ export default function VccViewRequestPage({ onBack, requestNumber = '25365', st
                 Download All ({VEHICLES.length})
               </button>
             </div>
+            )}
           </div>
           <div className="overflow-x-auto">
             <table className="dt-table" style={{ fontFamily: "'Dubai', sans-serif" }}>
               <thead>
                 <tr>
-                  <th style={{ width: 48 }}>
-                    <Checkbox checked={allChecked} indeterminate={someChecked} onChange={toggleAll} />
-                  </th>
+                  <th style={{ width: 48 }}><Checkbox checked={allChecked} indeterminate={someChecked} onChange={toggleAll} /></th>
                   {['VCC Number', 'Chassis No.', 'Engine No.', 'Brand', 'Make', 'Model Year', 'VCC Date', 'VCC Status', 'Remarks', 'Action'].map((h) => (
                     <th key={h} className="text-[16px]" style={{ textAlign: h === 'Action' ? 'center' : 'left' }}>{h}</th>
                   ))}
@@ -245,10 +245,12 @@ export default function VccViewRequestPage({ onBack, requestNumber = '25365', st
                   const checked = selected.has(v.vccNo);
                   return (
                     <tr key={v.vccNo} className={checked ? 'is-selected' : ''}>
+                      <td><Checkbox checked={checked} onChange={() => toggleOne(v.vccNo)} /></td>
                       <td>
-                        <Checkbox checked={checked} onChange={() => toggleOne(v.vccNo)} />
+                        {canDownload
+                          ? <button type="button" onClick={() => setOpenVccNo(v.vccNo)} className="text-[16px] text-[#1360d2] hover:underline" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>{v.vccNo}</button>
+                          : <span className="text-[16px] text-[#0e1b3d]">-</span>}
                       </td>
-                      <td><button type="button" onClick={() => setOpenVccNo(v.vccNo)} className="text-[16px] text-[#1360d2] hover:underline" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>{v.vccNo}</button></td>
                       <td><span className="text-[16px] text-[#0e1b3d]">{v.chassis}</span></td>
                       <td><span className="text-[16px] text-[#0e1b3d]">{v.engine}</span></td>
                       <td style={{ maxWidth: 320 }}>
@@ -258,9 +260,9 @@ export default function VccViewRequestPage({ onBack, requestNumber = '25365', st
                       <td><span className="text-[16px] text-[#0e1b3d]">{v.year}</span></td>
                       <td><span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{v.vccDate}</span></td>
                       <td>
-                        <span className="text-[16px] font-medium inline-flex items-center justify-center whitespace-nowrap" style={{ background: st.bg, color: st.color, padding: '4px 12px', borderRadius: 4, lineHeight: '20px' }}>
-                          {v.status}
-                        </span>
+                        {canDownload
+                          ? <span className="text-[16px] font-medium inline-flex items-center justify-center whitespace-nowrap" style={{ background: st.bg, color: st.color, padding: '4px 12px', borderRadius: 4, lineHeight: '20px' }}>{v.status}</span>
+                          : <span className="text-[16px] text-[#0e1b3d]">-</span>}
                       </td>
                       <td><span className="text-[16px] text-[#0e1b3d]">{v.remarks}</span></td>
                       <td style={{ textAlign: 'center', position: 'relative' }}>

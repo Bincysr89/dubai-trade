@@ -95,9 +95,10 @@ type Props = {
   onMakePayment?: () => void;
   onChangePaymentMode?: () => void;
   onRetry?: () => void;
+  onRecheckStatus?: () => void;
 };
 
-export default function VccTable({ onView, onAmend, onDownload, onAudit, onDeclarationOpen, onVccCountOpen, externalStatus, showDrafts, onMakePayment, onChangePaymentMode, onRetry }: Props = {}) {
+export default function VccTable({ onView, onAmend, onDownload, onAudit, onDeclarationOpen, onVccCountOpen, externalStatus, showDrafts, onMakePayment, onChangePaymentMode, onRetry, onRecheckStatus }: Props = {}) {
   const [openFlyout, setOpenFlyout] = useState<number | null>(null);
   const flyoutRef = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState(1);
@@ -297,7 +298,7 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
                               className="group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
                               onClick={() => { setOpenFlyout(null); onView?.(row.status); }}
                             >
-                              <span className="text-[#1360d2] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
+                              <span className="text-[#7a7a7a] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
                                 <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                                   <path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z" />
                                   <circle cx="10" cy="10" r="2.5" />
@@ -312,7 +313,7 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
                               className="group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
                               onClick={() => { setOpenFlyout(null); onRetry?.(); }}
                             >
-                              <span className="text-[#1360d2] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
+                              <span className="text-[#7a7a7a] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
                                 <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                                   <path d="M4 4a7 7 0 1 1 0 12" />
                                   <path d="M1 4h3v3" />
@@ -330,7 +331,7 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
                               className="group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
                               onClick={() => { setOpenFlyout(null); onView?.(row.status); }}
                             >
-                              <span className="text-[#1360d2] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
+                              <span className="text-[#7a7a7a] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
                                 <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                                   <path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z" />
                                   <circle cx="10" cy="10" r="2.5" />
@@ -345,7 +346,7 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
                               className="group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
                               onClick={() => { setOpenFlyout(null); onMakePayment?.(); }}
                             >
-                              <span className="text-[#1360d2] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
+                              <span className="text-[#7a7a7a] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
                                 <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                                   <rect x="2" y="5" width="16" height="12" rx="2"/>
                                   <path d="M2 9h16"/>
@@ -362,7 +363,7 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
                               className="group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
                               onClick={() => { setOpenFlyout(null); onChangePaymentMode?.(); }}
                             >
-                              <span className="text-[#1360d2] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
+                              <span className="text-[#7a7a7a] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
                                 <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                                   <path d="M4 8l3-3-3-3"/>
                                   <path d="M7 5H3a1 1 0 000 0"/>
@@ -382,9 +383,9 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
                             {row.status === 'Under Processing' && (
                               <button
                                 className="group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
-                                onClick={() => setOpenFlyout(null)}
+                                onClick={() => { setOpenFlyout(null); onRecheckStatus?.(); }}
                               >
-                                <span className="text-[#f59e0b] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
+                                <span className="text-[#7a7a7a] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
                                   <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M4 4a7 7 0 1 1 0 12" />
                                     <path d="M1 4h3v3" />
@@ -407,7 +408,7 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
                                   if (item.id === 'audit')    onAudit?.();
                                 }}
                               >
-                                <span className="text-[#1360d2] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
+                                <span className="text-[#7a7a7a] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
                                   {item.icon}
                                 </span>
                                 <span className="text-[16px] text-[#111838] group-hover:text-white leading-[20px]" style={{ fontFamily: "'Dubai', sans-serif" }}>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Header from './Header';
 import VccTable, { type VccRow } from './VccTable';
 import VccListPopup from './VccListPopup';
+import VccRecheckSuccessModal from './VccRecheckSuccessModal';
 import VccVehicleSearchTable from './VccVehicleSearchTable';
 import CustomsDeclarationViewPage from './CustomsDeclarationViewPage';
 import RequestVccPage from './RequestVccPage';
@@ -155,9 +156,10 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
   }, [toolbarStatusOpen]);
-  const [vccStep, setVccStep] = useState<'list' | 'create' | 'searchResult' | 'amend' | 'viewRequest' | 'paymentSuccess' | 'ePaymentPending' | 'ePaymentSuccess' | 'ePaymentProcessing' | 'ePaymentConfirmed' | 'ePaymentFailed' | 'auditHistory' | 'declarationView'>('list');
+  const [vccStep, setVccStep] = useState<'list' | 'create' | 'searchResult' | 'retryRequest' | 'amend' | 'viewRequest' | 'paymentSuccess' | 'ePaymentPending' | 'ePaymentSuccess' | 'ePaymentProcessing' | 'ePaymentConfirmed' | 'ePaymentFailed' | 'auditHistory' | 'declarationView'>('list');
   const [selectedVccStatus, setSelectedVccStatus] = useState('');
   const [vccListPopupRow, setVccListPopupRow] = useState<VccRow | null>(null);
+  const [recheckModalOpen, setRecheckModalOpen] = useState(false);
   const [vccDeclNo, setVccDeclNo] = useState<string>('');
   const [cargoStep, setCargoStep] = useState<'list' | 'pre' | 'create' | 'amend' | 'success' | 'amendSuccess' | 'document' | 'stepper' | 'paymentReview' | 'viewRequest' | 'cancel' | 'cargoHistory' | 'suspensionHistory' | 'suspensionHistoryView' | 'suspensionResponse'>('list');
   const [showSuspensionSuccess, setShowSuspensionSuccess] = useState(false);
@@ -545,6 +547,14 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               onSubmit={(mode) => setVccStep(mode === 'epayment' ? 'ePaymentPending' : 'paymentSuccess')}
             />
           )}
+          {vccStep === 'retryRequest' && (
+            <VccSearchResultPage
+              mode="amend"
+              initialSelected={['v0', 'v2', 'v4']}
+              onBack={() => setVccStep('create')}
+              onSubmit={(mode) => setVccStep(mode === 'epayment' ? 'ePaymentPending' : 'paymentSuccess')}
+            />
+          )}
           {vccStep === 'viewRequest' && (
             <VccViewRequestPage onBack={() => setVccStep('list')} status={selectedVccStatus} />
           )}
@@ -567,6 +577,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             <VccEPaymentSuccessPage
               onBackToListing={() => setVccStep('list')}
               onRecheckStatus={() => setVccStep('ePaymentConfirmed')}
+              onPaymentFailed={() => setVccStep('ePaymentFailed')}
             />
           )}
           {vccStep === 'ePaymentConfirmed' && (
@@ -1801,7 +1812,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               showDrafts={showDrafts}
               onMakePayment={() => setVccStep('ePaymentProcessing')}
               onChangePaymentMode={() => setVccStep('ePaymentProcessing')}
-              onRetry={() => setVccStep('searchResult')}
+              onRetry={() => setVccStep('retryRequest')}
+              onRecheckStatus={() => setRecheckModalOpen(true)}
             />
           )
         ) : activeMenu === 'Cargo Transfer' ? (
@@ -2054,6 +2066,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
         onConfirm={() => { setAckDeclineConfirmOpen(false); setAckStep('declineSuccess'); }}
       />
 
+      <VccRecheckSuccessModal open={recheckModalOpen} onClose={() => setRecheckModalOpen(false)} />
       {vccListPopupRow && (
         <VccListPopup row={vccListPopupRow} onClose={() => setVccListPopupRow(null)} />
       )}
