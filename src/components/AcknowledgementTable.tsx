@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Pagination from './Pagination';
 import StatusFilterHeader from './StatusFilterHeader';
+import { ColumnFilter } from './ColumnFilter';
 
 type Status = 'Accepted' | 'Pending' | 'Declined';
 
@@ -145,18 +146,15 @@ export default function AcknowledgementTable({ onView, onAccept, onDecline, onHi
       <table style={{ minWidth: 1700, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: "'Dubai', sans-serif" }} className="w-full">
         <thead>
           <tr>
-            <th style={{ width: 48, minWidth: 48, background: '#a7c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, borderTopLeftRadius: 8, borderBottomLeftRadius: 8 }}>
+            <th style={{ width: 48, minWidth: 48, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, borderTopLeftRadius: 8, borderBottomLeftRadius: 8, paddingLeft: 16 }}>
               <Checkbox checked={allChecked} onChange={toggleAll} />
             </th>
             {headers.map((col) => (
-              <th key={col.label} style={{ width: col.w, minWidth: col.w, background: '#a7c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500 }}>
-                <div className="flex items-center gap-[4px]">
-                  <span className="text-[16px] text-[#000] whitespace-nowrap" style={{ letterSpacing: '0.07px' }}>{col.label}</span>
-                  <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#8f94ae" strokeWidth="1.5" strokeLinecap="round"><path d="M3 4h10M5 8h6M7 12h2" /></svg>
-                </div>
+              <th key={col.label} style={{ width: col.w, minWidth: col.w, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500 }}>
+                <ColumnFilter label={col.label} labelClass="text-[16px] font-medium text-[#051937]" />
               </th>
             ))}
-            <th style={{ position: 'sticky', right: 79, width: 140, minWidth: 140, background: '#a7c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
+            <th style={{ position: 'sticky', right: 79, width: 140, minWidth: 140, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
               <StatusFilterHeader
                 label="Ack. Status"
                 options={Object.keys(STATUS_STYLE)}
@@ -165,8 +163,8 @@ export default function AcknowledgementTable({ onView, onAccept, onDecline, onHi
                 colorMap={STATUS_COLOR}
               />
             </th>
-            <th style={{ position: 'sticky', right: 0, width: 79, minWidth: 79, background: '#a7c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, zIndex: 2, borderTopRightRadius: 8, borderBottomRightRadius: 8 }}>
-              <span className="text-[16px] text-[#455174]" style={{ letterSpacing: '0.07px' }}>Actions</span>
+            <th style={{ position: 'sticky', right: 0, width: 79, minWidth: 79, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, zIndex: 2, borderTopRightRadius: 8, borderBottomRightRadius: 8 }}>
+              <span className="text-[16px] text-[#051937]" style={{ letterSpacing: '0.07px' }}>Actions</span>
             </th>
           </tr>
         </thead>
@@ -179,7 +177,7 @@ export default function AcknowledgementTable({ onView, onAccept, onDecline, onHi
             const txt = (v: React.ReactNode) => <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{v}</span>;
             return (
               <tr key={i}>
-                <td style={{ background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 48, borderTopLeftRadius: 8, borderBottomLeftRadius: 8 }}>
+                <td style={{ background: '#fff', padding: '0 12px 0 16px', height: 60, verticalAlign: 'middle', width: 48, borderTopLeftRadius: 8, borderBottomLeftRadius: 8 }}>
                   <Checkbox checked={selected.has(i)} onChange={() => toggleOne(i)} />
                 </td>
                 {cell(<a href="#" className="text-[16px] text-[#1360d2] hover:underline whitespace-nowrap" style={{ fontWeight: 500 }}>{row.declaration}</a>, 140)}

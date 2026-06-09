@@ -481,7 +481,7 @@ function BizSearchModal({ open, title, onClose, onSelect }: { open: boolean; tit
   if (!open) return null;
   const rows = query ? BIZ_ROWS_MODAL.filter(r => r.code.toLowerCase().includes(query.toLowerCase()) || r.name.toLowerCase().includes(query.toLowerCase())) : BIZ_ROWS_MODAL;
   const cols = ['Business Code', 'Business Name', 'Business Type', 'Location', 'Action'];
-  const thS: React.CSSProperties = { background: '#a7c2e9', padding: '12px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#000', whiteSpace: 'nowrap' };
+  const thS: React.CSSProperties = { background: '#a6c2e9', padding: '12px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#000', whiteSpace: 'nowrap' };
   return (
     <SearchModalShell title={title} onClose={onClose}>
       <div className="flex gap-[12px] flex-shrink-0">
@@ -517,7 +517,7 @@ function PremSearchModal({ open, title, onClose, onSelect }: { open: boolean; ti
   if (!open) return null;
   const rows = query ? PREM_ROWS_MODAL.filter(r => r.code.toLowerCase().includes(query.toLowerCase()) || r.name.toLowerCase().includes(query.toLowerCase())) : PREM_ROWS_MODAL;
   const cols = ['Premises Code', 'Premises Name', 'Customs Location', 'Business Name', 'Action'];
-  const thS: React.CSSProperties = { background: '#a7c2e9', padding: '12px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#000', whiteSpace: 'nowrap' };
+  const thS: React.CSSProperties = { background: '#a6c2e9', padding: '12px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#000', whiteSpace: 'nowrap' };
   return (
     <SearchModalShell title={title} onClose={onClose}>
       <div className="flex gap-[12px] flex-shrink-0">
@@ -567,7 +567,7 @@ function CarrierSearchModal({ open, onClose, onSelect }: { open: boolean; onClos
   const handleReset = () => { setVesselName(''); setCallingPort(''); setFromDate(''); setToDate(''); };
 
   if (!open) return null;
-  const thS: React.CSSProperties = { background: '#a7c2e9', padding: '12px 18px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#000', whiteSpace: 'nowrap' };
+  const thS: React.CSSProperties = { background: '#a6c2e9', padding: '12px 18px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#000', whiteSpace: 'nowrap' };
   const tdS: React.CSSProperties = { padding: '0 18px', height: 54, background: '#fff', borderBottom: '1px solid #f0f3fa', fontSize: 15, color: '#0e1b3d' };
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center px-[16px]">
@@ -691,7 +691,7 @@ function PortSearchModal({ open, onClose, onSelect }: { open: boolean; onClose: 
   if (!open) return null;
   const rows = query ? PORT_ROWS_MODAL.filter(r => r.code.toLowerCase().includes(query.toLowerCase()) || r.name.toLowerCase().includes(query.toLowerCase())) : PORT_ROWS_MODAL;
   const cols = ['Port Code', 'Port Name', 'Country', 'Type', 'Action'];
-  const thS: React.CSSProperties = { background: '#a7c2e9', padding: '12px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#000', whiteSpace: 'nowrap' };
+  const thS: React.CSSProperties = { background: '#a6c2e9', padding: '12px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#000', whiteSpace: 'nowrap' };
   return (
     <SearchModalShell title="Search Port of Loading" onClose={onClose}>
       <div className="flex gap-[12px] flex-shrink-0">
@@ -1281,7 +1281,7 @@ function Step3({ onBack, onNext, shippingSummary, onEditShipping }: {
   const CONT_SIZES = ['20', '40', '45'];
   const CONT_TYPES = ['Standard', 'Reefer', 'Open Top', 'Flat Rack', 'Special container'];
 
-  const thStyle = { background: '#a7c2e9', padding: '10px 12px', textAlign: 'left' as const, fontWeight: 500 };
+  const thStyle = { background: '#a6c2e9', padding: '10px 12px', textAlign: 'left' as const, fontWeight: 500 };
   const tdStyle = { background: '#fff', padding: '10px 12px', borderBottom: '1px solid #f0f4ff' };
   const SortIcon = () => (
     <svg viewBox="0 0 10 14" width="9" height="12" fill="none" stroke="#8f94ae" strokeWidth="1.3" strokeLinecap="round">
@@ -1680,7 +1680,7 @@ function Step4({ onBack, onNext, shippingSummary, onEditShipping }: {
                 <thead>
                   <tr>
                     {TABLE_COLS.map(col => (
-                      <th key={col} style={{ background: '#a7c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500 }}>
+                      <th key={col} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500 }}>
                         <div className="flex items-center gap-[4px]">
                           <span className="text-[16px] text-[#455174]" style={{ fontFamily: font }}>{col}</span>
                           {col !== 'Action' && (
@@ -1765,7 +1765,7 @@ function Step5({ onBack, onSubmit, shippingSummary, onEditShipping }: {
             {/* Single table */}
             <div className="rounded-[8px] overflow-hidden" style={{ border: '1px solid #c4d8f5' }}>
               {/* Single header */}
-              <div className="flex" style={{ background: '#a7c2e9' }}>
+              <div className="flex" style={{ background: '#a6c2e9' }}>
                 <div className="h-[44px] flex items-center pl-[20px]" style={{ flex: '0 0 50%' }}>
                   <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 500 }}>Charges</span>
                 </div>
@@ -1872,7 +1872,7 @@ function StepAmendment({ onBack, onNext }: { onBack: () => void; onNext: () => v
   const [amendReason, setAmendReason] = useState('');
   const [cargoStatus, setCargoStatus] = useState('');
 
-  const thStyle: React.CSSProperties = { background: '#a7c2e9', padding: '12px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#000', fontFamily: font };
+  const thStyle: React.CSSProperties = { background: '#a6c2e9', padding: '12px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#000', fontFamily: font };
   const tdStyle: React.CSSProperties = { background: '#fff', padding: '0 12px', height: 54, borderBottom: '1px solid #f0f4ff', fontSize: 15, color: '#0e1b3d', fontFamily: font };
   const tdAltStyle: React.CSSProperties = { ...tdStyle, background: '#f5f5f5' };
 

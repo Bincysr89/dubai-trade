@@ -784,7 +784,7 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
             <table style={{ minWidth: tableMinWidth, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: "'Dubai', sans-serif" }} className="w-full eligible-table">
               <thead>
                 <tr>
-                  <th style={{ width: 48, minWidth: 48, background: '#a7c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, borderTopLeftRadius: 8, borderBottomLeftRadius: 8 }}>
+                  <th style={{ width: 48, minWidth: 48, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, borderTopLeftRadius: 8, borderBottomLeftRadius: 8 }}>
                     {(() => {
                       const selectableRows = filtered.filter((r) => r.kind !== 'expired');
                       const allSelected = selectableRows.length > 0 && selectableRows.every((r) => selectedDecls.has(r.declarationNo));
@@ -814,14 +814,14 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
                     })()}
                   </th>
                   {headers.map((col) => (
-                    <th key={col.label} style={{ width: col.w, minWidth: col.w, background: '#a7c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500 }}>
+                    <th key={col.label} style={{ width: col.w, minWidth: col.w, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500 }}>
                       <div className="flex items-center gap-[4px]">
                         <span className="text-[16px] text-[#000] whitespace-nowrap" style={{ letterSpacing: '0.07px' }}>{col.label}</span>
                         <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#8f94ae" strokeWidth="1.5" strokeLinecap="round"><path d="M3 4h10M5 8h6M7 12h2" /></svg>
                       </div>
                     </th>
                   ))}
-                  <th style={{ position: 'sticky', right: 0, width: 130, minWidth: 130, background: '#a7c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2, borderTopRightRadius: 8, borderBottomRightRadius: 8 }}>
+                  <th style={{ position: 'sticky', right: 0, width: 130, minWidth: 130, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2, borderTopRightRadius: 8, borderBottomRightRadius: 8 }}>
                     <div className="flex items-center gap-[4px]">
                       <span className="text-[16px] text-[#455174] whitespace-nowrap" style={{ letterSpacing: '0.07px' }}>Status</span>
                       <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#8f94ae" strokeWidth="1.5" strokeLinecap="round"><path d="M3 4h10M5 8h6M7 12h2" /></svg>

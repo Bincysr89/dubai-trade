@@ -498,7 +498,7 @@ function AmendmentDetails() {
             <thead>
               <tr>
                 {['Amended Attribute', 'Old Value', 'New Value'].map((h, i, arr) => (
-                  <th key={h} style={{ background: '#a7c2e9', padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#000', fontSize: 14, borderTopLeftRadius: i === 0 ? 6 : 0, borderTopRightRadius: i === arr.length - 1 ? 6 : 0 }}>
+                  <th key={h} style={{ background: '#a6c2e9', padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#000', fontSize: 14, borderTopLeftRadius: i === 0 ? 6 : 0, borderTopRightRadius: i === arr.length - 1 ? 6 : 0 }}>
                     {h}
                   </th>
                 ))}
@@ -523,7 +523,7 @@ function AmendmentDetails() {
             <thead>
               <tr>
                 {['Charge', 'Old Amount', 'New Amount'].map((h, i, arr) => (
-                  <th key={h} style={{ background: '#a7c2e9', padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#000', fontSize: 14, borderTopLeftRadius: i === 0 ? 6 : 0, borderTopRightRadius: i === arr.length - 1 ? 6 : 0 }}>
+                  <th key={h} style={{ background: '#a6c2e9', padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#000', fontSize: 14, borderTopLeftRadius: i === 0 ? 6 : 0, borderTopRightRadius: i === arr.length - 1 ? 6 : 0 }}>
                     {h}
                   </th>
                 ))}
@@ -578,7 +578,7 @@ function PaymentDetails({ agreed, setAgreed }: { agreed: boolean; setAgreed: (v:
           <thead>
             <tr>
               {['Charges', '', 'Payment Mode', 'Payment Reference'].map((h, i, arr) => (
-                <th key={i} style={{ background: '#a7c2e9', padding: '12px 16px', textAlign: 'left', color: '#000', fontSize: 16, fontWeight: 500, borderTopLeftRadius: i === 0 ? 6 : 0, borderTopRightRadius: i === arr.length - 1 ? 6 : 0 }}>{h}</th>
+                <th key={i} style={{ background: '#a6c2e9', padding: '12px 16px', textAlign: 'left', color: '#000', fontSize: 16, fontWeight: 500, borderTopLeftRadius: i === 0 ? 6 : 0, borderTopRightRadius: i === arr.length - 1 ? 6 : 0 }}>{h}</th>
               ))}
             </tr>
           </thead>

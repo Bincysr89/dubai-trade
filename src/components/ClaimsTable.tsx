@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Pagination from './Pagination';
 import StatusFilterHeader from './StatusFilterHeader';
+import { ColumnFilter } from './ColumnFilter';
 
 type Status = 'Under Processing' | 'Completed' | 'Suspended' | 'Draft';
 
@@ -105,15 +106,12 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
       <table style={{ minWidth: 1700, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: "'Dubai', sans-serif" }} className="w-full">
         <thead>
           <tr>
-            {headers.map((col) => (
-              <th key={col.label} style={{ width: col.w, minWidth: col.w, background: '#a7c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500 }}>
-                <div className="flex items-center gap-[4px]">
-                  <span className="text-[16px] text-[#000] whitespace-nowrap" style={{ letterSpacing: '0.07px' }}>{col.label}</span>
-                  <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#8f94ae" strokeWidth="1.5" strokeLinecap="round"><path d="M3 4h10M5 8h6M7 12h2" /></svg>
-                </div>
+            {headers.map((col, idx) => (
+              <th key={col.label} style={{ width: col.w, minWidth: col.w, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, borderRadius: idx === 0 ? '8px 0 0 0' : undefined, paddingLeft: idx === 0 ? 16 : 12 }}>
+                <ColumnFilter label={col.label} labelClass="text-[16px] font-medium text-[#051937]" />
               </th>
             ))}
-            <th style={{ position: 'sticky', right: 79, width: 160, minWidth: 160, background: '#a7c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
+            <th style={{ position: 'sticky', right: 79, width: 160, minWidth: 160, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
               <StatusFilterHeader
                 label="Claim Status"
                 options={Object.keys(STATUS_STYLE)}
@@ -122,21 +120,21 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
                 colorMap={STATUS_COLOR}
               />
             </th>
-            <th style={{ position: 'sticky', right: 0, width: 79, minWidth: 79, background: '#a7c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, zIndex: 2, borderTopRightRadius: 8, borderBottomRightRadius: 8 }}>
-              <span className="text-[16px] text-[#000]" style={{ letterSpacing: '0.07px' }}>Action</span>
+            <th style={{ position: 'sticky', right: 0, width: 79, minWidth: 79, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, zIndex: 2, borderTopRightRadius: 8, borderBottomRightRadius: 8 }}>
+              <span className="text-[16px] text-[#051937]" style={{ letterSpacing: '0.07px' }}>Action</span>
             </th>
           </tr>
         </thead>
         <tbody>
           {filteredRows.map((row, i) => {
             const st = STATUS_STYLE[row.status];
-            const cell = (content: React.ReactNode, w: number) => (
-              <td style={{ background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: w }}>{content}</td>
+            const cell = (content: React.ReactNode, w: number, extra?: React.CSSProperties) => (
+              <td style={{ background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: w, ...extra }}>{content}</td>
             );
             const txt = (v: React.ReactNode) => <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{v}</span>;
             return (
               <tr key={i}>
-                {cell(<a href="#" className="text-[16px] text-[#1360d2] hover:underline" style={{ fontWeight: 500 }}>{row.reqNo}</a>, 150)}
+                {cell(<a href="#" className="text-[16px] text-[#1360d2] hover:underline" style={{ fontWeight: 500 }}>{row.reqNo}</a>, 150, { paddingLeft: 16 })}
                 {cell(txt(row.claimNo), 120)}
                 {cell(txt(row.ver), 70)}
                 {cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3 }}>{row.claimType}</span>, 160)}

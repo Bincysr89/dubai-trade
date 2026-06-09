@@ -7,9 +7,9 @@ type Props = {
   vccCount?: number;
 };
 
-export default function VccPaymentSuccessPage({
+export default function VccEPaymentConfirmedPage({
   onBackToListing,
-  requestNumber = '25365',
+  requestNumber = '12345',
   vccCount = 2,
 }: Props) {
   return (
@@ -57,16 +57,15 @@ export default function VccPaymentSuccessPage({
             className="text-center text-[26px] text-[#0e1b3d]"
             style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 700, lineHeight: 1.3 }}
           >
-            VCC Request Created - Payment Confirmation
+            VCC Request Received - ePayment Successful
           </p>
 
-          {/* Content block — Request Number 20px, line-height 1.9 */}
           <div
             className="text-center text-[#0e1b3d] max-w-[640px]"
             style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 400, lineHeight: 1.9 }}
           >
             <span style={{ fontSize: 16 }}>
-              Your VCC request is accepted and {vccCount} VCC&apos;s generated successfully.
+              Your ePayment transaction has been completed successfully. {vccCount} VCC&apos;s have been generated.
             </span>
             <br />
             <span style={{ fontSize: 20, fontWeight: 700 }}>
@@ -74,11 +73,11 @@ export default function VccPaymentSuccessPage({
             </span>
             <br />
             <span style={{ fontSize: 16 }}>
-              Please download the digital VCC from listing page. In case VCC&apos;s are not found, please try after sometime by searching with your request number.
+              Please download the digital VCC from the listing page with your request number.
             </span>
           </div>
 
-          {/* Action buttons — no Download VCC */}
+          {/* Action buttons */}
           <div className="flex flex-wrap gap-[16px] justify-center pt-[8px]">
             <button
               onClick={onBackToListing}

@@ -10,6 +10,8 @@ import VccViewRequestPage from './VccViewRequestPage';
 import VccPaymentSuccessPage from './VccPaymentSuccessPage';
 import VccEPaymentPendingPage from './VccEPaymentPendingPage';
 import VccEPaymentSuccessPage from './VccEPaymentSuccessPage';
+import VccEPaymentConfirmedPage from './VccEPaymentConfirmedPage';
+import VccEPaymentFailedPage from './VccEPaymentFailedPage';
 import VccAuditHistoryPage from './VccAuditHistoryPage';
 import CargoTransferTable from './CargoTransferTable';
 import ClaimsTable from './ClaimsTable';
@@ -35,6 +37,7 @@ import SuspensionHistoryViewPage from './SuspensionHistoryViewPage';
 import SuspensionResponsePage from './SuspensionResponsePage';
 import SuspensionSuccessModal from './SuspensionSuccessModal';
 import ClaimSubmittedSuccessPage from './ClaimSubmittedSuccessPage';
+import { ColumnFilter } from './ColumnFilter';
 // @ts-ignore
 import importBySeaSrc from '../assets/importbysea.svg';
 // @ts-ignore
@@ -152,7 +155,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
   }, [toolbarStatusOpen]);
-  const [vccStep, setVccStep] = useState<'list' | 'create' | 'searchResult' | 'amend' | 'viewRequest' | 'paymentSuccess' | 'ePaymentPending' | 'ePaymentSuccess' | 'auditHistory' | 'declarationView'>('list');
+  const [vccStep, setVccStep] = useState<'list' | 'create' | 'searchResult' | 'amend' | 'viewRequest' | 'paymentSuccess' | 'ePaymentPending' | 'ePaymentSuccess' | 'ePaymentProcessing' | 'ePaymentConfirmed' | 'ePaymentFailed' | 'auditHistory' | 'declarationView'>('list');
+  const [selectedVccStatus, setSelectedVccStatus] = useState('');
   const [vccListPopupRow, setVccListPopupRow] = useState<VccRow | null>(null);
   const [vccDeclNo, setVccDeclNo] = useState<string>('');
   const [cargoStep, setCargoStep] = useState<'list' | 'pre' | 'create' | 'amend' | 'success' | 'amendSuccess' | 'document' | 'stepper' | 'paymentReview' | 'viewRequest' | 'cancel' | 'cargoHistory' | 'suspensionHistory' | 'suspensionHistoryView' | 'suspensionResponse'>('list');
@@ -469,6 +473,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           {cargoStep === 'cargoHistory' && (
             <CargoTransferHistoryPage
               onBack={() => setCargoStep('list')}
+              onBackToListing={() => setCargoStep('list')}
               onSuspensionHistory={() => { setSuspensionHistoryFrom('cargoHistory'); setCargoStep('suspensionHistory'); }}
               onSuspensionResponse={() => setCargoStep('suspensionResponse')}
               onViewRequest={() => setCargoStep('viewRequest')}
@@ -485,17 +490,20 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           {cargoStep === 'suspensionHistory' && (
             <SuspensionHistoryPage
               onBack={() => setCargoStep(suspensionHistoryFrom)}
+              onBackToListing={() => setCargoStep('list')}
               onView={() => setCargoStep('suspensionHistoryView')}
             />
           )}
           {cargoStep === 'suspensionHistoryView' && (
             <SuspensionHistoryViewPage
               onBack={() => setCargoStep('suspensionHistory')}
+              onBackToListing={() => setCargoStep('list')}
             />
           )}
           {cargoStep === 'suspensionResponse' && (
             <SuspensionResponsePage
-              onBack={() => setCargoStep('cargoHistory')}
+              onBack={() => setCargoStep('list')}
+              onBackToListing={() => setCargoStep('list')}
               onSubmit={() => setShowSuspensionSuccess(true)}
             />
           )}
@@ -538,7 +546,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             />
           )}
           {vccStep === 'viewRequest' && (
-            <VccViewRequestPage onBack={() => setVccStep('list')} />
+            <VccViewRequestPage onBack={() => setVccStep('list')} status={selectedVccStatus} />
           )}
           {vccStep === 'paymentSuccess' && (
             <VccPaymentSuccessPage onBackToListing={() => setVccStep('list')} />
@@ -546,11 +554,29 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           {vccStep === 'ePaymentPending' && (
             <VccEPaymentPendingPage
               onBackToListing={() => setVccStep('list')}
-              onMakePayment={() => setVccStep('ePaymentSuccess')}
+              onMakePayment={() => setVccStep('ePaymentProcessing')}
             />
           )}
           {vccStep === 'ePaymentSuccess' && (
-            <VccEPaymentSuccessPage onBackToListing={() => setVccStep('list')} />
+            <VccEPaymentSuccessPage
+              onBackToListing={() => setVccStep('list')}
+              onRecheckStatus={() => setVccStep('ePaymentConfirmed')}
+            />
+          )}
+          {vccStep === 'ePaymentProcessing' && (
+            <VccEPaymentSuccessPage
+              onBackToListing={() => setVccStep('list')}
+              onRecheckStatus={() => setVccStep('ePaymentConfirmed')}
+            />
+          )}
+          {vccStep === 'ePaymentConfirmed' && (
+            <VccEPaymentConfirmedPage onBackToListing={() => setVccStep('list')} />
+          )}
+          {vccStep === 'ePaymentFailed' && (
+            <VccEPaymentFailedPage
+              onBackToListing={() => setVccStep('list')}
+              onRetryPayment={() => setVccStep('ePaymentProcessing')}
+            />
           )}
           {vccStep === 'auditHistory' && (
             <VccAuditHistoryPage onBack={() => setVccStep('list')} />
@@ -700,14 +726,14 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           className="flex-shrink-0 rounded-[12px] overflow-hidden flex flex-col transition-all duration-300 max-md:!w-16"
           style={{
             width: panelCollapsed ? 64 : 180,
-            background: '#eaedf8',
-            border: '1px solid #d5dce8',
+            background: '#e4efff',
+            border: '1px solid #a6c2e9',
           }}
         >
           {/* Collapse / expand button */}
           <button
             onClick={() => setPanelCollapsed(c => !c)}
-            className="flex items-center justify-center py-[12px] border-b border-[#d5dce8] hover:bg-[#dde2f0] transition-colors w-full flex-shrink-0"
+            className="flex items-center justify-center py-[12px] border-b border-[#a6c2e9] hover:bg-[#dde2f0] transition-colors w-full flex-shrink-0"
             title={panelCollapsed ? 'Expand panel' : 'Collapse panel'}
           >
             <svg viewBox="0 0 20 20" className="size-[17px] transition-transform duration-300" style={{ transform: panelCollapsed ? 'rotate(180deg)' : 'none' }} fill="none" stroke="#0e1b3d" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -735,7 +761,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                 justifyContent: panelCollapsed ? 'center' : 'flex-start',
                 ...(isActive
                   ? { background: '#ffffff', boxShadow: '0 2px 8px rgba(0,0,0,0.10)' }
-                  : { background: 'transparent', borderTop: i === 0 ? 'none' : '1px solid #d5dce8' }),
+                  : { background: 'transparent', borderTop: i === 0 ? 'none' : '1px solid #a6c2e9' }),
               }}
               title={panelCollapsed ? action.label : undefined}
             >
@@ -769,7 +795,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             className={`flex items-center gap-[8px] h-[48px] px-[12px] sm:px-[16px] py-[12px] rounded-[4px] border text-[16px] transition-colors flex-shrink-0 ${
               showFilters
                 ? 'bg-[#e2ebf9] border-[#1360d2] text-[#1360d2]'
-                : 'bg-white border-[#d4dcfa] text-[#696f83]'
+                : 'bg-white border-[#d4dcfa] text-[#000000]'
             }`}
             style={{ fontFamily: "'Dubai', sans-serif" }}
           >
@@ -1766,13 +1792,16 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             />
           ) : (
             <VccTable
-              onView={() => setVccStep('viewRequest')}
+              onView={(status) => { setSelectedVccStatus(status || ''); setVccStep('viewRequest'); }}
               onAmend={() => setVccStep('amend')}
               onAudit={() => setVccStep('auditHistory')}
               onVccCountOpen={(row) => setVccListPopupRow(row)}
               onDeclarationOpen={(declNo) => { setVccDeclNo(declNo); setVccStep('declarationView'); }}
               externalStatus={toolbarStatus}
               showDrafts={showDrafts}
+              onMakePayment={() => setVccStep('ePaymentProcessing')}
+              onChangePaymentMode={() => setVccStep('ePaymentProcessing')}
+              onRetry={() => setVccStep('searchResult')}
             />
           )
         ) : activeMenu === 'Cargo Transfer' ? (
@@ -1830,23 +1859,18 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                     { label: 'Broker',             w: 110 },
                     { label: 'Created by',         w: 100 },
                     { label: 'Status Date',        w: 100 },
-                  ] as { label: string; w: number }[]).map(col => (
+                  ] as { label: string; w: number }[]).map((col, idx) => (
                     <th
                       key={col.label}
-                      style={{ width: col.w, minWidth: col.w, background: '#e2ebf9', padding: '10px 8px', textAlign: 'left', fontWeight: 500 }}
+                      style={{ width: col.w, minWidth: col.w, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, borderRadius: idx === 0 ? '8px 0 0 0' : undefined, paddingLeft: idx === 0 ? 16 : 8 }}
                     >
-                      <div className="flex items-center gap-[4px]">
-                        <span className="text-[16px] text-[#455174] whitespace-nowrap">{col.label}</span>
-                        <svg viewBox="0 0 10 14" width="9" height="12" fill="none" stroke="#8f94ae" strokeWidth="1.3" strokeLinecap="round">
-                          <path d="M5 1v12M2 4l3-3 3 3M2 10l3 3 3-3" />
-                        </svg>
-                      </div>
+                      <ColumnFilter label={col.label} labelClass="text-[16px] font-medium text-[#051937]" />
                     </th>
                   ))}
                   {/* STICKY: Declaration Status */}
                   <th style={{
                     position: 'sticky', right: 76, width: 150, minWidth: 150,
-                    background: '#e2ebf9', padding: '10px 8px', textAlign: 'left', fontWeight: 500,
+                    background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500,
                     boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2,
                   }}>
                     <StatusFilterHeader
@@ -1860,9 +1884,10 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   {/* STICKY: Actions */}
                   <th style={{
                     position: 'sticky', right: 0, width: 76, minWidth: 76,
-                    background: '#e2ebf9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, zIndex: 2,
+                    background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, zIndex: 2,
+                    borderRadius: '0 8px 0 0',
                   }}>
-                    <span className="text-[16px] text-[#455174]">Actions</span>
+                    <span className="text-[16px] text-[#051937]">Actions</span>
                   </th>
                 </tr>
               </thead>
@@ -1882,7 +1907,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   return (
                     <tr key={i}>
                       {/* Declaration No. */}
-                      <td style={{ background: '#fff', padding: '0 8px', height: 46, verticalAlign: 'middle', width: 148 }}>
+                      <td style={{ background: '#fff', padding: '0 8px 0 16px', height: 46, verticalAlign: 'middle', width: 148 }}>
                         <div className="flex items-center gap-[6px]">
                           <div className="flex items-center gap-[3px] flex-shrink-0">
                             {(decl.badge === 'both' || decl.badge === 'wlp') && (

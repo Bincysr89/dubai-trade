@@ -337,7 +337,7 @@ function Step2({ onBack, onProceed }: { onBack: () => void; onProceed: () => voi
                       <th
                         key={h + i}
                         style={{
-                          background: '#e2ebf9', padding: '10px 12px', textAlign: 'left',
+                          background: '#a6c2e9', padding: '10px 12px', textAlign: 'left',
                           fontWeight: 500, fontSize: 14, color: '#696f83',
                           borderRadius: i === 0 ? '8px 0 0 8px' : i === 5 ? '0 8px 8px 0' : 0,
                         }}
@@ -436,12 +436,12 @@ function Step3({ onBack, onProceed, onViewRequest }: { onBack: () => void; onPro
             <Card className="overflow-x-auto">
               <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: font }}>
                 <thead>
-                  <tr style={{ background: '#a7c2e9' }}>
+                  <tr style={{ background: '#a6c2e9' }}>
                     {['Charges', 'Amount', 'Payment Mode', 'Payment Reference'].map((h, i) => (
                       <th
                         key={h}
                         style={{
-                          padding: '12px 8px', textAlign: 'left', fontSize: 16, fontWeight: 500, color: '#455174',
+                          padding: '12px 8px', textAlign: 'left', fontSize: 16, fontWeight: 500, color: '#051937',
                           borderRadius: i === 0 ? '5px 0 0 5px' : i === 3 ? '0 5px 5px 0' : 0,
                         }}
                       >

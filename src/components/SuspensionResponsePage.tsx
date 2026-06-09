@@ -1,14 +1,7 @@
 import React, { useState } from 'react';
+import { ColumnFilter } from './ColumnFilter';
 
 const font = "'Dubai', sans-serif";
-
-function SortIcon() {
-  return (
-    <svg viewBox="0 0 10 14" width="9" height="12" fill="none" stroke="#8f94ae" strokeWidth="1.3" strokeLinecap="round">
-      <path d="M5 1v12M2 4l3-3 3 3M2 10l3 3 3-3" />
-    </svg>
-  );
-}
 
 function DeleteIcon() {
   return (
@@ -60,29 +53,49 @@ const DOC_TYPES = ['*Doc 1', 'Doc 2', 'Doc 3', 'Doc 4'];
 
 type Props = {
   onBack: () => void;
+  onBackToListing?: () => void;
   onSubmit: () => void;
 };
 
-export default function SuspensionResponsePage({ onBack, onSubmit }: Props) {
+export default function SuspensionResponsePage({ onBack, onBackToListing, onSubmit }: Props) {
   const [response, setResponse] = useState('');
-  const [disagree, setDisagree] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState(0);
-  const [paymentMode, setPaymentMode] = useState('');
-  const [paymentRef, setPaymentRef] = useState('');
 
   return (
     <div className="flex flex-col h-full bg-[#f8fafd]">
-      {/* Header */}
-      <div className="px-4 sm:px-10 pt-[28px] pb-[4px] flex-shrink-0">
-        <h1 className="text-[28px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>
-          Suspension Response
-        </h1>
-      </div>
-      <div className="px-4 sm:px-10 pt-[8px] pb-[16px] flex items-center gap-[16px] flex-shrink-0">
-        <p className="text-[24px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>Request No:123456</p>
-        <span className="text-[14px] font-medium px-[12px] py-[4px] rounded-[4px]" style={{ background: 'rgba(220,53,69,0.10)', color: '#dc3545', fontFamily: font }}>
-          Suspended
-        </span>
+      {/* Breadcrumb + Title — sticky */}
+      <div className="flex-shrink-0 bg-[#f8fafd]">
+        {/* Breadcrumb */}
+        <div className="flex items-center justify-between px-4 sm:px-10 pt-[16px] pb-[8px] flex-wrap gap-[12px]">
+          <div className="flex items-center gap-[6px]">
+            <button
+              onClick={onBackToListing ?? onBack}
+              className="text-[16px] text-[#8f94ae] hover:underline"
+              style={{ fontFamily: font }}
+            >
+              Home
+            </button>
+            <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: font }}>/</span>
+            <span className="text-[16px] text-[#8f94ae]" style={{ fontFamily: font }}>Integrated Clearance</span>
+            <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: font }}>/</span>
+            <span className="text-[16px] text-[#8f94ae]" style={{ fontFamily: font }}>Cargo Transfer</span>
+            <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: font }}>/</span>
+            <span className="text-[16px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>Suspension Response</span>
+          </div>
+          <div className="bg-[#e2ebf9] rounded-[4px] h-[28px] px-[12px] flex items-center">
+            <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>A180-IMPORTER SONY GULF UAE</span>
+          </div>
+        </div>
+
+        {/* Page title */}
+        <div className="px-4 sm:px-10 pt-[8px] pb-[20px] flex items-center gap-[16px]">
+          <h1 style={{ fontSize: 32, fontWeight: 500, color: '#0e1b3d', fontFamily: font }}>
+            Suspension Response - CT - 601232423898
+          </h1>
+          <span className="text-[14px] font-medium px-[12px] py-[4px] rounded-[4px]" style={{ background: 'rgba(220,53,69,0.10)', color: '#dc3545', fontFamily: font }}>
+            Suspended
+          </span>
+        </div>
       </div>
 
       {/* Scrollable content */}
@@ -172,29 +185,26 @@ export default function SuspensionResponsePage({ onBack, onSubmit }: Props) {
               <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontFamily: font }}>
                 <thead>
                   <tr>
-                    <th style={{ width: 60, background: '#a7c2e9', padding: '10px 8px', textAlign: 'left', borderRadius: '8px 0 0 0' }} />
+                    <th style={{ width: 60, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', borderRadius: '8px 0 0 0', paddingLeft: 16 }} />
                     {[
                       { label: 'Document Name',  w: 255 },
                       { label: 'Document Type',  w: 296 },
                       { label: 'Uploaded size',  w: 240 },
                       { label: 'Uploaded on',    w: 312 },
                     ].map((col) => (
-                      <th key={col.label} style={{ width: col.w, background: '#a7c2e9', padding: '10px 8px', textAlign: 'left' }}>
-                        <div className="flex items-center gap-[4px]">
-                          <span className="text-[14px] text-[#000] whitespace-nowrap">{col.label}</span>
-                          <SortIcon />
-                        </div>
+                      <th key={col.label} style={{ width: col.w, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left' }}>
+                        <ColumnFilter label={col.label} />
                       </th>
                     ))}
-                    <th style={{ width: 169, background: '#a7c2e9', padding: '10px 8px', textAlign: 'left', borderRadius: '0 8px 0 0' }}>
-                      <span className="text-[14px] text-[#696f83]">Action</span>
+                    <th style={{ width: 169, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', borderRadius: '0 8px 0 0' }}>
+                      <span className="text-[14px] text-[#051937] font-medium">Action</span>
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {DOC_ROWS.map((row, i) => (
                     <tr key={i}>
-                      <td style={{ padding: '16px 8px', verticalAlign: 'middle', textAlign: 'center' }}>
+                      <td style={{ padding: '16px 8px 16px 16px', verticalAlign: 'middle', textAlign: 'center' }}>
                         <span className="text-[16px] text-[#051937]">{i + 1}</span>
                       </td>
                       <td style={{ padding: '16px 8px', verticalAlign: 'middle' }}>
@@ -224,67 +234,6 @@ export default function SuspensionResponsePage({ onBack, onSubmit }: Props) {
             </div>
           </div>
 
-          {/* Payment Details */}
-          <div className="flex flex-col gap-[14px]">
-            <h2 className="text-[18px] font-semibold text-[#051937]" style={{ fontFamily: font }}>Payment Details</h2>
-            <div className="bg-white rounded-[8px] px-[20px] py-[32px]" style={{ boxShadow: '1px 2px 12px rgba(0,0,0,0.06)' }}>
-              <label className="flex items-center gap-[12px] px-[12px] mb-[16px] cursor-pointer">
-                <div
-                  className="size-[24px] border-2 rounded-sm flex items-center justify-center transition-colors"
-                  style={{ borderColor: disagree ? '#1360d2' : '#ccc', background: disagree ? '#fff' : 'transparent' }}
-                  onClick={() => setDisagree(!disagree)}
-                >
-                  {disagree && (
-                    <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="#1360d2" strokeWidth="2.5" strokeLinecap="round">
-                      <polyline points="2,7 6,11 12,3" />
-                    </svg>
-                  )}
-                </div>
-                <span className="text-[16px] font-semibold text-[#051937]" style={{ fontFamily: font }}>I disagree to Pay</span>
-              </label>
-              <div className="flex flex-wrap gap-[20px]">
-                <InfoCard label="CDM Demanded Deposit" value="AED 500" />
-                <InfoCard label="Reason" value="Pending Customs Decision" />
-
-                {/* Payment Mode dropdown */}
-                <div className="flex flex-col gap-[12px] py-[12px] px-[12px]" style={{ width: 307, minWidth: 200 }}>
-                  <span className="text-[14px]" style={{ color: '#696f83', fontFamily: font }}>Payment Mode</span>
-                  <div className="relative">
-                    <select
-                      value={paymentMode}
-                      onChange={(e) => setPaymentMode(e.target.value)}
-                      className="h-[56px] w-full border rounded-[4px] px-[16px] text-[16px] text-[#0e1b3d] focus:outline-none appearance-none bg-white"
-                      style={{ borderColor: '#d5ddfb', fontFamily: font }}
-                    >
-                      <option value="">Select Mode</option>
-                      <option value="e-payment">e-Payment</option>
-                      <option value="cash">Cash</option>
-                    </select>
-                    <svg className="absolute right-[12px] top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
-                  </div>
-                </div>
-
-                {/* Payment Reference dropdown */}
-                <div className="flex flex-col gap-[12px] py-[12px] px-[12px]" style={{ width: 307, minWidth: 200 }}>
-                  <span className="text-[14px]" style={{ color: '#696f83', fontFamily: font }}>Payment Reference</span>
-                  <div className="relative">
-                    <select
-                      value={paymentRef}
-                      onChange={(e) => setPaymentRef(e.target.value)}
-                      className="h-[56px] w-full border rounded-[4px] px-[16px] text-[16px] text-[#0e1b3d] focus:outline-none appearance-none bg-white"
-                      style={{ borderColor: '#d5ddfb', fontFamily: font }}
-                    >
-                      <option value="">Select Reference</option>
-                      <option value="ref1">REF-001</option>
-                      <option value="ref2">REF-002</option>
-                    </select>
-                    <svg className="absolute right-[12px] top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* CDM Contact Details */}
           <div className="flex flex-col gap-[14px]">
             <h2 className="text-[18px] font-semibold text-[#051937]" style={{ fontFamily: font }}>CDM Contact Details</h2>
@@ -303,8 +252,8 @@ export default function SuspensionResponsePage({ onBack, onSubmit }: Props) {
         </div>
       </div>
 
-      {/* Bottom navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white z-10" style={{ boxShadow: '0px -4px 12px rgba(0,0,0,0.08)', height: 88 }}>
+      {/* Bottom navigation — sticky */}
+      <div className="bg-white flex-shrink-0" style={{ boxShadow: '0px -4px 12px rgba(0,0,0,0.08)', height: 88 }}>
         <div className="h-full flex items-center justify-between px-[40px]">
           <button
             onClick={onBack}

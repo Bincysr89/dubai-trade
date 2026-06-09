@@ -231,7 +231,7 @@ function BusinessCodeModal({ open, onClose, onSelect, title }: {
               <tr>
                 {cols.map((c, i) => (
                   <th key={c} style={{
-                    background: '#a7c2e9', padding: '12px', textAlign: i === cols.length - 1 ? 'center' : 'left',
+                    background: '#a6c2e9', padding: '12px', textAlign: i === cols.length - 1 ? 'center' : 'left',
                     fontSize: 14, fontWeight: 500, color: '#0e1b3d', letterSpacing: '0.07px',
                     whiteSpace: 'nowrap', height: 44,
                   }}>
@@ -353,7 +353,7 @@ function PremisesCodeModal({ open, onClose, onSelect, title }: {
               <tr>
                 {cols.map((c, i) => (
                   <th key={c} style={{
-                    background: '#a7c2e9', padding: '12px', textAlign: i === cols.length - 1 ? 'center' : 'left',
+                    background: '#a6c2e9', padding: '12px', textAlign: i === cols.length - 1 ? 'center' : 'left',
                     fontSize: 14, fontWeight: 500, color: '#0e1b3d', letterSpacing: '0.07px',
                     whiteSpace: 'nowrap', height: 44,
                   }}>
@@ -477,7 +477,7 @@ function CarrierVesselModal({ open, onClose, onSelect }: {
   const handleReset = () => { setVesselName(''); setCallingPort(''); setFromDate(''); setToDate(''); };
 
   if (!open) return null;
-  const thS: React.CSSProperties = { background: '#a7c2e9', padding: '12px 18px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#000', whiteSpace: 'nowrap' };
+  const thS: React.CSSProperties = { background: '#a6c2e9', padding: '12px 18px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#000', whiteSpace: 'nowrap' };
   const tdS: React.CSSProperties = { padding: '0 18px', height: 54, background: '#fff', borderBottom: '1px solid #f0f3fa', fontSize: 15, color: '#0e1b3d' };
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center px-[16px]">
@@ -619,7 +619,7 @@ function FlightSearchModal({ open, onClose, onSelect }: {
   const handleReset = () => { setFlightNoFilter(''); setFromDate('2026-06-05'); setToDate('2026-06-18'); };
 
   if (!open) return null;
-  const thS: React.CSSProperties = { background: '#a7c2e9', padding: '12px 18px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#000', whiteSpace: 'nowrap' };
+  const thS: React.CSSProperties = { background: '#a6c2e9', padding: '12px 18px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#000', whiteSpace: 'nowrap' };
   const tdS: React.CSSProperties = { padding: '0 18px', height: 54, background: '#fff', borderBottom: '1px solid #f0f3fa', fontSize: 15, color: '#0e1b3d' };
 
   return (

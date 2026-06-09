@@ -207,7 +207,7 @@ export default function CargoTransferViewPage({ onBack, transferNumber = '', onR
                 <thead>
                   <tr>
                     {['Container Number', 'Customs Seal Number'].map(h => (
-                      <th key={h} style={{ background: '#a7c2e9', padding: '10px 14px', textAlign: 'left', borderBottom: '1px solid #e8edf5' }}>
+                      <th key={h} style={{ background: '#a6c2e9', padding: '10px 14px', textAlign: 'left', borderBottom: '1px solid #e8edf5' }}>
                         <span className="text-[14px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>{h}</span>
                       </th>
                     ))}
@@ -236,7 +236,7 @@ export default function CargoTransferViewPage({ onBack, transferNumber = '', onR
                 <thead>
                   <tr>
                     {['Package Type', 'Number Of Packages', 'Shipping Marks'].map(h => (
-                      <th key={h} style={{ background: '#a7c2e9', padding: '10px 14px', textAlign: 'left', borderBottom: '1px solid #e8edf5' }}>
+                      <th key={h} style={{ background: '#a6c2e9', padding: '10px 14px', textAlign: 'left', borderBottom: '1px solid #e8edf5' }}>
                         <span className="text-[14px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>{h}</span>
                       </th>
                     ))}
@@ -262,7 +262,7 @@ export default function CargoTransferViewPage({ onBack, transferNumber = '', onR
                 <thead>
                   <tr>
                     {['Charge Type', 'Charge Amount', 'Payment Mode', 'Payment Reference Number', 'Collection Receipt Number', 'Transaction Number'].map(h => (
-                      <th key={h} style={{ background: '#a7c2e9', padding: '10px 14px', textAlign: 'left', borderBottom: '1px solid #e8edf5' }}>
+                      <th key={h} style={{ background: '#a6c2e9', padding: '10px 14px', textAlign: 'left', borderBottom: '1px solid #e8edf5' }}>
                         <span className="text-[14px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>{h}</span>
                       </th>
                     ))}
@@ -291,7 +291,7 @@ export default function CargoTransferViewPage({ onBack, transferNumber = '', onR
                 <thead>
                   <tr>
                     {['Version', 'Submitted Date', 'Cleared Date', 'Action'].map(h => (
-                      <th key={h} style={{ background: '#a7c2e9', padding: '12px 10px', textAlign: 'left', borderBottom: '1px solid #e8edf5' }}>
+                      <th key={h} style={{ background: '#a6c2e9', padding: '12px 10px', textAlign: 'left', borderBottom: '1px solid #e8edf5' }}>
                         <span className="text-[14px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>{h}</span>
                       </th>
                     ))}
@@ -340,7 +340,7 @@ export default function CargoTransferViewPage({ onBack, transferNumber = '', onR
                 <thead>
                   <tr>
                     {['Document Name', 'Document Type', 'Uploaded Size', 'Uploaded On', 'Action'].map(h => (
-                      <th key={h} style={{ background: '#a7c2e9', padding: '12px 10px', textAlign: 'left', borderBottom: '1px solid #e8edf5' }}>
+                      <th key={h} style={{ background: '#a6c2e9', padding: '12px 10px', textAlign: 'left', borderBottom: '1px solid #e8edf5' }}>
                         <span className="text-[14px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>{h}</span>
                       </th>
                     ))}

@@ -1,14 +1,7 @@
 import React from 'react';
+import { ColumnFilter } from './ColumnFilter';
 
 const font = "'Dubai', sans-serif";
-
-function SortIcon() {
-  return (
-    <svg viewBox="0 0 10 14" width="9" height="12" fill="none" stroke="#8f94ae" strokeWidth="1.3" strokeLinecap="round">
-      <path d="M5 1v12M2 4l3-3 3 3M2 10l3 3 3-3" />
-    </svg>
-  );
-}
 
 function DownloadIcon() {
   return (
@@ -38,24 +31,53 @@ const DOC_ROWS = [
 
 type Props = {
   onBack: () => void;
+  onBackToListing?: () => void;
 };
 
-export default function SuspensionHistoryViewPage({ onBack }: Props) {
+export default function SuspensionHistoryViewPage({ onBack, onBackToListing }: Props) {
   return (
     <div className="flex flex-col h-full bg-[#f8fafd]">
-      {/* Header */}
-      <div className="px-4 sm:px-10 pt-[28px] pb-[4px] flex-shrink-0">
-        <h1 className="text-[28px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>
-          Suspension History - View
-        </h1>
-      </div>
-      <div className="px-4 sm:px-10 pt-[8px] pb-[16px] flex-shrink-0">
-        <p className="text-[24px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>
-          Cargo Transfer Request No: 123456
-        </p>
+      {/* Breadcrumb + Title — sticky */}
+      <div className="flex-shrink-0 bg-[#f8fafd]">
+        {/* Breadcrumb */}
+        <div className="flex items-center justify-between px-4 sm:px-10 pt-[16px] pb-[8px] flex-wrap gap-[12px]">
+          <div className="flex items-center gap-[6px]">
+            <button
+              onClick={onBackToListing ?? onBack}
+              className="text-[16px] text-[#8f94ae] hover:underline"
+              style={{ fontFamily: font }}
+            >
+              Home
+            </button>
+            <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: font }}>/</span>
+            <span className="text-[16px] text-[#8f94ae]" style={{ fontFamily: font }}>Integrated Clearance</span>
+            <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: font }}>/</span>
+            <span className="text-[16px] text-[#8f94ae]" style={{ fontFamily: font }}>Cargo Transfer</span>
+            <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: font }}>/</span>
+            <button
+              onClick={onBack}
+              className="text-[16px] text-[#8f94ae] hover:underline"
+              style={{ fontFamily: font }}
+            >
+              Suspension History
+            </button>
+            <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: font }}>/</span>
+            <span className="text-[16px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>View</span>
+          </div>
+          <div className="bg-[#e2ebf9] rounded-[4px] h-[28px] px-[12px] flex items-center">
+            <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>A180-IMPORTER SONY GULF UAE</span>
+          </div>
+        </div>
+
+        {/* Page title */}
+        <div className="px-4 sm:px-10 pt-[8px] pb-[20px]">
+          <h1 style={{ fontSize: 32, fontWeight: 500, color: '#0e1b3d', fontFamily: font }}>
+            Suspension History - CT - 601232423898
+          </h1>
+        </div>
       </div>
 
-      {/* Content */}
+      {/* Scrollable content */}
       <div className="flex-1 overflow-auto px-4 sm:px-10 pb-[100px]">
         <div className="flex flex-col gap-[24px]">
 
@@ -78,29 +100,26 @@ export default function SuspensionHistoryViewPage({ onBack }: Props) {
               <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontFamily: font }}>
                 <thead>
                   <tr>
-                    <th style={{ width: 60, background: '#a7c2e9', padding: '10px 8px', textAlign: 'left', borderRadius: '8px 0 0 0' }} />
+                    <th style={{ width: 60, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', borderRadius: '8px 0 0 0', paddingLeft: 16 }} />
                     {[
                       { label: 'Document Name',   w: 255 },
                       { label: 'Document Type',   w: 296 },
                       { label: 'Uploaded size',   w: 240 },
                       { label: 'Uploaded on',     w: 312 },
                     ].map((col) => (
-                      <th key={col.label} style={{ width: col.w, background: '#a7c2e9', padding: '10px 8px', textAlign: 'left' }}>
-                        <div className="flex items-center gap-[4px]">
-                          <span className="text-[14px] text-[#696f83] whitespace-nowrap">{col.label}</span>
-                          <SortIcon />
-                        </div>
+                      <th key={col.label} style={{ width: col.w, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left' }}>
+                        <ColumnFilter label={col.label} />
                       </th>
                     ))}
-                    <th style={{ width: 169, background: '#a7c2e9', padding: '10px 8px', textAlign: 'left', borderRadius: '0 8px 0 0' }}>
-                      <span className="text-[14px] text-[#696f83]">Action</span>
+                    <th style={{ width: 169, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', borderRadius: '0 8px 0 0' }}>
+                      <span className="text-[14px] text-[#051937] font-medium">Action</span>
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {DOC_ROWS.map((row, i) => (
                     <tr key={i}>
-                      <td style={{ padding: '16px 8px', verticalAlign: 'middle', textAlign: 'center' }}>
+                      <td style={{ padding: '16px 8px 16px 16px', verticalAlign: 'middle', textAlign: 'center' }}>
                         <span className="text-[16px] text-[#051937]">{i + 1}</span>
                       </td>
                       <td style={{ padding: '16px 8px', verticalAlign: 'middle' }}>
@@ -125,21 +144,17 @@ export default function SuspensionHistoryViewPage({ onBack }: Props) {
             </div>
           </div>
 
-          {/* Payment Details */}
+          {/* CDM Contact Details */}
           <div className="flex flex-col gap-[14px]">
-            <h2 className="text-[18px] font-semibold text-[#051937]" style={{ fontFamily: font }}>Payment Details</h2>
+            <h2 className="text-[18px] font-semibold text-[#051937]" style={{ fontFamily: font }}>CDM Contact Details</h2>
             <div className="bg-white rounded-[8px] px-[20px] py-[32px]" style={{ boxShadow: '1px 2px 12px rgba(0,0,0,0.06)' }}>
-              <div className="flex items-center gap-[12px] px-[12px] mb-[12px]">
-                <div className="size-[18px] rounded-sm flex items-center justify-center" style={{ background: '#e2ebf9', opacity: 0.7 }}>
-                  <svg viewBox="0 0 14 14" width="12" height="12" fill="#1360d2"><polyline points="2,7 6,11 12,3" strokeWidth="2" stroke="#1360d2" fill="none" strokeLinecap="round" /></svg>
-                </div>
-                <span className="text-[16px] font-semibold text-[#051937] opacity-50" style={{ fontFamily: font }}>I disagree to Pay</span>
-              </div>
               <div className="flex flex-wrap gap-[20px]">
-                <InfoCard label="CDM Demanded Deposit" value="AED 500" />
-                <InfoCard label="Reason" value="Pending Customs Decision" />
-                <InfoCard label="Payment Mode" value="e-Payment" />
-                <InfoCard label="Payment Reference" value="Payment Reference" />
+                <InfoCard label="Contact Section Name" value="Customs Declaration Management" />
+                <InfoCard label="Phone Number" value="04-34567890" />
+                <InfoCard label="Fax Number" value="04-5876888" />
+                <InfoCard label="Contact Time" value="08:00 - 14:00" />
+                <InfoCard label="Contact Location" value="Dubai Customs HQ, Port Rashid, Dubai" />
+                <InfoCard label="Contact Department" value="Customs Declaration Management" />
               </div>
             </div>
           </div>
@@ -147,8 +162,8 @@ export default function SuspensionHistoryViewPage({ onBack }: Props) {
         </div>
       </div>
 
-      {/* Bottom navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white z-10" style={{ boxShadow: '0px -4px 12px rgba(0,0,0,0.08)', height: 88 }}>
+      {/* Bottom navigation — sticky */}
+      <div className="bg-white flex-shrink-0" style={{ boxShadow: '0px -4px 12px rgba(0,0,0,0.08)', height: 88 }}>
         <div className="h-full flex items-center px-[40px]">
           <button
             onClick={onBack}

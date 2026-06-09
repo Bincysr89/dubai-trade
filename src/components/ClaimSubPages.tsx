@@ -1130,7 +1130,7 @@ export function DocumentUploadPage({
           <div className="border border-[#d5ddfb] rounded-[8px] overflow-x-auto">
             <table className="w-full" style={{ borderCollapse: 'collapse' }}>
               <thead>
-                <tr style={{ background: '#e2ebf9' }}>
+                <tr style={{ background: '#a6c2e9' }}>
                   <th className="text-left text-[16px] text-[#696f83]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Document Name</th>
                   <th className="text-left text-[16px] text-[#696f83]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Authority Name</th>
                   <th className="text-left text-[16px] text-[#696f83]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>Document Type</th>
@@ -1253,7 +1253,7 @@ export function PaymentDetailsPage({
       <SectionHeader>Claim Payment Details</SectionHeader>
       <Card>
         <div className="overflow-hidden rounded-[8px]">
-          <div className="grid" style={{ gridTemplateColumns: 'minmax(360px, 1fr) minmax(220px, 1fr) minmax(240px, 1fr)', background: '#e2ebf9' }}>
+          <div className="grid" style={{ gridTemplateColumns: 'minmax(360px, 1fr) minmax(220px, 1fr) minmax(240px, 1fr)', background: '#a6c2e9' }}>
             <div className="text-left text-[16px] text-[#455174]" style={{ padding: '12px 20px', fontWeight: 500 }}>Charges</div>
             <div className="text-left text-[16px] text-[#455174]" style={{ padding: '12px 16px', fontWeight: 500 }}>Payment Mode</div>
             <div className="text-left text-[16px] text-[#455174]" style={{ padding: '12px 16px', fontWeight: 500 }}>Credit / Debit Account No.</div>

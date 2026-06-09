@@ -37,7 +37,7 @@ const VCC_DETAILS_MAP: Record<string, VccDetails> = {
   },
 };
 
-type Props = { onBack: () => void; requestNumber?: string };
+type Props = { onBack: () => void; requestNumber?: string; status?: string };
 
 const REQUEST_DETAILS: { label: string; value: string }[] = [
   { label: 'Request No.',        value: '213233' },
@@ -110,7 +110,8 @@ function Checkbox({ checked, indeterminate, onChange }: { checked: boolean; inde
   );
 }
 
-export default function VccViewRequestPage({ onBack, requestNumber = '25365' }: Props) {
+export default function VccViewRequestPage({ onBack, requestNumber = '25365', status }: Props) {
+  const canDownload = !status || status === 'Completed';
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [openVccNo, setOpenVccNo] = useState<string | null>(null);
   const [historyVccNo, setHistoryVccNo] = useState<string | null>(null);
@@ -173,7 +174,7 @@ export default function VccViewRequestPage({ onBack, requestNumber = '25365' }: 
                     <th
                       key={h}
                       style={{
-                        background: '#a7c2e9', padding: '12px', textAlign: 'left', fontWeight: 500,
+                        background: '#a6c2e9', padding: '12px', textAlign: 'left', fontWeight: 500,
                         color: '#000', fontSize: 14, letterSpacing: '0.07px',
                         borderTopLeftRadius: i === 0 ? 6 : 0,
                         borderTopRightRadius: i === arr.length - 1 ? 6 : 0,
@@ -286,6 +287,7 @@ export default function VccViewRequestPage({ onBack, requestNumber = '25365' }: 
                                 border: '1px solid #f0f0f5',
                               }}
                             >
+                              {canDownload && (
                               <button
                                 onClick={() => { setActionMenuFor(null); downloadOne(v.vccNo); }}
                                 className="group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
@@ -297,6 +299,7 @@ export default function VccViewRequestPage({ onBack, requestNumber = '25365' }: 
                                 </span>
                                 <span className="text-[16px] text-[#111838] group-hover:text-white leading-[20px]">Download VCC</span>
                               </button>
+                              )}
                               <button
                                 onClick={() => { setActionMenuFor(null); setHistoryVccNo(v.vccNo); }}
                                 className="group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"

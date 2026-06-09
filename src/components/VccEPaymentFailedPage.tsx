@@ -3,14 +3,16 @@ import BackToListingBar from './BackToListingBar';
 
 type Props = {
   onBackToListing: () => void;
+  onRetryPayment: () => void;
   requestNumber?: string;
-  vccCount?: number;
+  totalCharges?: number;
 };
 
-export default function VccPaymentSuccessPage({
+export default function VccEPaymentFailedPage({
   onBackToListing,
+  onRetryPayment,
   requestNumber = '25365',
-  vccCount = 2,
+  totalCharges = 30,
 }: Props) {
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full">
@@ -37,36 +39,28 @@ export default function VccPaymentSuccessPage({
           className="bg-white rounded-[8px] flex flex-col items-center gap-[28px] px-[20px] py-[40px]"
           style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}
         >
-          {/* Green check icon */}
+          {/* Red X icon */}
           <div className="relative" aria-hidden>
             <svg width="96" height="96" viewBox="0 0 96 96" fill="none">
-              <circle cx="48" cy="48" r="42" fill="#28A745" />
-              <path
-                d="M30 49 l13 13 23 -27"
-                stroke="#FFFFFF"
-                strokeWidth="6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                fill="none"
-              />
+              <circle cx="48" cy="48" r="42" stroke="#dc3545" strokeWidth="7" fill="none"/>
+              <path d="M32 32 L64 64 M64 32 L32 64" stroke="#dc3545" strokeWidth="7" strokeLinecap="round"/>
             </svg>
-            <div className="absolute inset-0 rounded-full" style={{ boxShadow: '0 0 0 8px rgba(40,167,69,0.10)' }} />
+            <div className="absolute inset-0 rounded-full" style={{ boxShadow: '0 0 0 8px rgba(220,53,69,0.10)' }} />
           </div>
 
           <p
             className="text-center text-[26px] text-[#0e1b3d]"
             style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 700, lineHeight: 1.3 }}
           >
-            VCC Request Created - Payment Confirmation
+            VCC Request Created - Payment Failed
           </p>
 
-          {/* Content block — Request Number 20px, line-height 1.9 */}
           <div
             className="text-center text-[#0e1b3d] max-w-[640px]"
             style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 400, lineHeight: 1.9 }}
           >
             <span style={{ fontSize: 16 }}>
-              Your VCC request is accepted and {vccCount} VCC&apos;s generated successfully.
+              Your VCC request has been processed. Please retry the payment transaction.
             </span>
             <br />
             <span style={{ fontSize: 20, fontWeight: 700 }}>
@@ -74,28 +68,23 @@ export default function VccPaymentSuccessPage({
             </span>
             <br />
             <span style={{ fontSize: 16 }}>
-              Please download the digital VCC from listing page. In case VCC&apos;s are not found, please try after sometime by searching with your request number.
+              Total Charges to pay - AED {totalCharges}
             </span>
           </div>
 
-          {/* Action buttons — no Download VCC */}
+          {/* Action buttons */}
           <div className="flex flex-wrap gap-[16px] justify-center pt-[8px]">
             <button
-              onClick={onBackToListing}
-              className="h-[48px] px-[20px] inline-flex items-center justify-center gap-[8px] rounded-[4px] border border-[#1360d2] bg-white text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
+              onClick={onRetryPayment}
+              className="h-[48px] px-[20px] rounded-[4px] bg-[#1360d2] text-white hover:bg-[#0E4DB8] transition-colors"
               style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, fontSize: 16, minWidth: 160 }}
             >
-              Download VCC&apos;s
-              <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M10 3v10" />
-                <path d="M5 9l5 5 5-5" />
-                <path d="M3 17h14" />
-              </svg>
+              Retry Payment
             </button>
 
             <button
               onClick={onBackToListing}
-              className="h-[48px] px-[20px] rounded-[4px] bg-[#1360d2] text-white hover:bg-[#0E4DB8] transition-colors"
+              className="h-[48px] px-[20px] inline-flex items-center justify-center gap-[8px] rounded-[4px] border border-[#1360d2] bg-white text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
               style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, fontSize: 16, minWidth: 180 }}
             >
               Back to Listing

@@ -321,7 +321,7 @@ export default function VccSearchResultPage({ onBack, onSubmit, initialSelected,
                         <th
                           key={i}
                           style={{
-                            background: '#a7c2e9',
+                            background: '#a6c2e9',
                             padding: '12px 12px',
                             textAlign: 'left',
                             fontWeight: 500,
@@ -411,7 +411,7 @@ export default function VccSearchResultPage({ onBack, onSubmit, initialSelected,
                 {/* Fixed-height scrollable container — header sticky, shows ~10 rows */}
                 <div style={{ maxHeight: 480, overflowY: 'auto', overflowX: 'auto', border: '1px solid #e8edf5', borderRadius: 6 }}>
                   <table className="dt-table" style={{ fontFamily: "'Dubai', sans-serif", minWidth: '100%' }}>
-                    <thead style={{ position: 'sticky', top: 0, zIndex: 1, background: '#a7c2e9' }}>
+                    <thead style={{ position: 'sticky', top: 0, zIndex: 1, background: '#a6c2e9' }}>
                       <tr>
                         <th className="text-[16px]" style={{ width: 60 }}>#</th>
                         <th className="text-[16px]" style={{ width: 160 }}>Chassis Number</th>

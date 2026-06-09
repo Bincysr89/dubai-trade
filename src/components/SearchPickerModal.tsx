@@ -82,14 +82,14 @@ export default function SearchPickerModal({
             <thead>
               <tr>
                 {columns.map((c) => (
-                  <th key={c.key} style={{ background: '#a7c2e9', height: 44, padding: '0 12px', textAlign: 'left' }}>
+                  <th key={c.key} style={{ background: '#a6c2e9', height: 44, padding: '0 12px', textAlign: 'left' }}>
                     <div className="flex items-center gap-[4px]">
                       <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500, letterSpacing: '0.07px' }}>{c.label}</span>
                       <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#0e1b3d" strokeWidth="1.5" strokeLinecap="round"><path d="M3 4h10M5 8h6M7 12h2" /></svg>
                     </div>
                   </th>
                 ))}
-                <th style={{ background: '#a7c2e9', height: 44, padding: '0 12px', textAlign: 'center', width: 100 }}>
+                <th style={{ background: '#a6c2e9', height: 44, padding: '0 12px', textAlign: 'center', width: 100 }}>
                   <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Action</span>
                 </th>
               </tr>

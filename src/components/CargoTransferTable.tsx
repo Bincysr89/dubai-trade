@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Pagination from './Pagination';
 import StatusFilterHeader from './StatusFilterHeader';
+import { ColumnFilter } from './ColumnFilter';
 
 type Status = 'Cleared' | 'Submitted' | 'Payment Pending' | 'Declined' | 'Cancelled' | 'Clearance Inspection';
 type DraftStatus = 'Draft';
@@ -172,19 +173,14 @@ export default function CargoTransferTable({ showDrafts = false, onViewRequest, 
       <table style={{ minWidth: 2100, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }} className="w-full">
         <thead>
           <tr>
-            {headers.map((col) => (
-              <th key={col.label} style={{ width: col.w, minWidth: col.w, background: '#a7c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500 }}>
-                <div className="flex items-center gap-[4px]">
-                  <span className="text-[16px] text-[#000000] whitespace-nowrap" style={{ letterSpacing: '0.07px' }}>{col.label}</span>
-                  <svg viewBox="0 0 10 14" width="9" height="12" fill="none" stroke="#8f94ae" strokeWidth="1.3" strokeLinecap="round">
-                    <path d="M5 1v12M2 4l3-3 3 3M2 10l3 3 3-3" />
-                  </svg>
-                </div>
+            {headers.map((col, idx) => (
+              <th key={col.label} style={{ width: col.w, minWidth: col.w, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, borderRadius: idx === 0 ? '8px 0 0 0' : undefined, paddingLeft: idx === 0 ? 16 : 8 }}>
+                <ColumnFilter label={col.label} labelClass="text-[16px] font-medium text-[#051937]" />
               </th>
             ))}
             {/* Sticky: Status */}
             {!showDrafts ? (
-              <th style={{ position: 'sticky', right: 76, width: 190, minWidth: 190, background: '#a7c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
+              <th style={{ position: 'sticky', right: 76, width: 190, minWidth: 190, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
                 <StatusFilterHeader
                   label="Cargo Transfer Status"
                   options={Object.keys(STATUS_STYLE)}
@@ -194,12 +190,12 @@ export default function CargoTransferTable({ showDrafts = false, onViewRequest, 
                 />
               </th>
             ) : (
-              <th style={{ position: 'sticky', right: 76, width: 190, minWidth: 190, background: '#a7c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
+              <th style={{ position: 'sticky', right: 76, width: 190, minWidth: 190, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
                 <span className="text-[16px] text-[#000]" style={{ letterSpacing: '0.07px' }}>Cargo Transfer Status</span>
               </th>
             )}
             {/* Sticky: Actions */}
-            <th style={{ position: 'sticky', right: 0, width: 76, minWidth: 76, background: '#a7c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, zIndex: 2 }}>
+            <th style={{ position: 'sticky', right: 0, width: 76, minWidth: 76, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, zIndex: 2, borderRadius: '0 8px 0 0' }}>
               <span className="text-[16px] text-[#000]" style={{ letterSpacing: '0.07px' }}>Actions</span>
             </th>
           </tr>
@@ -220,13 +216,13 @@ export default function CargoTransferTable({ showDrafts = false, onViewRequest, 
 
             return (
               <tr key={i}>
-                {cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap font-medium" style={{ fontFamily: font }}>{row.cargoTransferNo}</span>, 150)}
+                <td style={{ background: '#fff', padding: '0 8px 0 16px', height: 46, verticalAlign: 'middle', width: 150, borderBottom: '1px solid #f8f8f8' }}><span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: font }}>{row.cargoTransferNo}</span></td>
                 {cell(txt(row.cargoTransferType), 240)}
                 {cell(txt(row.submittedDate), 120)}
                 {cell(txt(row.transferee), 140)}
                 {cell(txt(row.transferer), 140)}
                 {cell(txt(row.cargoChannel), 110)}
-                {cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap font-medium" style={{ fontFamily: font }}>{row.reqNo}</span>, 110)}
+                {cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: font }}>{row.reqNo}</span>, 110)}
                 {cell(txt(row.requestType), 105)}
                 {cell(txt(row.clientRef), 140)}
                 {cell(txt(row.carrierReg), 140)}

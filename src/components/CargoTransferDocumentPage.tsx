@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ColumnFilter } from './ColumnFilter';
 
 const DOC_TYPES = [
   { label: 'Passport Copy', count: 2 },
@@ -128,16 +129,13 @@ export default function CargoTransferDocumentPage({ onBack, onProceed }: Props) 
               <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 6px' }}>
                 <thead>
                   <tr>
-                    {TABLE_COLS.map(col => (
-                      <th key={col} style={{ background: '#a7c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500 }}>
-                        <div className="flex items-center gap-[4px]">
-                          <span className="text-[16px] text-[#455174] whitespace-nowrap" style={{ fontFamily: font }}>{col}</span>
-                          {col !== 'Action' && (
-                            <svg viewBox="0 0 10 14" width="9" height="12" fill="none" stroke="#8f94ae" strokeWidth="1.3" strokeLinecap="round">
-                              <path d="M5 1v12M2 4l3-3 3 3M2 10l3 3 3-3" />
-                            </svg>
-                          )}
-                        </div>
+                    {TABLE_COLS.map((col, idx) => (
+                      <th key={col} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, borderRadius: idx === 0 ? '8px 0 0 0' : idx === TABLE_COLS.length - 1 ? '0 8px 0 0' : undefined, paddingLeft: idx === 0 ? 16 : 12 }}>
+                        {col === 'Action' ? (
+                          <span className="text-[16px] text-[#051937] font-semibold whitespace-nowrap" style={{ fontFamily: font }}>{col}</span>
+                        ) : (
+                          <ColumnFilter label={col} labelClass="text-[16px] font-medium text-[#051937]" />
+                        )}
                       </th>
                     ))}
                   </tr>
@@ -146,7 +144,7 @@ export default function CargoTransferDocumentPage({ onBack, onProceed }: Props) 
                   {UPLOADED_ROWS.map((row, i) => (
                     <tr key={i}>
                       {[row.name, row.type, row.size, row.date].map((val, j) => (
-                        <td key={j} style={{ background: '#fff', padding: '10px 12px', borderBottom: '1px solid #f0f4ff' }}>
+                        <td key={j} style={{ background: '#fff', padding: j === 0 ? '10px 12px 10px 16px' : '10px 12px', borderBottom: '1px solid #f0f4ff' }}>
                           <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>{val}</span>
                         </td>
                       ))}

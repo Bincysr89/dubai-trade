@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import ReactDOM from 'react-dom';
+import { ColumnFilter } from './ColumnFilter';
 
 const font = "'Dubai', sans-serif";
 
@@ -16,16 +16,17 @@ type HistoryRow = {
   requestType: string;
   transferorCode: string;
   transfereeCode: string;
+  broker: string;
   remarks: string;
   assignedDate: string;
   status: HistoryStatus;
 };
 
 const ROWS: HistoryRow[] = [
-  { requestDate: '24/02/24, 09:30', requestNo: '123456', requestType: 'Cancel',    transferorCode: 'AE-09876234-Dubai amm', transfereeCode: 'AE-09876234-Dubai amm', remarks: 'Lorum ipsum', assignedDate: '24/02/24, 09:30', status: 'Suspended' },
-  { requestDate: '24/02/24, 09:30', requestNo: '597897', requestType: 'Amendment', transferorCode: 'AE-09876234-Dubai amm', transfereeCode: 'AE-09876234-Dubai amm', remarks: 'Lorum ipsum', assignedDate: '24/02/24, 09:30', status: 'Cleared' },
-  { requestDate: '24/02/24, 09:30', requestNo: '748979', requestType: 'New',       transferorCode: 'AE-09876234-Dubai amm', transfereeCode: 'AE-09876234-Dubai amm', remarks: 'Lorum ipsum', assignedDate: '24/02/24, 09:30', status: 'Cleared' },
-  { requestDate: '24/02/24, 09:30', requestNo: '748979', requestType: 'New',       transferorCode: 'AE-09876234-Dubai amm', transfereeCode: 'AE-09876234-Dubai amm', remarks: 'Lorum ipsum', assignedDate: '24/02/24, 09:30', status: 'Suspended' },
+  { requestDate: '24/02/24, 09:30', requestNo: '123456', requestType: 'Cancel',    transferorCode: 'AE-09876234-Dubai amm', transfereeCode: 'AE-09876234-Dubai amm', broker: 'AE-1048909-Broker LLC', remarks: 'Lorum ipsum', assignedDate: '24/02/24, 09:30', status: 'Suspended' },
+  { requestDate: '24/02/24, 09:30', requestNo: '597897', requestType: 'Amendment', transferorCode: 'AE-09876234-Dubai amm', transfereeCode: 'AE-09876234-Dubai amm', broker: 'AE-1048909-Broker LLC', remarks: 'Lorum ipsum', assignedDate: '24/02/24, 09:30', status: 'Cleared' },
+  { requestDate: '24/02/24, 09:30', requestNo: '748979', requestType: 'New',       transferorCode: 'AE-09876234-Dubai amm', transfereeCode: 'AE-09876234-Dubai amm', broker: 'AE-1048909-Broker LLC', remarks: 'Lorum ipsum', assignedDate: '24/02/24, 09:30', status: 'Cleared' },
+  { requestDate: '24/02/24, 09:30', requestNo: '748979', requestType: 'New',       transferorCode: 'AE-09876234-Dubai amm', transfereeCode: 'AE-09876234-Dubai amm', broker: 'AE-1048909-Broker LLC', remarks: 'Lorum ipsum', assignedDate: '24/02/24, 09:30', status: 'Suspended' },
 ];
 
 type FlyoutItemId = 'viewRequest' | 'amend' | 'cancel' | 'suspensionResponse' | 'print' | 'suspensionHistory';
@@ -72,20 +73,13 @@ const FLYOUT_ITEMS: { id: FlyoutItemId; label: string; Icon: React.FC }[] = [
   { id: 'amend',              label: 'Amend',              Icon: EditIcon },
   { id: 'cancel',             label: 'Cancel',             Icon: CancelIcon },
   { id: 'suspensionResponse', label: 'Suspension Response',Icon: HistoryIcon },
-  { id: 'print',              label: 'Print Cargo Transfer', Icon: PrintIcon },
+  { id: 'print',              label: 'Print Declaration',  Icon: PrintIcon },
   { id: 'suspensionHistory',  label: 'Suspension History', Icon: HistoryIcon },
 ];
 
-function SortIcon() {
-  return (
-    <svg viewBox="0 0 10 14" width="9" height="12" fill="none" stroke="#8f94ae" strokeWidth="1.3" strokeLinecap="round">
-      <path d="M5 1v12M2 4l3-3 3 3M2 10l3 3 3-3" />
-    </svg>
-  );
-}
-
 type Props = {
   onBack: () => void;
+  onBackToListing?: () => void;
   onSuspensionHistory: () => void;
   onSuspensionResponse: () => void;
   onViewRequest?: () => void;
@@ -93,9 +87,8 @@ type Props = {
   onCancel?: () => void;
 };
 
-export default function CargoTransferHistoryPage({ onBack, onSuspensionHistory, onSuspensionResponse, onViewRequest, onAmend, onCancel }: Props) {
+export default function CargoTransferHistoryPage({ onBack, onBackToListing, onSuspensionHistory, onSuspensionResponse }: Props) {
   const [openFlyout, setOpenFlyout] = useState<number | null>(null);
-  const [flyoutPos, setFlyoutPos] = useState<{ top: number; right: number } | null>(null);
   const flyoutRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -107,120 +100,137 @@ export default function CargoTransferHistoryPage({ onBack, onSuspensionHistory, 
     return () => document.removeEventListener('mousedown', onDoc);
   }, [openFlyout]);
 
-  const handleOpenFlyout = (i: number, e: React.MouseEvent<HTMLButtonElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const flyoutHeight = FLYOUT_ITEMS.length * 42 + 8;
-    const top = rect.bottom + flyoutHeight > window.innerHeight
-      ? rect.top - flyoutHeight
-      : rect.top;
-    setFlyoutPos({ top, right: window.innerWidth - rect.left + 6 });
-    setOpenFlyout(openFlyout === i ? null : i);
-  };
-
   const headers: { label: string; w: number }[] = [
     { label: 'Request Date',          w: 140 },
     { label: 'Request No.',           w: 120 },
     { label: 'Request Type',          w: 120 },
     { label: 'Transferor Code & Name',w: 210 },
     { label: 'Transferee Code & Name',w: 210 },
+    { label: 'Broker',                w: 180 },
     { label: 'Remarks',               w: 180 },
     { label: 'Assigned Date',         w: 150 },
   ];
 
   return (
     <div className="flex flex-col h-full bg-[#f8fafd]">
-      {/* Header */}
-      <div className="px-4 sm:px-10 pt-[28px] pb-[20px] flex-shrink-0">
-        <h1 className="text-[32px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>
-          Cargo Transfer History
-        </h1>
+      {/* Breadcrumb + Title — sticky */}
+      <div className="flex-shrink-0 bg-[#f8fafd]">
+        {/* Breadcrumb */}
+        <div className="flex items-center justify-between px-4 sm:px-10 pt-[16px] pb-[8px] flex-wrap gap-[12px]">
+          <div className="flex items-center gap-[6px]">
+            <button
+              onClick={onBackToListing ?? onBack}
+              className="text-[16px] text-[#8f94ae] hover:underline"
+              style={{ fontFamily: font }}
+            >
+              Home
+            </button>
+            <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: font }}>/</span>
+            <span className="text-[16px] text-[#8f94ae]" style={{ fontFamily: font }}>Integrated Clearance</span>
+            <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: font }}>/</span>
+            <span className="text-[16px] text-[#8f94ae]" style={{ fontFamily: font }}>Cargo Transfer</span>
+            <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: font }}>/</span>
+            <span className="text-[16px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>Cargo Transfer History</span>
+          </div>
+          <div className="bg-[#e2ebf9] rounded-[4px] h-[28px] px-[12px] flex items-center">
+            <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>A180-IMPORTER SONY GULF UAE</span>
+          </div>
+        </div>
+
+        {/* Page title */}
+        <div className="px-4 sm:px-10 pt-[8px] pb-[20px]">
+          <h1 style={{ fontSize: 32, fontWeight: 500, color: '#0e1b3d', fontFamily: font }}>
+            Cargo Transfer History
+          </h1>
+        </div>
       </div>
 
-      {/* Table */}
+      {/* Scrollable table */}
       <div className="flex-1 overflow-auto px-4 sm:px-10 pb-[100px]">
         <div className="overflow-x-auto">
-          <table style={{ minWidth: 1400, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }} className="w-full">
+          <table style={{ minWidth: 1500, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }} className="w-full">
             <thead>
               <tr>
-                {headers.map((col) => (
-                  <th key={col.label} style={{ width: col.w, minWidth: col.w, background: '#a7c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500 }}>
-                    <div className="flex items-center gap-[4px]">
-                      <span className="text-[14px] text-[#000] whitespace-nowrap">{col.label}</span>
-                      <SortIcon />
-                    </div>
+                {headers.map((col, idx) => (
+                  <th
+                    key={col.label}
+                    style={{
+                      width: col.w,
+                      minWidth: col.w,
+                      background: '#a6c2e9',
+                      padding: '10px 8px',
+                      textAlign: 'left',
+                      fontWeight: 500,
+                      borderRadius: idx === 0 ? '8px 0 0 0' : undefined,
+                      paddingLeft: idx === 0 ? 16 : 8,
+                    }}
+                  >
+                    <ColumnFilter label={col.label} labelClass="text-[14px] font-medium text-[#051937]" />
                   </th>
                 ))}
                 {/* Sticky: Status */}
-                <th style={{ position: 'sticky', right: 66, width: 120, minWidth: 120, background: '#a7c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
-                  <div className="flex items-center gap-[4px]">
-                    <span className="text-[14px] text-[#455174] whitespace-nowrap">Status</span>
-                    <SortIcon />
-                  </div>
+                <th style={{ position: 'sticky', right: 66, width: 120, minWidth: 120, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
+                  <ColumnFilter label="Status" labelClass="text-[14px] font-medium text-[#051937]" />
                 </th>
                 {/* Sticky: Actions */}
-                <th style={{ position: 'sticky', right: 0, width: 66, minWidth: 66, background: '#a7c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, zIndex: 2 }}>
-                  <span className="text-[14px] text-[#455174]">Actions</span>
+                <th style={{ position: 'sticky', right: 0, width: 66, minWidth: 66, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, zIndex: 2, borderRadius: '0 8px 0 0' }}>
+                  <span className="text-[14px] text-[#051937]">Actions</span>
                 </th>
               </tr>
             </thead>
             <tbody>
               {ROWS.map((row, i) => {
                 const st = STATUS_STYLE[row.status];
-                const cell = (content: React.ReactNode, w: number) => (
-                  <td style={{ background: '#fff', padding: '0 8px', height: 54, verticalAlign: 'middle', width: w, borderBottom: '1px solid #f8f8f8' }}>{content}</td>
+                const cell = (content: React.ReactNode, w: number, extra?: React.CSSProperties) => (
+                  <td style={{ background: '#fff', padding: '0 8px', height: 54, verticalAlign: 'middle', width: w, borderBottom: '1px solid #f8f8f8', ...extra }}>{content}</td>
                 );
                 const txt = (v: string) => (
                   <span className="text-[14px] text-[#051937] whitespace-nowrap" style={{ fontFamily: font }}>{v}</span>
                 );
                 return (
                   <tr key={i}>
-                    {cell(txt(row.requestDate), 140)}
+                    {cell(txt(row.requestDate), 140, { paddingLeft: 16 })}
                     {cell(txt(row.requestNo), 120)}
                     {cell(txt(row.requestType), 120)}
                     {cell(txt(row.transferorCode), 210)}
                     {cell(txt(row.transfereeCode), 210)}
+                    {cell(txt(row.broker), 180)}
                     {cell(txt(row.remarks), 180)}
                     {cell(txt(row.assignedDate), 150)}
 
                     {/* Sticky: Status */}
-                    <td style={{ position: 'sticky', right: 66, background: '#fff', padding: '0 8px', height: 54, verticalAlign: 'middle', width: 120, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', borderBottom: '1px solid #f8f8f8', zIndex: 1 }}>
+                    <td style={{ position: 'sticky', right: 66, background: '#fff', padding: '0 8px', height: 54, verticalAlign: 'middle', width: 120, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', borderBottom: '1px solid #f8f8f8', zIndex: openFlyout === i ? 49 : 1 }}>
                       <span className="text-[14px] font-medium whitespace-nowrap inline-flex items-center justify-center" style={{ background: st.bg, color: st.color, padding: '4px 12px', borderRadius: 4, lineHeight: '20px', fontFamily: font }}>
                         {row.status}
                       </span>
                     </td>
 
                     {/* Sticky: Actions */}
-                    <td style={{ position: 'sticky', right: 0, background: '#fff', padding: '0 8px', height: 54, verticalAlign: 'middle', width: 66, textAlign: 'center', borderBottom: '1px solid #f8f8f8', zIndex: 1 }}>
-                      <div className="relative inline-block">
+                    <td style={{ position: 'sticky', right: 0, background: '#fff', padding: '0 8px', height: 54, verticalAlign: 'middle', width: 66, textAlign: 'center', borderBottom: '1px solid #f8f8f8', zIndex: openFlyout === i ? 50 : 1 }}>
+                      <div className="relative inline-block" ref={openFlyout === i ? flyoutRef : undefined}>
                         <button
                           className="size-[28px] inline-flex items-center justify-center rounded hover:bg-[#f0f4ff] transition-colors"
                           aria-label="More actions"
-                          onClick={(e) => handleOpenFlyout(i, e)}
+                          onClick={() => setOpenFlyout(openFlyout === i ? null : i)}
                         >
                           <svg viewBox="0 0 4 18" width="4" height="18" fill="#697498">
                             <circle cx="2" cy="2" r="2" /><circle cx="2" cy="9" r="2" /><circle cx="2" cy="16" r="2" />
                           </svg>
                         </button>
 
-                        {openFlyout === i && flyoutPos && ReactDOM.createPortal(
+                        {openFlyout === i && (
                           <div
-                            ref={flyoutRef}
-                            className="bg-white rounded-[8px] py-[4px] overflow-hidden"
-                            style={{ position: 'fixed', top: flyoutPos.top, right: flyoutPos.right, width: 210, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5', zIndex: 99999 }}
+                            className="absolute z-[100] bg-white rounded-[8px] py-[4px] overflow-hidden"
+                            style={{ right: '100%', top: 0, marginRight: 6, width: 210, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}
                           >
                             {FLYOUT_ITEMS.map((item) => (
                               <button
                                 key={item.id}
                                 className="group flex items-center gap-[10px] w-full px-[14px] h-[42px] text-left hover:bg-[#f4f7fd] transition-colors"
-                                style={item.id === 'viewRequest' ? { background: '#fff' } : undefined}
                                 onClick={() => {
                                   setOpenFlyout(null);
-                                  if (item.id === 'viewRequest')        onViewRequest?.();
-                                  if (item.id === 'amend')              onAmend?.();
-                                  if (item.id === 'cancel')             onCancel?.();
                                   if (item.id === 'suspensionHistory')  onSuspensionHistory();
                                   if (item.id === 'suspensionResponse') onSuspensionResponse();
-                                  if (item.id === 'print')              window.print();
                                 }}
                               >
                                 <span className="text-[#697498] flex-shrink-0 inline-flex items-center justify-center">
@@ -232,7 +242,7 @@ export default function CargoTransferHistoryPage({ onBack, onSuspensionHistory, 
                               </button>
                             ))}
                           </div>
-                        , document.body)}
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -243,8 +253,8 @@ export default function CargoTransferHistoryPage({ onBack, onSuspensionHistory, 
         </div>
       </div>
 
-      {/* Bottom navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white z-10" style={{ boxShadow: '0px -4px 12px rgba(0,0,0,0.08)', height: 88 }}>
+      {/* Bottom navigation — sticky */}
+      <div className="bg-white flex-shrink-0" style={{ boxShadow: '0px -4px 12px rgba(0,0,0,0.08)', height: 88 }}>
         <div className="h-full flex items-center px-[40px]">
           <button
             onClick={onBack}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { ColumnFilter } from './ColumnFilter';
 
 const font = "'Dubai', sans-serif";
 
@@ -15,20 +16,13 @@ const ROWS: SuspRow[] = [
   { suspensionDate: '24/02/24, 09:30', cdmComments: 'Charges Paid',                     responseDate: '24/02/24, 09:30', customerResponse: 'Charges Paid' },
 ];
 
-function SortIcon() {
-  return (
-    <svg viewBox="0 0 10 14" width="9" height="12" fill="none" stroke="#8f94ae" strokeWidth="1.3" strokeLinecap="round">
-      <path d="M5 1v12M2 4l3-3 3 3M2 10l3 3 3-3" />
-    </svg>
-  );
-}
-
 type Props = {
   onBack: () => void;
+  onBackToListing?: () => void;
   onView: () => void;
 };
 
-export default function SuspensionHistoryPage({ onBack, onView }: Props) {
+export default function SuspensionHistoryPage({ onBack, onBackToListing, onView }: Props) {
   const headers: { label: string; w: number }[] = [
     { label: 'Suspension Date',   w: 160 },
     { label: 'CDM Comments',      w: 352 },
@@ -38,47 +32,81 @@ export default function SuspensionHistoryPage({ onBack, onView }: Props) {
 
   return (
     <div className="flex flex-col h-full bg-[#f8fafd]">
-      {/* Header */}
-      <div className="px-4 sm:px-10 pt-[28px] pb-[20px] flex-shrink-0">
-        <h1 className="text-[28px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>
-          Suspension History
-        </h1>
+      {/* Breadcrumb + Title — sticky */}
+      <div className="flex-shrink-0 bg-[#f8fafd]">
+        {/* Breadcrumb */}
+        <div className="flex items-center justify-between px-4 sm:px-10 pt-[16px] pb-[8px] flex-wrap gap-[12px]">
+          <div className="flex items-center gap-[6px]">
+            <button
+              onClick={onBackToListing ?? onBack}
+              className="text-[16px] text-[#8f94ae] hover:underline"
+              style={{ fontFamily: font }}
+            >
+              Home
+            </button>
+            <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: font }}>/</span>
+            <span className="text-[16px] text-[#8f94ae]" style={{ fontFamily: font }}>Integrated Clearance</span>
+            <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: font }}>/</span>
+            <span className="text-[16px] text-[#8f94ae]" style={{ fontFamily: font }}>Cargo Transfer</span>
+            <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: font }}>/</span>
+            <span className="text-[16px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>Suspension History</span>
+          </div>
+          <div className="bg-[#e2ebf9] rounded-[4px] h-[28px] px-[12px] flex items-center">
+            <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>A180-IMPORTER SONY GULF UAE</span>
+          </div>
+        </div>
+
+        {/* Page title */}
+        <div className="px-4 sm:px-10 pt-[8px] pb-[20px]">
+          <h1 style={{ fontSize: 32, fontWeight: 500, color: '#0e1b3d', fontFamily: font }}>
+            Suspension History
+          </h1>
+        </div>
       </div>
 
-      {/* Table */}
+      {/* Scrollable table */}
       <div className="flex-1 overflow-auto px-4 sm:px-10 pb-[100px]">
         <div className="overflow-x-auto">
           <table style={{ minWidth: 1100, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }} className="w-full">
             <thead>
               <tr>
-                {headers.map((col) => (
-                  <th key={col.label} style={{ width: col.w, minWidth: col.w, background: '#a7c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500 }}>
-                    <div className="flex items-center gap-[8px]">
-                      <span className="text-[12px] font-semibold text-[#051937] whitespace-nowrap" style={{ letterSpacing: '0.06px' }}>{col.label}</span>
-                      <SortIcon />
-                    </div>
+                {headers.map((col, idx) => (
+                  <th
+                    key={col.label}
+                    style={{
+                      width: col.w,
+                      minWidth: col.w,
+                      background: '#a6c2e9',
+                      padding: '10px 8px',
+                      textAlign: 'left',
+                      fontWeight: 500,
+                      borderRadius: idx === 0 ? '8px 0 0 0' : undefined,
+                      paddingLeft: idx === 0 ? 16 : 8,
+                    }}
+                  >
+                    <ColumnFilter label={col.label} />
                   </th>
                 ))}
-                <th style={{ width: 210, minWidth: 210, background: '#a7c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500 }}>
-                  <span className="text-[12px] font-semibold text-[#051937]">Action</span>
+                <th style={{ width: 210, minWidth: 210, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, borderRadius: '0 8px 0 0' }}>
+                  <span className="text-[14px] font-medium text-[#051937]">Action</span>
                 </th>
               </tr>
             </thead>
             <tbody>
               {ROWS.map((row, i) => {
-                const cell = (content: React.ReactNode, w: number) => (
-                  <td style={{ background: '#fff', padding: '0 8px', height: 54, verticalAlign: 'middle', width: w, borderBottom: '1px solid #f8f8f8' }}>{content}</td>
+                const cell = (content: React.ReactNode, w: number, extra?: React.CSSProperties) => (
+                  <td style={{ background: '#fff', padding: '0 8px', height: 54, verticalAlign: 'middle', width: w, borderBottom: '1px solid #f8f8f8', ...extra }}>{content}</td>
                 );
                 return (
                   <tr key={i}>
-                    {cell(<span className="text-[14px] text-[#051937] whitespace-nowrap">{row.suspensionDate}</span>, 160)}
-                    {cell(<span className="text-[12px] font-medium text-[#051937] whitespace-nowrap">{row.cdmComments}</span>, 352)}
-                    {cell(<span className="text-[14px] text-[#051937] whitespace-nowrap">{row.responseDate}</span>, 200)}
-                    {cell(<span className="text-[12px] font-medium text-[#051937] whitespace-nowrap">{row.customerResponse}</span>, 362)}
+                    {cell(<span className="text-[16px] text-[#051937] whitespace-nowrap">{row.suspensionDate}</span>, 160, { paddingLeft: 16 })}
+                    {cell(<span className="text-[16px] text-[#051937] whitespace-nowrap">{row.cdmComments}</span>, 352)}
+                    {cell(<span className="text-[16px] text-[#051937] whitespace-nowrap">{row.responseDate}</span>, 200)}
+                    {cell(<span className="text-[16px] text-[#051937] whitespace-nowrap">{row.customerResponse}</span>, 362)}
                     <td style={{ background: '#fff', padding: '0 8px', height: 54, verticalAlign: 'middle', width: 210, borderBottom: '1px solid #f8f8f8' }}>
                       <button
                         onClick={onView}
-                        className="text-[14px] font-medium underline"
+                        className="text-[16px] underline"
                         style={{ color: '#1360d2', fontFamily: font, letterSpacing: '0.07px' }}
                       >
                         View
@@ -92,8 +120,8 @@ export default function SuspensionHistoryPage({ onBack, onView }: Props) {
         </div>
       </div>
 
-      {/* Bottom navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white z-10" style={{ boxShadow: '0px -4px 12px rgba(0,0,0,0.08)', height: 88 }}>
+      {/* Bottom navigation — sticky */}
+      <div className="bg-white flex-shrink-0" style={{ boxShadow: '0px -4px 12px rgba(0,0,0,0.08)', height: 88 }}>
         <div className="h-full flex items-center px-[40px]">
           <button
             onClick={onBack}

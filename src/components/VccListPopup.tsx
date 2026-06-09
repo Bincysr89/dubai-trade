@@ -63,7 +63,7 @@ export default function VccListPopup({ row, onClose }: Props) {
           <div className="border border-[#eef1f6] rounded-[8px] overflow-x-auto">
             <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 980 }}>
               <thead>
-                <tr style={{ background: '#a7c2e9' }}>
+                <tr style={{ background: '#a6c2e9' }}>
                   {['VCC No.', 'Chassis No.', 'Engine No.', 'Brand', 'Make', 'Year', 'VCC Date', 'Status', 'Action'].map((h) => (
                     <th key={h} className="text-left text-[16px] text-[#000]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap', textAlign: h === 'Action' ? 'center' : 'left' }}>{h}</th>
                   ))}

@@ -21,7 +21,7 @@ const Field = ({ k, v }: { k: string; v: React.ReactNode }) => (
 );
 
 const Th = ({ children }: { children: React.ReactNode }) => (
-  <th className="text-left text-[16px] text-[#455174]" style={{ padding: '10px 12px', fontWeight: 500, whiteSpace: 'nowrap', background: '#a7c2e9' }}>{children}</th>
+  <th className="text-left text-[16px] text-[#455174]" style={{ padding: '10px 12px', fontWeight: 500, whiteSpace: 'nowrap', background: '#a6c2e9' }}>{children}</th>
 );
 const Td = ({ children }: { children: React.ReactNode }) => (
   <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{children}</td>

@@ -183,7 +183,7 @@ export default function CargoTransferPaymentReviewPage({ onBack, onSubmit, onSav
                   <thead>
                     <tr>
                       {['Charge', 'Old Amount', 'New Amount'].map(col => (
-                        <th key={col} style={{ background: '#a7c2e9', padding: '12px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#000', fontFamily: font }}>{col}</th>
+                        <th key={col} style={{ background: '#a6c2e9', padding: '12px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#000', fontFamily: font }}>{col}</th>
                       ))}
                     </tr>
                   </thead>
@@ -222,7 +222,7 @@ export default function CargoTransferPaymentReviewPage({ onBack, onSubmit, onSav
               /* Create / Cancel mode — payment mode/reference table */
               <div className="bg-white rounded-[8px] overflow-hidden" style={{ border: '1px solid #c4d8f5', boxShadow: '0px 2px 8px rgba(0,0,0,0.07)' }}>
                 {/* Header row */}
-                <div className="flex" style={{ background: '#a7c2e9' }}>
+                <div className="flex" style={{ background: '#a6c2e9' }}>
                   <div className="h-[44px] flex items-center pl-[20px]" style={{ flex: '0 0 50%' }}>
                     <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 500 }}>Charges</span>
                   </div>
