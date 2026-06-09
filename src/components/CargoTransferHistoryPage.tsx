@@ -165,16 +165,16 @@ export default function CargoTransferHistoryPage({ onBack, onBackToListing, onSu
                       paddingLeft: idx === 0 ? 16 : 8,
                     }}
                   >
-                    <ColumnFilter label={col.label} labelClass="text-[14px] font-medium text-[#051937]" />
+                    <ColumnFilter label={col.label} labelClass="text-[16px] font-medium text-[#051937]" />
                   </th>
                 ))}
                 {/* Sticky: Status */}
                 <th style={{ position: 'sticky', right: 66, width: 120, minWidth: 120, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
-                  <ColumnFilter label="Status" labelClass="text-[14px] font-medium text-[#051937]" />
+                  <ColumnFilter label="Status" labelClass="text-[16px] font-medium text-[#051937]" />
                 </th>
                 {/* Sticky: Actions */}
                 <th style={{ position: 'sticky', right: 0, width: 66, minWidth: 66, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, zIndex: 2, borderRadius: '0 8px 0 0' }}>
-                  <span className="text-[14px] text-[#051937]">Actions</span>
+                  <span className="text-[16px] text-[#051937]">Actions</span>
                 </th>
               </tr>
             </thead>
@@ -185,7 +185,7 @@ export default function CargoTransferHistoryPage({ onBack, onBackToListing, onSu
                   <td style={{ background: '#fff', padding: '0 8px', height: 54, verticalAlign: 'middle', width: w, borderBottom: '1px solid #f8f8f8', ...extra }}>{content}</td>
                 );
                 const txt = (v: string) => (
-                  <span className="text-[14px] text-[#051937] whitespace-nowrap" style={{ fontFamily: font }}>{v}</span>
+                  <span className="text-[16px] text-[#051937] whitespace-nowrap" style={{ fontFamily: font }}>{v}</span>
                 );
                 return (
                   <tr key={i}>
@@ -200,7 +200,7 @@ export default function CargoTransferHistoryPage({ onBack, onBackToListing, onSu
 
                     {/* Sticky: Status */}
                     <td style={{ position: 'sticky', right: 66, background: '#fff', padding: '0 8px', height: 54, verticalAlign: 'middle', width: 120, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', borderBottom: '1px solid #f8f8f8', zIndex: openFlyout === i ? 49 : 1 }}>
-                      <span className="text-[14px] font-medium whitespace-nowrap inline-flex items-center justify-center" style={{ background: st.bg, color: st.color, padding: '4px 12px', borderRadius: 4, lineHeight: '20px', fontFamily: font }}>
+                      <span className="text-[16px] font-medium whitespace-nowrap inline-flex items-center justify-center" style={{ background: st.bg, color: st.color, padding: '4px 12px', borderRadius: 4, lineHeight: '20px', fontFamily: font }}>
                         {row.status}
                       </span>
                     </td>
@@ -226,17 +226,17 @@ export default function CargoTransferHistoryPage({ onBack, onBackToListing, onSu
                             {FLYOUT_ITEMS.map((item) => (
                               <button
                                 key={item.id}
-                                className="group flex items-center gap-[10px] w-full px-[14px] h-[42px] text-left hover:bg-[#f4f7fd] transition-colors"
+                                className="group flex items-center gap-[10px] w-full px-[14px] h-[42px] text-left hover:bg-[#1360d2] transition-colors"
                                 onClick={() => {
                                   setOpenFlyout(null);
                                   if (item.id === 'suspensionHistory')  onSuspensionHistory();
                                   if (item.id === 'suspensionResponse') onSuspensionResponse();
                                 }}
                               >
-                                <span className="text-[#697498] flex-shrink-0 inline-flex items-center justify-center">
+                                <span className="text-[#7a7a7a] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
                                   <item.Icon />
                                 </span>
-                                <span className="text-[16px] text-[#111838] leading-[20px] whitespace-nowrap" style={{ fontFamily: font }}>
+                                <span className="text-[16px] text-[#111838] group-hover:text-white leading-[20px] whitespace-nowrap" style={{ fontFamily: font }}>
                                   {item.label}
                                 </span>
                               </button>

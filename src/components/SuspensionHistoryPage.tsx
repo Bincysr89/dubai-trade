@@ -84,11 +84,11 @@ export default function SuspensionHistoryPage({ onBack, onBackToListing, onView 
                       paddingLeft: idx === 0 ? 16 : 8,
                     }}
                   >
-                    <ColumnFilter label={col.label} />
+                    <ColumnFilter label={col.label} labelClass="text-[16px] font-medium text-[#051937]" />
                   </th>
                 ))}
                 <th style={{ width: 210, minWidth: 210, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, borderRadius: '0 8px 0 0' }}>
-                  <span className="text-[14px] font-medium text-[#051937]">Action</span>
+                  <span className="text-[16px] font-medium text-[#051937]">Action</span>
                 </th>
               </tr>
             </thead>

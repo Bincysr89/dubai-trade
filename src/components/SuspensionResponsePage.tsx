@@ -193,11 +193,11 @@ export default function SuspensionResponsePage({ onBack, onBackToListing, onSubm
                       { label: 'Uploaded on',    w: 312 },
                     ].map((col) => (
                       <th key={col.label} style={{ width: col.w, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left' }}>
-                        <ColumnFilter label={col.label} />
+                        <ColumnFilter label={col.label} labelClass="text-[16px] font-medium text-[#051937]" />
                       </th>
                     ))}
                     <th style={{ width: 169, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', borderRadius: '0 8px 0 0' }}>
-                      <span className="text-[14px] text-[#051937] font-medium">Action</span>
+                      <span className="text-[16px] text-[#051937] font-medium">Action</span>
                     </th>
                   </tr>
                 </thead>

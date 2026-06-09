@@ -267,8 +267,7 @@ export default function CargoTransferTable({ showDrafts = false, onViewRequest, 
                         {FLYOUT_ITEMS.map((item) => (
                           <button
                             key={item.id}
-                            className="group flex items-center gap-[10px] w-full px-[14px] h-[42px] text-left hover:bg-[#f4f7fd] transition-colors"
-                            style={item.id === 'view' ? { background: '#fff' } : undefined}
+                            className="group flex items-center gap-[10px] w-full px-[14px] h-[42px] text-left hover:bg-[#1360d2] transition-colors"
                             onClick={() => {
                               setOpenFlyout(null);
                               if (item.id === 'view')               onViewRequest?.();
@@ -279,10 +278,10 @@ export default function CargoTransferTable({ showDrafts = false, onViewRequest, 
                               if (item.id === 'suspensionResponse') onSuspensionResponse?.();
                             }}
                           >
-                            <span className="text-[#697498] flex-shrink-0 inline-flex items-center justify-center">
+                            <span className="text-[#7a7a7a] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
                               <item.Icon />
                             </span>
-                            <span className="text-[16px] text-[#111838] leading-[20px] whitespace-nowrap" style={{ fontFamily: font }}>
+                            <span className="text-[16px] text-[#111838] group-hover:text-white leading-[20px] whitespace-nowrap" style={{ fontFamily: font }}>
                               {item.label}
                             </span>
                           </button>
