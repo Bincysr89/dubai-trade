@@ -715,9 +715,9 @@ function Field({ label, value, wide }: { label: string; value: string; wide?: bo
       className="flex flex-col gap-[2px] min-w-0 first:pl-0 [&:not(:first-child)]:pl-[28px]"
       style={wide ? { flex: '1 1 280px' } : { flex: '0 0 auto' }}
     >
-      <span className="text-[14px] text-[#697498] whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>{label}</span>
+      <span className="text-[16px] text-[#697498] whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>{label}</span>
       <span
-        className="text-[15px] text-[#111838]"
+        className="text-[16px] text-[#111838]"
         style={{
           fontFamily: "'Dubai', sans-serif",
           fontWeight: 600,
