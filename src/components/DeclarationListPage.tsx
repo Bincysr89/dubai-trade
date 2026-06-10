@@ -806,22 +806,22 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
 
         {/* Controls row */}
         {/* ══ Controls: single row at ≥1500px, two rows below ══ */}
-        <div className="flex flex-col w1500:flex-row w1500:items-center gap-[10px] mb-[12px]">
+        <div className="flex flex-col min-[1500px]:flex-row min-[1500px]:items-center gap-[10px] mb-[12px]">
 
           {/* ── Left group: Advance Filters + Search + Status ── */}
-          <div className="flex items-center gap-[10px] w1500:flex-1 min-w-0">
+          <div className="flex items-center gap-[10px] min-[1500px]:flex-1 min-w-0">
 
           {/* Advance Filters — icon-only below 1500px, text+icon at 1500px+ */}
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-[8px] h-[48px] px-[12px] w1500:px-[16px] rounded-[4px] border text-[16px] transition-colors flex-shrink-0 ${
+            className={`flex items-center gap-[8px] h-[48px] px-[12px] min-[1500px]:px-[16px] rounded-[4px] border text-[16px] transition-colors flex-shrink-0 ${
               showFilters
                 ? 'bg-[#e2ebf9] border-[#1360d2] text-[#1360d2]'
                 : 'bg-white border-[#d4dcfa] text-[#000000]'
             }`}
             style={{ fontFamily: "'Dubai', sans-serif" }}
           >
-            <span className="hidden w1500:inline">Advance Filters</span>
+            <span className="hidden min-[1500px]:inline">Advance Filters</span>
             <svg viewBox="0 0 24 24" className="size-[20px]" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M3 6h18M7 12h10M11 18h2" strokeLinecap="round" />
             </svg>
@@ -948,7 +948,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           </div>{/* end left group */}
 
           {/* ── Right group: Need Help + Reports + CT Release + Create ── */}
-          <div className="flex items-center gap-[10px] justify-end w1500:justify-start w1500:flex-shrink-0 flex-wrap">
+          <div className="flex items-center gap-[10px] justify-end min-[1500px]:justify-start min-[1500px]:flex-shrink-0 flex-wrap">
             {/* Need Help */}
             <button className="flex items-center gap-[4px] h-[48px] px-[2px] flex-shrink-0">
               <span className="text-[16px] text-[#2950e5] font-medium" style={{ fontFamily: "'Dubai', sans-serif" }}>Need Help</span>
