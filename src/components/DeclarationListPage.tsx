@@ -32,6 +32,7 @@ import CargoTransferStepperPage from './CargoTransferStepperPage';
 import CargoTransferPaymentReviewPage from './CargoTransferPaymentReviewPage';
 import CargoTransferViewPage from './CargoTransferViewPage';
 import CargoTransferCancelFlow from './CargoTransferCancelFlow';
+import CargoTransferReceiptReleasePage from './CargoTransferReceiptReleasePage';
 import CargoTransferHistoryPage from './CargoTransferHistoryPage';
 import SuspensionHistoryPage from './SuspensionHistoryPage';
 import SuspensionHistoryViewPage from './SuspensionHistoryViewPage';
@@ -161,7 +162,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
   const [vccListPopupRow, setVccListPopupRow] = useState<VccRow | null>(null);
   const [recheckModalOpen, setRecheckModalOpen] = useState(false);
   const [vccDeclNo, setVccDeclNo] = useState<string>('');
-  const [cargoStep, setCargoStep] = useState<'list' | 'pre' | 'create' | 'amend' | 'success' | 'amendSuccess' | 'document' | 'stepper' | 'paymentReview' | 'viewRequest' | 'cancel' | 'cargoHistory' | 'suspensionHistory' | 'suspensionHistoryView' | 'suspensionResponse'>('list');
+  const [cargoStep, setCargoStep] = useState<'list' | 'pre' | 'create' | 'amend' | 'success' | 'amendSuccess' | 'document' | 'stepper' | 'paymentReview' | 'viewRequest' | 'cancel' | 'cargoHistory' | 'suspensionHistory' | 'suspensionHistoryView' | 'suspensionResponse' | 'receiptRelease'>('list');
   const [showSuspensionSuccess, setShowSuspensionSuccess] = useState(false);
   const [suspensionHistoryFrom, setSuspensionHistoryFrom] = useState<'list' | 'cargoHistory'>('list');
   const [cargoFlowMode, setCargoFlowMode] = useState<'create' | 'amend'>('create');
@@ -507,6 +508,11 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               onBack={() => setCargoStep('list')}
               onBackToListing={() => setCargoStep('list')}
               onSubmit={() => setShowSuspensionSuccess(true)}
+            />
+          )}
+          {cargoStep === 'receiptRelease' && (
+            <CargoTransferReceiptReleasePage
+              onBack={() => setCargoStep('list')}
             />
           )}
           {showSuspensionSuccess && (
@@ -951,6 +957,17 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                 <path d="M6 9l6 6 6-6" />
               </svg>
             </div>
+
+            {/* CT Release / Receipt button — Cargo Transfer only */}
+            {activeMenu === 'Cargo Transfer' && (
+              <button
+                onClick={() => setCargoStep('receiptRelease')}
+                className="h-[48px] px-[22px] rounded-[4px] text-[16px] flex-shrink-0 border border-[#1360d2] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors"
+                style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}
+              >
+                CT Release / Receipt
+              </button>
+            )}
 
             {/* Start Journey / Create New Request / Accept */}
             {(() => {
