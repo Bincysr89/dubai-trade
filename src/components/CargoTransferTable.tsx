@@ -59,17 +59,36 @@ function PrintIcon() {
     </svg>
   );
 }
+function ReceiptIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 2h12v16l-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5-2 1.5V2z" />
+      <path d="M7 7h6M7 10h6M7 13h4" />
+    </svg>
+  );
+}
+function ReleaseIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="9" width="14" height="9" rx="1.5" />
+      <path d="M7 9V6a3 3 0 0 1 6 0" />
+      <circle cx="10" cy="14" r="1.5" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
 
-type FlyoutItemId = 'view' | 'amend' | 'cancel' | 'history' | 'suspensionResponse' | 'suspensionHistory' | 'print';
+type FlyoutItemId = 'view' | 'amend' | 'cancel' | 'history' | 'suspensionResponse' | 'suspensionHistory' | 'print' | 'receipt' | 'release';
 
 const FLYOUT_ITEMS: { id: FlyoutItemId; label: string; Icon: React.FC }[] = [
-  { id: 'view',               label: 'View Request',           Icon: EyeIcon },
-  { id: 'amend',              label: 'Amend',                  Icon: EditIcon },
-  { id: 'cancel',             label: 'Cancel',                 Icon: CancelIcon },
-  { id: 'history',            label: 'Cargo Transfer History', Icon: HistoryIcon },
-  { id: 'suspensionResponse', label: 'Suspension Response',    Icon: HistoryIcon },
-  { id: 'suspensionHistory',  label: 'Suspension History',     Icon: HistoryIcon },
-  { id: 'print',              label: 'Print Cargo Transfer',   Icon: PrintIcon },
+  { id: 'view',               label: 'View Request',              Icon: EyeIcon },
+  { id: 'amend',              label: 'Amend',                     Icon: EditIcon },
+  { id: 'cancel',             label: 'Cancel',                    Icon: CancelIcon },
+  { id: 'history',            label: 'Cargo Transfer History',    Icon: HistoryIcon },
+  { id: 'suspensionResponse', label: 'Suspension Response',       Icon: HistoryIcon },
+  { id: 'suspensionHistory',  label: 'Suspension History',        Icon: HistoryIcon },
+  { id: 'print',              label: 'Print Cargo Transfer',      Icon: PrintIcon },
+  { id: 'receipt',            label: 'Cargo Transfer Receipt',    Icon: ReceiptIcon },
+  { id: 'release',            label: 'Cargo Transfer Release',    Icon: ReleaseIcon },
 ];
 
 // ── Row data ──────────────────────────────────────────────────────────────────
@@ -121,9 +140,11 @@ type Props = {
   onCargoHistory?: () => void;
   onSuspensionHistory?: () => void;
   onSuspensionResponse?: () => void;
+  onReceipt?: () => void;
+  onRelease?: () => void;
 };
 
-export default function CargoTransferTable({ showDrafts = false, onViewRequest, onAmend, onCancel, onCargoHistory, onSuspensionHistory, onSuspensionResponse }: Props) {
+export default function CargoTransferTable({ showDrafts = false, onViewRequest, onAmend, onCancel, onCargoHistory, onSuspensionHistory, onSuspensionResponse, onReceipt, onRelease }: Props) {
   const [openFlyout, setOpenFlyout] = useState<number | null>(null);
   const flyoutRef = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState(1);
@@ -276,6 +297,8 @@ export default function CargoTransferTable({ showDrafts = false, onViewRequest, 
                               if (item.id === 'history')            onCargoHistory?.();
                               if (item.id === 'suspensionHistory')  onSuspensionHistory?.();
                               if (item.id === 'suspensionResponse') onSuspensionResponse?.();
+                              if (item.id === 'receipt')            onReceipt?.();
+                              if (item.id === 'release')            onRelease?.();
                             }}
                           >
                             <span className="text-[#7a7a7a] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
