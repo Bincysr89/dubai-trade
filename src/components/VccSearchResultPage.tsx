@@ -139,7 +139,7 @@ export default function VccSearchResultPage({ onBack, onSubmit, initialSelected,
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full">
       {/* Breadcrumb + agent badge */}
-      <div className="flex items-start justify-between px-4 sm:px-10 pt-[24px] pb-[8px] flex-wrap gap-[12px]">
+      <div className="flex items-start justify-between px-4 sm:px-10 pt-[24px] pb-[8px] flex-wrap gap-[12px] flex-shrink-0">
         <div className="flex items-center gap-[6px]">
           <span className="text-[16px] text-[#8f94ae]" style={{ fontFamily: "'Dubai', sans-serif" }}>Home</span>
           <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: "'Dubai', sans-serif" }}>/</span>
@@ -152,28 +152,27 @@ export default function VccSearchResultPage({ onBack, onSubmit, initialSelected,
         </div>
       </div>
 
-      <h1 className="px-4 sm:px-10 pt-[8px] text-2xl sm:text-3xl lg:text-[32px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
-        {mode === 'amend' ? 'Amend VCC Request' : 'Request VCC'}
-      </h1>
-      {mode === 'amend' && (
-        <div className="px-4 sm:px-10 pt-[8px]">
-          <div className="bg-[#e2ebf9] border border-[#b7cff3] rounded-[6px] px-[16px] py-[10px] flex items-start gap-[10px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
-            <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="#1360d2" strokeWidth="1.7" className="flex-shrink-0 mt-[2px]">
-              <circle cx="10" cy="10" r="8" />
-              <path d="M10 6v5M10 14h.01" strokeLinecap="round" />
-            </svg>
-            <div>
-              <p className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>
-                You are amending request <strong>25345</strong>. The originally selected vehicles are pre-checked below.
-              </p>
-              <p className="text-[16px] text-[#455174] mt-[2px]">Add more vehicles or uncheck any to remove them, then click <strong>Submit Amendment</strong>.</p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Body — single column on select step; selection list + payment summary stacked on payment step */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
+        <h1 className="px-4 sm:px-10 pt-[8px] text-2xl sm:text-3xl lg:text-[32px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
+          {mode === 'amend' ? 'Amend VCC Request' : 'Request VCC'}
+        </h1>
+        {mode === 'amend' && (
+          <div className="px-4 sm:px-10 pt-[8px]">
+            <div className="bg-[#e2ebf9] border border-[#b7cff3] rounded-[6px] px-[16px] py-[10px] flex items-start gap-[10px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
+              <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="#1360d2" strokeWidth="1.7" className="flex-shrink-0 mt-[2px]">
+                <circle cx="10" cy="10" r="8" />
+                <path d="M10 6v5M10 14h.01" strokeLinecap="round" />
+              </svg>
+              <div>
+                <p className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>
+                  You are amending request <strong>25345</strong>. The originally selected vehicles are pre-checked below.
+                </p>
+                <p className="text-[16px] text-[#455174] mt-[2px]">Add more vehicles or uncheck any to remove them, then click <strong>Submit Amendment</strong>.</p>
+              </div>
+            </div>
+          </div>
+        )}
         <div className={step === 'payment' ? 'grid gap-[24px] items-start grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px]' : 'flex flex-col'}>
           {/* LEFT */}
           <div className="flex flex-col gap-[24px] min-w-0">

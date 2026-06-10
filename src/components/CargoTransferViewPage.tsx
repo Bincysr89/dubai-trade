@@ -91,39 +91,38 @@ export default function CargoTransferViewPage({ onBack, transferNumber = '', onR
         </div>
       </div>
 
-      {/* Title */}
-      <div className="px-4 sm:px-10 pt-[8px] pb-[20px] flex items-center justify-between flex-shrink-0">
-        <h1 className="text-[32px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>
-          Cargo Transfer <span style={{ color: '#455174', fontWeight: 400, fontSize: 24 }}>(Version 1)</span>
-        </h1>
-        <div className="flex items-center gap-[12px]">
-          <button
-            onClick={() => onRefresh ? onRefresh() : undefined}
-            className="h-[36px] px-[20px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors flex items-center gap-[6px]"
-            style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
-          >
-            <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M17 1v5h-5" /><path d="M3 10a7 7 0 0 1 12.5-4.3L17 6" />
-              <path d="M3 19v-5h5" /><path d="M17 10a7 7 0 0 1-12.5 4.3L3 14" />
-            </svg>
-            Refresh
-          </button>
-          <button
-            onClick={() => window.print()}
-            className="h-[36px] px-[20px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors flex items-center gap-[6px]"
-            style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
-          >
-            <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 7V2h10v5" /><rect x="2" y="7" width="16" height="8" rx="1" /><path d="M5 15v3h10v-3" />
-              <circle cx="15" cy="11" r="1" fill="currentColor" />
-            </svg>
-            Print Cargo Transfer
-          </button>
-        </div>
-      </div>
-
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 pb-[32px]">
+        {/* Title */}
+        <div className="px-4 sm:px-10 pt-[8px] pb-[20px] flex items-center justify-between">
+          <h1 className="text-[32px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>
+            Cargo Transfer <span style={{ color: '#455174', fontWeight: 400, fontSize: 24 }}>(Version 1)</span>
+          </h1>
+          <div className="flex items-center gap-[12px]">
+            <button
+              onClick={() => onRefresh ? onRefresh() : undefined}
+              className="h-[36px] px-[20px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors flex items-center gap-[6px]"
+              style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
+            >
+              <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 1v5h-5" /><path d="M3 10a7 7 0 0 1 12.5-4.3L17 6" />
+                <path d="M3 19v-5h5" /><path d="M17 10a7 7 0 0 1-12.5 4.3L3 14" />
+              </svg>
+              Refresh
+            </button>
+            <button
+              onClick={() => window.print()}
+              className="h-[36px] px-[20px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors flex items-center gap-[6px]"
+              style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
+            >
+              <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 7V2h10v5" /><rect x="2" y="7" width="16" height="8" rx="1" /><path d="M5 15v3h10v-3" />
+                <circle cx="15" cy="11" r="1" fill="currentColor" />
+              </svg>
+              Print Cargo Transfer
+            </button>
+          </div>
+        </div>
         <div className="flex flex-col gap-[24px]">
 
           {/* GENERAL INFORMATION */}

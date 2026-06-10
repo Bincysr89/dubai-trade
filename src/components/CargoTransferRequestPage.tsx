@@ -715,7 +715,7 @@ export default function CargoTransferRequestPage({ onBack, onSubmit, mode = 'cre
 
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full">
-      <div className="flex items-start justify-between px-4 sm:px-10 pt-[24px] pb-[8px] flex-wrap gap-[12px]">
+      <div className="flex items-start justify-between px-4 sm:px-10 pt-[24px] pb-[8px] flex-wrap gap-[12px] flex-shrink-0">
         <div className="flex items-center gap-[6px]">
           <span className="text-[16px] text-[#8f94ae]" style={{ fontFamily: "'Dubai', sans-serif" }}>Home</span>
           <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: "'Dubai', sans-serif" }}>/</span>
@@ -728,15 +728,14 @@ export default function CargoTransferRequestPage({ onBack, onSubmit, mode = 'cre
         </div>
       </div>
 
-      <h1 className="px-4 sm:px-10 pt-[8px] text-2xl sm:text-3xl lg:text-[32px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
-        {mode === 'amend' ? 'Amend Cargo Transfer Request' : 'New Cargo Transfer Request'}
-      </h1>
-
-      <div className="px-4 sm:px-10 pt-[16px]">
-        <Stepper activeIndex={stepIdx} steps={STEPS} />
-      </div>
-
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
+        <h1 className="px-4 sm:px-10 pt-[8px] text-2xl sm:text-3xl lg:text-[32px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
+          {mode === 'amend' ? 'Amend Cargo Transfer Request' : 'New Cargo Transfer Request'}
+        </h1>
+
+        <div className="px-4 sm:px-10 pt-[16px]">
+          <Stepper activeIndex={stepIdx} steps={STEPS} />
+        </div>
         {step.id === 'general' && <GeneralInformation values={values} setValues={setValues} />}
         {step.id === 'shipping' && <ShippingDetails />}
         {step.id === 'container' && (

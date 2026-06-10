@@ -2021,23 +2021,22 @@ export default function CargoTransferStepperPage({ onBack, onSubmit, onSaveExit,
         </div>
       </div>
 
-      {/* Title */}
-      <div className="px-4 sm:px-10 pb-[12px] flex-shrink-0">
-        <h1 className="text-2xl sm:text-3xl lg:text-[28px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>
-          {isAmend
-            ? `Amend - ${initTransferType || 'Cargo Transfer'}${initTransferNumber ? ` - ${initTransferNumber}` : ''}`
-            : `Cargo Transfer - ${initTransferType || 'New Request'}`}
-        </h1>
-      </div>
-
-      {/* Stepper */}
-      <div className="px-4 sm:px-10 pb-[16px] flex-shrink-0">
-        <Stepper current={step} steps={steps} />
-      </div>
-
       {/* Step content */}
       <SaveExitCtx.Provider value={!isAmend ? onSaveExit : undefined}>
         <div className="flex-1 overflow-hidden flex flex-col">
+          {/* Title */}
+          <div className="px-4 sm:px-10 pb-[12px] flex-shrink-0">
+            <h1 className="text-2xl sm:text-3xl lg:text-[28px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>
+              {isAmend
+                ? `Amend - ${initTransferType || 'Cargo Transfer'}${initTransferNumber ? ` - ${initTransferNumber}` : ''}`
+                : `Cargo Transfer - ${initTransferType || 'New Request'}`}
+            </h1>
+          </div>
+
+          {/* Stepper */}
+          <div className="px-4 sm:px-10 pb-[16px] flex-shrink-0">
+            <Stepper current={step} steps={steps} />
+          </div>
           {step === 0 && <Step2 onBack={onBack} onNext={next} initCargoChannel={initCargoChannel} initCarrierReg={initCarrierReg} initMasterDoc={initMasterDoc} shippingSummary={shippingSummary} onEditShipping={onBack} isAmend={isAmend} />}
           {step === 1 && <Step3 onBack={prev} onNext={next} shippingSummary={shippingSummary} onEditShipping={() => setStep(0)} />}
           {step === 2 && <Step4 onBack={prev} onNext={next} shippingSummary={shippingSummary} onEditShipping={() => setStep(0)} />}

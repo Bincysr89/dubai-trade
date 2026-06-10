@@ -37,7 +37,7 @@ type Props = {
 export default function SuspensionHistoryViewPage({ onBack, onBackToListing }: Props) {
   return (
     <div className="flex flex-col h-full bg-[#f8fafd]">
-      {/* Breadcrumb + Title — sticky */}
+      {/* Breadcrumb — sticky */}
       <div className="flex-shrink-0 bg-[#f8fafd]">
         {/* Breadcrumb */}
         <div className="flex items-center justify-between px-4 sm:px-10 pt-[16px] pb-[8px] flex-wrap gap-[12px]">
@@ -68,17 +68,16 @@ export default function SuspensionHistoryViewPage({ onBack, onBackToListing }: P
             <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>A180-IMPORTER SONY GULF UAE</span>
           </div>
         </div>
+      </div>
 
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-auto px-4 sm:px-10 pb-[100px]">
         {/* Page title */}
         <div className="px-4 sm:px-10 pt-[8px] pb-[20px]">
           <h1 style={{ fontSize: 32, fontWeight: 500, color: '#0e1b3d', fontFamily: font }}>
             Suspension History - CT - 601232423898
           </h1>
         </div>
-      </div>
-
-      {/* Scrollable content */}
-      <div className="flex-1 overflow-auto px-4 sm:px-10 pb-[100px]">
         <div className="flex flex-col gap-[24px]">
 
           {/* Request Details */}

@@ -17,7 +17,7 @@ export default function ClaimSubmittedSuccessPage({
 }: Props) {
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full">
-      <div className="flex items-start justify-between px-4 sm:px-10 pt-[24px] pb-[8px] flex-wrap gap-[12px]">
+      <div className="flex items-start justify-between px-4 sm:px-10 pt-[24px] pb-[8px] flex-wrap gap-[12px] flex-shrink-0">
         <div className="flex items-center gap-[6px]">
           <span className="text-[16px] text-[#8f94ae]" style={{ fontFamily: "'Dubai', sans-serif" }}>Home</span>
           <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: "'Dubai', sans-serif" }}>/</span>
@@ -30,11 +30,10 @@ export default function ClaimSubmittedSuccessPage({
         </div>
       </div>
 
-      <h1 className="px-4 sm:px-10 pt-[8px] text-2xl sm:text-3xl lg:text-[32px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
-        Raise Claim Request
-      </h1>
-
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
+        <h1 className="px-4 sm:px-10 pt-[8px] text-2xl sm:text-3xl lg:text-[32px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
+          Raise Claim Request
+        </h1>
         <div className="bg-white rounded-[8px] flex flex-col items-center gap-[32px] px-[24px] py-[60px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
           <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
             <circle cx="50" cy="50" r="44" fill="#28A745" />

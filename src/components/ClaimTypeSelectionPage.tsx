@@ -51,7 +51,7 @@ export default function ClaimTypeSelectionPage({ onBack, onContinue }: Props) {
 
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full" style={{ fontFamily: "'Dubai', sans-serif" }}>
-      <div className="flex items-start justify-between px-4 sm:px-10 pt-[24px] pb-[8px] flex-wrap gap-[12px]">
+      <div className="flex items-start justify-between px-4 sm:px-10 pt-[24px] pb-[8px] flex-wrap gap-[12px] flex-shrink-0">
         <div className="flex items-center gap-[6px]">
           <button onClick={onBack} className="text-[16px] text-[#8f94ae] hover:underline">Home</button>
           <span className="text-[16px] text-[#dc3545]">/</span>
@@ -64,9 +64,8 @@ export default function ClaimTypeSelectionPage({ onBack, onContinue }: Props) {
         </div>
       </div>
 
-      <h1 className="px-4 sm:px-10 pt-[8px] text-2xl sm:text-3xl lg:text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>Raise New Claim</h1>
-
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
+        <h1 className="px-4 sm:px-10 pt-[8px] text-2xl sm:text-3xl lg:text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>Raise New Claim</h1>
         <div className="bg-white rounded-[8px] flex flex-col gap-[24px] px-[24px] py-[28px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
           <div className="flex items-center gap-[12px]">
             <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Select Claim Type</p>

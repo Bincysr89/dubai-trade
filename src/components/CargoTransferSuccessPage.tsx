@@ -38,15 +38,14 @@ export default function CargoTransferSuccessPage({ onBack, requestNumber = '1234
         </div>
       </div>
 
-      <h1 className="px-4 sm:px-10 pt-[6px] pb-[16px] text-2xl sm:text-3xl lg:text-[28px] text-[#111838] flex-shrink-0" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
-        {mode === 'amend'
-          ? `Amend - ${formatTransferTypeTitle(transferType)}${transferNumber ? ` - ${transferNumber}` : ''}`
-          : mode === 'cancel'
-          ? 'Cancel Cargo Transfer Request'
-          : 'Cargo Transfer - New Request'}
-      </h1>
-
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
+        <h1 className="px-4 sm:px-10 pt-[6px] pb-[16px] text-2xl sm:text-3xl lg:text-[28px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
+          {mode === 'amend'
+            ? `Amend - ${formatTransferTypeTitle(transferType)}${transferNumber ? ` - ${transferNumber}` : ''}`
+            : mode === 'cancel'
+            ? 'Cancel Cargo Transfer Request'
+            : 'Cargo Transfer - New Request'}
+        </h1>
         {/* Important Update banner */}
         <div className="flex flex-col gap-[8px] p-[16px] rounded-[8px] mb-[24px]"
           style={{ background: '#fffbf0', border: '1px solid #fff2d1' }}>

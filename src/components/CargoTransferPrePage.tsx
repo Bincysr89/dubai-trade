@@ -269,7 +269,7 @@ const TRANSFER_TYPE_OPTIONS = [
     <VesselSearchModal open={showVesselModal} onClose={() => setShowVesselModal(false)} onSelect={(rotNum) => { setCarrierReg(rotNum); setShowVesselModal(false); }} />
     <div className="flex flex-col bg-[#f8fafd] h-full">
       {/* Breadcrumb + Agent */}
-      <div className="flex items-center justify-between px-4 sm:px-10 pt-[24px] pb-[8px] flex-wrap gap-[12px]">
+      <div className="flex items-center justify-between px-4 sm:px-10 pt-[24px] pb-[8px] flex-wrap gap-[12px] flex-shrink-0">
         <div className="flex items-center gap-[6px]">
           <button onClick={onBack} className="text-[16px] text-[#8f94ae] hover:underline" style={{ fontFamily: "'Dubai', sans-serif" }}>Home</button>
           <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: "'Dubai', sans-serif" }}>/</span>
@@ -280,23 +280,6 @@ const TRANSFER_TYPE_OPTIONS = [
         <div className="bg-[#e2ebf9] rounded-[4px] h-[28px] px-[12px] flex items-center">
           <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>AE-1019056 — Dubai Customs - Test LLC</span>
         </div>
-      </div>
-
-      {/* Title + Need Help */}
-      <div className="flex items-center gap-[16px] px-4 sm:px-10 pt-[6px] pb-[20px]">
-        <h1 className="text-2xl sm:text-3xl lg:text-[28px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
-          {mode === 'amend'
-            ? `Amend - ${formatTransferTypeTitle(transferType || initialValues?.transferType || '')}${transferNumber ? ` - ${transferNumber}` : ''}`
-            : 'Cargo Transfer'}
-        </h1>
-        {mode !== 'amend' && (
-          <button className="flex items-center gap-[4px]">
-            <span className="text-[16px] text-[#2950e5]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Need Help</span>
-            <svg viewBox="0 0 24 24" className="size-[20px] text-[#2950e5]" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="9" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><circle cx="12" cy="17" r=".5" fill="currentColor" />
-            </svg>
-          </button>
-        )}
       </div>
 
       {/* Start Journey card — outside scroll container so dropdown isn't clipped */}
@@ -464,6 +447,22 @@ const TRANSFER_TYPE_OPTIONS = [
 
       {/* Help and Guides — in its own scroll container */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 pb-[40px]">
+        {/* Title + Need Help */}
+        <div className="flex items-center gap-[16px] px-4 sm:px-10 pt-[6px] pb-[20px]">
+          <h1 className="text-2xl sm:text-3xl lg:text-[28px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
+            {mode === 'amend'
+              ? `Amend - ${formatTransferTypeTitle(transferType || initialValues?.transferType || '')}${transferNumber ? ` - ${transferNumber}` : ''}`
+              : 'Cargo Transfer'}
+          </h1>
+          {mode !== 'amend' && (
+            <button className="flex items-center gap-[4px]">
+              <span className="text-[16px] text-[#2950e5]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Need Help</span>
+              <svg viewBox="0 0 24 24" className="size-[20px] text-[#2950e5]" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="9" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><circle cx="12" cy="17" r=".5" fill="currentColor" />
+              </svg>
+            </button>
+          )}
+        </div>
         <div className="flex flex-col gap-[32px]">
           {/* Section title */}
           <div className="flex items-center gap-[16px]">

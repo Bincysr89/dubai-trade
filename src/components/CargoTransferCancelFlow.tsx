@@ -169,15 +169,14 @@ function Step1({ onBack, onProceed, onViewRequest }: { onBack: () => void; onPro
         </div>
       </div>
 
-      {/* Title */}
-      <div className="px-[40px] pt-[8px] pb-[16px] flex-shrink-0">
-        <PageTitle>
-          Cancel - Cargo Transfer from CTO to CH (Same Location) - 601001745352
-        </PageTitle>
-      </div>
-
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto px-[40px] pb-[24px]">
+        {/* Title */}
+        <div className="px-[40px] pt-[8px] pb-[16px]">
+          <PageTitle>
+            Cancel - Cargo Transfer from CTO to CH (Same Location) - 601001745352
+          </PageTitle>
+        </div>
         <div className="flex flex-col gap-[24px]">
 
           {/* Cancellation Details */}
@@ -268,11 +267,10 @@ function Step2({ onBack, onProceed }: { onBack: () => void; onProceed: () => voi
 
   return (
     <div className="flex flex-col h-full bg-[#f8fafd]">
-      <div className="px-[40px] pt-[24px] pb-[16px] flex-shrink-0">
-        <PageTitle>Documents Upload</PageTitle>
-      </div>
-
       <div className="flex-1 overflow-y-auto px-[40px] pb-[24px]">
+        <div className="px-[40px] pt-[24px] pb-[16px]">
+          <PageTitle>Documents Upload</PageTitle>
+        </div>
         <div className="flex flex-col gap-[24px]">
 
           {/* Upload card */}
@@ -417,17 +415,16 @@ function Step3({ onBack, onProceed, onViewRequest }: { onBack: () => void; onPro
           <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>AE-1019056 — Dubai Customs - Test LLC</span>
         </div>
       </div>
-      {/* Title + View Request */}
-      <div className="px-[40px] pt-[8px] pb-[8px] flex-shrink-0 flex items-start justify-between gap-[16px]">
-        <PageTitle>
-          Cancel - Cargo Transfer from CTO to CH (Same Location) - 601001745352
-        </PageTitle>
-        <OutlineBtn onClick={onViewRequest}>
-          <span className="whitespace-nowrap">View Cargo Transfer Details</span>
-        </OutlineBtn>
-      </div>
-
       <div className="flex-1 overflow-y-auto px-[40px] pb-[24px]">
+        {/* Title + View Request */}
+        <div className="px-[40px] pt-[8px] pb-[8px] flex items-start justify-between gap-[16px]">
+          <PageTitle>
+            Cancel - Cargo Transfer from CTO to CH (Same Location) - 601001745352
+          </PageTitle>
+          <OutlineBtn onClick={onViewRequest}>
+            <span className="whitespace-nowrap">View Cargo Transfer Details</span>
+          </OutlineBtn>
+        </div>
         <div className="flex flex-col gap-[24px]">
 
           {/* Payment Details table */}
@@ -587,17 +584,16 @@ function Step4({ onBack, onSubmit, onViewRequest }: { onBack: () => void; onSubm
           <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>AE-1019056 — Dubai Customs - Test LLC</span>
         </div>
       </div>
-      {/* Title + View Request */}
-      <div className="px-[40px] pt-[8px] pb-[8px] flex-shrink-0 flex items-start justify-between gap-[16px]">
-        <PageTitle>
-          Cancel - Cargo Transfer from CTO to CH (Same Location) - 601001745352
-        </PageTitle>
-        <OutlineBtn onClick={onViewRequest}>
-          <span className="whitespace-nowrap">View Cargo Transfer Details</span>
-        </OutlineBtn>
-      </div>
-
       <div className="flex-1 overflow-y-auto px-[40px] pb-[24px]">
+        {/* Title + View Request */}
+        <div className="px-[40px] pt-[8px] pb-[8px] flex items-start justify-between gap-[16px]">
+          <PageTitle>
+            Cancel - Cargo Transfer from CTO to CH (Same Location) - 601001745352
+          </PageTitle>
+          <OutlineBtn onClick={onViewRequest}>
+            <span className="whitespace-nowrap">View Cargo Transfer Details</span>
+          </OutlineBtn>
+        </div>
         <div className="flex flex-col gap-[24px]">
 
           {/* Cancellation Details summary */}

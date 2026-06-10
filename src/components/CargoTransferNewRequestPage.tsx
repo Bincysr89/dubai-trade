@@ -762,14 +762,13 @@ export default function CargoTransferNewRequestPage({
         </div>
       </div>
 
-      <h1 className="px-4 sm:px-10 pt-[6px] pb-[16px] text-2xl sm:text-3xl lg:text-[28px] text-[#111838] flex-shrink-0" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
-        {mode === 'amend'
-          ? `Amend - ${formatTransferTypeTitle(initialTransferType)}${transferNumber ? ` - ${transferNumber}` : ''}`
-          : `Cargo Transfer - ${initialTransferType || 'New Request'}`}
-      </h1>
-
       {/* Scrollable body */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 pb-[24px] flex flex-col gap-[20px]">
+        <h1 className="px-4 sm:px-10 pt-[6px] pb-[16px] text-2xl sm:text-3xl lg:text-[28px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
+          {mode === 'amend'
+            ? `Amend - ${formatTransferTypeTitle(initialTransferType)}${transferNumber ? ` - ${transferNumber}` : ''}`
+            : `Cargo Transfer - ${initialTransferType || 'New Request'}`}
+        </h1>
 
         {/* Cargo Transfer Type / Cargo Channel / Client Ref */}
         <div className="bg-white rounded-[8px] px-[40px] py-[20px]" style={{ boxShadow: '0px 4px 16px rgba(0,0,0,0.08)' }}>

@@ -105,17 +105,16 @@ export default function CargoTransferPaymentReviewPage({ onBack, onSubmit, onSav
         </div>
       </div>
 
-      {/* Title */}
-      <h1 className="px-4 sm:px-10 pt-[6px] pb-[16px] text-2xl sm:text-3xl lg:text-[28px] text-[#111838] flex-shrink-0" style={{ fontFamily: font, fontWeight: 500 }}>
-        {mode === 'amend'
-          ? `Amend - ${formatTransferTypeTitle(transferType)}${transferNumber ? ` - ${transferNumber}` : ''}`
-          : mode === 'cancel'
-          ? 'Cancel Cargo Transfer Request'
-          : `Cargo Transfer - New Request`}
-      </h1>
-
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 pb-[32px]">
+        {/* Title */}
+        <h1 className="px-4 sm:px-10 pt-[6px] pb-[16px] text-2xl sm:text-3xl lg:text-[28px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>
+          {mode === 'amend'
+            ? `Amend - ${formatTransferTypeTitle(transferType)}${transferNumber ? ` - ${transferNumber}` : ''}`
+            : mode === 'cancel'
+            ? 'Cancel Cargo Transfer Request'
+            : `Cargo Transfer - New Request`}
+        </h1>
         <div className="flex flex-col gap-[32px]">
 
           {/* Important Update banner */}

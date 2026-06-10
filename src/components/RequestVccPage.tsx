@@ -30,7 +30,7 @@ export default function RequestVccPage({ onBack, onSearch }: Props) {
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full">
       {/* Breadcrumb + agent strip */}
-      <div className="flex items-start justify-between px-4 sm:px-10 pt-[24px] pb-[8px] flex-wrap gap-[12px]">
+      <div className="flex items-start justify-between px-4 sm:px-10 pt-[24px] pb-[8px] flex-wrap gap-[12px] flex-shrink-0">
         <div className="flex items-center gap-[6px]">
           <span className="text-[16px] text-[#8f94ae]" style={{ fontFamily: "'Dubai', sans-serif" }}>Home</span>
           <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: "'Dubai', sans-serif" }}>/</span>
@@ -43,13 +43,12 @@ export default function RequestVccPage({ onBack, onSearch }: Props) {
         </div>
       </div>
 
-      {/* Page title */}
-      <h1 className="px-4 sm:px-10 pt-[8px] text-2xl sm:text-3xl lg:text-[32px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
-        Request VCC
-      </h1>
-
       {/* Main scroll area */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px] flex flex-col gap-[60px]">
+        {/* Page title */}
+        <h1 className="px-4 sm:px-10 pt-[8px] text-2xl sm:text-3xl lg:text-[32px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
+          Request VCC
+        </h1>
         {/* Declaration Details card */}
         <div className="bg-white rounded-[8px] px-[24px] py-[20px] flex flex-col gap-[20px]" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
           <p className="text-[20px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 700 }}>
