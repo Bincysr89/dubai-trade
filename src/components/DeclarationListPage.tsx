@@ -805,35 +805,30 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
         <div className="flex-1 flex flex-col min-w-0">
 
         {/* Controls row */}
-        {/* ══ Controls: single row at ≥1500px, two rows below ══ */}
-        <div className="flex flex-col min-[1500px]:flex-row min-[1500px]:items-center gap-[10px] mb-[12px]">
-
-          {/* ── Left group: Advance Filters + Search + Status ── */}
-          <div className="flex items-center gap-[10px] min-[1500px]:flex-1 min-w-0">
-
-          {/* Advance Filters — icon-only below 1500px, text+icon at 1500px+ */}
+        <div className="flex items-center justify-between mb-[12px] gap-[12px] flex-wrap">
+          {/* Left: advance filters button */}
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-[8px] h-[48px] px-[12px] min-[1500px]:px-[16px] rounded-[4px] border text-[16px] transition-colors flex-shrink-0 ${
+            className={`flex items-center gap-[8px] h-[48px] px-[12px] sm:px-[16px] py-[12px] rounded-[4px] border text-[16px] transition-colors flex-shrink-0 ${
               showFilters
                 ? 'bg-[#e2ebf9] border-[#1360d2] text-[#1360d2]'
                 : 'bg-white border-[#d4dcfa] text-[#000000]'
             }`}
             style={{ fontFamily: "'Dubai', sans-serif" }}
           >
-            <span className="hidden min-[1500px]:inline">Advance Filters</span>
+            <span className="hidden sm:inline">Advance Filters</span>
             <svg viewBox="0 0 24 24" className="size-[20px]" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M3 6h18M7 12h10M11 18h2" strokeLinecap="round" />
             </svg>
           </button>
 
-          {/* Search bar — auto-width: type label + fixed input, no flex-grow */}
-          <div className="flex items-center bg-white border border-[#d5ddfb] rounded-[4px] h-[48px] flex-shrink-0 relative">
+          {/* Center: search bar */}
+          <div className="flex items-center bg-white border border-[#d5ddfb] rounded-[4px] h-[48px] flex-1 min-w-[180px] max-w-[420px] relative">
             {/* Type dropdown */}
             <button
               type="button"
               onClick={() => setSearchTypeOpen(o => !o)}
-              className="flex items-center gap-[6px] border-r border-[#d5ddfb] px-[10px] h-full cursor-pointer flex-shrink-0 hover:bg-[#f7faff] transition-colors"
+              className="flex items-center gap-[6px] border-r border-[#d5ddfb] px-[12px] h-full cursor-pointer flex-shrink-0 hover:bg-[#f7faff] transition-colors"
             >
               <span className="text-[16px] text-[#1360d2] font-medium whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>
                 {searchType}
@@ -862,7 +857,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               </div>
             )}
             {/* Input */}
-            <div className="flex items-center px-[12px] relative">
+            <div className="flex items-center flex-1 px-[12px] relative">
               <input
                 type="text"
                 value={searchValue}
@@ -873,7 +868,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                     ? `Enter ${searchType.toLowerCase()} and press Enter`
                     : `${searchType.toLowerCase()}`
                 }
-                className="w-[160px] text-[16px] text-[#0e1b3d] focus:outline-none bg-transparent placeholder:text-[#697498]"
+                className="flex-1 text-[16px] text-[#0e1b3d] focus:outline-none bg-transparent placeholder:text-[#697498]"
                 style={{ fontFamily: "'Dubai', sans-serif" }}
               />
               {searchValue !== '' && (
@@ -902,7 +897,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             </div>
           </div>
 
-          {/* Status dropdown */}
+          {/* Status dropdown — populated from the active table */}
           <div className="relative flex-shrink-0" ref={toolbarStatusRef}>
             <button
               type="button"
@@ -945,10 +940,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             )}
           </div>
 
-          </div>{/* end left group */}
-
-          {/* ── Right group: Need Help + Reports + CT Release + Create ── */}
-          <div className="flex items-center gap-[10px] justify-end min-[1500px]:justify-start min-[1500px]:flex-shrink-0 flex-wrap">
+          {/* Right-side group: pushes to end */}
+          <div className="flex items-center gap-[12px] ml-auto flex-wrap">
             {/* Need Help */}
             <button className="flex items-center gap-[4px] h-[48px] px-[2px] flex-shrink-0">
               <span className="text-[16px] text-[#2950e5] font-medium" style={{ fontFamily: "'Dubai', sans-serif" }}>Need Help</span>
@@ -969,7 +962,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             {activeMenu === 'Cargo Transfer' && (
               <button
                 onClick={() => setCargoStep('receiptRelease')}
-                className="h-[48px] px-[16px] rounded-[4px] text-[16px] flex-shrink-0 border border-[#1360d2] text-[#1360d2] bg-white hover:bg-[#f0f4ff] transition-colors whitespace-nowrap"
+                className="h-[48px] px-[22px] rounded-[4px] text-[16px] flex-shrink-0 border border-[#1360d2] text-[#1360d2] bg-white hover:bg-[#f0f4ff] transition-colors"
                 style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}
               >
                 CT Release / Receipt
@@ -989,7 +982,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                     if (activeMenu === 'Refund & Claims') setClaimStep('eligible');
                     if (activeMenu === 'Acknowledgement' && ackSelected.size > 0) setAckAcceptOpen(true);
                   }}
-                  className="h-[48px] px-[16px] rounded-[4px] text-[16px] text-white flex-shrink-0 transition-colors whitespace-nowrap"
+                  className="h-[48px] px-[22px] rounded-[4px] text-[16px] text-white flex-shrink-0 transition-colors"
                   style={{
                     background: ackDisabled ? '#a7c3eb' : '#1360d2',
                     cursor: ackDisabled ? 'not-allowed' : 'pointer',
