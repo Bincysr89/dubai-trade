@@ -46,7 +46,7 @@ export default function RequestVccPage({ onBack, onSearch }: Props) {
       {/* Main scroll area */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px] flex flex-col gap-[60px]">
         {/* Page title */}
-        <h1 className="text-2xl sm:text-3xl lg:text-[32px] text-[#111838] mb-[8px]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
+        <h1 className="text-2xl sm:text-3xl lg:text-[32px] text-[#111838] mb-[4px]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
           Request VCC
         </h1>
         {/* Declaration Details card */}

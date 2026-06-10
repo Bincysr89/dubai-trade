@@ -154,7 +154,7 @@ export default function VccSearchResultPage({ onBack, onSubmit, initialSelected,
 
       {/* Body — single column on select step; selection list + payment summary stacked on payment step */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
-        <h1 className="text-2xl sm:text-3xl lg:text-[32px] text-[#111838] mb-[8px]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
+        <h1 className="text-2xl sm:text-3xl lg:text-[32px] text-[#111838] mb-[20px]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
           {mode === 'amend' ? 'Amend VCC Request' : 'Request VCC'}
         </h1>
         {mode === 'amend' && (
