@@ -950,14 +950,6 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               </svg>
             </button>
 
-            {/* Reports dropdown */}
-            <div className="flex items-center gap-[8px] bg-white border border-[#d5ddfb] rounded-[4px] h-[48px] px-[16px] flex-shrink-0 cursor-pointer">
-              <span className="text-[16px] text-[#1360d2] font-medium" style={{ fontFamily: "'Dubai', sans-serif" }}>Reports</span>
-              <svg viewBox="0 0 24 24" className="size-[22px] text-[#1360d2]" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </div>
-
             {/* CT Release / Receipt button — Cargo Transfer only */}
             {activeMenu === 'Cargo Transfer' && (
               <button
