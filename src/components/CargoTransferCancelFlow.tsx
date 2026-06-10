@@ -267,6 +267,20 @@ function Step2({ onBack, onProceed }: { onBack: () => void; onProceed: () => voi
 
   return (
     <div className="flex flex-col h-full bg-[#f8fafd]">
+      {/* Breadcrumb */}
+      <div className="flex items-center justify-between px-[40px] pt-[24px] pb-[8px] flex-shrink-0 flex-wrap gap-[12px]">
+        <div className="flex items-center gap-[6px]">
+          <button onClick={onBack} className="text-[16px] text-[#8f94ae] hover:underline" style={{ fontFamily: font }}>Home</button>
+          <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: font }}>/</span>
+          <span className="text-[16px] text-[#8f94ae]" style={{ fontFamily: font }}>Import By Sea</span>
+          <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: font }}>/</span>
+          <span className="text-[16px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>Integrated Clearance</span>
+        </div>
+        <div className="bg-[#e2ebf9] rounded-[4px] h-[28px] px-[12px] flex items-center">
+          <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>AE-1019056 — Dubai Customs - Test LLC</span>
+        </div>
+      </div>
+
       <div className="flex-1 overflow-y-auto px-[40px] pb-[24px]">
         <div className="mb-[8px]">
           <PageTitle>Documents Upload</PageTitle>
