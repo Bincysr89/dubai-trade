@@ -282,6 +282,15 @@ const TRANSFER_TYPE_OPTIONS = [
         </div>
       </div>
 
+      {/* Page title */}
+      <div className="flex-shrink-0 px-4 sm:px-10 mb-[8px]">
+        <h1 className="text-2xl sm:text-3xl lg:text-[28px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
+          {mode === 'amend'
+            ? `Amend - ${formatTransferTypeTitle(transferType || initialValues?.transferType || '')}${transferNumber ? ` - ${transferNumber}` : ''}`
+            : 'Cargo Transfer'}
+        </h1>
+      </div>
+
       {/* Start Journey card — outside scroll container so dropdown isn't clipped */}
       <div className="px-4 sm:px-10 pb-[20px]">
         <div className="bg-white rounded-[8px] p-[24px]" style={{ boxShadow: '0px 4px 16px 0px rgba(0,0,0,0.08)' }}>
@@ -447,22 +456,17 @@ const TRANSFER_TYPE_OPTIONS = [
 
       {/* Help and Guides — in its own scroll container */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 pb-[40px]">
-        {/* Title + Need Help */}
-        <div className="flex items-center gap-[16px] mb-[8px]">
-          <h1 className="text-2xl sm:text-3xl lg:text-[28px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
-            {mode === 'amend'
-              ? `Amend - ${formatTransferTypeTitle(transferType || initialValues?.transferType || '')}${transferNumber ? ` - ${transferNumber}` : ''}`
-              : 'Cargo Transfer'}
-          </h1>
-          {mode !== 'amend' && (
+        {/* Need Help link */}
+        {mode !== 'amend' && (
+          <div className="flex items-center gap-[16px] mb-[8px]">
             <button className="flex items-center gap-[4px]">
               <span className="text-[16px] text-[#2950e5]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Need Help</span>
               <svg viewBox="0 0 24 24" className="size-[20px] text-[#2950e5]" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="9" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><circle cx="12" cy="17" r=".5" fill="currentColor" />
               </svg>
             </button>
-          )}
-        </div>
+          </div>
+        )}
         <div className="flex flex-col gap-[32px]">
           {/* Section title */}
           <div className="flex items-center gap-[16px]">
