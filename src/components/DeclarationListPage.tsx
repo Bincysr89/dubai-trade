@@ -827,8 +827,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             </svg>
           </button>
 
-          {/* Search bar — flex-1 within left group, capped at max-w-[280px] */}
-          <div className="flex items-center bg-white border border-[#d5ddfb] rounded-[4px] h-[48px] flex-1 min-w-[160px] max-w-[280px] relative">
+          {/* Search bar — auto-width: type label + fixed input, no flex-grow */}
+          <div className="flex items-center bg-white border border-[#d5ddfb] rounded-[4px] h-[48px] flex-shrink-0 relative">
             {/* Type dropdown */}
             <button
               type="button"
@@ -862,7 +862,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               </div>
             )}
             {/* Input */}
-            <div className="flex items-center flex-1 px-[12px] relative">
+            <div className="flex items-center px-[12px] relative">
               <input
                 type="text"
                 value={searchValue}
@@ -873,7 +873,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                     ? `Enter ${searchType.toLowerCase()} and press Enter`
                     : `${searchType.toLowerCase()}`
                 }
-                className="flex-1 text-[16px] text-[#0e1b3d] focus:outline-none bg-transparent placeholder:text-[#697498]"
+                className="w-[160px] text-[16px] text-[#0e1b3d] focus:outline-none bg-transparent placeholder:text-[#697498]"
                 style={{ fontFamily: "'Dubai', sans-serif" }}
               />
               {searchValue !== '' && (
