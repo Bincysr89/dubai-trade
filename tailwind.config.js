@@ -3,6 +3,9 @@ export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
+      screens: {
+        'w1500': '1500px',
+      },
       colors: {
         'dt-primary': '#0e1b3d',
         'dt-secondary': '#1360d2',
