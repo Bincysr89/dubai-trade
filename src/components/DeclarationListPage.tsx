@@ -207,7 +207,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
 
   // Reset the search-type dropdown when switching modules so options stay consistent
   useEffect(() => {
-    setSearchType(activeMenu === 'VCC' ? 'Request Number' : activeMenu === 'Cargo Transfer' ? 'Cargo Transfer Number' : activeMenu === 'Refund & Claims' ? 'Declaration Number' : 'Declaration');
+    setSearchType(activeMenu === 'VCC' ? 'Request Number' : activeMenu === 'Cargo Transfer' ? 'Cargo Transfer No.' : activeMenu === 'Refund & Claims' ? 'Declaration Number' : 'Declaration');
     setSearchTypeOpen(false);
     setSearchValue('');
     setSearchQuery('');
@@ -844,7 +844,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   : activeMenu === 'Refund & Claims'
                   ? ['Declaration Number', 'Claim Number']
                   : activeMenu === 'Cargo Transfer'
-                  ? ['Cargo Transfer Number', 'Client Reference Number', 'Container Number', 'MAWB/MBOL', 'Request Number']
+                  ? ['Cargo Transfer No.', 'Client Reference Number', 'Container Number', 'MAWB/MBOL', 'Request Number']
                   : ['Declaration', 'Request No.', 'Client Ref.', 'MAWB/MBOL']
                 ).map(opt => (
                   <button
