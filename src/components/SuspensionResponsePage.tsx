@@ -36,7 +36,7 @@ function CloudUploadIcon() {
 function InfoCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-[12px] py-[12px] px-[12px]" style={{ width: 307, minWidth: 200 }}>
-      <span className="text-[14px]" style={{ color: '#696f83', fontFamily: font }}>{label}</span>
+      <span className="text-[16px]" style={{ color: '#696f83', fontFamily: font }}>{label}</span>
       <span className="text-[16px] font-semibold" style={{ color: '#051937', fontFamily: font }}>{value}</span>
     </div>
   );
@@ -109,7 +109,7 @@ export default function SuspensionResponsePage({ onBack, onBackToListing, onSubm
                 <InfoCard label="To" value="AE123 Companies" />
                 <InfoCard label="Comments" value="Please upload Documents" />
                 <div className="flex flex-col gap-[12px] py-[12px] px-[12px]" style={{ width: 600, minWidth: 200, flex: 1 }}>
-                  <span className="text-[14px]" style={{ color: '#696f83', fontFamily: font }}>Response</span>
+                  <span className="text-[16px]" style={{ color: '#696f83', fontFamily: font }}>Response</span>
                   <input
                     type="text"
                     value={response}
