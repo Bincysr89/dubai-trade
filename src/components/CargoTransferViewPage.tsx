@@ -94,7 +94,7 @@ export default function CargoTransferViewPage({ onBack, transferNumber = '', onR
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 pb-[32px]">
         {/* Title */}
-        <div className="px-4 sm:px-10 pt-[8px] pb-[20px] flex items-center justify-between">
+        <div className="flex items-center justify-between mb-[8px]">
           <h1 className="text-[32px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>
             Cargo Transfer <span style={{ color: '#455174', fontWeight: 400, fontSize: 24 }}>(Version 1)</span>
           </h1>

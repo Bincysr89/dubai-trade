@@ -39,7 +39,7 @@ export default function CargoTransferSuccessPage({ onBack, requestNumber = '1234
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
-        <h1 className="px-4 sm:px-10 pt-[6px] pb-[16px] text-2xl sm:text-3xl lg:text-[28px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
+        <h1 className="text-2xl sm:text-3xl lg:text-[28px] text-[#111838] mb-[8px]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
           {mode === 'amend'
             ? `Amend - ${formatTransferTypeTitle(transferType)}${transferNumber ? ` - ${transferNumber}` : ''}`
             : mode === 'cancel'

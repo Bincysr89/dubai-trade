@@ -31,7 +31,7 @@ export default function VccEPaymentFailedPage({
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
-        <h1 className="px-4 sm:px-10 pt-[8px] text-2xl sm:text-3xl lg:text-[32px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
+        <h1 className="text-2xl sm:text-3xl lg:text-[32px] text-[#111838] mb-[8px]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
           VCC Request
         </h1>
         <div

@@ -172,7 +172,7 @@ function Step1({ onBack, onProceed, onViewRequest }: { onBack: () => void; onPro
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto px-[40px] pb-[24px]">
         {/* Title */}
-        <div className="px-[40px] pt-[8px] pb-[16px]">
+        <div className="mb-[8px]">
           <PageTitle>
             Cancel - Cargo Transfer from CTO to CH (Same Location) - 601001745352
           </PageTitle>
@@ -268,7 +268,7 @@ function Step2({ onBack, onProceed }: { onBack: () => void; onProceed: () => voi
   return (
     <div className="flex flex-col h-full bg-[#f8fafd]">
       <div className="flex-1 overflow-y-auto px-[40px] pb-[24px]">
-        <div className="px-[40px] pt-[24px] pb-[16px]">
+        <div className="mb-[8px]">
           <PageTitle>Documents Upload</PageTitle>
         </div>
         <div className="flex flex-col gap-[24px]">
@@ -417,7 +417,7 @@ function Step3({ onBack, onProceed, onViewRequest }: { onBack: () => void; onPro
       </div>
       <div className="flex-1 overflow-y-auto px-[40px] pb-[24px]">
         {/* Title + View Request */}
-        <div className="px-[40px] pt-[8px] pb-[8px] flex items-start justify-between gap-[16px]">
+        <div className="flex items-start justify-between gap-[16px] mb-[8px]">
           <PageTitle>
             Cancel - Cargo Transfer from CTO to CH (Same Location) - 601001745352
           </PageTitle>
@@ -586,7 +586,7 @@ function Step4({ onBack, onSubmit, onViewRequest }: { onBack: () => void; onSubm
       </div>
       <div className="flex-1 overflow-y-auto px-[40px] pb-[24px]">
         {/* Title + View Request */}
-        <div className="px-[40px] pt-[8px] pb-[8px] flex items-start justify-between gap-[16px]">
+        <div className="flex items-start justify-between gap-[16px] mb-[8px]">
           <PageTitle>
             Cancel - Cargo Transfer from CTO to CH (Same Location) - 601001745352
           </PageTitle>

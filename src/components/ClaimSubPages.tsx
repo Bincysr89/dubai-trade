@@ -60,9 +60,9 @@ const PageShell: React.FC<{
 
     {/* Title + stepper + body all scroll together below the breadcrumb. */}
     <div className="flex-1 overflow-y-auto">
-      <h1 className="px-4 sm:px-10 pt-[8px] text-2xl sm:text-3xl lg:text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>{title}</h1>
+      <h1 className="px-4 sm:px-10 text-2xl sm:text-3xl lg:text-[32px] text-[#111838] mb-[8px]" style={{ fontWeight: 500 }}>{title}</h1>
 
-      <div className="px-4 sm:px-10 pt-[16px]">
+      <div className="px-4 sm:px-10">
         <ClaimStepper activeIndex={activeIndex} />
       </div>
 

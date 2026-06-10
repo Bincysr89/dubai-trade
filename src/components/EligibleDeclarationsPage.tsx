@@ -694,11 +694,11 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px] flex flex-col gap-[20px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
-        <h1 className="px-4 sm:px-10 pt-[8px] text-2xl sm:text-3xl lg:text-[32px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
+        <h1 className="text-2xl sm:text-3xl lg:text-[32px] text-[#111838] mb-[8px]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
           Raise New Claim
         </h1>
 
-        <div className="px-4 sm:px-10 pt-[16px]">
+        <div>
           <ClaimStepper activeIndex={0} />
         </div>
         {/* Claim Type selection card */}

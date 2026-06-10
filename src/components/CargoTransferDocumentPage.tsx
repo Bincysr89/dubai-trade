@@ -48,11 +48,9 @@ export default function CargoTransferDocumentPage({ onBack, onProceed }: Props) 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 pb-[40px]">
         {/* Page title */}
-        <div className="px-4 sm:px-10 pb-[20px]">
-          <h1 className="text-2xl sm:text-3xl lg:text-[32px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 500 }}>
-            Cargo Transfer - New Request
-          </h1>
-        </div>
+        <h1 className="text-2xl sm:text-3xl lg:text-[32px] text-[#0e1b3d] mb-[8px]" style={{ fontFamily: font, fontWeight: 500 }}>
+          Cargo Transfer - New Request
+        </h1>
         <div className="flex flex-col gap-[24px]">
 
           {/* Upload row — Upload Documents (66%) + Upload File (28%) */}

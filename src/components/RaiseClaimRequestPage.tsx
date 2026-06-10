@@ -205,10 +205,10 @@ export default function RaiseClaimRequestPage({ claimType, declarationNo, onBack
 
       {/* Step body */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px] flex flex-col gap-[20px]">
-        <h1 className="px-4 sm:px-10 pt-[8px] text-2xl sm:text-3xl lg:text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>Raise New Claim</h1>
+        <h1 className="text-2xl sm:text-3xl lg:text-[32px] text-[#111838] mb-[8px]" style={{ fontWeight: 500 }}>Raise New Claim</h1>
 
         {/* Stepper */}
-        <div className="px-4 sm:px-10 pt-[16px]">
+        <div>
           <ClaimStepper activeIndex={stepIndex} />
         </div>
         {step.id === 'claim'   && <ClaimDetailsStep values={claimValues} setValues={setClaimValues} claimType={claimType} declarationNo={declarationNo} />}

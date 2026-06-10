@@ -91,7 +91,7 @@ export default function SuspensionResponsePage({ onBack, onBackToListing, onSubm
       {/* Scrollable content */}
       <div className="flex-1 overflow-auto px-4 sm:px-10 pb-[100px]">
         {/* Page title */}
-        <div className="px-4 sm:px-10 pt-[8px] pb-[20px] flex items-center gap-[16px]">
+        <div className="flex items-center gap-[16px] mb-[8px]">
           <h1 style={{ fontSize: 32, fontWeight: 500, color: '#0e1b3d', fontFamily: font }}>
             Suspension Response - CT - 601232423898
           </h1>

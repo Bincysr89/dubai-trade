@@ -123,7 +123,7 @@ export default function VccAuditHistoryPage({ onBack, requestNumber = '25365' }:
       </div>
 
       <div className="flex-1 overflow-y-auto" style={{ fontFamily: "'Dubai', sans-serif" }}>
-        <div className="px-4 sm:px-10 pt-[8px] flex items-end justify-between flex-wrap gap-[12px]">
+        <div className="px-4 sm:px-10 flex items-end justify-between flex-wrap gap-[12px] mb-[8px]">
           <div>
             <h1 className="text-[32px] text-[#111838]" style={{ fontWeight: 700 }}>Audit History</h1>
             <p className="text-[16px] text-[#455174]">Activity log for Request #{requestNumber}</p>

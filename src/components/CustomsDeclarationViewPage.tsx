@@ -43,7 +43,7 @@ export default function CustomsDeclarationViewPage({ declarationNo, onBack, onSe
       </div>
 
       <div className="flex-1 overflow-y-auto" style={{ fontFamily: "'Dubai', sans-serif" }}>
-        <h1 className="px-4 sm:px-10 pt-[8px] pb-[20px] text-xl sm:text-2xl lg:text-[28px] text-[#111838]" style={{ fontWeight: 500 }}>
+        <h1 className="px-4 sm:px-10 mb-[8px] text-xl sm:text-2xl lg:text-[28px] text-[#111838]" style={{ fontWeight: 500 }}>
           Customs Declaration Number ({declarationNo}) <span className="text-[16px] text-[#697498]">(Version 1)</span>
         </h1>
 

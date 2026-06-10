@@ -448,7 +448,7 @@ const TRANSFER_TYPE_OPTIONS = [
       {/* Help and Guides — in its own scroll container */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 pb-[40px]">
         {/* Title + Need Help */}
-        <div className="flex items-center gap-[16px] px-4 sm:px-10 pt-[6px] pb-[20px]">
+        <div className="flex items-center gap-[16px] mb-[8px]">
           <h1 className="text-2xl sm:text-3xl lg:text-[28px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
             {mode === 'amend'
               ? `Amend - ${formatTransferTypeTitle(transferType || initialValues?.transferType || '')}${transferNumber ? ` - ${transferNumber}` : ''}`

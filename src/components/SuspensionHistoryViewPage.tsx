@@ -73,11 +73,9 @@ export default function SuspensionHistoryViewPage({ onBack, onBackToListing }: P
       {/* Scrollable content */}
       <div className="flex-1 overflow-auto px-4 sm:px-10 pb-[100px]">
         {/* Page title */}
-        <div className="px-4 sm:px-10 pt-[8px] pb-[20px]">
-          <h1 style={{ fontSize: 32, fontWeight: 500, color: '#0e1b3d', fontFamily: font }}>
-            Suspension History - CT - 601232423898
-          </h1>
-        </div>
+        <h1 style={{ fontSize: 32, fontWeight: 500, color: '#0e1b3d', fontFamily: font, marginBottom: 8 }}>
+          Suspension History - CT - 601232423898
+        </h1>
         <div className="flex flex-col gap-[24px]">
 
           {/* Request Details */}
