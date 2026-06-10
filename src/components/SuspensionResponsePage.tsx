@@ -103,7 +103,7 @@ export default function SuspensionResponsePage({ onBack, onBackToListing, onSubm
 
           {/* Request Details */}
           <div className="flex flex-col gap-[14px]">
-            <h2 className="text-[18px] font-semibold text-[#051937]" style={{ fontFamily: font }}>Request Details</h2>
+            <h2 className="text-[24px] font-medium text-[#051937]" style={{ fontFamily: font }}>Request Details</h2>
             <div className="bg-white rounded-[8px] px-[20px] py-[32px]" style={{ boxShadow: '1px 2px 12px rgba(0,0,0,0.06)' }}>
               <div className="flex flex-wrap gap-[20px]">
                 <InfoCard label="To" value="AE123 Companies" />
@@ -235,7 +235,7 @@ export default function SuspensionResponsePage({ onBack, onBackToListing, onSubm
 
           {/* CDM Contact Details */}
           <div className="flex flex-col gap-[14px]">
-            <h2 className="text-[18px] font-semibold text-[#051937]" style={{ fontFamily: font }}>CDM Contact Details</h2>
+            <h2 className="text-[24px] font-medium text-[#051937]" style={{ fontFamily: font }}>CDM Contact Details</h2>
             <div className="bg-white rounded-[8px] px-[20px] py-[32px]" style={{ boxShadow: '1px 2px 12px rgba(0,0,0,0.06)' }}>
               <div className="flex flex-wrap gap-[20px]">
                 <InfoCard label="Contact Section Name" value="Customs Declaration Management" />
