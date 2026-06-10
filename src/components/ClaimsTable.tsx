@@ -67,15 +67,19 @@ type Props = {
   onPrint?: () => void;
   onViewDocs?: () => void;
   onHistory?: () => void;
+  showDrafts?: boolean;
 };
 
-export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onViewDocs, onHistory }: Props = {}) {
+export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onViewDocs, onHistory, showDrafts = false }: Props = {}) {
   const [openFlyout, setOpenFlyout] = useState<number | null>(null);
   const flyoutRef = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
   const [statusFilter, setStatusFilter] = useState<Status | null>(null);
-  const filteredRows = useMemo(() => statusFilter ? ROWS.filter((r) => r.status === statusFilter) : ROWS, [statusFilter]);
+  const filteredRows = useMemo(() => {
+    const base = showDrafts ? ROWS.filter((r) => r.status === 'Draft') : ROWS.filter((r) => r.status !== 'Draft');
+    return statusFilter ? base.filter((r) => r.status === statusFilter) : base;
+  }, [statusFilter, showDrafts]);
   const STATUS_COLOR: Record<Status, string> = {
     'Under Processing': '#cc9200', 'Completed': '#28a745', 'Suspended': '#dc3545', 'Draft': '#697498',
   };

@@ -1788,8 +1788,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             </div>
           </div>
 
-          {/* Drafts toggle — Cargo Transfer only */}
-          {activeMenu === 'Cargo Transfer' && (
+          {/* Drafts toggle — all tabs except VCC */}
+          {activeMenu !== 'VCC' && (
             <div className="flex items-center gap-[8px] flex-shrink-0">
               <span className="text-[16px] text-[#0e1b3d] font-medium whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>
                 Drafts
@@ -1843,7 +1843,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             }}
           />
         ) : activeMenu === 'Refund & Claims' ? (
-          <ClaimsTable />
+          <ClaimsTable showDrafts={showDrafts} />
         ) : activeMenu === 'Acknowledgement' ? (
           <AcknowledgementTable
             selected={ackSelected}
