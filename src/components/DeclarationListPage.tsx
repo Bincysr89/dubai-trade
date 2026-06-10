@@ -805,8 +805,12 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
         <div className="flex-1 flex flex-col min-w-0">
 
         {/* Controls row */}
-        <div className="flex items-center mb-[12px] gap-[10px] flex-wrap">
-          {/* Left: advance filters button */}
+        <div className="flex items-center justify-between mb-[12px] gap-x-[12px] gap-y-[8px] flex-wrap">
+
+          {/* ── Left group: Advance Filters + Search + Status ── */}
+          <div className="flex items-center gap-[10px] flex-1 min-w-0 flex-wrap">
+
+          {/* Advance Filters */}
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={`flex items-center gap-[8px] h-[48px] px-[12px] sm:px-[16px] py-[12px] rounded-[4px] border text-[16px] transition-colors flex-shrink-0 ${
@@ -822,15 +826,15 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             </svg>
           </button>
 
-          {/* Center: search bar */}
-          <div className="flex items-center bg-white border border-[#d5ddfb] rounded-[4px] h-[48px] flex-1 min-w-[160px] max-w-[320px] relative">
+          {/* Search bar */}
+          <div className="flex items-center bg-white border border-[#d5ddfb] rounded-[4px] h-[48px] flex-1 min-w-[180px] max-w-[480px] relative">
             {/* Type dropdown */}
             <button
               type="button"
               onClick={() => setSearchTypeOpen(o => !o)}
               className="flex items-center gap-[6px] border-r border-[#d5ddfb] px-[10px] h-full cursor-pointer flex-shrink-0 hover:bg-[#f7faff] transition-colors"
             >
-              <span className="text-[16px] text-[#1360d2] font-medium max-w-[120px] truncate" style={{ fontFamily: "'Dubai', sans-serif" }}>
+              <span className="text-[16px] text-[#1360d2] font-medium whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>
                 {searchType}
               </span>
               <svg viewBox="0 0 24 24" className={`size-[18px] text-[#1360d2] transition-transform ${searchTypeOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -897,7 +901,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             </div>
           </div>
 
-          {/* Status dropdown — populated from the active table */}
+          {/* Status dropdown */}
           <div className="relative flex-shrink-0" ref={toolbarStatusRef}>
             <button
               type="button"
@@ -940,8 +944,10 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             )}
           </div>
 
-          {/* Right-side group */}
-          <div className="flex items-center gap-[10px] flex-wrap">
+          </div>{/* end left group */}
+
+          {/* ── Right group: Need Help + Reports + CT Release + Create ── */}
+          <div className="flex items-center gap-[10px] flex-shrink-0 flex-wrap">
             {/* Need Help */}
             <button className="flex items-center gap-[4px] h-[48px] px-[2px] flex-shrink-0">
               <span className="text-[16px] text-[#2950e5] font-medium" style={{ fontFamily: "'Dubai', sans-serif" }}>Need Help</span>
