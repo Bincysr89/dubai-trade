@@ -134,7 +134,6 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
   // TODO: derive from auth context. For now broker login is enabled by default
   // so the Customer Type / Code filters are visible.
   const isBroker = true;
-  const [showDrafts, setShowDrafts] = useState(false);
   const [searchType, setSearchType] = useState('Declaration');
   const [searchTypeOpen, setSearchTypeOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
@@ -1788,18 +1787,6 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             </div>
           </div>
 
-          {/* Drafts toggle — always on right */}
-          <div className="flex items-center gap-[8px] flex-shrink-0">
-            <span className="text-[16px] text-[#0e1b3d] font-medium whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>
-              Drafts
-            </span>
-            <button
-              onClick={() => setShowDrafts(!showDrafts)}
-              className={`relative w-[48px] h-[28px] rounded-full transition-colors ${showDrafts ? 'bg-[#1360d2]' : 'bg-[#e2ebf9]'}`}
-            >
-              <div className={`absolute top-[3px] size-[22px] rounded-full bg-white shadow transition-transform ${showDrafts ? 'translate-x-[22px]' : 'translate-x-[3px]'}`} />
-            </button>
-          </div>
         </div>
 
         {/* Table swap based on active sidebar menu */}
@@ -1818,7 +1805,6 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               onVccCountOpen={(row) => setVccListPopupRow(row)}
               onDeclarationOpen={(declNo) => { setVccDeclNo(declNo); setVccStep('declarationView'); }}
               externalStatus={toolbarStatus}
-              showDrafts={showDrafts}
               onMakePayment={() => setVccStep('ePaymentProcessing')}
               onChangePaymentMode={() => setVccStep('ePaymentProcessing')}
               onRetry={() => setVccStep('retryRequest')}
@@ -1827,7 +1813,6 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           )
         ) : activeMenu === 'Cargo Transfer' ? (
           <CargoTransferTable
-            showDrafts={showDrafts}
             onViewRequest={() => setCargoStep('viewRequest')}
             onCancel={() => setCargoStep('cancel')}
             onCargoHistory={() => setCargoStep('cargoHistory')}

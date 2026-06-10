@@ -8,14 +8,13 @@ const wlpLogoSrc = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAICAYAAA
 const aeoLogoSrc = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAHCAYAAAAf6f3xAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAAAs9JREFUeAElUltIVF0U/tbeR8+oUxrq/zc2DQZTUlB0oRvR/SmiogcDzXqIkO49REQUPhTdiS4PRZQmRFAIPXShoIKgokgt6iEpI6OZ0KmEzImZM+fsvVrHXs4+e+39fev7vrXpfWTS5RLSrRNyPZ0ATBwoeRSZuJ+ZO5u8Tw+6AR9JuGie1wAU9aLz6Ut0wMhdFYvFZhDsFrDVIGVIFfchuTCnkjP6U63tt2pr/6hgc8dGkNlN1iag1UcLHPt2/fRtR4PXFYDHS4CuJ8I2Ttgt0SoH8AaBhwgb71tSjV/5wyA/g6ZNS9HRNix1oqLSCI2bPJa0ewdzG10a/V8daVVmmT+g/pUxs/btAgcHtcUVQ2QUY7UCLsWb9rpOqJzAJEwk//gxsgpcanLIqKkpxVB+f1hVrMZTX2qpqcc9cU20/UZMBXYZXDqlWXna59eBYk5fm921fP33il4O9gjNSeMgoyzWMsOTfQUxtzgseJLPqLBJqCJceUQElwMWB2qnqRytJPg7qwp7houD8S3Rxefe9nRMSWEEIIgCPzBsWJKC9QtZ9FdO/Dy6K4rhn2Ms2xfk81RWaoBha4gpL6NJiinKSOOZaeBuM2blzpd71al8Ia6J0t319bbYK8SrzLZ2JyhfIapKmfSC7PDvQ0gmm2FD0YGjyK2Lljo53xvSqiTCiMXyff6YoTgPZhzFK4NRFcfo99AEsdFPyv7P0APUG6nb5IPPivabBNUn76tBhJioN7B8+tlnVW42e0Vb9eXfICQGxVGxuUxbXsNElUxok4TecZgOqfCGoG17qmX+tcTx7gY2/kUxd1vcvlNMiyzxnCIn0kgrAPdMSXIVsdqKkAj8vLKMjlT/jP5IHL3QaC1n7YXt95XKjIwiXVbmJDZcbbC6aDDwTE+xtmtEkyOE/0YVhkD6+9e29e1wXU5sbF3MBjtguVYOexjOmfSbE11/AVP+QMCmcxkpAAAAAElFTkSuQmCC';
 
 type BadgeType = 'both' | 'aeo' | 'wlp' | 'none';
-type VccStatus = 'Submitted' | 'Under Processing' | 'Completed' | 'Rejected' | 'Draft' | 'Payment Pending';
+type VccStatus = 'Submitted' | 'Under Processing' | 'Completed' | 'Rejected' | 'Payment Pending';
 
 const VCC_STATUS_STYLE: Record<VccStatus, { bg: string; color: string }> = {
   'Submitted':        { bg: 'rgba(19,96,210,0.08)',   color: '#1360d2' },
   'Under Processing': { bg: 'rgba(255,169,26,0.16)',  color: '#b45309' },
   'Completed':        { bg: 'rgba(40,167,69,0.08)',   color: '#28a745' },
   'Rejected':         { bg: 'rgba(192,57,43,0.08)',   color: '#c0392b' },
-  'Draft':            { bg: 'rgba(108,117,125,0.12)', color: '#6c757d' },
   'Payment Pending':  { bg: 'rgba(255,169,26,0.16)',  color: '#b45309' },
 };
 
@@ -77,8 +76,6 @@ const VCC_REQUESTS: VccRow[] = [
   { reqNo: '25347', declNo: '1012132134', badge: 'wlp',  reqDate: '04-Dec-24', requestedFor: 'CONSOLIDATED SHIPPING SERVICES L.L.C — AE-1019056',  requestType: 'New', subType: 'New', vccCount: 2, remarks: '', declType: 'Re Export to ROW (after import for re export)',  declOwner: 'code + name', status: 'Under Processing' },
   { reqNo: '25348', declNo: '1012132135', badge: 'wlp',  reqDate: '03-Dec-24', requestedFor: 'CONSOLIDATED SHIPPING SERVICES L.L.C — AE-1019056',  requestType: 'New', subType: 'New', vccCount: 4, remarks: '', declType: 'Re Export to ROW (after import for re export)',  declOwner: 'code + name', status: 'Rejected' },
   { reqNo: '25365', declNo: '1012132136', badge: 'none', reqDate: '02-Dec-24', requestedFor: 'CONSOLIDATED SHIPPING SERVICES L.L.C — AE-1019056', requestType: 'New', subType: 'New', vccCount: 1, remarks: '', declType: 'Export from Local', declOwner: 'code + name', status: 'Payment Pending' },
-  { reqNo: '-', declNo: '-', badge: 'none', reqDate: '02-Dec-24', requestedFor: 'CONSOLIDATED SHIPPING SERVICES L.L.C — AE-1019056',  requestType: 'New', subType: 'New', vccCount: 2, remarks: '', declType: 'Export from Local',                              declOwner: 'code + name', status: 'Draft' },
-  { reqNo: '-', declNo: '-', badge: 'none', reqDate: '01-Dec-24', requestedFor: 'CONSOLIDATED SHIPPING SERVICES L.L.C — AE-1019056',  requestType: 'New', subType: 'New', vccCount: 1, remarks: '', declType: 'Export Statistical',                             declOwner: 'code + name', status: 'Draft' },
 ];
 
 type Props = {
@@ -90,30 +87,27 @@ type Props = {
   onVccCountOpen?: (row: VccRow) => void;
   /** Optional status filter driven from the parent toolbar. When provided, takes precedence over the column-header filter. */
   externalStatus?: string | null;
-  /** When true, only show rows with Draft status */
-  showDrafts?: boolean;
   onMakePayment?: () => void;
   onChangePaymentMode?: () => void;
   onRetry?: () => void;
   onRecheckStatus?: () => void;
 };
 
-export default function VccTable({ onView, onAmend, onDownload, onAudit, onDeclarationOpen, onVccCountOpen, externalStatus, showDrafts, onMakePayment, onChangePaymentMode, onRetry, onRecheckStatus }: Props = {}) {
+export default function VccTable({ onView, onAmend, onDownload, onAudit, onDeclarationOpen, onVccCountOpen, externalStatus, onMakePayment, onChangePaymentMode, onRetry, onRecheckStatus }: Props = {}) {
   const [openFlyout, setOpenFlyout] = useState<number | null>(null);
   const flyoutRef = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
   const [statusFilter, setStatusFilter] = useState<VccStatus | null>(null);
   const VCC_STATUS_COLOR: Record<VccStatus, string> = {
-    'Submitted': '#1360d2', 'Under Processing': '#b45309', 'Completed': '#28a745', 'Rejected': '#c0392b', 'Draft': '#6c757d', 'Payment Pending': '#b45309',
+    'Submitted': '#1360d2', 'Under Processing': '#b45309', 'Completed': '#28a745', 'Rejected': '#c0392b', 'Payment Pending': '#b45309',
   };
-  const effectiveStatus = showDrafts ? 'Draft' : ((externalStatus as VccStatus | null | undefined) ?? statusFilter);
+  const effectiveStatus = (externalStatus as VccStatus | null | undefined) ?? statusFilter;
   const filteredRows = useMemo(
     () => {
-      const base = showDrafts ? VCC_REQUESTS : VCC_REQUESTS.filter((r) => r.status !== 'Draft');
-      return effectiveStatus && effectiveStatus !== 'Draft' ? base.filter((r) => r.status === effectiveStatus) : base;
+      return effectiveStatus ? VCC_REQUESTS.filter((r) => r.status === effectiveStatus) : VCC_REQUESTS;
     },
-    [effectiveStatus, showDrafts],
+    [effectiveStatus],
   );
 
   useEffect(() => {
@@ -198,11 +192,9 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
             return (
               <tr key={i}>
                 {cell(txt(row.reqNo), 110, { paddingLeft: 16 })}
-                {/* No. of Vehicles — clickable unless Draft */}
+                {/* No. of Vehicles — clickable */}
                 <td style={{ background: '#fff', padding: '0 8px', height: 54, verticalAlign: 'middle', width: 130, textAlign: 'center' }}>
-                  {row.status === 'Draft' ? (
-                    <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>-</span>
-                  ) : (
+                  {(
                     <button
                       onClick={() => onVccCountOpen?.(row)}
                       className="text-[16px] font-medium inline-flex items-center justify-center hover:opacity-80 transition-opacity"
