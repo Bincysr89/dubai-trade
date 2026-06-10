@@ -889,7 +889,7 @@ function Step1({ onBack, onNext, initTransferType = '', initTransferorBiz = '', 
   ];
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col flex-1 min-h-0">
       <BizSearchModal open={bizModal !== null} title={`Search ${bizModal === 'transferor' ? 'Transferor' : 'Transferee'} Business Code`} onClose={() => setBizModal(null)} onSelect={code => { if (bizModal === 'transferor') setTransferorBiz(code); else setTransfereeBiz(code); }} />
       <PremSearchModal open={premModal !== null} title={`Search ${premModal === 'transferor' ? 'Transferor' : 'Transferee'} Premises Code`} onClose={() => setPremModal(null)} onSelect={code => { if (premModal === 'transferor') setTransferorPrem(code); else setTransfereePrem(code); }} />
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
@@ -971,7 +971,7 @@ function Step2({ onBack, onNext, initCargoChannel = '', initCarrierReg = '', ini
   const CARGO_TYPES = ['FCL', 'LCL'];
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col flex-1 min-h-0">
       <CarrierSearchModal open={showCarrierModal} onClose={() => setShowCarrierModal(false)} onSelect={(rotNum, vesselName) => { setCarrierReg(rotNum); setCarrierName(vesselName); setShowCarrierModal(false); }} />
       <PortSearchModal open={showPortModal} onClose={() => setShowPortModal(false)} onSelect={code => { setPortOfLoading(code); setShowPortModal(false); }} />
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
@@ -1335,7 +1335,7 @@ function Step3({ onBack, onNext, shippingSummary, onEditShipping }: {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col flex-1 min-h-0">
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
         <div className="flex flex-col gap-[24px]">
 
@@ -1618,7 +1618,7 @@ function Step4({ onBack, onNext, shippingSummary, onEditShipping }: {
   const TABLE_COLS = ['Document Name', 'Document Type', 'Uploaded size', 'Uploaded on', 'Action'];
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col flex-1 min-h-0">
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
         <div className="flex flex-col gap-[24px]">
 
@@ -1753,7 +1753,7 @@ function Step5({ onBack, onSubmit, shippingSummary, onEditShipping }: {
   const PAYMENT_REFS = ['Account Number', 'Reference No'];
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col flex-1 min-h-0">
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
         <div className="flex flex-col gap-[24px]">
 
@@ -1877,7 +1877,7 @@ function StepAmendment({ onBack, onNext }: { onBack: () => void; onNext: () => v
   const tdAltStyle: React.CSSProperties = { ...tdStyle, background: '#f5f5f5' };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col flex-1 min-h-0">
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
         <div className="flex flex-col gap-[32px]">
 
