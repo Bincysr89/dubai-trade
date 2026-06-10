@@ -805,29 +805,29 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
         <div className="flex-1 flex flex-col min-w-0">
 
         {/* Controls row */}
-        <div className="flex items-center justify-between mb-[12px] gap-x-[12px] gap-y-[8px] flex-wrap">
+        <div className="flex flex-col gap-y-[8px] mb-[12px]">
 
-          {/* ── Left group: Advance Filters + Search + Status ── */}
-          <div className="flex items-center gap-[10px] flex-1 min-w-0 flex-wrap">
+          {/* ══ ROW 1: Advance Filters + Search + Status ══ */}
+          <div className="flex items-center gap-[10px]">
 
-          {/* Advance Filters */}
+          {/* Advance Filters — icon-only below xl (1280px), text+icon at xl+ */}
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-[8px] h-[48px] px-[12px] sm:px-[16px] py-[12px] rounded-[4px] border text-[16px] transition-colors flex-shrink-0 ${
+            className={`flex items-center gap-[8px] h-[48px] px-[12px] xl:px-[16px] rounded-[4px] border text-[16px] transition-colors flex-shrink-0 ${
               showFilters
                 ? 'bg-[#e2ebf9] border-[#1360d2] text-[#1360d2]'
                 : 'bg-white border-[#d4dcfa] text-[#000000]'
             }`}
             style={{ fontFamily: "'Dubai', sans-serif" }}
           >
-            <span className="hidden sm:inline">Advance Filters</span>
+            <span className="hidden xl:inline">Advance Filters</span>
             <svg viewBox="0 0 24 24" className="size-[20px]" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M3 6h18M7 12h10M11 18h2" strokeLinecap="round" />
             </svg>
           </button>
 
-          {/* Search bar */}
-          <div className="flex items-center bg-white border border-[#d5ddfb] rounded-[4px] h-[48px] flex-1 min-w-[180px] max-w-[480px] relative">
+          {/* Search bar — flex-1, grows to fill all remaining space in row 1 */}
+          <div className="flex items-center bg-white border border-[#d5ddfb] rounded-[4px] h-[48px] flex-1 min-w-[0] relative">
             {/* Type dropdown */}
             <button
               type="button"
@@ -944,10 +944,10 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             )}
           </div>
 
-          </div>{/* end left group */}
+          </div>{/* end row 1 */}
 
-          {/* ── Right group: Need Help + Reports + CT Release + Create ── */}
-          <div className="flex items-center gap-[10px] flex-shrink-0 flex-wrap">
+          {/* ══ ROW 2: Need Help + Reports + CT Release + Create — right-aligned ══ */}
+          <div className="flex items-center gap-[10px] justify-end flex-wrap">
             {/* Need Help */}
             <button className="flex items-center gap-[4px] h-[48px] px-[2px] flex-shrink-0">
               <span className="text-[16px] text-[#2950e5] font-medium" style={{ fontFamily: "'Dubai', sans-serif" }}>Need Help</span>
