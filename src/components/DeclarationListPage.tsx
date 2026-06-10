@@ -962,7 +962,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             {activeMenu === 'Cargo Transfer' && (
               <button
                 onClick={() => setCargoStep('receiptRelease')}
-                className="h-[48px] px-[22px] rounded-[4px] text-[16px] flex-shrink-0 border border-[#1360d2] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors"
+                className="h-[48px] px-[22px] rounded-[4px] text-[16px] flex-shrink-0 border border-[#1360d2] text-[#1360d2] bg-white hover:bg-[#f0f4ff] transition-colors"
                 style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}
               >
                 CT Release / Receipt
