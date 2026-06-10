@@ -44,7 +44,7 @@ export default function RequestVccPage({ onBack, onSearch }: Props) {
       </div>
 
       {/* Main scroll area */}
-      <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px] flex flex-col gap-[60px]">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px] flex flex-col gap-[16px]">
         {/* Page title */}
         <h1 className="text-2xl sm:text-3xl lg:text-[32px] text-[#111838] mb-[4px]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
           Request VCC
@@ -79,7 +79,7 @@ export default function RequestVccPage({ onBack, onSearch }: Props) {
         </div>
 
         {/* Help and Guides */}
-        <div className="flex flex-col gap-[40px]">
+        <div className="flex flex-col gap-[40px] mt-[44px]">
           <div className="flex items-center gap-[20px]">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1360d2" strokeWidth="2">
               <circle cx="12" cy="12" r="9" />

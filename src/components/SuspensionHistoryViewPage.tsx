@@ -16,7 +16,7 @@ function DownloadIcon() {
 function InfoCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-[12px] py-[12px] px-[12px]" style={{ width: 307, minWidth: 200 }}>
-      <span className="text-[14px]" style={{ color: '#696f83', fontFamily: font }}>{label}</span>
+      <span className="text-[16px]" style={{ color: '#696f83', fontFamily: font }}>{label}</span>
       <span className="text-[16px] font-semibold" style={{ color: '#051937', fontFamily: font }}>{value}</span>
     </div>
   );
@@ -105,11 +105,11 @@ export default function SuspensionHistoryViewPage({ onBack, onBackToListing }: P
                       { label: 'Uploaded on',     w: 312 },
                     ].map((col) => (
                       <th key={col.label} style={{ width: col.w, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left' }}>
-                        <ColumnFilter label={col.label} />
+                        <ColumnFilter label={col.label} labelClass="text-[16px] font-medium text-[#051937]" />
                       </th>
                     ))}
                     <th style={{ width: 169, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', borderRadius: '0 8px 0 0' }}>
-                      <span className="text-[14px] text-[#051937] font-medium">Action</span>
+                      <span className="text-[16px] text-[#051937] font-medium">Action</span>
                     </th>
                   </tr>
                 </thead>
