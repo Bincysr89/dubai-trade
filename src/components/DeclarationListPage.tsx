@@ -805,12 +805,13 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
         <div className="flex-1 flex flex-col min-w-0">
 
         {/* Controls row */}
-        <div className="flex flex-col gap-y-[8px] mb-[12px]">
+        {/* ══ Controls: single row at xl+, two rows below xl ══ */}
+        <div className="flex flex-col xl:flex-row xl:items-center gap-[10px] mb-[12px]">
 
-          {/* ══ ROW 1: Advance Filters + Search + Status ══ */}
-          <div className="flex items-center gap-[10px]">
+          {/* ── Left group: Advance Filters + Search + Status ── */}
+          <div className="flex items-center gap-[10px] xl:flex-1 min-w-0">
 
-          {/* Advance Filters — icon-only below xl (1280px), text+icon at xl+ */}
+          {/* Advance Filters — icon-only below xl, text+icon at xl+ */}
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={`flex items-center gap-[8px] h-[48px] px-[12px] xl:px-[16px] rounded-[4px] border text-[16px] transition-colors flex-shrink-0 ${
@@ -826,8 +827,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             </svg>
           </button>
 
-          {/* Search bar — flex-1, grows to fill all remaining space in row 1 */}
-          <div className="flex items-center bg-white border border-[#d5ddfb] rounded-[4px] h-[48px] flex-1 min-w-[0] relative">
+          {/* Search bar — flex-1 within left group, capped at max-w-[280px] */}
+          <div className="flex items-center bg-white border border-[#d5ddfb] rounded-[4px] h-[48px] flex-1 min-w-[160px] max-w-[280px] relative">
             {/* Type dropdown */}
             <button
               type="button"
@@ -944,10 +945,10 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             )}
           </div>
 
-          </div>{/* end row 1 */}
+          </div>{/* end left group */}
 
-          {/* ══ ROW 2: Need Help + Reports + CT Release + Create — right-aligned ══ */}
-          <div className="flex items-center gap-[10px] justify-end flex-wrap">
+          {/* ── Right group: Need Help + Reports + CT Release + Create ── */}
+          <div className="flex items-center gap-[10px] justify-end xl:justify-start xl:flex-shrink-0 flex-wrap">
             {/* Need Help */}
             <button className="flex items-center gap-[4px] h-[48px] px-[2px] flex-shrink-0">
               <span className="text-[16px] text-[#2950e5] font-medium" style={{ fontFamily: "'Dubai', sans-serif" }}>Need Help</span>
