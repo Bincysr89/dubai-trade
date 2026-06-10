@@ -606,7 +606,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-[#f8fafd] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex flex-col bg-[#f8fafd] overflow-y-auto">
       {/* Header */}
       <div className="flex-shrink-0">
         <Header onServiceCatalogue={onServiceCatalogue} onHome={onClose} />
@@ -730,7 +730,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
       </div>{/* end breadcrumb+stepper */}
 
       {/* Main layout: left panel + right scrollable content */}
-      <div className="flex flex-1 overflow-hidden px-4 md:px-10 pb-[20px] pt-[4px] gap-[12px]">
+      <div className="flex flex-1 px-4 md:px-10 pb-[20px] pt-[4px] gap-[12px]">
 
         {/* Left action panel — full height sidebar */}
         <div
@@ -796,7 +796,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
         </div>
 
         {/* Right scrollable content */}
-        <div className="flex-1 overflow-y-auto flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0">
 
         {/* Controls row */}
         <div className="flex items-center justify-between mb-[12px] gap-[12px] flex-wrap">

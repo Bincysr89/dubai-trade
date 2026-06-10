@@ -893,6 +893,7 @@ function Step1({ onBack, onNext, initTransferType = '', initTransferorBiz = '', 
       <BizSearchModal open={bizModal !== null} title={`Search ${bizModal === 'transferor' ? 'Transferor' : 'Transferee'} Business Code`} onClose={() => setBizModal(null)} onSelect={code => { if (bizModal === 'transferor') setTransferorBiz(code); else setTransfereeBiz(code); }} />
       <PremSearchModal open={premModal !== null} title={`Search ${premModal === 'transferor' ? 'Transferor' : 'Transferee'} Premises Code`} onClose={() => setPremModal(null)} onSelect={code => { if (premModal === 'transferor') setTransferorPrem(code); else setTransfereePrem(code); }} />
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
+        {title && <h1 className="text-2xl sm:text-3xl lg:text-[28px] text-[#111838] mb-[8px]" style={{ fontFamily: font, fontWeight: 500 }}>{title}</h1>}
         <div className="flex flex-col gap-[24px]">
 
           {/* Cargo Transfer Type */}
@@ -934,12 +935,13 @@ function Step1({ onBack, onNext, initTransferType = '', initTransferorBiz = '', 
 /* ────────────────────────────────────────────────────────────
    Step 2 — Shipping Details
    ──────────────────────────────────────────────────────────── */
-function Step2({ onBack, onNext, initCargoChannel = '', initCarrierReg = '', initMasterDoc = '', shippingSummary, onEditShipping, isAmend = false }: {
+function Step2({ onBack, onNext, initCargoChannel = '', initCarrierReg = '', initMasterDoc = '', shippingSummary, onEditShipping, isAmend = false, title }: {
   onBack: () => void; onNext: () => void;
   initCargoChannel?: string; initCarrierReg?: string; initMasterDoc?: string;
   shippingSummary?: { label: string; value: string }[];
   onEditShipping?: () => void;
   isAmend?: boolean;
+  title?: string;
 }) {
   const [inCargoChannel, setInCargoChannel] = useState(initCargoChannel);
   const [carrierReg, setCarrierReg] = useState(initCarrierReg);
@@ -975,6 +977,7 @@ function Step2({ onBack, onNext, initCargoChannel = '', initCarrierReg = '', ini
       <CarrierSearchModal open={showCarrierModal} onClose={() => setShowCarrierModal(false)} onSelect={(rotNum, vesselName) => { setCarrierReg(rotNum); setCarrierName(vesselName); setShowCarrierModal(false); }} />
       <PortSearchModal open={showPortModal} onClose={() => setShowPortModal(false)} onSelect={code => { setPortOfLoading(code); setShowPortModal(false); }} />
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
+        {title && <h1 className="text-2xl sm:text-3xl lg:text-[28px] text-[#111838] mb-[8px]" style={{ fontFamily: font, fontWeight: 500 }}>{title}</h1>}
         <div className="flex flex-col gap-[24px]">
 
           {/* Inbound Details */}
@@ -1246,10 +1249,11 @@ function BulkUploadModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-function Step3({ onBack, onNext, shippingSummary, onEditShipping }: {
+function Step3({ onBack, onNext, shippingSummary, onEditShipping, title }: {
   onBack: () => void; onNext: () => void;
   shippingSummary?: { label: string; value: string }[];
   onEditShipping?: () => void;
+  title?: string;
 }) {
   const [activeTab, setActiveTab] = useState<'package' | 'container'>('package');
 
@@ -1337,6 +1341,7 @@ function Step3({ onBack, onNext, shippingSummary, onEditShipping }: {
   return (
     <div className="flex flex-col flex-1 min-h-0">
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
+        {title && <h1 className="text-2xl sm:text-3xl lg:text-[28px] text-[#111838] mb-[8px]" style={{ fontFamily: font, fontWeight: 500 }}>{title}</h1>}
         <div className="flex flex-col gap-[24px]">
 
 
@@ -1608,10 +1613,11 @@ const UPLOADED_ROWS = [
   { name: 'Laboratory 123234.pdf',                type: 'Laboratory Results',         size: '50 MB', date: '08-12-2024' },
 ];
 
-function Step4({ onBack, onNext, shippingSummary, onEditShipping }: {
+function Step4({ onBack, onNext, shippingSummary, onEditShipping, title }: {
   onBack: () => void; onNext: () => void;
   shippingSummary?: { label: string; value: string }[];
   onEditShipping?: () => void;
+  title?: string;
 }) {
   const [selectedDoc, setSelectedDoc] = useState(0);
   const [dragging, setDragging] = useState(false);
@@ -1620,6 +1626,7 @@ function Step4({ onBack, onNext, shippingSummary, onEditShipping }: {
   return (
     <div className="flex flex-col flex-1 min-h-0">
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
+        {title && <h1 className="text-2xl sm:text-3xl lg:text-[28px] text-[#111838] mb-[8px]" style={{ fontFamily: font, fontWeight: 500 }}>{title}</h1>}
         <div className="flex flex-col gap-[24px]">
 
 
@@ -1734,10 +1741,11 @@ function Step4({ onBack, onNext, shippingSummary, onEditShipping }: {
 /* ────────────────────────────────────────────────────────────
    Step 5 — Payment Details
    ──────────────────────────────────────────────────────────── */
-function Step5({ onBack, onSubmit, shippingSummary, onEditShipping }: {
+function Step5({ onBack, onSubmit, shippingSummary, onEditShipping, title }: {
   onBack: () => void; onSubmit: () => void;
   shippingSummary?: { label: string; value: string }[];
   onEditShipping?: () => void;
+  title?: string;
 }) {
   const [paymentMode, setPaymentMode] = useState('Credit/Debit Account');
   const [paymentRef, setPaymentRef] = useState('Account Number');
@@ -1755,6 +1763,7 @@ function Step5({ onBack, onSubmit, shippingSummary, onEditShipping }: {
   return (
     <div className="flex flex-col flex-1 min-h-0">
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
+        {title && <h1 className="text-2xl sm:text-3xl lg:text-[28px] text-[#111838] mb-[8px]" style={{ fontFamily: font, fontWeight: 500 }}>{title}</h1>}
         <div className="flex flex-col gap-[24px]">
 
 
@@ -1868,7 +1877,7 @@ const CHARGE_ROWS = [
   { charge: 'Declaration Amendment Charges', oldAmount: '', newAmount: '25.00' },
 ];
 
-function StepAmendment({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
+function StepAmendment({ onBack, onNext, title }: { onBack: () => void; onNext: () => void; title?: string }) {
   const [amendReason, setAmendReason] = useState('');
   const [cargoStatus, setCargoStatus] = useState('');
 
@@ -1879,6 +1888,7 @@ function StepAmendment({ onBack, onNext }: { onBack: () => void; onNext: () => v
   return (
     <div className="flex flex-col flex-1 min-h-0">
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
+        {title && <h1 className="text-2xl sm:text-3xl lg:text-[28px] text-[#111838] mb-[8px]" style={{ fontFamily: font, fontWeight: 500 }}>{title}</h1>}
         <div className="flex flex-col gap-[32px]">
 
           {/* Amendment Details card */}
@@ -2024,25 +2034,25 @@ export default function CargoTransferStepperPage({ onBack, onSubmit, onSaveExit,
       {/* Step content */}
       <SaveExitCtx.Provider value={!isAmend ? onSaveExit : undefined}>
         <div className="flex-1 overflow-hidden flex flex-col">
-          {/* Title */}
-          <div className="px-4 sm:px-10 pb-[12px] flex-shrink-0">
-            <h1 className="text-2xl sm:text-3xl lg:text-[28px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>
-              {isAmend
-                ? `Amend - ${initTransferType || 'Cargo Transfer'}${initTransferNumber ? ` - ${initTransferNumber}` : ''}`
-                : `Cargo Transfer - ${initTransferType || 'New Request'}`}
-            </h1>
-          </div>
-
-          {/* Stepper */}
+          {/* Stepper — sticky */}
           <div className="px-4 sm:px-10 pb-[16px] flex-shrink-0">
             <Stepper current={step} steps={steps} />
           </div>
-          {step === 0 && <Step2 onBack={onBack} onNext={next} initCargoChannel={initCargoChannel} initCarrierReg={initCarrierReg} initMasterDoc={initMasterDoc} shippingSummary={shippingSummary} onEditShipping={onBack} isAmend={isAmend} />}
-          {step === 1 && <Step3 onBack={prev} onNext={next} shippingSummary={shippingSummary} onEditShipping={() => setStep(0)} />}
-          {step === 2 && <Step4 onBack={prev} onNext={next} shippingSummary={shippingSummary} onEditShipping={() => setStep(0)} />}
-          {step === 3 && isAmend && <StepAmendment onBack={prev} onNext={next} />}
-          {step === 3 && !isAmend && <Step5 onBack={prev} onSubmit={onSubmit} shippingSummary={shippingSummary} onEditShipping={() => setStep(0)} />}
-          {step === 4 && isAmend && <Step5 onBack={prev} onSubmit={onSubmit} shippingSummary={shippingSummary} onEditShipping={() => setStep(0)} />}
+          {(() => {
+            const title = isAmend
+              ? `Amend - ${initTransferType || 'Cargo Transfer'}${initTransferNumber ? ` - ${initTransferNumber}` : ''}`
+              : `Cargo Transfer - ${initTransferType || 'New Request'}`;
+            return (
+              <>
+                {step === 0 && <Step2 onBack={onBack} onNext={next} initCargoChannel={initCargoChannel} initCarrierReg={initCarrierReg} initMasterDoc={initMasterDoc} shippingSummary={shippingSummary} onEditShipping={onBack} isAmend={isAmend} title={title} />}
+                {step === 1 && <Step3 onBack={prev} onNext={next} shippingSummary={shippingSummary} onEditShipping={() => setStep(0)} title={title} />}
+                {step === 2 && <Step4 onBack={prev} onNext={next} shippingSummary={shippingSummary} onEditShipping={() => setStep(0)} title={title} />}
+                {step === 3 && isAmend && <StepAmendment onBack={prev} onNext={next} title={title} />}
+                {step === 3 && !isAmend && <Step5 onBack={prev} onSubmit={onSubmit} shippingSummary={shippingSummary} onEditShipping={() => setStep(0)} title={title} />}
+                {step === 4 && isAmend && <Step5 onBack={prev} onSubmit={onSubmit} shippingSummary={shippingSummary} onEditShipping={() => setStep(0)} title={title} />}
+              </>
+            );
+          })()}
         </div>
       </SaveExitCtx.Provider>
     </div>
