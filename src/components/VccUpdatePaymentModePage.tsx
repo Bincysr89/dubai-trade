@@ -5,6 +5,7 @@ const font = "'Dubai', sans-serif";
 type Props = {
   onBackToListing: () => void;
   onSubmit: (mode: 'creditDebit' | 'epayment') => void;
+  onCreditDebitFailed?: () => void;
   requestNumber?: string;
 };
 
@@ -132,6 +133,7 @@ function StyledDropdown({
 export default function VccUpdatePaymentModePage({
   onBackToListing,
   onSubmit,
+  onCreditDebitFailed,
   requestNumber = '25365',
 }: Props) {
   const [paymentMode, setPaymentMode] = useState('');
@@ -331,7 +333,7 @@ export default function VccUpdatePaymentModePage({
                       Go Back
                     </button>
                     <button
-                      onClick={() => setShowInsufficientModal(false)}
+                      onClick={() => { setShowInsufficientModal(false); onCreditDebitFailed?.(); }}
                       className="flex-1 h-[44px] rounded-[4px] text-white text-[15px] hover:bg-[#0E4DB8] transition-colors"
                       style={{ background: '#1360d2', fontFamily: font, fontWeight: 500 }}
                     >

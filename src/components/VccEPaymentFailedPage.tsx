@@ -1,5 +1,4 @@
 import React from 'react';
-import BackToListingBar from './BackToListingBar';
 
 type Props = {
   onBackToListing: () => void;
@@ -7,6 +6,8 @@ type Props = {
   onChangePaymentMode?: () => void;
   requestNumber?: string;
   totalCharges?: number;
+  /** Label for the primary retry button — defaults to "Retry ePayment" */
+  retryLabel?: string;
 };
 
 export default function VccEPaymentFailedPage({
@@ -15,6 +16,7 @@ export default function VccEPaymentFailedPage({
   onChangePaymentMode,
   requestNumber = '25365',
   totalCharges = 30,
+  retryLabel = 'Retry ePayment',
 }: Props) {
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full">
@@ -80,7 +82,7 @@ export default function VccEPaymentFailedPage({
               className="h-[48px] px-[20px] rounded-[4px] bg-[#1360d2] text-white hover:bg-[#0E4DB8] transition-colors"
               style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, fontSize: 16, minWidth: 160 }}
             >
-              Retry ePayment
+              {retryLabel}
             </button>
             <button
               onClick={onChangePaymentMode ?? onBackToListing}
@@ -100,7 +102,6 @@ export default function VccEPaymentFailedPage({
         </div>
       </div>
 
-      <BackToListingBar onBack={onBackToListing} />
     </div>
   );
 }

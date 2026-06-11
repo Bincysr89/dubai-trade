@@ -5,10 +5,15 @@ import BackToListingBar from './BackToListingBar';
 type Props = {
   onBack: () => void;
   onSubmit?: (paymentMode: 'creditDebit' | 'epayment') => void;
-  /** When set, prefill selected vehicles (used by Amend Request) */
+  onCreditDebitFailed?: () => void;
+  /** When set, prefill selected vehicles (used by Amend / Retry) */
   initialSelected?: string[];
-  /** Header label & sticky action when in amend mode */
-  mode?: 'create' | 'amend';
+  /**
+   * create — normal new request (vehicle select → payment)
+   * amend  — amend existing request
+   * retry  — starts directly at payment step; back-to-select is hidden
+   */
+  mode?: 'create' | 'amend' | 'retry';
 };
 
 type Vehicle = {
@@ -60,13 +65,14 @@ const FilterIcon = () => (
   </svg>
 );
 
-export default function VccSearchResultPage({ onBack, onSubmit, initialSelected, mode = 'create' }: Props) {
+export default function VccSearchResultPage({ onBack, onSubmit, onCreditDebitFailed, initialSelected, mode = 'create' }: Props) {
   const [selected, setSelected] = useState<Set<string>>(() => new Set(initialSelected ?? []));
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
   const [paymentMode, setPaymentMode] = useState('');
   const [creditAccount, setCreditAccount] = useState('');
-  const [step, setStep] = useState<'select' | 'payment'>('select');
+  // 'retry' mode starts directly at the payment step
+  const [step, setStep] = useState<'select' | 'payment'>(mode === 'retry' ? 'payment' : 'select');
   const [showInsufficientModal, setShowInsufficientModal] = useState(false);
   const [insufficientAccount, setInsufficientAccount] = useState<string | null>(null);
   const [vehicleQuery, setVehicleQuery] = useState('');
@@ -503,6 +509,7 @@ export default function VccSearchResultPage({ onBack, onSubmit, initialSelected,
                 {mode === 'amend' ? 'Submit Amendment' : 'Submit'}
               </button>
 
+
               {/* Insufficient Balance Modal */}
               {showInsufficientModal && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center" style={{ background: 'rgba(14,27,61,0.45)' }}>
@@ -529,7 +536,7 @@ export default function VccSearchResultPage({ onBack, onSubmit, initialSelected,
                         Go Back
                       </button>
                       <button
-                        onClick={() => setShowInsufficientModal(false)}
+                        onClick={() => { setShowInsufficientModal(false); onCreditDebitFailed?.(); }}
                         className="flex-1 h-[44px] rounded-[4px] text-white text-[15px] hover:bg-[#0E4DB8] transition-colors"
                         style={{ background: '#1360d2', fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}
                       >
@@ -607,9 +614,10 @@ export default function VccSearchResultPage({ onBack, onSubmit, initialSelected,
             </div>
           }
         />
-      ) : (
+      ) : mode !== 'retry' ? (
+        /* Normal amend/create: allow going back to vehicle selection */
         <BackToListingBar onBack={() => setStep('select')} />
-      )}
+      ) : null /* retry mode: no back-to-select navigation */}
 
     </div>
   );

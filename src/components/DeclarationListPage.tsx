@@ -159,7 +159,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
   }, [toolbarStatusOpen]);
-  const [vccStep, setVccStep] = useState<'list' | 'create' | 'searchResult' | 'retryRequest' | 'amend' | 'viewRequest' | 'paymentSuccess' | 'ePaymentPending' | 'ePaymentSuccess' | 'ePaymentProcessing' | 'ePaymentConfirmed' | 'ePaymentFailed' | 'auditHistory' | 'declarationView' | 'updatePaymentMode'>('list');
+  const [vccStep, setVccStep] = useState<'list' | 'create' | 'searchResult' | 'retryRequest' | 'amend' | 'viewRequest' | 'paymentSuccess' | 'ePaymentPending' | 'ePaymentSuccess' | 'ePaymentProcessing' | 'ePaymentConfirmed' | 'ePaymentFailed' | 'auditHistory' | 'declarationView' | 'updatePaymentMode' | 'creditDebitFailed' | 'retryPayment'>('list');
   const [selectedVccStatus, setSelectedVccStatus] = useState('');
   const [vccListPopupRow, setVccListPopupRow] = useState<VccRow | null>(null);
   const [recheckModalOpen, setRecheckModalOpen] = useState(false);
@@ -545,6 +545,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             <VccSearchResultPage
               onBack={() => setVccStep('create')}
               onSubmit={(mode) => setVccStep(mode === 'epayment' ? 'ePaymentPending' : 'paymentSuccess')}
+              onCreditDebitFailed={() => setVccStep('creditDebitFailed')}
             />
           )}
           {vccStep === 'amend' && (
@@ -553,6 +554,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               initialSelected={['v0', 'v2', 'v4']}
               onBack={() => setVccStep('list')}
               onSubmit={(mode) => setVccStep(mode === 'epayment' ? 'ePaymentPending' : 'paymentSuccess')}
+              onCreditDebitFailed={() => setVccStep('creditDebitFailed')}
             />
           )}
           {vccStep === 'retryRequest' && (
@@ -561,6 +563,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               initialSelected={['v0', 'v2', 'v4']}
               onBack={() => setVccStep('create')}
               onSubmit={(mode) => setVccStep(mode === 'epayment' ? 'ePaymentPending' : 'paymentSuccess')}
+              onCreditDebitFailed={() => setVccStep('creditDebitFailed')}
             />
           )}
           {vccStep === 'viewRequest' && (
@@ -607,6 +610,24 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             <VccUpdatePaymentModePage
               onBackToListing={() => setVccStep('list')}
               onSubmit={(mode) => setVccStep(mode === 'epayment' ? 'ePaymentProcessing' : 'paymentSuccess')}
+              onCreditDebitFailed={() => setVccStep('creditDebitFailed')}
+            />
+          )}
+          {vccStep === 'creditDebitFailed' && (
+            <VccEPaymentFailedPage
+              retryLabel="Retry Payment"
+              onRetryPayment={() => setVccStep('retryPayment')}
+              onChangePaymentMode={() => setVccStep('updatePaymentMode')}
+              onBackToListing={() => setVccStep('list')}
+            />
+          )}
+          {vccStep === 'retryPayment' && (
+            <VccSearchResultPage
+              mode="retry"
+              initialSelected={['v0', 'v2', 'v4']}
+              onBack={() => setVccStep('list')}
+              onSubmit={(mode) => setVccStep(mode === 'epayment' ? 'ePaymentPending' : 'paymentSuccess')}
+              onCreditDebitFailed={() => setVccStep('creditDebitFailed')}
             />
           )}
           {vccStep === 'auditHistory' && (
