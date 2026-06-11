@@ -72,33 +72,36 @@ export default function VccEPaymentSuccessPage({
             </span>
           </div>
 
-          {/* Action buttons — Recheck Status + Back to Listing */}
+          {/* Action buttons — Scenario 3: Payment In Progress */}
           <div className="flex flex-col items-center gap-[16px] pt-[8px]">
-          <div className="flex flex-wrap gap-[16px] justify-center">
-            <button
-              onClick={onRecheckStatus}
-              className="h-[48px] px-[20px] inline-flex items-center justify-center gap-[8px] rounded-[4px] border border-[#1360d2] bg-white text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
-              style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, fontSize: 16, minWidth: 160 }}
-            >
-              Recheck Status
-            </button>
-            <button
-              onClick={onBackToListing}
-              className="h-[48px] px-[20px] rounded-[4px] bg-[#1360d2] text-white hover:bg-[#0E4DB8] transition-colors"
-              style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, fontSize: 16, minWidth: 180 }}
-            >
-              Back to Listing
-            </button>
-          </div>
-          {onPaymentFailed && (
-            <button
-              onClick={onPaymentFailed}
-              className="text-[14px] text-[#c0392b] underline hover:opacity-80 transition-opacity"
-              style={{ fontFamily: "'Dubai', sans-serif" }}
-            >
-              Simulate Payment Failed
-            </button>
-          )}
+            <div className="flex flex-wrap gap-[16px] justify-center">
+              <button
+                onClick={onRecheckStatus}
+                className="h-[48px] px-[20px] inline-flex items-center justify-center gap-[8px] rounded-[4px] bg-[#1360d2] text-white hover:bg-[#0E4DB8] transition-colors"
+                style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, fontSize: 16, minWidth: 200 }}
+              >
+                <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 4a7 7 0 1 1 0 12" /><path d="M1 4h3v3" />
+                </svg>
+                Check e-Payment Status
+              </button>
+              <button
+                onClick={onBackToListing}
+                className="h-[48px] px-[20px] rounded-[4px] border border-[#1360d2] bg-white text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
+                style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, fontSize: 16, minWidth: 160 }}
+              >
+                Back to Listing
+              </button>
+            </div>
+            {onPaymentFailed && (
+              <button
+                onClick={onPaymentFailed}
+                className="text-[14px] text-[#c0392b] underline hover:opacity-80 transition-opacity"
+                style={{ fontFamily: "'Dubai', sans-serif" }}
+              >
+                Simulate Payment Failed
+              </button>
+            )}
           </div>
         </div>
       </div>

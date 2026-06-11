@@ -14,6 +14,7 @@ import VccEPaymentSuccessPage from './VccEPaymentSuccessPage';
 import VccEPaymentConfirmedPage from './VccEPaymentConfirmedPage';
 import VccEPaymentFailedPage from './VccEPaymentFailedPage';
 import VccAuditHistoryPage from './VccAuditHistoryPage';
+import VccUpdatePaymentModePage from './VccUpdatePaymentModePage';
 import CargoTransferTable from './CargoTransferTable';
 import ClaimsTable from './ClaimsTable';
 import AcknowledgementTable, { ACK_ROWS } from './AcknowledgementTable';
@@ -157,7 +158,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
   }, [toolbarStatusOpen]);
-  const [vccStep, setVccStep] = useState<'list' | 'create' | 'searchResult' | 'retryRequest' | 'amend' | 'viewRequest' | 'paymentSuccess' | 'ePaymentPending' | 'ePaymentSuccess' | 'ePaymentProcessing' | 'ePaymentConfirmed' | 'ePaymentFailed' | 'auditHistory' | 'declarationView'>('list');
+  const [vccStep, setVccStep] = useState<'list' | 'create' | 'searchResult' | 'retryRequest' | 'amend' | 'viewRequest' | 'paymentSuccess' | 'ePaymentPending' | 'ePaymentSuccess' | 'ePaymentProcessing' | 'ePaymentConfirmed' | 'ePaymentFailed' | 'auditHistory' | 'declarationView' | 'updatePaymentMode'>('list');
   const [selectedVccStatus, setSelectedVccStatus] = useState('');
   const [vccListPopupRow, setVccListPopupRow] = useState<VccRow | null>(null);
   const [recheckModalOpen, setRecheckModalOpen] = useState(false);
@@ -198,7 +199,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
   const TOOLBAR_STATUS_OPTIONS: Record<typeof activeMenu, string[]> = {
     'Declaration':       ['Completed', 'Submitted', 'Payment Pending', 'VAT Payment Pending', 'Declined', 'Cancelled', 'Clearance Inspection'],
     'Acknowledgement':   ['Accepted', 'Pending', 'Declined'],
-    'VCC':               ['Completed', 'Submitted', 'Payment Pending'],
+    'VCC':               ['Completed', 'Submitted', 'Payment Pending', 'In Progress'],
     'Refund & Claims':   ['Under Processing', 'Completed', 'Suspended', 'Draft'],
     'Cargo Transfer':    ['Completed', 'Submitted', 'Cancelled'],
   };
@@ -587,12 +588,23 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             />
           )}
           {vccStep === 'ePaymentConfirmed' && (
-            <VccEPaymentConfirmedPage onBackToListing={() => setVccStep('list')} />
+            <VccEPaymentConfirmedPage
+              onBackToListing={() => setVccStep('list')}
+              onMakeEPayment={() => setActiveMenu('Declaration')}
+              onChangePaymentMode={() => setVccStep('updatePaymentMode')}
+            />
           )}
           {vccStep === 'ePaymentFailed' && (
             <VccEPaymentFailedPage
               onBackToListing={() => setVccStep('list')}
               onRetryPayment={() => setVccStep('ePaymentProcessing')}
+              onChangePaymentMode={() => setVccStep('updatePaymentMode')}
+            />
+          )}
+          {vccStep === 'updatePaymentMode' && (
+            <VccUpdatePaymentModePage
+              onBackToListing={() => setVccStep('list')}
+              onSubmit={(mode) => setVccStep(mode === 'epayment' ? 'ePaymentProcessing' : 'paymentSuccess')}
             />
           )}
           {vccStep === 'auditHistory' && (
@@ -1820,8 +1832,10 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               onVccCountOpen={(row) => setVccListPopupRow(row)}
               onDeclarationOpen={(declNo) => { setVccDeclNo(declNo); setVccStep('declarationView'); }}
               externalStatus={toolbarStatus}
-              onMakePayment={() => setVccStep('ePaymentProcessing')}
+              onMakePayment={() => { setActiveMenu('Declaration'); }}
               onChangePaymentMode={() => setVccStep('ePaymentProcessing')}
+              onUpdatePaymentMode={() => setVccStep('updatePaymentMode')}
+              onCheckEPaymentStatus={() => setRecheckModalOpen(true)}
               onRetry={() => setVccStep('retryRequest')}
               onRecheckStatus={() => setRecheckModalOpen(true)}
             />

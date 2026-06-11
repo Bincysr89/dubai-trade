@@ -3,12 +3,16 @@ import BackToListingBar from './BackToListingBar';
 
 type Props = {
   onBackToListing: () => void;
+  onMakeEPayment?: () => void;
+  onChangePaymentMode?: () => void;
   requestNumber?: string;
   vccCount?: number;
 };
 
 export default function VccEPaymentConfirmedPage({
   onBackToListing,
+  onMakeEPayment,
+  onChangePaymentMode,
   requestNumber = '12345',
   vccCount = 2,
 }: Props) {
@@ -76,25 +80,30 @@ export default function VccEPaymentConfirmedPage({
             </span>
           </div>
 
-          {/* Action buttons */}
+          {/* Action buttons — Scenario 1: Payment Successful */}
           <div className="flex flex-wrap gap-[16px] justify-center pt-[8px]">
             <button
-              onClick={onBackToListing}
+              onClick={onMakeEPayment ?? onBackToListing}
               className="h-[48px] px-[20px] inline-flex items-center justify-center gap-[8px] rounded-[4px] border border-[#1360d2] bg-white text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
               style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, fontSize: 16, minWidth: 160 }}
             >
-              Download VCC&apos;s
-              <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M10 3v10" />
-                <path d="M5 9l5 5 5-5" />
-                <path d="M3 17h14" />
+              <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="5" width="16" height="12" rx="2"/>
+                <path d="M2 9h16"/><path d="M6 13h2"/><path d="M10 13h4"/>
               </svg>
+              Make e-Payment
             </button>
-
+            <button
+              onClick={onChangePaymentMode ?? onBackToListing}
+              className="h-[48px] px-[20px] inline-flex items-center justify-center gap-[8px] rounded-[4px] border border-[#1360d2] bg-white text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
+              style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, fontSize: 16, minWidth: 180 }}
+            >
+              Change Payment Mode
+            </button>
             <button
               onClick={onBackToListing}
               className="h-[48px] px-[20px] rounded-[4px] bg-[#1360d2] text-white hover:bg-[#0E4DB8] transition-colors"
-              style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, fontSize: 16, minWidth: 180 }}
+              style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, fontSize: 16, minWidth: 160 }}
             >
               Back to Listing
             </button>

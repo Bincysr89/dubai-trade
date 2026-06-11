@@ -4,6 +4,7 @@ import BackToListingBar from './BackToListingBar';
 type Props = {
   onBackToListing: () => void;
   onRetryPayment: () => void;
+  onChangePaymentMode?: () => void;
   requestNumber?: string;
   totalCharges?: number;
 };
@@ -11,6 +12,7 @@ type Props = {
 export default function VccEPaymentFailedPage({
   onBackToListing,
   onRetryPayment,
+  onChangePaymentMode,
   requestNumber = '25365',
   totalCharges = 30,
 }: Props) {
@@ -71,20 +73,26 @@ export default function VccEPaymentFailedPage({
             </span>
           </div>
 
-          {/* Action buttons */}
+          {/* Action buttons — Scenario 2: Payment Failure */}
           <div className="flex flex-wrap gap-[16px] justify-center pt-[8px]">
             <button
               onClick={onRetryPayment}
               className="h-[48px] px-[20px] rounded-[4px] bg-[#1360d2] text-white hover:bg-[#0E4DB8] transition-colors"
               style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, fontSize: 16, minWidth: 160 }}
             >
-              Retry Payment
+              Retry ePayment
             </button>
-
+            <button
+              onClick={onChangePaymentMode ?? onBackToListing}
+              className="h-[48px] px-[20px] inline-flex items-center justify-center gap-[8px] rounded-[4px] border border-[#1360d2] bg-white text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
+              style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, fontSize: 16, minWidth: 180 }}
+            >
+              Change Payment Mode
+            </button>
             <button
               onClick={onBackToListing}
               className="h-[48px] px-[20px] inline-flex items-center justify-center gap-[8px] rounded-[4px] border border-[#1360d2] bg-white text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
-              style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, fontSize: 16, minWidth: 180 }}
+              style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, fontSize: 16, minWidth: 160 }}
             >
               Back to Listing
             </button>
