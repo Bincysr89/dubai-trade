@@ -572,6 +572,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             <VccEPaymentPendingPage
               onBackToListing={() => setVccStep('list')}
               onMakePayment={() => setVccStep('ePaymentProcessing')}
+              onChangePaymentMode={() => setVccStep('updatePaymentMode')}
             />
           )}
           {vccStep === 'ePaymentSuccess' && (

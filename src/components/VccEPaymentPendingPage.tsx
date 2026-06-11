@@ -1,9 +1,9 @@
 import React from 'react';
-import BackToListingBar from './BackToListingBar';
 
 type Props = {
   onBackToListing: () => void;
   onMakePayment: () => void;
+  onChangePaymentMode?: () => void;
   requestNumber?: string;
   totalCharges?: number;
 };
@@ -11,6 +11,7 @@ type Props = {
 export default function VccEPaymentPendingPage({
   onBackToListing,
   onMakePayment,
+  onChangePaymentMode,
   requestNumber = '25365',
   totalCharges = 30,
 }: Props) {
@@ -80,10 +81,18 @@ export default function VccEPaymentPendingPage({
               className="h-[48px] px-[24px] rounded-[4px] bg-[#1360d2] text-white hover:bg-[#0E4DB8] transition-colors inline-flex items-center gap-[8px]"
               style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, fontSize: 16, minWidth: 180, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}
             >
-              Make Payment
-              <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M8 4l6 6-6 6" />
+              <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="5" width="16" height="12" rx="2"/>
+                <path d="M2 9h16"/><path d="M6 13h2"/><path d="M10 13h4"/>
               </svg>
+              Make e-Payment
+            </button>
+            <button
+              onClick={onChangePaymentMode ?? onBackToListing}
+              className="h-[48px] px-[20px] rounded-[4px] border border-[#1360d2] bg-white text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
+              style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, fontSize: 16, minWidth: 180 }}
+            >
+              Change Payment Mode
             </button>
             <button
               onClick={onBackToListing}
@@ -95,8 +104,6 @@ export default function VccEPaymentPendingPage({
           </div>
         </div>
       </div>
-
-      <BackToListingBar onBack={onBackToListing} />
     </div>
   );
 }
