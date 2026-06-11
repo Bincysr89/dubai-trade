@@ -19,7 +19,6 @@ import paymentIconSrc from '../assets/secure-payment-svgrepo-com 1.svg';
 type Props = { onClose: () => void };
 
 // Figma asset URLs for card backgrounds (used as overlay textures)
-const WAVE_BG = 'https://www.figma.com/api/mcp/asset/fe7ba969-7fe8-4201-aa8d-1f3f7f621c79';
 const ELLIPSE_DECOR = 'https://www.figma.com/api/mcp/asset/1c6e32bc-358a-473e-a1a5-1fcc5f65e398';
 
 const ITEMS = [
@@ -53,13 +52,6 @@ export default function ServiceCatalogueModal({ onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 bg-white flex flex-col overflow-hidden">
-      {/* Wave background */}
-      <img
-        src={WAVE_BG}
-        alt=""
-        className="absolute pointer-events-none"
-        style={{ left: -7, top: 200, width: 1335, height: 499, opacity: 0.7 }}
-      />
 
       {/* Navigation header */}
       <div className="relative z-10 flex-shrink-0">

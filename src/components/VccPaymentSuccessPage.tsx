@@ -1,14 +1,15 @@
 import React from 'react';
-import BackToListingBar from './BackToListingBar';
 
 type Props = {
   onBackToListing: () => void;
+  onShowPaymentFailed?: () => void;
   requestNumber?: string;
   vccCount?: number;
 };
 
 export default function VccPaymentSuccessPage({
   onBackToListing,
+  onShowPaymentFailed,
   requestNumber = '25365',
   vccCount = 2,
 }: Props) {
@@ -77,21 +78,8 @@ export default function VccPaymentSuccessPage({
             </span>
           </div>
 
-          {/* Action buttons — no Download VCC */}
+          {/* Action buttons */}
           <div className="flex flex-wrap gap-[16px] justify-center pt-[8px]">
-            <button
-              onClick={onBackToListing}
-              className="h-[48px] px-[20px] inline-flex items-center justify-center gap-[8px] rounded-[4px] border border-[#1360d2] bg-white text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
-              style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, fontSize: 16, minWidth: 160 }}
-            >
-              Download VCC&apos;s
-              <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M10 3v10" />
-                <path d="M5 9l5 5 5-5" />
-                <path d="M3 17h14" />
-              </svg>
-            </button>
-
             <button
               onClick={onBackToListing}
               className="h-[48px] px-[20px] rounded-[4px] bg-[#1360d2] text-white hover:bg-[#0E4DB8] transition-colors"
@@ -100,10 +88,20 @@ export default function VccPaymentSuccessPage({
               Back to Listing
             </button>
           </div>
+
+          {/* Demo shortcut */}
+          {onShowPaymentFailed && (
+            <button
+              onClick={onShowPaymentFailed}
+              className="text-[14px] text-[#697498] underline hover:text-[#1360d2] transition-colors"
+              style={{ fontFamily: "'Dubai', sans-serif" }}
+            >
+              show if payment failed
+            </button>
+          )}
         </div>
       </div>
 
-      <BackToListingBar onBack={onBackToListing} />
     </div>
   );
 }

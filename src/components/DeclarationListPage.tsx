@@ -132,6 +132,7 @@ const DECLARATIONS: {
 
 export default function DeclarationListPage({ onClose, onServiceCatalogue }: Props) {
   const [activeTab, setActiveTab] = useState<'all' | 'epay'>('all');
+  const [ePayVccFilter, setEPayVccFilter] = useState<string>('');
   const [showFilters, setShowFilters] = useState(false);
   // TODO: derive from auth context. For now broker login is enabled by default
   // so the Customer Type / Code filters are visible.
@@ -164,6 +165,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
   const [vccListPopupRow, setVccListPopupRow] = useState<VccRow | null>(null);
   const [recheckModalOpen, setRecheckModalOpen] = useState(false);
   const [vccDeclNo, setVccDeclNo] = useState<string>('');
+  const [vccRetryReqNo, setVccRetryReqNo] = useState<string>('');
   const [cargoStep, setCargoStep] = useState<'list' | 'pre' | 'create' | 'amend' | 'success' | 'amendSuccess' | 'document' | 'stepper' | 'paymentReview' | 'viewRequest' | 'cancel' | 'cargoHistory' | 'suspensionHistory' | 'suspensionHistoryView' | 'suspensionResponse' | 'receiptRelease'>('list');
   const [showSuspensionSuccess, setShowSuspensionSuccess] = useState(false);
   const [suspensionHistoryFrom, setSuspensionHistoryFrom] = useState<'list' | 'cargoHistory'>('list');
@@ -207,13 +209,17 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
   // Reset toolbar status when switching tabs so previous filter doesn't leak.
   useEffect(() => { setToolbarStatus(null); }, [activeMenu]);
 
-  // Reset the search-type dropdown when switching modules so options stay consistent
+  // Reset the search-type dropdown when switching modules or tabs so options stay consistent
   useEffect(() => {
-    setSearchType(activeMenu === 'VCC' ? 'Request Number' : activeMenu === 'Cargo Transfer' ? 'Cargo Transfer No.' : activeMenu === 'Refund & Claims' ? 'Declaration Number' : 'Declaration');
+    if (activeMenu === 'Declaration' && activeTab === 'epay') {
+      setSearchType('Declaration Number');
+    } else {
+      setSearchType(activeMenu === 'VCC' ? 'Request Number' : activeMenu === 'Cargo Transfer' ? 'Cargo Transfer No.' : activeMenu === 'Refund & Claims' ? 'Declaration Number' : 'Declaration');
+    }
     setSearchTypeOpen(false);
     setSearchValue('');
     setSearchQuery('');
-  }, [activeMenu]);
+  }, [activeMenu, activeTab]);
   const [openFlyout, setOpenFlyout] = useState<number | null>(null);
   const [filterFocused, setFilterFocused] = useState<Record<string, boolean>>({});
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
@@ -570,7 +576,10 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             <VccViewRequestPage onBack={() => setVccStep('list')} status={selectedVccStatus} />
           )}
           {vccStep === 'paymentSuccess' && (
-            <VccPaymentSuccessPage onBackToListing={() => setVccStep('list')} />
+            <VccPaymentSuccessPage
+              onBackToListing={() => setVccStep('list')}
+              onShowPaymentFailed={() => setVccStep('creditDebitFailed')}
+            />
           )}
           {vccStep === 'ePaymentPending' && (
             <VccEPaymentPendingPage
@@ -624,6 +633,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           {vccStep === 'retryPayment' && (
             <VccSearchResultPage
               mode="retry"
+              requestNumber={vccRetryReqNo}
               initialSelected={['v0', 'v2', 'v4']}
               onBack={() => setVccStep('list')}
               onSubmit={(mode) => setVccStep(mode === 'epayment' ? 'ePaymentPending' : 'paymentSuccess')}
@@ -841,21 +851,23 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
 
         {/* Controls row */}
         <div className="flex items-center justify-between mb-[12px] gap-[12px] flex-wrap">
-          {/* Left: advance filters button */}
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-[8px] h-[48px] px-[12px] sm:px-[16px] py-[12px] rounded-[4px] border text-[16px] transition-colors flex-shrink-0 ${
-              showFilters
-                ? 'bg-[#e2ebf9] border-[#1360d2] text-[#1360d2]'
-                : 'bg-white border-[#d4dcfa] text-[#000000]'
-            }`}
-            style={{ fontFamily: "'Dubai', sans-serif" }}
-          >
-            <span className="hidden sm:inline">Advance Filters</span>
-            <svg viewBox="0 0 24 24" className="size-[20px]" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M3 6h18M7 12h10M11 18h2" strokeLinecap="round" />
-            </svg>
-          </button>
+          {/* Left: advance filters button — hidden on ePayment tab */}
+          {!(activeMenu === 'Declaration' && activeTab === 'epay') && (
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center gap-[8px] h-[48px] px-[12px] sm:px-[16px] py-[12px] rounded-[4px] border text-[16px] transition-colors flex-shrink-0 ${
+                showFilters
+                  ? 'bg-[#e2ebf9] border-[#1360d2] text-[#1360d2]'
+                  : 'bg-white border-[#d4dcfa] text-[#000000]'
+              }`}
+              style={{ fontFamily: "'Dubai', sans-serif" }}
+            >
+              <span className="hidden sm:inline">Advance Filters</span>
+              <svg viewBox="0 0 24 24" className="size-[20px]" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M3 6h18M7 12h10M11 18h2" strokeLinecap="round" />
+              </svg>
+            </button>
+          )}
 
           {/* Center: search bar */}
           <div className="flex items-center bg-white border border-[#d5ddfb] rounded-[4px] h-[48px] flex-1 min-w-[180px] max-w-[420px] relative">
@@ -874,7 +886,9 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             </button>
             {searchTypeOpen && (
               <div className="absolute z-[80] top-[52px] left-0 bg-white rounded-[8px] py-[4px] overflow-hidden" style={{ minWidth: 180, boxShadow: '0px 2px 16px 0px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
-                {(activeMenu === 'VCC'
+                {(activeMenu === 'Declaration' && activeTab === 'epay'
+                  ? ['Declaration Number', 'Request Number']
+                  : activeMenu === 'VCC'
                   ? ['Request Number', 'VCC Number', 'Chasis Number', 'Declaration Number']
                   : activeMenu === 'Refund & Claims'
                   ? ['Declaration Number', 'Claim Number']
@@ -1781,7 +1795,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           {activeMenu === 'Declaration' && (
           <div className="bg-white flex items-center gap-[12px] h-[48px] px-[16px] py-[8px] rounded-[6px] flex-shrink-0" style={{ boxShadow: '0px 4px 10px rgba(0,0,0,0.08)' }}>
             <button
-              onClick={() => setActiveTab('all')}
+              onClick={() => { setActiveTab('all'); setEPayVccFilter(''); }}
               className={`h-[40px] px-[16px] rounded-[4px] text-[16px] font-medium transition-colors ${
                 activeTab === 'all'
                   ? 'bg-[#1360d2] text-white'
@@ -1792,7 +1806,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               All Records
             </button>
             <button
-              onClick={() => setActiveTab('epay')}
+              onClick={() => { setActiveTab('epay'); setEPayVccFilter(''); }}
               className={`h-[40px] px-[16px] rounded-[4px] text-[16px] font-medium transition-colors ${
                 activeTab === 'epay'
                   ? 'bg-[#1360d2] text-white'
@@ -1855,11 +1869,12 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               onVccCountOpen={(row) => setVccListPopupRow(row)}
               onDeclarationOpen={(declNo) => { setVccDeclNo(declNo); setVccStep('declarationView'); }}
               externalStatus={toolbarStatus}
-              onMakePayment={() => { setActiveMenu('Declaration'); }}
+              onMakePayment={(reqNo) => { setActiveMenu('Declaration'); setActiveTab('epay'); setEPayVccFilter(reqNo); }}
               onChangePaymentMode={() => setVccStep('ePaymentProcessing')}
               onUpdatePaymentMode={() => setVccStep('updatePaymentMode')}
               onCheckEPaymentStatus={() => setRecheckModalOpen(true)}
-              onRetry={() => setVccStep('retryRequest')}
+              onRetry={(reqNo) => { setVccRetryReqNo(reqNo); setVccStep('retryPayment'); }}
+              onMakePaymentReview={(reqNo) => { setVccRetryReqNo(reqNo); setVccStep('retryPayment'); }}
               onRecheckStatus={() => setRecheckModalOpen(true)}
             />
           )
@@ -1888,7 +1903,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             onDecline={(rowIndex) => { setAckDeclineRowIndex(rowIndex); setAckDeclineReasonOpen(true); }}
           />
         ) : activeMenu === 'Declaration' && activeTab === 'epay' ? (
-          <EPaymentsTable />
+          <EPaymentsTable filterReqNo={ePayVccFilter || undefined} />
         ) : (
           <div className="overflow-x-auto pb-[20px]">
             <table

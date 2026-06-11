@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import BackToListingBar from './BackToListingBar';
 
 const font = "'Dubai', sans-serif";
 
@@ -184,16 +185,6 @@ export default function VccUpdatePaymentModePage({
           Update Payment Mode - {requestNumber}
         </h1>
 
-        {/* Info banner — no back to vehicle selection */}
-        <div className="bg-[#e2ebf9] border border-[#b7cff3] rounded-[6px] px-[16px] py-[10px] flex items-start gap-[10px] mb-[20px]" style={{ fontFamily: font }}>
-          <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="#1360d2" strokeWidth="1.7" className="flex-shrink-0 mt-[2px]">
-            <circle cx="10" cy="10" r="8" /><path d="M10 6v5M10 14h.01" strokeLinecap="round" />
-          </svg>
-          <p className="text-[16px] text-[#0e1b3d]">
-            You are updating the payment mode for request <strong>{requestNumber}</strong>. Vehicle selection is locked — only the payment mode can be changed.
-          </p>
-        </div>
-
         {/* Two-column layout: left details | right payment summary */}
         <div className="grid gap-[24px] items-start grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px]">
 
@@ -302,14 +293,6 @@ export default function VccUpdatePaymentModePage({
               Submit
             </button>
 
-            <button
-              onClick={onBackToListing}
-              className="mt-[10px] w-full h-[44px] rounded-[4px] text-[16px] border border-[#d5ddfb] text-[#697498] hover:border-[#1360d2] hover:text-[#1360d2] transition-colors"
-              style={{ fontFamily: font, fontWeight: 500 }}
-            >
-              Cancel
-            </button>
-
             {/* Insufficient Balance Modal */}
             {showInsufficientModal && (
               <div className="fixed inset-0 z-[200] flex items-center justify-center" style={{ background: 'rgba(14,27,61,0.45)' }}>
@@ -346,6 +329,8 @@ export default function VccUpdatePaymentModePage({
           </div>
         </div>
       </div>
+
+      <BackToListingBar onBackToListing={onBackToListing} />
     </div>
   );
 }

@@ -76,6 +76,7 @@ const VCC_REQUESTS: VccRow[] = [
   { reqNo: '25347', declNo: '1012132134', badge: 'wlp',  reqDate: '04-Dec-24', requestedFor: 'CONSOLIDATED SHIPPING SERVICES L.L.C — AE-1019056',  requestType: 'New', subType: 'New', vccCount: 2, remarks: '', declType: 'Re Export to ROW (after import for re export)',  declOwner: 'code + name', status: 'Under Processing' },
   { reqNo: '25348', declNo: '1012132135', badge: 'wlp',  reqDate: '03-Dec-24', requestedFor: 'CONSOLIDATED SHIPPING SERVICES L.L.C — AE-1019056',  requestType: 'New', subType: 'New', vccCount: 4, remarks: '', declType: 'Re Export to ROW (after import for re export)',  declOwner: 'code + name', status: 'Payment Failed' },
   { reqNo: '25365', declNo: '1012132136', badge: 'none', reqDate: '02-Dec-24', requestedFor: 'CONSOLIDATED SHIPPING SERVICES L.L.C — AE-1019056', requestType: 'New', subType: 'New', vccCount: 1, remarks: '', declType: 'Export from Local', declOwner: 'code + name', status: 'Payment Pending' },
+  { reqNo: '25366', declNo: '1012132137', badge: 'aeo',  reqDate: '01-Dec-24', requestedFor: 'CONSOLIDATED SHIPPING SERVICES L.L.C — AE-1019056', requestType: 'New', subType: 'New', vccCount: 2, remarks: '', declType: 'Import from ROW',    declOwner: 'code + name', status: 'Payment Pending' },
 ];
 
 type Props = {
@@ -87,15 +88,16 @@ type Props = {
   onVccCountOpen?: (row: VccRow) => void;
   /** Optional status filter driven from the parent toolbar. When provided, takes precedence over the column-header filter. */
   externalStatus?: string | null;
-  onMakePayment?: () => void;
+  onMakePayment?: (reqNo: string) => void;
   onChangePaymentMode?: () => void;
   onUpdatePaymentMode?: () => void;
   onCheckEPaymentStatus?: () => void;
-  onRetry?: () => void;
+  onRetry?: (reqNo: string) => void;
+  onMakePaymentReview?: (reqNo: string) => void;
   onRecheckStatus?: () => void;
 };
 
-export default function VccTable({ onView, onAmend, onDownload, onAudit, onDeclarationOpen, onVccCountOpen, externalStatus, onMakePayment, onChangePaymentMode, onUpdatePaymentMode, onCheckEPaymentStatus, onRetry, onRecheckStatus }: Props = {}) {
+export default function VccTable({ onView, onAmend, onDownload, onAudit, onDeclarationOpen, onVccCountOpen, externalStatus, onMakePayment, onChangePaymentMode, onUpdatePaymentMode, onCheckEPaymentStatus, onRetry, onMakePaymentReview, onRecheckStatus }: Props = {}) {
   const [openFlyout, setOpenFlyout] = useState<number | null>(null);
   const flyoutRef = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState(1);
@@ -302,19 +304,16 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
                                 View Request
                               </span>
                             </button>
-                            {/* Retry */}
+                            {/* Retry Payment */}
                             <button
                               className="group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
-                              onClick={() => { setOpenFlyout(null); onRetry?.(); }}
+                              onClick={() => { setOpenFlyout(null); onRetry?.(row.reqNo); }}
                             >
                               <span className="text-[#7a7a7a] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
-                                <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M4 4a7 7 0 1 1 0 12" />
-                                  <path d="M1 4h3v3" />
-                                </svg>
+                                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEzLjQwMzEgMy4wMDE1NEM4LjMxMzEgMi44NjE1NCA0LjE0MzEgNi45NTE1NCA0LjE0MzEgMTIuMDAxNUgyLjM1MzFDMS45MDMxIDEyLjAwMTUgMS42ODMxIDEyLjU0MTUgMi4wMDMxIDEyLjg1MTVMNC43OTMxIDE1LjY1MTVDNC45OTMxIDE1Ljg1MTUgNS4zMDMxIDE1Ljg1MTUgNS41MDMxIDE1LjY1MTVMOC4yOTMxIDEyLjg1MTVDOC42MDMxIDEyLjU0MTUgOC4zODMxIDEyLjAwMTUgNy45MzMxIDEyLjAwMTVINi4xNDMxQzYuMTQzMSA4LjEwMTU0IDkuMzIzMSA0Ljk1MTU0IDEzLjI0MzEgNS4wMDE1NEMxNi45NjMxIDUuMDUxNTQgMjAuMDkzMSA4LjE4MTU0IDIwLjE0MzEgMTEuOTAxNUMyMC4xOTMxIDE1LjgxMTUgMTcuMDQzMSAxOS4wMDE1IDEzLjE0MzEgMTkuMDAxNUMxMS41MzMxIDE5LjAwMTUgMTAuMDQzMSAxOC40NTE1IDguODYzMSAxNy41MjE1QzguNDYzMSAxNy4yMTE1IDcuOTAzMSAxNy4yNDE1IDcuNTQzMSAxNy42MDE1QzcuMTIzMSAxOC4wMjE1IDcuMTUzMSAxOC43MzE1IDcuNjIzMSAxOS4wOTE1QzkuMTQzMSAyMC4yOTE1IDExLjA1MzEgMjEuMDAxNSAxMy4xNDMxIDIxLjAwMTVDMTguMTkzMSAyMS4wMDE1IDIyLjI4MzEgMTYuODMxNSAyMi4xNDMxIDExLjc0MTVDMjIuMDEzMSA3LjA1MTU0IDE4LjA5MzEgMy4xMzE1NCAxMy40MDMxIDMuMDAxNTRaIiBmaWxsPSIjNjk2RjgzIi8+Cjwvc3ZnPgo=" alt="" width="18" height="18" style={{filter:'brightness(0) saturate(100%) invert(46%) sepia(9%) saturate(600%) hue-rotate(190deg) brightness(95%) contrast(86%)'}} className="group-hover:invert group-hover:brightness-200" />
                               </span>
                               <span className="text-[16px] text-[#111838] group-hover:text-white leading-[20px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
-                                Retry
+                                Retry Payment
                               </span>
                             </button>
                           </>
@@ -335,10 +334,25 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
                                 View Request
                               </span>
                             </button>
+                            {/* Make Payment — opens review page */}
+                            <button
+                              className="group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
+                              onClick={() => { setOpenFlyout(null); onMakePaymentReview?.(row.reqNo); }}
+                            >
+                              <span className="text-[#7a7a7a] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
+                                <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                                  <rect x="2" y="5" width="16" height="12" rx="2"/>
+                                  <path d="M2 9h16"/><path d="M6 13h2"/><path d="M10 13h4"/>
+                                </svg>
+                              </span>
+                              <span className="text-[16px] text-[#111838] group-hover:text-white leading-[20px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
+                                Make Payment
+                              </span>
+                            </button>
                             {/* Make ePayment — navigates to ePayment tab under Declaration */}
                             <button
                               className="group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
-                              onClick={() => { setOpenFlyout(null); onMakePayment?.(); }}
+                              onClick={() => { setOpenFlyout(null); onMakePayment?.(row.reqNo); }}
                             >
                               <span className="text-[#7a7a7a] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
                                 <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">

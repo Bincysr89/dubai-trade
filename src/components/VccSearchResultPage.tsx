@@ -14,6 +14,8 @@ type Props = {
    * retry  — starts directly at payment step; back-to-select is hidden
    */
   mode?: 'create' | 'amend' | 'retry';
+  /** Request number shown in the page title when mode === 'retry' */
+  requestNumber?: string;
 };
 
 type Vehicle = {
@@ -65,7 +67,7 @@ const FilterIcon = () => (
   </svg>
 );
 
-export default function VccSearchResultPage({ onBack, onSubmit, onCreditDebitFailed, initialSelected, mode = 'create' }: Props) {
+export default function VccSearchResultPage({ onBack, onSubmit, onCreditDebitFailed, initialSelected, mode = 'create', requestNumber }: Props) {
   const [selected, setSelected] = useState<Set<string>>(() => new Set(initialSelected ?? []));
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
@@ -161,7 +163,7 @@ export default function VccSearchResultPage({ onBack, onSubmit, onCreditDebitFai
       {/* Body — single column on select step; selection list + payment summary stacked on payment step */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
         <h1 className="text-2xl sm:text-3xl lg:text-[32px] text-[#111838] mb-[20px]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
-          {mode === 'amend' ? 'Amend VCC Request' : 'Request VCC'}
+          {mode === 'amend' ? 'Amend VCC Request' : mode === 'retry' && requestNumber ? `Request VCC - ${requestNumber}` : 'Request VCC'}
         </h1>
         {mode === 'amend' && (
           <div className="mb-[8px]">
@@ -617,7 +619,10 @@ export default function VccSearchResultPage({ onBack, onSubmit, onCreditDebitFai
       ) : mode !== 'retry' ? (
         /* Normal amend/create: allow going back to vehicle selection */
         <BackToListingBar onBack={() => setStep('select')} />
-      ) : null /* retry mode: no back-to-select navigation */}
+      ) : (
+        /* retry mode: back to listing only, no back-to-select */
+        <BackToListingBar onBackToListing={onBack} />
+      )}
 
     </div>
   );
