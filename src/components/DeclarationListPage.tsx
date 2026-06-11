@@ -15,6 +15,7 @@ import VccEPaymentConfirmedPage from './VccEPaymentConfirmedPage';
 import VccEPaymentFailedPage from './VccEPaymentFailedPage';
 import VccAuditHistoryPage from './VccAuditHistoryPage';
 import VccUpdatePaymentModePage from './VccUpdatePaymentModePage';
+import EPaymentsTable from './EPaymentsTable';
 import CargoTransferTable from './CargoTransferTable';
 import ClaimsTable from './ClaimsTable';
 import AcknowledgementTable, { ACK_ROWS } from './AcknowledgementTable';
@@ -1865,6 +1866,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             onSelectedChange={setAckSelected}
             onDecline={(rowIndex) => { setAckDeclineRowIndex(rowIndex); setAckDeclineReasonOpen(true); }}
           />
+        ) : activeMenu === 'Declaration' && activeTab === 'epay' ? (
+          <EPaymentsTable />
         ) : (
           <div className="overflow-x-auto pb-[20px]">
             <table
