@@ -1,5 +1,4 @@
 import React from 'react';
-import BackToListingBar from './BackToListingBar';
 
 type Props = {
   onBackToListing: () => void;
@@ -106,7 +105,6 @@ export default function VccEPaymentSuccessPage({
         </div>
       </div>
 
-      <BackToListingBar onBack={onBackToListing} />
     </div>
   );
 }
