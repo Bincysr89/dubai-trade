@@ -8,15 +8,14 @@ const wlpLogoSrc = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAICAYAAA
 const aeoLogoSrc = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAHCAYAAAAf6f3xAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAAAs9JREFUeAElUltIVF0U/tbeR8+oUxrq/zc2DQZTUlB0oRvR/SmiogcDzXqIkO49REQUPhTdiS4PRZQmRFAIPXShoIKgokgt6iEpI6OZ0KmEzImZM+fsvVrHXs4+e+39fev7vrXpfWTS5RLSrRNyPZ0ATBwoeRSZuJ+ZO5u8Tw+6AR9JuGie1wAU9aLz6Ut0wMhdFYvFZhDsFrDVIGVIFfchuTCnkjP6U63tt2pr/6hgc8dGkNlN1iag1UcLHPt2/fRtR4PXFYDHS4CuJ8I2Ttgt0SoH8AaBhwgb71tSjV/5wyA/g6ZNS9HRNix1oqLSCI2bPJa0ewdzG10a/V8daVVmmT+g/pUxs/btAgcHtcUVQ2QUY7UCLsWb9rpOqJzAJEwk//gxsgpcanLIqKkpxVB+f1hVrMZTX2qpqcc9cU20/UZMBXYZXDqlWXna59eBYk5fm921fP33il4O9gjNSeMgoyzWMsOTfQUxtzgseJLPqLBJqCJceUQElwMWB2qnqRytJPg7qwp7houD8S3Rxefe9nRMSWEEIIgCPzBsWJKC9QtZ9FdO/Dy6K4rhn2Ms2xfk81RWaoBha4gpL6NJiinKSOOZaeBuM2blzpd71al8Ia6J0t319bbYK8SrzLZ2JyhfIapKmfSC7PDvQ0gmm2FD0YGjyK2Lljo53xvSqiTCiMXyff6YoTgPZhzFK4NRFcfo99AEsdFPyv7P0APUG6nb5IPPivabBNUn76tBhJioN7B8+tlnVW42e0Vb9eXfICQGxVGxuUxbXsNElUxok4TecZgOqfCGoG17qmX+tcTx7gY2/kUxd1vcvlNMiyzxnCIn0kgrAPdMSXIVsdqKkAj8vLKMjlT/jP5IHL3QaC1n7YXt95XKjIwiXVbmJDZcbbC6aDDwTE+xtmtEkyOE/0YVhkD6+9e29e1wXU5sbF3MBjtguVYOexjOmfSbE11/AVP+QMCmcxkpAAAAAElFTkSuQmCC';
 
 type BadgeType = 'both' | 'aeo' | 'wlp' | 'none';
-type VccStatus = 'Submitted' | 'Under Processing' | 'Completed' | 'Rejected' | 'Payment Pending' | 'In Progress';
+type VccStatus = 'Submitted' | 'Payment Pending' | 'Payment Failed' | 'Under Processing' | 'Completed';
 
 const VCC_STATUS_STYLE: Record<VccStatus, { bg: string; color: string }> = {
-  'Submitted':        { bg: 'rgba(19,96,210,0.08)',   color: '#1360d2' },
-  'Under Processing': { bg: 'rgba(255,169,26,0.16)',  color: '#b45309' },
-  'Completed':        { bg: 'rgba(40,167,69,0.08)',   color: '#28a745' },
-  'Rejected':         { bg: 'rgba(192,57,43,0.08)',   color: '#c0392b' },
-  'Payment Pending':  { bg: 'rgba(255,169,26,0.16)',  color: '#b45309' },
-  'In Progress':      { bg: 'rgba(19,96,210,0.10)',   color: '#1360d2' },
+  'Submitted':        { bg: 'rgba(19,96,210,0.08)',  color: '#1360d2' },
+  'Payment Pending':  { bg: 'rgba(255,169,26,0.16)', color: '#b45309' },
+  'Payment Failed':   { bg: 'rgba(192,57,43,0.08)',  color: '#c0392b' },
+  'Under Processing': { bg: 'rgba(255,169,26,0.16)', color: '#b45309' },
+  'Completed':        { bg: 'rgba(40,167,69,0.08)',  color: '#28a745' },
 };
 
 type FlyoutAction = 'amend' | 'view' | 'download' | 'audit' | 'recheck';
@@ -75,9 +74,8 @@ const VCC_REQUESTS: VccRow[] = [
   { reqNo: '25345', declNo: '1012132132', badge: 'both', reqDate: '05-Dec-24', requestedFor: 'CONSOLIDATED SHIPPING SERVICES L.L.C — AE-1019056',  requestType: 'New', subType: 'New', vccCount: 3, remarks: '', declType: 'Export from Local',                              declOwner: 'code + name', status: 'Completed' },
   { reqNo: '25346', declNo: '1012132133', badge: 'aeo',  reqDate: '05-Dec-24', requestedFor: 'CONSOLIDATED SHIPPING SERVICES L.L.C — AE-1019056',  requestType: 'New', subType: 'New', vccCount: 1, remarks: '', declType: 'Export Statistical',                             declOwner: 'code + name', status: 'Submitted' },
   { reqNo: '25347', declNo: '1012132134', badge: 'wlp',  reqDate: '04-Dec-24', requestedFor: 'CONSOLIDATED SHIPPING SERVICES L.L.C — AE-1019056',  requestType: 'New', subType: 'New', vccCount: 2, remarks: '', declType: 'Re Export to ROW (after import for re export)',  declOwner: 'code + name', status: 'Under Processing' },
-  { reqNo: '25348', declNo: '1012132135', badge: 'wlp',  reqDate: '03-Dec-24', requestedFor: 'CONSOLIDATED SHIPPING SERVICES L.L.C — AE-1019056',  requestType: 'New', subType: 'New', vccCount: 4, remarks: '', declType: 'Re Export to ROW (after import for re export)',  declOwner: 'code + name', status: 'Rejected' },
+  { reqNo: '25348', declNo: '1012132135', badge: 'wlp',  reqDate: '03-Dec-24', requestedFor: 'CONSOLIDATED SHIPPING SERVICES L.L.C — AE-1019056',  requestType: 'New', subType: 'New', vccCount: 4, remarks: '', declType: 'Re Export to ROW (after import for re export)',  declOwner: 'code + name', status: 'Payment Failed' },
   { reqNo: '25365', declNo: '1012132136', badge: 'none', reqDate: '02-Dec-24', requestedFor: 'CONSOLIDATED SHIPPING SERVICES L.L.C — AE-1019056', requestType: 'New', subType: 'New', vccCount: 1, remarks: '', declType: 'Export from Local', declOwner: 'code + name', status: 'Payment Pending' },
-  { reqNo: '25366', declNo: '1012132137', badge: 'none', reqDate: '01-Dec-24', requestedFor: 'CONSOLIDATED SHIPPING SERVICES L.L.C — AE-1019056', requestType: 'New', subType: 'New', vccCount: 2, remarks: '', declType: 'Export Statistical',  declOwner: 'code + name', status: 'In Progress' },
 ];
 
 type Props = {
@@ -104,7 +102,7 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
   const [pageSize, setPageSize] = useState(8);
   const [statusFilter, setStatusFilter] = useState<VccStatus | null>(null);
   const VCC_STATUS_COLOR: Record<VccStatus, string> = {
-    'Submitted': '#1360d2', 'Under Processing': '#b45309', 'Completed': '#28a745', 'Rejected': '#c0392b', 'Payment Pending': '#b45309', 'In Progress': '#1360d2',
+    'Submitted': '#1360d2', 'Payment Pending': '#b45309', 'Payment Failed': '#c0392b', 'Under Processing': '#b45309', 'Completed': '#28a745',
   };
   const effectiveStatus = (externalStatus as VccStatus | null | undefined) ?? statusFilter;
   const filteredRows = useMemo(
@@ -136,7 +134,7 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
   const remarkFor = (status: VccStatus): string => {
     if (status === 'Completed')        return 'Your Request VCCs have been processed and downloaded.';
     if (status === 'Under Processing') return 'Request is being reviewed. Please check back shortly.';
-    if (status === 'Rejected')         return 'Request has been rejected. Please contact support for details.';
+    if (status === 'Payment Failed')    return 'Payment failed. Please retry or update the payment mode.';
     return 'Request submitted. Awaiting processing.';
   };
 
@@ -287,7 +285,7 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
                           border: '1px solid #f0f0f5',
                         }}
                       >
-                        {row.status === 'Rejected' ? (
+                        {row.status === 'Payment Failed' ? (
                           <>
                             {/* View Request */}
                             <button
@@ -366,38 +364,6 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
                               </span>
                               <span className="text-[16px] text-[#111838] group-hover:text-white leading-[20px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
                                 Update Payment Mode
-                              </span>
-                            </button>
-                          </>
-                        ) : row.status === 'In Progress' ? (
-                          <>
-                            {/* View Request */}
-                            <button
-                              className="group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
-                              onClick={() => { setOpenFlyout(null); onView?.(row.status); }}
-                            >
-                              <span className="text-[#7a7a7a] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
-                                <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z" />
-                                  <circle cx="10" cy="10" r="2.5" />
-                                </svg>
-                              </span>
-                              <span className="text-[16px] text-[#111838] group-hover:text-white leading-[20px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
-                                View Request
-                              </span>
-                            </button>
-                            {/* Check e-Payment Status */}
-                            <button
-                              className="group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
-                              onClick={() => { setOpenFlyout(null); onCheckEPaymentStatus?.(); }}
-                            >
-                              <span className="text-[#7a7a7a] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
-                                <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M4 4a7 7 0 1 1 0 12" /><path d="M1 4h3v3" />
-                                </svg>
-                              </span>
-                              <span className="text-[16px] text-[#111838] group-hover:text-white leading-[20px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
-                                Check e-Payment Status
                               </span>
                             </button>
                           </>

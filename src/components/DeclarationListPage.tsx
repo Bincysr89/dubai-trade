@@ -199,7 +199,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
   const TOOLBAR_STATUS_OPTIONS: Record<typeof activeMenu, string[]> = {
     'Declaration':       ['Completed', 'Submitted', 'Payment Pending', 'VAT Payment Pending', 'Declined', 'Cancelled', 'Clearance Inspection'],
     'Acknowledgement':   ['Accepted', 'Pending', 'Declined'],
-    'VCC':               ['Completed', 'Submitted', 'Payment Pending', 'In Progress'],
+    'VCC':               ['Submitted', 'Payment Pending', 'Payment Failed', 'Under Processing', 'Completed'],
     'Refund & Claims':   ['Under Processing', 'Completed', 'Suspended', 'Draft'],
     'Cargo Transfer':    ['Completed', 'Submitted', 'Cancelled'],
   };
