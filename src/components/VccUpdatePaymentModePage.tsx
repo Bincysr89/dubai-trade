@@ -1,26 +1,68 @@
-import React, { useState } from 'react';
-import BackToListingBar from './BackToListingBar';
+import React, { useEffect, useRef, useState } from 'react';
 
 const font = "'Dubai', sans-serif";
-
-type PaymentMode = 'creditDebit' | 'epayment' | '';
 
 type Props = {
   onBackToListing: () => void;
   onSubmit: (mode: 'creditDebit' | 'epayment') => void;
   requestNumber?: string;
-  totalCharges?: number;
 };
+
+// ── shared sample data (mirrors VccSearchResultPage) ────────────────────────
+const SAMPLE_BRANDS  = ['Aston Martin', 'Ferrari', 'Porsche', 'Bentley', 'Lamborghini', 'McLaren', 'Maserati', 'Bugatti'];
+const SAMPLE_COLORS  = ['Red', 'Black', 'White', 'Silver', 'Blue', 'Green', 'Grey', 'Yellow'];
+const SAMPLE_YEARS   = ['2010', '2012', '2022', '2018', '2020', '2024', '2015', '2023'];
+const SAMPLE_ENGINES = ['EN-9381472', 'EN-2284917', 'EN-7190334', 'EN-5572819', 'EN-3098471', 'EN-6411238', 'EN-8823746', 'EN-1107592'];
+
+type Vehicle = { id: string; chassis: string; make: string; brand: string; color: string; model: string };
+const VEHICLES: Vehicle[] = Array.from({ length: 56 }, (_, i) => ({
+  id: `v${i}`,
+  chassis: `BHASSIS${String(i + 1).padStart(3, '0')}`,
+  make: 'ACURAA',
+  brand: SAMPLE_BRANDS[i % SAMPLE_BRANDS.length],
+  engineNumber: `${SAMPLE_ENGINES[i % SAMPLE_ENGINES.length]}-${String(i + 1).padStart(2, '0')}`,
+  color: SAMPLE_COLORS[i % SAMPLE_COLORS.length],
+  model: SAMPLE_YEARS[i % SAMPLE_YEARS.length],
+}));
+
+// Pre-selected vehicles — same as those locked in the existing request
+const PRE_SELECTED = new Set(['v0', 'v2', 'v4']);
+const VCC_PER_VEHICLE = 50;
+const KNOWLEDGE_FEES  = 5;
 
 const PAYMENT_MODES = [
   { value: 'creditDebit', label: 'Credit/Debit Account' },
   { value: 'epayment',    label: 'ePayment' },
 ];
-
 const CREDIT_ACCOUNTS = [
   { value: '1011146', label: '1011146' },
   { value: '102343',  label: '102343' },
 ];
+
+// ── sub-components ───────────────────────────────────────────────────────────
+function Field({ label, value, wide }: { label: string; value: string; wide?: boolean }) {
+  return (
+    <div
+      className="flex flex-col gap-[2px] min-w-0 first:pl-0 [&:not(:first-child)]:pl-[28px]"
+      style={wide ? { flex: '1 1 280px' } : { flex: '0 0 auto' }}
+    >
+      <span className="text-[16px] text-[#697498] whitespace-nowrap" style={{ fontFamily: font }}>{label}</span>
+      <span
+        className="text-[16px] text-[#111838]"
+        style={{ fontFamily: font, fontWeight: 600, whiteSpace: wide ? 'normal' : 'nowrap' }}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
+
+const SummaryRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
+  <div className="flex items-center justify-between py-[10px]" style={{ borderBottom: '1px dashed #e2ebf9' }}>
+    <span className="text-[16px] text-[#455174]" style={{ fontFamily: font }}>{label}</span>
+    <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 500, fontSize: 14 }}>{value}</span>
+  </div>
+);
 
 function StyledDropdown({
   value, onChange, options, placeholder,
@@ -28,38 +70,95 @@ function StyledDropdown({
   value: string;
   onChange: (v: string) => void;
   options: { value: string; label: string }[];
-  placeholder?: string;
+  placeholder: string;
 }) {
+  const [open, setOpen] = useState(false);
+  const [hovered, setHovered] = useState<string | null>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [open]);
+
+  const selected = options.find((m) => m.value === value);
+
   return (
-    <div className="relative">
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full h-[48px] rounded-[4px] border border-[#d5ddfb] px-[12px] pr-[36px] text-[16px] appearance-none bg-white focus:outline-none focus:border-[#1360d2] cursor-pointer"
-        style={{ fontFamily: font, color: value ? '#0e1b3d' : '#aaa' }}
+    <div ref={wrapRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center justify-between w-full h-[44px] bg-white border border-[#d5ddfb] rounded-[4px] px-[14px] cursor-pointer hover:border-[#1360d2] transition-colors"
       >
-        <option value="" disabled>{placeholder || 'Select'}</option>
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>{o.label}</option>
-        ))}
-      </select>
-      <svg className="absolute right-[12px] top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2">
-        <path d="M6 9l6 6 6-6" />
-      </svg>
+        <span className="text-[16px] font-medium whitespace-nowrap" style={{ fontFamily: font, color: selected ? '#1360d2' : '#697498' }}>
+          {selected ? selected.label : placeholder}
+        </span>
+        <svg viewBox="0 0 24 24" width="18" height="18" className={`text-[#1360d2] transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2.5">
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+      {open && (
+        <div
+          className="absolute z-[80] left-0 right-0 bg-white rounded-[8px] py-[4px] overflow-hidden"
+          style={{ top: 48, boxShadow: '0px 2px 16px 0px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}
+        >
+          {options.map((m) => {
+            const active  = m.value === value;
+            const isHover = hovered === m.value;
+            return (
+              <button
+                key={m.value}
+                onMouseEnter={() => setHovered(m.value)}
+                onMouseLeave={() => setHovered((h) => (h === m.value ? null : h))}
+                onClick={() => { onChange(m.value); setOpen(false); }}
+                className="block w-full text-left px-[14px] py-[10px] text-[16px] transition-colors"
+                style={{ background: active || isHover ? '#e2ebf9' : 'transparent', color: active || isHover ? '#1360d2' : '#0e1b3d', fontFamily: font, fontWeight: active || isHover ? 500 : 400 }}
+              >
+                {m.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
 
+// ── main component ───────────────────────────────────────────────────────────
 export default function VccUpdatePaymentModePage({
   onBackToListing,
   onSubmit,
   requestNumber = '25365',
-  totalCharges = 30,
 }: Props) {
-  const [paymentMode, setPaymentMode] = useState<PaymentMode>('');
+  const [paymentMode, setPaymentMode] = useState('');
   const [creditAccount, setCreditAccount] = useState('');
+  const [showInsufficientModal, setShowInsufficientModal] = useState(false);
+  const [insufficientAccount, setInsufficientAccount] = useState<string | null>(null);
+
+  const selectedVehicles = VEHICLES.filter((v) => PRE_SELECTED.has(v.id));
+  const count       = selectedVehicles.length;
+  const vccCharges  = count * VCC_PER_VEHICLE;
+  const total       = vccCharges + KNOWLEDGE_FEES;
+  const fmt         = (n: number) => `Dh ${n.toLocaleString()}`;
 
   const canSubmit = paymentMode === 'epayment' || (paymentMode === 'creditDebit' && !!creditAccount);
+
+  const handleSubmit = () => {
+    if (!canSubmit) return;
+    if (paymentMode === 'epayment') { onSubmit('epayment'); return; }
+    if (paymentMode === 'creditDebit') {
+      if (insufficientAccount !== null && creditAccount !== insufficientAccount) {
+        onSubmit('creditDebit');
+      } else {
+        setInsufficientAccount(creditAccount);
+        setShowInsufficientModal(true);
+      }
+    }
+  };
 
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full">
@@ -70,9 +169,7 @@ export default function VccUpdatePaymentModePage({
           <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: font }}>/</span>
           <span className="text-[16px] text-[#8f94ae]" style={{ fontFamily: font }}>VCC</span>
           <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: font }}>/</span>
-          <span className="text-[16px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>
-            Update Payment Mode
-          </span>
+          <span className="text-[16px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>Update Payment Mode</span>
         </div>
         <div className="bg-[#e2ebf9] rounded-[4px] h-[28px] px-[12px] flex items-center">
           <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>AE-1019056- Dubai Customs - Test LLC</span>
@@ -81,89 +178,172 @@ export default function VccUpdatePaymentModePage({
 
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
         {/* Page title */}
-        <h1 className="text-2xl sm:text-3xl lg:text-[32px] text-[#111838] mb-[24px]" style={{ fontFamily: font, fontWeight: 500 }}>
+        <h1 className="text-2xl sm:text-3xl lg:text-[32px] text-[#111838] mb-[8px]" style={{ fontFamily: font, fontWeight: 500 }}>
           Update Payment Mode - {requestNumber}
         </h1>
 
-        {/* Card */}
-        <div
-          className="bg-white rounded-[8px] p-[32px] max-w-[560px]"
-          style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}
-        >
-          {/* Summary */}
-          <div className="mb-[24px] flex flex-col gap-[12px]">
-            <div className="flex items-center justify-between">
-              <span className="text-[15px] text-[#697498]" style={{ fontFamily: font }}>Request Number</span>
-              <span className="text-[15px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 600 }}>{requestNumber}</span>
+        {/* Info banner — no back to vehicle selection */}
+        <div className="bg-[#e2ebf9] border border-[#b7cff3] rounded-[6px] px-[16px] py-[10px] flex items-start gap-[10px] mb-[20px]" style={{ fontFamily: font }}>
+          <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="#1360d2" strokeWidth="1.7" className="flex-shrink-0 mt-[2px]">
+            <circle cx="10" cy="10" r="8" /><path d="M10 6v5M10 14h.01" strokeLinecap="round" />
+          </svg>
+          <p className="text-[16px] text-[#0e1b3d]">
+            You are updating the payment mode for request <strong>{requestNumber}</strong>. Vehicle selection is locked — only the payment mode can be changed.
+          </p>
+        </div>
+
+        {/* Two-column layout: left details | right payment summary */}
+        <div className="grid gap-[24px] items-start grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px]">
+
+          {/* LEFT column */}
+          <div className="flex flex-col gap-[24px] min-w-0">
+
+            {/* Declaration Details */}
+            <div className="bg-white rounded-[8px] px-[24px] py-[16px]" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
+              <p className="text-[20px] text-[#0e1b3d] mb-[12px]" style={{ fontFamily: font, fontWeight: 700 }}>
+                Declaration Details
+              </p>
+              <div className="flex flex-wrap items-start gap-x-[28px] gap-y-[12px] divide-x divide-[#e2ebf9]">
+                <Field label="Declaration Number" value="103-00011064425-3" />
+                <Field label="Declaration Date"   value="09/11/2024" />
+                <Field label="Declaration Type"   value="IM3 - Import to Local from CW" />
+                <Field label="Declaration Owner"  value="AE-8123187 VIKRAM SINGH CTO GULF DENIM LIMITED (LLC)" wide />
+              </div>
             </div>
-            <div className="flex items-center justify-between" style={{ borderTop: '1px solid #f0f4ff', paddingTop: 12 }}>
-              <span className="text-[15px] text-[#697498]" style={{ fontFamily: font }}>Total Charges</span>
-              <span className="text-[18px] text-[#1360d2]" style={{ fontFamily: font, fontWeight: 700 }}>AED {totalCharges}</span>
+
+            {/* Selected Vehicles — read-only */}
+            <div className="bg-white rounded-[8px] px-[24px] py-[20px]" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
+              <p className="text-[20px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>
+                Selected Vehicles
+              </p>
+              <p className="text-[16px] text-[#697498] mt-[4px] mb-[4px]" style={{ fontFamily: font }}>
+                Review the chassis numbers included in this request.
+              </p>
+              <p className="text-[16px] text-[#455174] mb-[16px]" style={{ fontFamily: font }}>
+                <span style={{ color: '#1360d2', fontWeight: 600 }}>{count}</span> vehicles selected
+              </p>
+
+              <div style={{ maxHeight: 400, overflowY: 'auto', overflowX: 'auto', border: '1px solid #e8edf5', borderRadius: 6 }}>
+                <table className="dt-table" style={{ fontFamily: font, minWidth: '100%' }}>
+                  <thead style={{ position: 'sticky', top: 0, zIndex: 1, background: '#a6c2e9' }}>
+                    <tr>
+                      <th className="text-[16px]" style={{ width: 60 }}>#</th>
+                      <th className="text-[16px]" style={{ width: 160 }}>Chassis Number</th>
+                      <th className="text-[16px]" style={{ width: 140 }}>Vehicle Make</th>
+                      <th className="text-[16px]" style={{ width: 160 }}>Model</th>
+                      <th className="text-[16px]" style={{ width: 110 }}>Color</th>
+                      <th className="text-[16px]" style={{ width: 90 }}>Year</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedVehicles.map((v, i) => (
+                      <tr key={v.id}>
+                        <td className="text-[16px] text-[#697498]" style={{ whiteSpace: 'nowrap' }}>{i + 1}</td>
+                        <td style={{ whiteSpace: 'nowrap' }}>
+                          <span className="text-[16px] text-[#455174] inline-flex items-center justify-center px-[8px] py-[3px] rounded-[4px] bg-[#e2ebf9]" style={{ minWidth: 86 }}>{v.chassis}</span>
+                        </td>
+                        <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{v.make}</td>
+                        <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{v.brand}</td>
+                        <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{v.color}</td>
+                        <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{v.model}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
-          {/* Payment Mode */}
-          <div className="mb-[16px]">
-            <label className="block text-[16px] text-[#455174] mb-[6px]" style={{ fontFamily: font }}>Payment Mode</label>
-            <StyledDropdown
-              value={paymentMode}
-              onChange={(v) => { setPaymentMode(v as PaymentMode); if (v !== 'creditDebit') setCreditAccount(''); }}
-              options={PAYMENT_MODES}
-              placeholder="Select payment mode"
-            />
-          </div>
+          {/* RIGHT column — Payment Summary */}
+          <div className="bg-white rounded-[8px] px-[20px] py-[16px]" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
+            <p className="text-[18px] text-[#0e1b3d] mb-[12px]" style={{ fontFamily: font, fontWeight: 700 }}>
+              Payment Summary
+            </p>
 
-          {paymentMode === 'creditDebit' && (
-            <div className="mb-[16px]">
-              <label className="block text-[16px] text-[#455174] mb-[6px]" style={{ fontFamily: font }}>Credit Account Number</label>
+            <SummaryRow label="No. of Vehicles Selected" value={count} />
+            <SummaryRow label="VCC Charges"    value={fmt(vccCharges)} />
+            <SummaryRow label="Knowledge Fees" value={fmt(KNOWLEDGE_FEES)} />
+            <div className="flex items-center justify-between py-[14px] mt-[6px]" style={{ borderTop: '1px solid #e2ebf9' }}>
+              <span className="text-[15px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 600 }}>Total Amount</span>
+              <span className="text-[18px] text-[#1360d2]" style={{ fontFamily: font, fontWeight: 700 }}>{fmt(total)}</span>
+            </div>
+
+            {/* Payment Mode */}
+            <div className="mt-[10px]">
+              <label className="block text-[16px] text-[#455174] mb-[6px]" style={{ fontFamily: font }}>Payment Mode</label>
               <StyledDropdown
-                value={creditAccount}
-                onChange={setCreditAccount}
-                options={CREDIT_ACCOUNTS}
-                placeholder="Select account number"
+                value={paymentMode}
+                onChange={(v) => { setPaymentMode(v); if (v !== 'creditDebit') setCreditAccount(''); }}
+                options={PAYMENT_MODES}
+                placeholder="Select payment mode"
               />
             </div>
-          )}
 
-          {/* Info note */}
-          <div
-            className="flex items-start gap-[10px] rounded-[6px] px-[14px] py-[12px] mb-[24px]"
-            style={{ background: 'rgba(19,96,210,0.06)', border: '1px solid rgba(19,96,210,0.15)' }}
-          >
-            <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#1360d2" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-[2px]">
-              <circle cx="10" cy="10" r="8" />
-              <path d="M10 9v5M10 7h.01" />
-            </svg>
-            <span className="text-[14px] text-[#1360d2]" style={{ fontFamily: font, lineHeight: 1.5 }}>
-              Changing the payment mode will not affect your vehicle selection. You will proceed directly to payment after submitting.
-            </span>
-          </div>
+            {paymentMode === 'creditDebit' && (
+              <div className="mt-[12px]">
+                <label className="block text-[16px] text-[#455174] mb-[6px]" style={{ fontFamily: font }}>Credit Account Number</label>
+                <StyledDropdown
+                  value={creditAccount}
+                  onChange={setCreditAccount}
+                  options={CREDIT_ACCOUNTS}
+                  placeholder="Select account number"
+                />
+              </div>
+            )}
 
-          {/* Buttons */}
-          <div className="flex gap-[12px]">
             <button
-              onClick={onBackToListing}
-              className="flex-1 h-[48px] rounded-[4px] border border-[#1360d2] text-[#1360d2] text-[16px] hover:bg-[#f0f5ff] transition-colors"
-              style={{ fontFamily: font, fontWeight: 500 }}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => {
-                if (!canSubmit) return;
-                onSubmit(paymentMode as 'creditDebit' | 'epayment');
-              }}
+              onClick={handleSubmit}
               disabled={!canSubmit}
-              className="flex-1 h-[48px] rounded-[4px] text-white text-[16px] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="mt-[16px] w-full h-[48px] rounded-[4px] text-[16px] text-white disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ background: '#1360d2', fontFamily: font, fontWeight: 500, boxShadow: canSubmit ? '0px 0px 8px rgba(28,72,191,0.16)' : undefined }}
             >
               Submit
             </button>
+
+            <button
+              onClick={onBackToListing}
+              className="mt-[10px] w-full h-[44px] rounded-[4px] text-[16px] border border-[#d5ddfb] text-[#697498] hover:border-[#1360d2] hover:text-[#1360d2] transition-colors"
+              style={{ fontFamily: font, fontWeight: 500 }}
+            >
+              Cancel
+            </button>
+
+            {/* Insufficient Balance Modal */}
+            {showInsufficientModal && (
+              <div className="fixed inset-0 z-[200] flex items-center justify-center" style={{ background: 'rgba(14,27,61,0.45)' }}>
+                <div className="bg-white rounded-[12px] shadow-xl p-[32px] w-full max-w-[420px] flex flex-col items-center gap-[20px]">
+                  <div className="size-[64px] rounded-full flex items-center justify-center" style={{ background: 'rgba(220,53,69,0.10)' }}>
+                    <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#dc3545" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 9v4M12 17h.01" />
+                      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0-3.42 0z" />
+                    </svg>
+                  </div>
+                  <p className="text-[20px] text-[#0e1b3d] text-center" style={{ fontFamily: font, fontWeight: 700 }}>Insufficient Balance</p>
+                  <p className="text-[15px] text-[#455174] text-center" style={{ fontFamily: font, lineHeight: 1.6 }}>
+                    The selected account <strong style={{ color: '#0e1b3d' }}>{insufficientAccount}</strong> does not have sufficient balance to complete this transaction.
+                  </p>
+                  <div className="flex gap-[12px] w-full mt-[4px]">
+                    <button
+                      onClick={() => setShowInsufficientModal(false)}
+                      className="flex-1 h-[44px] rounded-[4px] border border-[#1360d2] text-[#1360d2] text-[15px] hover:bg-[#f0f5ff] transition-colors"
+                      style={{ fontFamily: font, fontWeight: 500 }}
+                    >
+                      Go Back
+                    </button>
+                    <button
+                      onClick={() => setShowInsufficientModal(false)}
+                      className="flex-1 h-[44px] rounded-[4px] text-white text-[15px] hover:bg-[#0E4DB8] transition-colors"
+                      style={{ background: '#1360d2', fontFamily: font, fontWeight: 500 }}
+                    >
+                      Top Up Account
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
-
-      <BackToListingBar onBack={onBackToListing} />
     </div>
   );
 }
