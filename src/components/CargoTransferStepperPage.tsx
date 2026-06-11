@@ -1742,7 +1742,7 @@ function Step4({ onBack, onNext, shippingSummary, onEditShipping, title, stepper
 
         </div>
       </div>
-      <NavBar onBack={onBack} centerLabel="Skip" onCenter={onNext} onNext={onNext} nextLabel="Proceed" />
+      <NavBar onBack={onBack} onNext={onNext} nextLabel="Proceed" />
     </div>
   );
 }
