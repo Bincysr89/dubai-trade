@@ -81,8 +81,8 @@ type DeclStatus = 'Completed' | 'Submitted' | 'Payment Pending' | 'VAT Payment P
 const STATUS_STYLE: Record<DeclStatus, { bg: string; color: string; border: string }> = {
   'Completed':              { bg: '#e6f4ec', color: '#1b6c3a', border: '#a8d5b8' },
   'Submitted':            { bg: '#e8f0ff', color: '#1360d2', border: '#b3caff' },
-  'Payment Pending':      { bg: '#fff3e0', color: '#b45309', border: '#fcd7a0' },
-  'VAT Payment Pending':  { bg: '#fff3e0', color: '#b45309', border: '#fcd7a0' },
+  'Payment Pending':      { bg: 'rgba(255,169,26,0.16)', color: '#b45309', border: '#fcd7a0' },
+  'VAT Payment Pending':  { bg: 'rgba(255,169,26,0.16)', color: '#b45309', border: '#fcd7a0' },
   'Declined':             { bg: '#fde8e8', color: '#c0392b', border: '#f5b8b8' },
   'Cancelled':            { bg: '#f0f0f3', color: '#4a4f60', border: '#d0d3de' },
   'Clearance Inspection': { bg: '#e6f4ec', color: '#1b6c3a', border: '#a8d5b8' },
@@ -186,8 +186,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
   const [ackDeclineRowIndex, setAckDeclineRowIndex] = useState<number | null>(null);
   const [declStatusFilter, setDeclStatusFilter] = useState<DeclStatus | null>(null);
   const DECL_STATUS_COLOR: Record<DeclStatus, string> = {
-    'Completed': '#1b6c3a', 'Submitted': '#1360d2', 'Payment Pending': '#cc9200',
-    'VAT Payment Pending': '#cc9200', 'Declined': '#dc3545',
+    'Completed': '#1b6c3a', 'Submitted': '#1360d2', 'Payment Pending': '#b45309',
+    'VAT Payment Pending': '#b45309', 'Declined': '#dc3545',
     'Cancelled': '#697498', 'Clearance Inspection': '#1360d2',
   };
   const ackDeclarationNumbers = (() => {

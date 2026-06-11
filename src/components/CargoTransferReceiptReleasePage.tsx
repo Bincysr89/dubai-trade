@@ -52,7 +52,7 @@ function floatLabel(active: boolean, focused = false): React.CSSProperties {
 function statusStyle(val: string) {
   if (val === 'Released' || val === 'Received')         return { bg: 'rgba(26,172,114,0.12)',  color: '#1aac72' };
   if (val === 'Not Released' || val === 'Not Received') return { bg: 'rgba(19,96,210,0.10)',   color: '#1360d2' };
-  return { bg: 'rgba(180,83,9,0.10)', color: '#b45309' };
+  return { bg: 'rgba(255,169,26,0.16)', color: '#b45309' };
 }
 
 // ── Floating text input ────────────────────────────────────────────────────────

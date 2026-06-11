@@ -6,7 +6,7 @@ import { ColumnFilter } from './ColumnFilter';
 type Status = 'Under Processing' | 'Completed' | 'Suspended' | 'Draft';
 
 const STATUS_STYLE: Record<Status, { bg: string; color: string }> = {
-  'Under Processing': { bg: 'rgba(255,169,26,0.16)', color: '#cc9200' },
+  'Under Processing': { bg: 'rgba(255,169,26,0.16)', color: '#b45309' },
   'Completed':        { bg: 'rgba(40,167,69,0.10)',  color: '#28a745' },
   'Suspended':        { bg: 'rgba(220,53,69,0.10)',  color: '#dc3545' },
   'Draft':            { bg: 'rgba(105,116,152,0.10)', color: '#697498' },
@@ -81,7 +81,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
     return statusFilter ? base.filter((r) => r.status === statusFilter) : base;
   }, [statusFilter, showDrafts]);
   const STATUS_COLOR: Record<Status, string> = {
-    'Under Processing': '#cc9200', 'Completed': '#28a745', 'Suspended': '#dc3545', 'Draft': '#697498',
+    'Under Processing': '#b45309', 'Completed': '#28a745', 'Suspended': '#dc3545', 'Draft': '#697498',
   };
 
   useEffect(() => {

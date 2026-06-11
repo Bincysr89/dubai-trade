@@ -6,7 +6,7 @@ const font = "'Dubai', sans-serif";
 type EPayStatus = 'Pending' | 'Completed' | 'Failed';
 
 const STATUS_STYLE: Record<EPayStatus, { bg: string; color: string }> = {
-  'Pending':   { bg: 'rgba(255,169,26,0.18)', color: '#b45309' },
+  'Pending':   { bg: 'rgba(255,169,26,0.16)', color: '#b45309' },
   'Completed': { bg: 'rgba(40,167,69,0.10)',  color: '#28a745' },
   'Failed':    { bg: 'rgba(192,57,43,0.10)',  color: '#c0392b' },
 };

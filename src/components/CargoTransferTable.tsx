@@ -9,7 +9,7 @@ type DraftStatus = 'Draft';
 const STATUS_STYLE: Record<Status, { bg: string; color: string }> = {
   'Cleared':               { bg: 'rgba(40,167,69,0.08)',    color: '#28a745' },
   'Submitted':             { bg: 'rgba(19,96,210,0.08)',    color: '#1360d2' },
-  'Payment Pending':       { bg: 'rgba(255,169,26,0.16)',   color: '#fbb500' },
+  'Payment Pending':       { bg: 'rgba(255,169,26,0.16)',   color: '#b45309' },
   'Declined':              { bg: 'rgba(220,53,69,0.08)',    color: '#dc3545' },
   'Cancelled':             { bg: 'rgba(220,53,69,0.08)',    color: '#dc3545' },
   'Clearance Inspection':  { bg: 'rgba(40,167,69,0.08)',    color: '#28a745' },

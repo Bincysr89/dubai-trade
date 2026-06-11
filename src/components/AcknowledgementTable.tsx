@@ -7,7 +7,7 @@ type Status = 'Accepted' | 'Pending' | 'Declined';
 
 const STATUS_STYLE: Record<Status, { bg: string; color: string }> = {
   'Accepted': { bg: 'rgba(40,167,69,0.10)',   color: '#28a745' },
-  'Pending':  { bg: 'rgba(255,169,26,0.16)',  color: '#cc9200' },
+  'Pending':  { bg: 'rgba(255,169,26,0.16)',  color: '#b45309' },
   'Declined': { bg: 'rgba(220,53,69,0.10)',   color: '#dc3545' },
 };
 
@@ -92,7 +92,7 @@ export default function AcknowledgementTable({ onView, onAccept, onDecline, onHi
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
   const [statusFilter, setStatusFilter] = useState<Status | null>(null);
-  const STATUS_COLOR: Record<Status, string> = { Accepted: '#28a745', Pending: '#cc9200', Declined: '#dc3545' };
+  const STATUS_COLOR: Record<Status, string> = { Accepted: '#28a745', Pending: '#b45309', Declined: '#dc3545' };
   const filteredRows = useMemo(
     () => statusFilter
       ? ACK_ROWS.map((r, i) => ({ r, i })).filter(({ r }) => r.ackStatus === statusFilter)

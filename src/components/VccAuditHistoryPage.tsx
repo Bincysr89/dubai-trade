@@ -46,7 +46,7 @@ const GROUPS: VccGroup[] = [
 const EVENT_STYLE: Record<string, { bg: string; color: string }> = {
   'Generated':           { bg: 'rgba(40,167,69,0.10)', color: '#28a745' },
   'Printed/Downloaded':  { bg: 'rgba(19,96,210,0.10)', color: '#1360d2' },
-  'Submitted':           { bg: 'rgba(255,169,26,0.16)', color: '#cc9200' },
+  'Submitted':           { bg: 'rgba(255,169,26,0.16)', color: '#b45309' },
 };
 
 function HistoryTable({ rows }: { rows: Row[] }) {
