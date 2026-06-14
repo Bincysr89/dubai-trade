@@ -4,6 +4,7 @@ import Header from './Header';
 import shipIconSrc from '../assets/Ship (12).svg';
 import catalogueBg from '../assets/catalogue background.jpg';
 import ServiceListingPage, { ColConfig, RowData } from './ServiceListingPage';
+import BillPaymentPage from './BillPaymentPage';
 
 type Props = { onClose: () => void };
 
@@ -149,9 +150,9 @@ const ACC_COLS: ColConfig[] = [
   { label: 'Remarks',           key: 'remarks',          width: 120 },
 ];
 
-type PageKey = 'glc' | 'jap' | 'cwl' | 'ctr' | 'rda';
+type PageKey = 'glc' | 'jap' | 'cwl' | 'ctr' | 'rda' | 'pbf';
 
-const PAGE_CONFIGS: Record<PageKey, {
+const PAGE_CONFIGS: Record<Exclude<PageKey, 'pbf'>, {
   title: string; breadcrumb: string; primaryLabel: string;
   searchLabel: string; searchPlaceholder: string;
   columns: ColConfig[]; rows: RowData[]; hasDraftsToggle?: boolean;
@@ -207,6 +208,7 @@ const PAGE_CONFIGS: Record<PageKey, {
 
 const ITEM_PAGE_MAP: Record<string, PageKey> = {
   'Request Goods Landing Certificate':    'glc',
+  'Pay Bills or Fines':                   'pbf',
   'Join Accreditation Program':           'jap',
   'Request Customs Warehouse License':    'cwl',
   'Request Customs Transactions Report':  'ctr',
@@ -226,8 +228,11 @@ export default function SeaDetailModal({ onClose }: Props) {
   })).filter(col => !search || col.items.length > 0);
 
   /* Render a listing page when one is active */
+  if (activePage === 'pbf') {
+    return <BillPaymentPage onBack={() => setActivePage(null)} />;
+  }
   if (activePage) {
-    const cfg = PAGE_CONFIGS[activePage];
+    const cfg = PAGE_CONFIGS[activePage as Exclude<PageKey, 'pbf'>];
     return (
       <ServiceListingPage
         {...cfg}
@@ -379,20 +384,42 @@ export default function SeaDetailModal({ onClose }: Props) {
                     </p>
                     <div className="w-6 h-[2px] bg-[#e8212e] mt-1" />
                   </div>
-                  {/* Items — blue only on hover, no individual scroll */}
+                  {/* Items */}
                   <div className="flex flex-col gap-[8px]">
                     {col.items.map(item => {
-                      const pageKey = ITEM_PAGE_MAP[item];
+                      const pageKey    = ITEM_PAGE_MAP[item];
+                      const HIGHLIGHTED = new Set([
+                        'Integrated Clearance',
+                        'Request Goods Landing Certificate',
+                        'Pay Bills or Fines',
+                        'Request Customs Transactions Report',
+                        'Request Duty Account',
+                      ]);
+                      const TALL_ITEMS = new Set([
+                        'Request Goods Landing Certificate',
+                        'Request Customs Transactions Report',
+                      ]);
+                      const isHighlighted = HIGHLIGHTED.has(item);
+                      const isTall        = TALL_ITEMS.has(item);
                       return (
                         <button
                           key={item}
                           onClick={pageKey ? () => setActivePage(pageKey) : undefined}
-                          className="text-left h-[40px] px-[10px] rounded-[4px] text-[16px] text-[#0e1b3d] bg-[#f7faff] hover:bg-[#d6e6ff] transition-colors"
+                          className={`text-left px-[10px] rounded-[4px] text-[16px] transition-colors ${
+                            isHighlighted
+                              ? 'bg-[#dce9ff] border border-[#1360d2] text-[#1360d2] hover:bg-[#c5d9ff] font-medium'
+                              : 'bg-[#f7faff] text-[#0e1b3d] hover:bg-[#d6e6ff]'
+                          }`}
                           style={{
                             fontFamily: "'Dubai', sans-serif",
                             letterSpacing: '0.14px',
                             lineHeight: '24px',
                             cursor: pageKey ? 'pointer' : 'default',
+                            minHeight: isTall ? 52 : 40,
+                            paddingTop: isTall ? 6 : 0,
+                            paddingBottom: isTall ? 6 : 0,
+                            display: 'flex',
+                            alignItems: 'center',
                           }}
                         >
                           {item}
