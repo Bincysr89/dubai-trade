@@ -3,6 +3,7 @@ import Header from './Header';
 // @ts-ignore
 import shipIconSrc from '../assets/Ship (12).svg';
 import catalogueBg from '../assets/catalogue background.jpg';
+import ServiceListingPage, { ColConfig, RowData } from './ServiceListingPage';
 
 type Props = { onClose: () => void };
 
@@ -45,7 +46,14 @@ const SEA_COLUMNS: { title: string; items: string[] }[] = [
   {
     title: 'Cargo Clearance',
     items: [
-      'Integrated Clearance', 'DC - landing Certificate', 'DC - Letter & Certificates', 'DM Permits',
+      'Integrated Clearance',
+      'Request Goods Landing Certificate',
+      'Pay Bills or Fines',
+      'Request Customs Transactions Report',
+      'Request Duty Account',
+      'Join Accreditation Program',
+      'Request Customs Warehouse License',
+      'DC - landing Certificate', 'DC - Letter & Certificates', 'DM Permits',
       'DP World Work Permits', 'e-Certificates', 'IMDG NOC Management',
       'Marine NOC', 'Master Declaration', 'DC - Cargo Reconcilation',
       'DC - Cargo Tracking', 'DC - Export Manifest', 'DC - Inspection Services',
@@ -78,8 +86,137 @@ const SEA_COLUMNS: { title: string; items: string[] }[] = [
   },
 ];
 
+/* ── Page configs for service listing pages ─────────────────────────── */
+const STATUSES = ['Closed', 'Submitted', 'Submitted', 'Payment Pending', 'VAT Payment Pending', 'Declined', 'Cancelled'];
+const SUBJECTS = ['Export from Local', 'Export Statistical', 'Re Export to ROW (after import for re export)'];
+
+const DOC_ROWS: RowData[] = STATUSES.map((status, i) => ({
+  docNumber: '1012132132',
+  consigneeType: SUBJECTS[Math.min(i, 2)],
+  consigneeCode: 'New',
+  houseBillNo: '12345788',
+  submittedDate: '05-Dec-24',
+  submittedBy: 'code + name',
+  status,
+}));
+
+const REF_ROWS: RowData[] = STATUSES.map((status, i) => ({
+  refNumber: '1012132132',
+  subject: SUBJECTS[Math.min(i, 2)],
+  submittedDate: '05-Dec-24',
+  submittedBy: 'code + name',
+  requestNo: '12345788',
+  requestType: 'New',
+  status,
+}));
+
+const ACC_ROWS: RowData[] = STATUSES.map(status => ({
+  requestNumber: '1012132132',
+  accountType: 'New',
+  accountName: '12345788',
+  accountHolder: '05-Dec-24',
+  availableBalance: 'code + name',
+  requestDate: 'code + name',
+  remarks: 'code + name',
+  status,
+}));
+
+const DOC_COLS: ColConfig[] = [
+  { label: 'Document Number', key: 'docNumber',      width: 150 },
+  { label: 'Consignee Type',  key: 'consigneeType',  width: 290 },
+  { label: 'Consignee Code',  key: 'consigneeCode',  width: 140 },
+  { label: 'House Bill No.',  key: 'houseBillNo',    width: 130 },
+  { label: 'Submitted Date',  key: 'submittedDate',  width: 140 },
+  { label: 'Submitted by',    key: 'submittedBy',    width: 130 },
+];
+
+const REF_COLS: ColConfig[] = [
+  { label: 'Reference Number', key: 'refNumber',     width: 155 },
+  { label: 'Subject',          key: 'subject',       width: 310 },
+  { label: 'Submitted Date',   key: 'submittedDate', width: 130 },
+  { label: 'Submitted by',     key: 'submittedBy',   width: 130 },
+  { label: 'Request No.',      key: 'requestNo',     width: 120 },
+  { label: 'Request Type',     key: 'requestType',   width: 120 },
+];
+
+const ACC_COLS: ColConfig[] = [
+  { label: 'Request Number',    key: 'requestNumber',    width: 145, isLink: true },
+  { label: 'Account Type',      key: 'accountType',      width: 130 },
+  { label: 'Account Name',      key: 'accountName',      width: 140 },
+  { label: 'Account Holder',    key: 'accountHolder',    width: 145 },
+  { label: 'Available Balance', key: 'availableBalance', width: 155 },
+  { label: 'Request Date',      key: 'requestDate',      width: 130 },
+  { label: 'Remarks',           key: 'remarks',          width: 120 },
+];
+
+type PageKey = 'glc' | 'jap' | 'cwl' | 'ctr' | 'rda';
+
+const PAGE_CONFIGS: Record<PageKey, {
+  title: string; breadcrumb: string; primaryLabel: string;
+  searchLabel: string; searchPlaceholder: string;
+  columns: ColConfig[]; rows: RowData[]; hasDraftsToggle?: boolean;
+}> = {
+  glc: {
+    title: 'Goods Landing Certificate',
+    breadcrumb: 'Goods Landing Certificate',
+    primaryLabel: 'New Request',
+    searchLabel: 'Document Number',
+    searchPlaceholder: 'Document no.',
+    columns: DOC_COLS,
+    rows: DOC_ROWS,
+  },
+  jap: {
+    title: 'Join Client Accreditation',
+    breadcrumb: 'Join Client Accreditation',
+    primaryLabel: 'New Request',
+    searchLabel: 'Reference Number',
+    searchPlaceholder: 'Declaration no.',
+    columns: REF_COLS,
+    rows: REF_ROWS,
+    hasDraftsToggle: true,
+  },
+  cwl: {
+    title: 'Custom Warehouse License',
+    breadcrumb: 'Custom Warehouse License',
+    primaryLabel: 'New Account',
+    searchLabel: 'Document Number',
+    searchPlaceholder: 'Document no.',
+    columns: DOC_COLS,
+    rows: DOC_ROWS,
+  },
+  ctr: {
+    title: 'Customs Transaction Report',
+    breadcrumb: 'Customs Transaction Report',
+    primaryLabel: 'New Request',
+    searchLabel: 'Reference Number',
+    searchPlaceholder: 'Declaration no.',
+    columns: REF_COLS,
+    rows: REF_ROWS,
+    hasDraftsToggle: true,
+  },
+  rda: {
+    title: 'Manage Accounts',
+    breadcrumb: 'Manage Accounts',
+    primaryLabel: 'New Account',
+    searchLabel: 'Reference Number',
+    searchPlaceholder: 'Reference no.',
+    columns: ACC_COLS,
+    rows: ACC_ROWS,
+  },
+};
+
+const ITEM_PAGE_MAP: Record<string, PageKey> = {
+  'Request Goods Landing Certificate':    'glc',
+  'Join Accreditation Program':           'jap',
+  'Request Customs Warehouse License':    'cwl',
+  'Request Customs Transactions Report':  'ctr',
+  'Request Duty Account':                 'rda',
+};
+/* ─────────────────────────────────────────────────────────────────────── */
+
 export default function SeaDetailModal({ onClose }: Props) {
-  const [search, setSearch] = useState('');
+  const [search, setSearch]         = useState('');
+  const [activePage, setActivePage] = useState<PageKey | null>(null);
 
   const filtered = SEA_COLUMNS.map(col => ({
     ...col,
@@ -87,6 +224,17 @@ export default function SeaDetailModal({ onClose }: Props) {
       ? col.items.filter(i => i.toLowerCase().includes(search.toLowerCase()))
       : col.items,
   })).filter(col => !search || col.items.length > 0);
+
+  /* Render a listing page when one is active */
+  if (activePage) {
+    const cfg = PAGE_CONFIGS[activePage];
+    return (
+      <ServiceListingPage
+        {...cfg}
+        onBack={() => setActivePage(null)}
+      />
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col overflow-hidden">
@@ -233,19 +381,24 @@ export default function SeaDetailModal({ onClose }: Props) {
                   </div>
                   {/* Items — blue only on hover, no individual scroll */}
                   <div className="flex flex-col gap-[8px]">
-                    {col.items.map(item => (
-                      <button
-                        key={item}
-                        className="text-left h-[40px] px-[10px] rounded-[4px] text-[16px] text-[#0e1b3d] bg-[#f7faff] hover:bg-[#d6e6ff] transition-colors"
-                        style={{
-                          fontFamily: "'Dubai', sans-serif",
-                          letterSpacing: '0.14px',
-                          lineHeight: '24px',
-                        }}
-                      >
-                        {item}
-                      </button>
-                    ))}
+                    {col.items.map(item => {
+                      const pageKey = ITEM_PAGE_MAP[item];
+                      return (
+                        <button
+                          key={item}
+                          onClick={pageKey ? () => setActivePage(pageKey) : undefined}
+                          className="text-left h-[40px] px-[10px] rounded-[4px] text-[16px] text-[#0e1b3d] bg-[#f7faff] hover:bg-[#d6e6ff] transition-colors"
+                          style={{
+                            fontFamily: "'Dubai', sans-serif",
+                            letterSpacing: '0.14px',
+                            lineHeight: '24px',
+                            cursor: pageKey ? 'pointer' : 'default',
+                          }}
+                        >
+                          {item}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
