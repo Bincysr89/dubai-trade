@@ -69,13 +69,20 @@ const recheckPay   = PAYMENT_ROWS.filter(r => r.details.some(d => d.status === '
 const fmtBalance = (n: number) =>
   'AED ' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+/* All accounts combined for listing */
+const ALL_ACCOUNTS = [
+  ...ACCOUNTS,
+  ...DEBIT_ACCOUNTS,
+];
+
 const ACC_PAGE_SIZE = 8;
 const YEARS  = ['2024', '2025', '2026'];
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-type Menu    = 'Dashboard' | 'Accounts' | 'Invoices' | 'Payments';
-type InvStep = 'list' | 'pay' | 'success' | 'receipt';
-type AccStep = 'main' | 'list';
+type Menu     = 'Dashboard' | 'Accounts' | 'Invoices' | 'Payments';
+type InvStep  = 'list' | 'pay' | 'success' | 'receipt';
+type AccStep  = 'main' | 'list';
+type AccView  = 'list' | 'pay' | 'success';
 
 /* ── Sidebar icons ──────────────────────────────────────────────────────────── */
 const DashboardIcon = () => (
@@ -320,10 +327,15 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const [payPage, setPayPage]               = useState(1);
   const PAGE_SIZE = 8;
 
-  /* Account statement state */
-  const [accStep, setAccStep]           = useState<AccStep>('main');
+  /* Account list / pay / success state */
+  const [accView, setAccView]           = useState<AccView>('list');
   const [accPage, setAccPage]           = useState(1);
   const [selectedAcc, setSelectedAcc]   = useState<number | null>(null);
+  const [accPayAmount, setAccPayAmount] = useState('');
+  const [accPayMethod, setAccPayMethod] = useState<'epayment' | 'debit'>('epayment');
+
+  /* Account statement form state */
+  const [accStep, setAccStep]           = useState<AccStep>('main');
   const [stmtType, setStmtType]         = useState<'summary' | 'detailed' | 'transaction'>('summary');
   const [stmtYear, setStmtYear]         = useState('2026');
   const [stmtMonth, setStmtMonth]       = useState('May');
@@ -593,6 +605,199 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
       </div>
     );
   }
+
+  /* ── Account Pay screen ─────────────────────────────────────────────────── */
+  const selAccRow = selectedAcc !== null ? ALL_ACCOUNTS[selectedAcc] : null;
+  if (activeMenu === 'Accounts' && accView === 'pay' && selAccRow) {
+    return (
+      <div className="fixed inset-0 z-50 bg-[#f8fafd] flex flex-col overflow-hidden">
+        <div className="flex-shrink-0"><Header onServiceCatalogue={onBack} /></div>
+        <div className="flex-1 overflow-y-auto px-10 pb-8">
+          <Breadcrumb onBack={onBack} extra="Pay" />
+          <h1 className="text-[28px] font-bold text-[#0e1b3d] mb-5" style={{ fontFamily: font }}>Pay</h1>
+
+          {/* Selected account table */}
+          <div className="bg-white rounded-[8px] border border-[#e0e8f5] overflow-hidden mb-5">
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: font }}>
+              <thead>
+                <tr style={{ background: '#a6c2e9', borderBottom: '1px solid #e0e8f5' }}>
+                  <th className="text-left px-4 py-3 text-[14px] font-semibold text-[#051937]">Payment Type</th>
+                  <th className="text-left px-4 py-3 text-[14px] font-semibold text-[#051937]">Account Number</th>
+                  <th className="text-right px-4 py-3 text-[14px] font-semibold text-[#051937]">Amount (AED)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style={{ borderBottom: '1px solid #f0f4ff' }}>
+                  <td className="px-4 py-3 text-[14px] text-[#0e1b3d]">{selAccRow.type}</td>
+                  <td className="px-4 py-3 text-[14px] text-[#0e1b3d]">{selAccRow.account}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-2">
+                      <span className="text-[14px] text-[#697498]">AED</span>
+                      <input
+                        value={accPayAmount}
+                        onChange={e => setAccPayAmount(e.target.value)}
+                        placeholder="0.00"
+                        className="w-[130px] text-right px-2 py-1 border border-[#d5ddfb] rounded-[4px] text-[14px] text-[#0e1b3d] focus:outline-none focus:border-[#1360d2]"
+                        style={{ fontFamily: font }}
+                      />
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div className="px-4 py-3 border-t border-[#e0e8f5] text-[14px] text-[#0e1b3d]"
+              style={{ background: '#f5f7fa', fontFamily: font }}>
+              Total Selected Transactions: 1 &nbsp;&nbsp; Total AED {parseFloat(accPayAmount || '0').toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            </div>
+          </div>
+
+          {/* Payment Method */}
+          <div className="bg-white rounded-[8px] border border-[#e0e8f5] p-5 mb-6">
+            <p className="text-[15px] font-medium text-[#0e1b3d] mb-1" style={{ fontFamily: font }}>Payment Method</p>
+            <p className="text-[13px] text-[#697498] mb-4" style={{ fontFamily: font }}>
+              Note* Card payment has maximum limit of AED 1,000,000.00
+            </p>
+            <div className="flex items-center gap-6 flex-wrap">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="acc-pm" checked={accPayMethod === 'epayment'} onChange={() => setAccPayMethod('epayment')} className="size-4 accent-[#1360d2]" />
+                <span className="text-[15px] text-[#0e1b3d]" style={{ fontFamily: font }}>E-Payment</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="acc-pm" checked={accPayMethod === 'debit'} onChange={() => setAccPayMethod('debit')} className="size-4 accent-[#1360d2]" />
+                <span className="text-[15px] text-[#0e1b3d]" style={{ fontFamily: font }}>Debit A/C</span>
+              </label>
+              {accPayMethod === 'debit' && (
+                <select className="border border-[#d5ddfb] rounded-[4px] px-3 py-2 text-[14px] text-[#0e1b3d] focus:outline-none" style={{ fontFamily: font, minWidth: 340 }}>
+                  <option>1050089 - AEOUAT1 (BAL. AED 99987596.50)</option>
+                  <option>1050084 - XCRN BUSINESS NEW01 (BAL. AED 14539.00)</option>
+                </select>
+              )}
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center justify-center gap-4">
+            <button
+              onClick={() => setAccView('list')}
+              className="h-[44px] px-8 rounded-[4px] border border-[#0e1b3d] text-[16px] text-[#0e1b3d] bg-white hover:bg-[#f0f4ff] transition-colors flex items-center gap-2"
+              style={{ fontFamily: font }}
+            >
+              ‹ Previous
+            </button>
+            <button
+              onClick={() => setAccView('success')}
+              className="h-[44px] px-8 rounded-[4px] text-[16px] text-white hover:opacity-90 transition-opacity"
+              style={{ background: '#1360d2', fontFamily: font }}
+            >
+              Pay
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* ── Account Transaction Details (success) screen ────────────────────────── */
+  if (activeMenu === 'Accounts' && accView === 'success' && selAccRow) {
+    return (
+      <div className="fixed inset-0 z-50 bg-[#f8fafd] flex flex-col overflow-hidden">
+        <div className="flex-shrink-0"><Header onServiceCatalogue={onBack} /></div>
+        <div className="flex-1 overflow-y-auto px-10 pb-8">
+          <Breadcrumb onBack={onBack} extra="Payment Confirmation" />
+          <h1 className="text-[28px] font-bold text-[#0e1b3d] mb-5" style={{ fontFamily: font }}>Payment Confirmation</h1>
+
+          <div className="bg-white rounded-[10px] border border-[#e0e8f5] overflow-hidden">
+            {/* Title bar */}
+            <div className="px-5 py-4 border-b border-[#e0e8f5]" style={{ background: '#4a4f60' }}>
+              <span className="text-[17px] font-semibold text-white" style={{ fontFamily: font }}>Payment Transaction Details</span>
+            </div>
+            <div className="p-6">
+              {/* Transaction header */}
+              <p className="text-[#dc3545] text-[15px] font-bold mb-4" style={{ fontFamily: font }}>Payment Transaction Details</p>
+              <div className="bg-[#f5f7fa] rounded p-4 mb-5">
+                <div className="grid grid-cols-2 gap-x-10 gap-y-3 mb-3">
+                  {[
+                    ['Transaction No.',          '13137',              'Transaction Date',     '10-06-2026'],
+                    ['DEG Transaction No.',      '590000237262664',    'DEG Transaction Date', '10-06-2026 12:00:02'],
+                    ['EPayment Transaction No',  '20021739',           'Initiated Date',       '10-06-2026 12:00:00'],
+                    ['Initiated By',             'crnuser01',          'Status',               'SUCCESS'],
+                    ['Payment Mode',             'Credit Card',        '',                     ''],
+                  ].map(([l1, v1, l2, v2], idx) => (
+                    <div key={idx} className="contents">
+                      <div>
+                        <span className="text-[13px] text-[#697498]" style={{ fontFamily: font }}>{l1}</span>
+                        <p className="text-[15px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>{v1}</p>
+                      </div>
+                      <div>
+                        {l2 && (
+                          <>
+                            <span className="text-[13px] text-[#697498]" style={{ fontFamily: font }}>{l2}</span>
+                            <p className={`text-[15px] font-semibold ${l2 === 'Status' ? 'text-[#28a745]' : 'text-[#0e1b3d]'}`} style={{ fontFamily: font }}>{v2}</p>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div>
+                  <span className="text-[13px] text-[#697498]" style={{ fontFamily: font }}>Message</span>
+                  <p className="text-[14px] text-[#1360d2] mt-1" style={{ fontFamily: font }}>Payment Status Remarks: SUCCESS</p>
+                  <p className="text-[14px] text-[#dc3545] mt-1 font-medium" style={{ fontFamily: font }}>
+                    Collection Status Remarks : Transaction has been processed successfully.
+                  </p>
+                </div>
+              </div>
+
+              {/* Payment Details */}
+              <p className="text-[#dc3545] text-[15px] font-bold mb-3" style={{ fontFamily: font }}>Payment Details</p>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: font }} className="mb-6">
+                <thead>
+                  <tr style={{ borderBottom: '2px solid #e0e8f5' }}>
+                    {['Payment Type', 'Invoice / Account No.', 'Amount (AED)', 'Receipt No.', 'Remarks', 'Status'].map(h => (
+                      <th key={h} className="text-left py-2 px-3 text-[14px] font-semibold text-[#051937]">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style={{ borderBottom: '1px solid #f0f4ff' }}>
+                    <td className="py-3 px-3 text-[14px] text-[#0e1b3d]">{selAccRow.type}</td>
+                    <td className="py-3 px-3 text-[14px] text-[#0e1b3d]">{selAccRow.account.split(' - ')[0]} {selAccRow.account.split(' - ')[1]}</td>
+                    <td className="py-3 px-3 text-[14px] text-[#0e1b3d]">AED {accPayAmount || '1,000.00'}</td>
+                    <td className="py-3 px-3 text-[14px] text-[#0e1b3d]">Z-12648</td>
+                    <td className="py-3 px-3 text-[13px] text-[#697498]">M1CS 1927058; BPS Transaction for DDR-{selAccRow.account.split(' - ')[0]}</td>
+                    <td className="py-3 px-3 text-[14px] font-medium text-[#28a745]">SUCCESS</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              {/* Buttons: Print + Close */}
+              <div className="flex items-center justify-center gap-4">
+                <button
+                  onClick={() => window.print()}
+                  className="h-[44px] px-6 rounded-[4px] text-[15px] text-white flex items-center gap-2 hover:opacity-90 transition-opacity"
+                  style={{ background: '#e8690d', fontFamily: font }}
+                >
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8">
+                    <path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" />
+                    <rect x="6" y="14" width="12" height="8" rx="1" />
+                  </svg>
+                  Print
+                </button>
+                <button
+                  onClick={() => { setAccView('list'); setSelectedAcc(null); setAccPayAmount(''); }}
+                  className="h-[44px] px-6 rounded-[4px] text-[15px] text-white flex items-center gap-2 hover:opacity-90 transition-opacity"
+                  style={{ background: '#4a4f60', fontFamily: font }}
+                >
+                  ✕ Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
 
   /* ── Invoices content ───────────────────────────────────────────────────── */
   const paginatedInv = INVOICE_ROWS.slice((invPage - 1) * PAGE_SIZE, invPage * PAGE_SIZE);
@@ -1008,255 +1213,234 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   );
 
   /* ── Accounts content ───────────────────────────────────────────────────── */
-  const paginatedAcc = ACCOUNTS.slice((accPage - 1) * ACC_PAGE_SIZE, accPage * ACC_PAGE_SIZE);
+  const totalAccPages = Math.ceil(ALL_ACCOUNTS.length / ACC_PAGE_SIZE);
+  const paginatedAcc  = ALL_ACCOUNTS.slice((accPage - 1) * ACC_PAGE_SIZE, accPage * ACC_PAGE_SIZE);
 
   const AccountsContent = () => (
     <div className="flex-1 flex flex-col min-w-0">
-      {accStep === 'main' ? (
-        /* ─ Landing: show Account Statement button ─ */
-        <div className="flex flex-col gap-4">
-          <p className="text-[15px] text-[#697498]" style={{ fontFamily: font }}>
-            Select an option below to manage your accounts.
-          </p>
-          <button
-            onClick={() => { setAccStep('list'); setSelectedAcc(null); setStmtType('summary'); setDownloadFmt(''); }}
-            className="w-fit h-[48px] px-[24px] flex items-center gap-[10px] rounded-[4px] text-[16px] text-white hover:opacity-90 transition-opacity"
-            style={{ background: '#1360d2', fontFamily: font }}
-          >
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8">
-              <rect x="4" y="3" width="16" height="18" rx="2" />
-              <path d="M8 8h8M8 12h8M8 16h5" strokeLinecap="round" />
-            </svg>
-            Account Statement
-          </button>
-        </div>
-      ) : (
-        /* ─ Account list + statement form ─ */
-        <div className="flex flex-col gap-0">
-          {/* Section header */}
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-[16px] font-semibold text-[#dc3545]" style={{ fontFamily: font }}>Account Statement</p>
-            <button
-              onClick={() => { setAccStep('main'); setSelectedAcc(null); }}
-              className="h-[36px] px-4 flex items-center gap-2 rounded-[4px] border border-[#d5ddfb] bg-white text-[14px] text-[#0e1b3d] hover:bg-[#f0f4ff] transition-colors"
-              style={{ fontFamily: font }}
-            >
-              ‹ Back
-            </button>
+      {/* Toolbar */}
+      <div className="flex items-center gap-[10px] mb-[12px] flex-wrap">
+        {/* Proceed to Pay */}
+        <button
+          disabled={selectedAcc === null}
+          onClick={() => { setAccPayAmount(''); setAccView('pay'); }}
+          className="h-[48px] px-[24px] rounded-[4px] text-[16px] text-white transition-opacity flex items-center gap-2"
+          style={{
+            background: selectedAcc !== null ? '#1360d2' : '#a6c2e9',
+            fontFamily: font,
+            cursor: selectedAcc !== null ? 'pointer' : 'not-allowed',
+          }}
+        >
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <rect x="2" y="6" width="20" height="13" rx="2" />
+            <path d="M2 10h20" strokeLinecap="round" />
+            <path d="M7 14h4" strokeLinecap="round" />
+          </svg>
+          Proceed to Pay
+        </button>
+
+        <div className="flex-1" />
+
+        {/* Account Statement */}
+        <button
+          onClick={() => { setAccStep(accStep === 'list' ? 'main' : 'list'); }}
+          className={`h-[48px] px-[16px] flex items-center gap-[8px] rounded-[4px] border text-[16px] transition-colors ${
+            accStep === 'list'
+              ? 'bg-[#e2ebf9] border-[#1360d2] text-[#1360d2]'
+              : 'bg-white border-[#d5ddfb] text-[#0e1b3d] hover:bg-[#f0f4ff]'
+          }`}
+          style={{ fontFamily: font }}
+        >
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <rect x="4" y="3" width="16" height="18" rx="2" />
+            <path d="M8 8h8M8 12h8M8 16h5" strokeLinecap="round" />
+          </svg>
+          Account Statement
+        </button>
+      </div>
+
+      {/* Account Statement form (shown when toggled) */}
+      {accStep === 'list' && (
+        <div className="bg-white rounded-[8px] border border-[#d5ddfb] p-5 mb-4">
+          {/* Statement type radios */}
+          <div className="flex items-center gap-6 mb-5 flex-wrap">
+            {([
+              ['summary',     'Monthly Statement (Summary)'],
+              ['detailed',    'Monthly Statement (Detailed)'],
+              ['transaction', 'Transaction List'],
+            ] as const).map(([val, label]) => (
+              <label key={val} className="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="stmt-type" checked={stmtType === val}
+                  onChange={() => { setStmtType(val); setDownloadFmt(''); }}
+                  className="size-4 accent-[#1360d2]" />
+                <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: font }}>{label}</span>
+              </label>
+            ))}
           </div>
-
-          {/* Accounts table */}
-          <div className="bg-white rounded-[8px] border border-[#e0e8f5] overflow-hidden mb-0">
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: font }}>
-              <thead>
-                <tr style={{ borderBottom: '2px solid #e0e8f5' }}>
-                  <th className="text-left px-4 py-3 text-[14px] font-semibold text-[#051937] w-[80px]">Select</th>
-                  <th className="text-left px-4 py-3 text-[14px] font-semibold text-[#051937]">Account Type</th>
-                  <th className="text-left px-4 py-3 text-[14px] font-semibold text-[#051937]">Account</th>
-                  <th className="text-right px-4 py-3 text-[14px] font-semibold text-[#051937]">Available Limit (AED)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedAcc.map((row, i) => {
-                  const absIdx = (accPage - 1) * ACC_PAGE_SIZE + i;
-                  const isSelected = selectedAcc === absIdx;
-                  return (
-                    <tr
-                      key={i}
-                      onClick={() => setSelectedAcc(absIdx)}
-                      className="cursor-pointer hover:bg-[#f7faff] transition-colors"
-                      style={{
-                        borderBottom: '1px solid #f0f4ff',
-                        background: isSelected ? '#eef4ff' : undefined,
-                      }}
-                    >
-                      <td className="px-4 py-3 text-center">
-                        <input
-                          type="radio"
-                          name="acc-select"
-                          checked={isSelected}
-                          onChange={() => setSelectedAcc(absIdx)}
-                          className="size-4 accent-[#1360d2] cursor-pointer"
-                          onClick={e => e.stopPropagation()}
-                        />
-                      </td>
-                      <td className="px-4 py-3 text-[14px] text-[#0e1b3d]">{row.type}</td>
-                      <td className="px-4 py-3">
-                        <a className="text-[14px] text-[#1360d2] underline cursor-pointer">{row.account}</a>
-                      </td>
-                      <td className="px-4 py-3 text-[14px] text-[#0e1b3d] text-right whitespace-nowrap">
-                        AED {row.limit}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-
-            {/* Pagination row inside table card */}
-            <div className="flex items-center justify-end px-4 py-3 border-t border-[#e0e8f5]">
-              <div className="flex items-center gap-1">
-                <button onClick={() => setAccPage(1)} disabled={accPage === 1}
-                  className="size-[28px] flex items-center justify-center rounded border border-[#d5ddfb] disabled:opacity-40 hover:bg-[#e2ebf9] transition-colors text-[#0e1b3d] text-[12px]">«</button>
-                <button onClick={() => setAccPage(p => Math.max(1, p - 1))} disabled={accPage === 1}
-                  className="size-[28px] flex items-center justify-center rounded border border-[#d5ddfb] disabled:opacity-40 hover:bg-[#e2ebf9] transition-colors text-[#0e1b3d] text-[12px]">‹</button>
-                <span className="px-3 text-[13px] text-[#0e1b3d]" style={{ fontFamily: font }}>
-                  {accPage} of {Math.ceil(ACCOUNTS.length / ACC_PAGE_SIZE)}
-                </span>
-                <button onClick={() => setAccPage(p => Math.min(Math.ceil(ACCOUNTS.length / ACC_PAGE_SIZE), p + 1))} disabled={accPage >= Math.ceil(ACCOUNTS.length / ACC_PAGE_SIZE)}
-                  className="size-[28px] flex items-center justify-center rounded border border-[#d5ddfb] disabled:opacity-40 hover:bg-[#e2ebf9] transition-colors text-[#0e1b3d] text-[12px]">›</button>
-                <button onClick={() => setAccPage(Math.ceil(ACCOUNTS.length / ACC_PAGE_SIZE))} disabled={accPage >= Math.ceil(ACCOUNTS.length / ACC_PAGE_SIZE)}
-                  className="size-[28px] flex items-center justify-center rounded border border-[#d5ddfb] disabled:opacity-40 hover:bg-[#e2ebf9] transition-colors text-[#0e1b3d] text-[12px]">»</button>
-              </div>
-            </div>
-          </div>
-
-          {/* Statement requirements — shown only when an account is selected */}
-          {selectedAcc !== null && (
-            <div className="bg-white rounded-[8px] border border-[#e0e8f5] p-5 mt-4">
-              {/* Statement type radios */}
-              <div className="flex items-center gap-6 mb-5 flex-wrap">
-                {([
-                  ['summary',     'Monthly Statement (Summary)'],
-                  ['detailed',    'Monthly Statement (Detailed)'],
-                  ['transaction', 'Transaction List'],
-                ] as const).map(([val, label]) => (
-                  <label key={val} className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="stmt-type"
-                      checked={stmtType === val}
-                      onChange={() => { setStmtType(val); setDownloadFmt(''); }}
-                      className="size-4 accent-[#1360d2]"
-                    />
-                    <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: font }}>{label}</span>
-                  </label>
-                ))}
-              </div>
-
-              {/* Transaction List note */}
-              {stmtType === 'transaction' && (
-                <p className="text-[13px] text-[#0e1b3d] mb-4 p-3 bg-[#fff8e6] rounded border border-[#fcd7a0]" style={{ fontFamily: font }}>
-                  <strong>Note*</strong> Kindly note that the report is available for 30 days only. If you need more than 30 days, please extract the report in batches or use monthly option
-                </p>
-              )}
-
-              {/* Form fields */}
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                {stmtType !== 'transaction' ? (
-                  <>
-                    {/* Year */}
-                    <div className="flex flex-col gap-1">
-                      <label className="text-[13px] text-[#697498]" style={{ fontFamily: font }}>Year *</label>
-                      <div className="relative">
-                        <select
-                          value={stmtYear}
-                          onChange={e => setStmtYear(e.target.value)}
-                          className="w-full h-[42px] border border-[#d5ddfb] rounded-[4px] px-3 pr-8 text-[14px] text-[#0e1b3d] focus:outline-none focus:border-[#1360d2] bg-white appearance-none"
-                          style={{ fontFamily: font }}
-                        >
-                          {YEARS.map(y => <option key={y}>{y}</option>)}
-                        </select>
-                        <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" viewBox="0 0 20 20" width="14" height="14" fill="none">
-                          <path d="M5 8l5 5 5-5" stroke="#697498" strokeWidth="1.5" strokeLinecap="round" />
-                        </svg>
-                      </div>
-                    </div>
-                    {/* Month */}
-                    <div className="flex flex-col gap-1">
-                      <label className="text-[13px] text-[#697498]" style={{ fontFamily: font }}>Month *</label>
-                      <div className="relative">
-                        <select
-                          value={stmtMonth}
-                          onChange={e => setStmtMonth(e.target.value)}
-                          className="w-full h-[42px] border border-[#d5ddfb] rounded-[4px] px-3 pr-8 text-[14px] text-[#0e1b3d] focus:outline-none focus:border-[#1360d2] bg-white appearance-none"
-                          style={{ fontFamily: font }}
-                        >
-                          {MONTHS.map(m => <option key={m}>{m}</option>)}
-                        </select>
-                        <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" viewBox="0 0 20 20" width="14" height="14" fill="none">
-                          <path d="M5 8l5 5 5-5" stroke="#697498" strokeWidth="1.5" strokeLinecap="round" />
-                        </svg>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    {/* From Date */}
-                    <div className="flex flex-col gap-1">
-                      <label className="text-[13px] text-[#697498]" style={{ fontFamily: font }}>From Date *</label>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          value={stmtFromDate}
-                          onChange={e => setStmtFromDate(e.target.value)}
-                          placeholder="dd-mm-yyyy"
-                          className="w-full h-[42px] border border-[#d5ddfb] rounded-[4px] px-3 pr-10 text-[14px] text-[#0e1b3d] placeholder-[#8f94ae] focus:outline-none focus:border-[#1360d2]"
-                          style={{ fontFamily: font }}
-                        />
-                        <svg className="absolute right-3 top-1/2 -translate-y-1/2" viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="#697498" strokeWidth="1.6">
-                          <rect x="3" y="4" width="14" height="13" rx="2" /><path d="M3 8h14M7 2v4M13 2v4" />
-                        </svg>
-                      </div>
-                    </div>
-                    {/* To Date */}
-                    <div className="flex flex-col gap-1">
-                      <label className="text-[13px] text-[#697498]" style={{ fontFamily: font }}>To Date *</label>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          value={stmtToDate}
-                          onChange={e => setStmtToDate(e.target.value)}
-                          placeholder="dd-mm-yyyy"
-                          className="w-full h-[42px] border border-[#d5ddfb] rounded-[4px] px-3 pr-10 text-[14px] text-[#0e1b3d] placeholder-[#8f94ae] focus:outline-none focus:border-[#1360d2]"
-                          style={{ fontFamily: font }}
-                        />
-                        <svg className="absolute right-3 top-1/2 -translate-y-1/2" viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="#697498" strokeWidth="1.6">
-                          <rect x="3" y="4" width="14" height="13" rx="2" /><path d="M3 8h14M7 2v4M13 2v4" />
-                        </svg>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {/* Download Format + Download button */}
-              <div className="flex items-end gap-4 flex-wrap">
-                <div className="flex flex-col gap-1 flex-1 min-w-[200px] max-w-[320px]">
-                  <label className="text-[13px] text-[#697498]" style={{ fontFamily: font }}>Download Format *</label>
+          {stmtType === 'transaction' && (
+            <p className="text-[13px] text-[#0e1b3d] mb-4 p-3 bg-[#fff8e6] rounded border border-[#fcd7a0]" style={{ fontFamily: font }}>
+              <strong>Note*</strong> Kindly note that the report is available for 30 days only. If you need more than 30 days, please extract the report in batches or use monthly option
+            </p>
+          )}
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            {stmtType !== 'transaction' ? (
+              <>
+                <div className="flex flex-col gap-1">
+                  <label className="text-[13px] text-[#697498]" style={{ fontFamily: font }}>Year *</label>
                   <div className="relative">
-                    <select
-                      value={downloadFmt}
-                      onChange={e => setDownloadFmt(e.target.value)}
+                    <select value={stmtYear} onChange={e => setStmtYear(e.target.value)}
                       className="w-full h-[42px] border border-[#d5ddfb] rounded-[4px] px-3 pr-8 text-[14px] text-[#0e1b3d] focus:outline-none focus:border-[#1360d2] bg-white appearance-none"
-                      style={{ fontFamily: font, color: downloadFmt ? '#0e1b3d' : '#8f94ae' }}
-                    >
-                      <option value="" disabled>Please Select</option>
-                      <option value="pdf">PDF</option>
-                      <option value="excel">Excel</option>
-                      <option value="csv">CSV</option>
+                      style={{ fontFamily: font }}>
+                      {YEARS.map(y => <option key={y}>{y}</option>)}
                     </select>
                     <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" viewBox="0 0 20 20" width="14" height="14" fill="none">
                       <path d="M5 8l5 5 5-5" stroke="#697498" strokeWidth="1.5" strokeLinecap="round" />
                     </svg>
                   </div>
                 </div>
-                <button
-                  disabled={!downloadFmt}
-                  className="h-[42px] px-6 rounded-[4px] text-[15px] text-white flex items-center gap-2 transition-opacity"
-                  style={{ background: downloadFmt ? '#4a4f60' : '#a0a5b8', fontFamily: font, cursor: downloadFmt ? 'pointer' : 'not-allowed' }}
-                >
-                  <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8">
-                    <path d="M10 3v10M6 9l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M3 15h14" strokeLinecap="round" />
-                  </svg>
-                  Download
-                </button>
+                <div className="flex flex-col gap-1">
+                  <label className="text-[13px] text-[#697498]" style={{ fontFamily: font }}>Month *</label>
+                  <div className="relative">
+                    <select value={stmtMonth} onChange={e => setStmtMonth(e.target.value)}
+                      className="w-full h-[42px] border border-[#d5ddfb] rounded-[4px] px-3 pr-8 text-[14px] text-[#0e1b3d] focus:outline-none focus:border-[#1360d2] bg-white appearance-none"
+                      style={{ fontFamily: font }}>
+                      {MONTHS.map(m => <option key={m}>{m}</option>)}
+                    </select>
+                    <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" viewBox="0 0 20 20" width="14" height="14" fill="none">
+                      <path d="M5 8l5 5 5-5" stroke="#697498" strokeWidth="1.5" strokeLinecap="round" />
+                    </svg>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex flex-col gap-1">
+                  <label className="text-[13px] text-[#697498]" style={{ fontFamily: font }}>From Date *</label>
+                  <div className="relative">
+                    <input type="text" value={stmtFromDate} onChange={e => setStmtFromDate(e.target.value)}
+                      placeholder="dd-mm-yyyy"
+                      className="w-full h-[42px] border border-[#d5ddfb] rounded-[4px] px-3 pr-10 text-[14px] text-[#0e1b3d] placeholder-[#8f94ae] focus:outline-none focus:border-[#1360d2]"
+                      style={{ fontFamily: font }} />
+                    <svg className="absolute right-3 top-1/2 -translate-y-1/2" viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="#697498" strokeWidth="1.6">
+                      <rect x="3" y="4" width="14" height="13" rx="2" /><path d="M3 8h14M7 2v4M13 2v4" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-[13px] text-[#697498]" style={{ fontFamily: font }}>To Date *</label>
+                  <div className="relative">
+                    <input type="text" value={stmtToDate} onChange={e => setStmtToDate(e.target.value)}
+                      placeholder="dd-mm-yyyy"
+                      className="w-full h-[42px] border border-[#d5ddfb] rounded-[4px] px-3 pr-10 text-[14px] text-[#0e1b3d] placeholder-[#8f94ae] focus:outline-none focus:border-[#1360d2]"
+                      style={{ fontFamily: font }} />
+                    <svg className="absolute right-3 top-1/2 -translate-y-1/2" viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="#697498" strokeWidth="1.6">
+                      <rect x="3" y="4" width="14" height="13" rx="2" /><path d="M3 8h14M7 2v4M13 2v4" />
+                    </svg>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+          <div className="flex items-end gap-4 flex-wrap">
+            <div className="flex flex-col gap-1 flex-1 min-w-[200px] max-w-[320px]">
+              <label className="text-[13px] text-[#697498]" style={{ fontFamily: font }}>Download Format *</label>
+              <div className="relative">
+                <select value={downloadFmt} onChange={e => setDownloadFmt(e.target.value)}
+                  className="w-full h-[42px] border border-[#d5ddfb] rounded-[4px] px-3 pr-8 text-[14px] focus:outline-none focus:border-[#1360d2] bg-white appearance-none"
+                  style={{ fontFamily: font, color: downloadFmt ? '#0e1b3d' : '#8f94ae' }}>
+                  <option value="" disabled>Please Select</option>
+                  <option value="pdf">PDF</option>
+                  <option value="excel">Excel</option>
+                  <option value="csv">CSV</option>
+                </select>
+                <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" viewBox="0 0 20 20" width="14" height="14" fill="none">
+                  <path d="M5 8l5 5 5-5" stroke="#697498" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
               </div>
             </div>
-          )}
+            <button
+              disabled={!downloadFmt}
+              className="h-[42px] px-6 rounded-[4px] text-[15px] text-white flex items-center gap-2 transition-opacity"
+              style={{ background: downloadFmt ? '#4a4f60' : '#a0a5b8', fontFamily: font, cursor: downloadFmt ? 'pointer' : 'not-allowed' }}>
+              <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path d="M10 3v10M6 9l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M3 15h14" strokeLinecap="round" />
+              </svg>
+              Download
+            </button>
+          </div>
         </div>
       )}
+
+      {/* Accounts table — integrated clearance layout */}
+      <div className="overflow-x-auto">
+        <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }}>
+          <thead>
+            <tr>
+              <th style={{ background: '#a6c2e9', padding: '10px 16px', textAlign: 'left', fontWeight: 500, minWidth: 160, borderTopLeftRadius: 8, borderBottomLeftRadius: 8 }}>
+                <span className="text-[15px] font-medium text-[#051937] whitespace-nowrap">Account Type</span>
+              </th>
+              <th style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, minWidth: 240 }}>
+                <span className="text-[15px] font-medium text-[#051937] whitespace-nowrap">Account Number</span>
+              </th>
+              <th style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'right', fontWeight: 500, minWidth: 200, borderTopRightRadius: 8, borderBottomRightRadius: 8 }}>
+                <span className="text-[15px] font-medium text-[#051937] whitespace-nowrap">Available Limit (AED)</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {paginatedAcc.map((row, i) => {
+              const absIdx   = (accPage - 1) * ACC_PAGE_SIZE + i;
+              const isSelected = selectedAcc === absIdx;
+              const isCredit   = row.type === 'Credit Account';
+              return (
+                <tr
+                  key={i}
+                  onClick={() => setSelectedAcc(isSelected ? null : absIdx)}
+                  className="cursor-pointer"
+                  style={{ outline: isSelected ? '2px solid #1360d2' : 'none', outlineOffset: -1, borderRadius: 6 }}
+                >
+                  <td style={{ background: isSelected ? '#eef4ff' : '#fff', padding: '0 16px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff', borderTopLeftRadius: 6, borderBottomLeftRadius: 6 }}>
+                    <div className="flex items-center gap-2">
+                      <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[12px] font-medium whitespace-nowrap ${
+                        isCredit ? 'text-[#1360d2]' : 'text-[#697498]'
+                      }`} style={{ background: isCredit ? 'rgba(19,96,210,0.10)' : 'rgba(105,116,152,0.10)', fontFamily: font }}>
+                        {row.type}
+                      </span>
+                    </div>
+                  </td>
+                  <td style={{ background: isSelected ? '#eef4ff' : '#fff', padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff' }}>
+                    <a className="text-[15px] text-[#1360d2] underline cursor-pointer whitespace-nowrap">{row.account}</a>
+                  </td>
+                  <td style={{ background: isSelected ? '#eef4ff' : '#fff', padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff', textAlign: 'right', borderTopRightRadius: 6, borderBottomRightRadius: 6 }}>
+                    <span className="text-[15px] text-[#0e1b3d] whitespace-nowrap font-medium">AED {row.limit}</span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+
+        {/* Pagination */}
+        <div className="flex items-center justify-between mt-2 px-1">
+          <span className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>
+            {ALL_ACCOUNTS.length} total accounts
+          </span>
+          <div className="flex items-center gap-1">
+            <button onClick={() => setAccPage(1)} disabled={accPage === 1}
+              className="size-[32px] flex items-center justify-center rounded border border-[#d5ddfb] disabled:opacity-40 hover:bg-[#e2ebf9] transition-colors text-[#0e1b3d] text-[13px]">«</button>
+            <button onClick={() => setAccPage(p => Math.max(1, p - 1))} disabled={accPage === 1}
+              className="size-[32px] flex items-center justify-center rounded border border-[#d5ddfb] disabled:opacity-40 hover:bg-[#e2ebf9] transition-colors text-[#0e1b3d] text-[13px]">‹</button>
+            <span className="px-3 text-[14px] text-[#0e1b3d]" style={{ fontFamily: font }}>
+              {accPage} of {totalAccPages}
+            </span>
+            <button onClick={() => setAccPage(p => Math.min(totalAccPages, p + 1))} disabled={accPage >= totalAccPages}
+              className="size-[32px] flex items-center justify-center rounded border border-[#d5ddfb] disabled:opacity-40 hover:bg-[#e2ebf9] transition-colors text-[#0e1b3d] text-[13px]">›</button>
+            <button onClick={() => setAccPage(totalAccPages)} disabled={accPage >= totalAccPages}
+              className="size-[32px] flex items-center justify-center rounded border border-[#d5ddfb] disabled:opacity-40 hover:bg-[#e2ebf9] transition-colors text-[#0e1b3d] text-[13px]">»</button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 
