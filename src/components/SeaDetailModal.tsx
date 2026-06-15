@@ -49,7 +49,7 @@ const SEA_COLUMNS: { title: string; items: string[] }[] = [
     items: [
       'Integrated Clearance',
       'Request Goods Landing Certificate',
-      'Pay Bills or Fines',
+      'Bill Payment',
       'Request Customs Transactions Report',
       'Request Duty Account',
       'Join Accreditation Program',
@@ -208,7 +208,7 @@ const PAGE_CONFIGS: Record<Exclude<PageKey, 'pbf'>, {
 
 const ITEM_PAGE_MAP: Record<string, PageKey> = {
   'Request Goods Landing Certificate':    'glc',
-  'Pay Bills or Fines':                   'pbf',
+  'Bill Payment':                   'pbf',
   'Join Accreditation Program':           'jap',
   'Request Customs Warehouse License':    'cwl',
   'Request Customs Transactions Report':  'ctr',
@@ -391,7 +391,7 @@ export default function SeaDetailModal({ onClose }: Props) {
                       const HIGHLIGHTED = new Set([
                         'Integrated Clearance',
                         'Request Goods Landing Certificate',
-                        'Pay Bills or Fines',
+                        'Bill Payment',
                         'Request Customs Transactions Report',
                         'Request Duty Account',
                         'Join Accreditation Program',
