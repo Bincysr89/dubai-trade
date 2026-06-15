@@ -43,7 +43,7 @@ const INVOICE_ROWS = [
 
 const PAYMENT_ROWS = [
   { type: 'Case Management Demand Notice', txNo: '13136', txDate: '10-06-2026 11:57:00', invoiceNo: '70003787', status: 'Paid',   amount: '200.00',   txDateFull: '10-06-2026', degTx: '590000237262582', ePayTx: '20021737', initiatedDate: '10-06-2026 11:58:00', initiatedBy: 'crnuser01', mode: 'Credit Card', payMsg: 'Payment Status Remarks: SUCCESS', colMsg: 'Collection Status Remarks: Transaction has been processed successfully.', details: [{ type: 'Case Management Demand Notice', invoiceNo: '70003786', amount: '5,520.00', receiptNo: 'Z-12645', remarks: 'M1CS 1927055; BPS Transaction for ECM-70003786', status: 'Paid' }] },
-  { type: 'Multiple Bill Settlement',      txNo: '13133', txDate: '10-06-2026 11:48:00', invoiceNo: '',          status: 'Paid',   amount: '5,540.00', txDateFull: '10-06-2026', degTx: '590000237262583', ePayTx: '20021738', initiatedDate: '10-06-2026 11:48:00', initiatedBy: 'crnuser01', mode: 'Credit Card', payMsg: 'Payment Status Remarks: SUCCESS', colMsg: 'Collection Status Remarks: Transaction has been processed successfully.', details: [{ type: 'Case Management Demand Notice', invoiceNo: '70003786', amount: '5,520.00', receiptNo: 'Z-12645', remarks: 'M1CS 1927055; BPS Transaction for ECM-70003786', status: 'Paid' }, { type: 'Case Management Demand Notice', invoiceNo: '70003787', amount: '20.00', receiptNo: 'Z-12646', remarks: 'M1CS 1927055; BPS Transaction for ECM-70003787', status: 'Paid' }] },
+  { type: 'Multiple Bill Settlement',      txNo: '13133', txDate: '10-06-2026 11:48:00', invoiceNo: '',          status: 'Paid',   amount: '5,540.00', txDateFull: '10-06-2026', degTx: '590000237262583', ePayTx: '20021738', initiatedDate: '10-06-2026 11:48:00', initiatedBy: 'crnuser01', mode: 'Credit Card', payMsg: 'Payment Status Remarks: SUCCESS', colMsg: 'Collection Status Remarks: Transaction has been processed successfully.', details: [{ type: 'Case Management Demand Notice', invoiceNo: '70003820', amount: '5,490.00', receiptNo: 'Z-12647', remarks: 'M1CS 1927055; BPS Transaction for ECM-70003820', status: 'Paid' }, { type: 'CRN SEA Discrepancy Export Manifest Fine Invoice', invoiceNo: '1000004567', amount: '50.00', receiptNo: 'Z-12648', remarks: 'M1CS 1927055; BPS Transaction for CRN-1000004567', status: 'Paid' }] },
   { type: 'Case Management Demand Notice', txNo: '13132', txDate: '10-06-2026 10:18:00', invoiceNo: '70003820', status: 'Paid',   amount: '5,490.00', txDateFull: '10-06-2026', degTx: '590000237262584', ePayTx: '20021739', initiatedDate: '10-06-2026 10:18:00', initiatedBy: 'crnuser01', mode: 'Credit Card', payMsg: 'Payment Status Remarks: SUCCESS', colMsg: 'Collection Status Remarks: Transaction has been processed successfully.', details: [{ type: 'Case Management Demand Notice', invoiceNo: '70003820', amount: '5,490.00', receiptNo: 'Z-12647', remarks: 'M1CS 1927055; BPS Transaction for ECM-70003820', status: 'Paid' }] },
   { type: 'Case Management Demand Notice', txNo: '13131', txDate: '10-06-2026 10:11:00', invoiceNo: '70003819', status: 'Paid',   amount: '1,000.00', txDateFull: '10-06-2026', degTx: '590000237262585', ePayTx: '20021740', initiatedDate: '10-06-2026 10:11:00', initiatedBy: 'crnuser01', mode: 'Credit Card', payMsg: 'Payment Status Remarks: SUCCESS', colMsg: 'Collection Status Remarks: Transaction has been processed successfully.', details: [{ type: 'Case Management Demand Notice', invoiceNo: '70003819', amount: '1,000.00', receiptNo: 'Z-12648', remarks: 'M1CS 1927055; BPS Transaction for ECM-70003819', status: 'Paid' }] },
   { type: 'Case Management Demand Notice', txNo: '13129', txDate: '10-06-2026 10:08:00', invoiceNo: '70003819', status: 'Initiated', amount: '220.00',   txDateFull: '14-05-2026', degTx: '590000237132364', ePayTx: '20021566', initiatedDate: '14-05-2026 09:11:00', initiatedBy: 'crnuser01', mode: 'Credit Card', payMsg: 'Payment Status Remarks: Transaction cancelled due to user did not complete the payment process', colMsg: 'Collection Status Remarks: DEG - Transaction cancelled due to user did not complete the payment process', details: [{ type: 'CRN SEA Discrepancy Export Manifest Fine Invoice', invoiceNo: '1000004567', amount: '520.00', receiptNo: '', remarks: '', status: 'Unpaid' }] },
@@ -72,12 +72,15 @@ const DEBIT_ACCOUNTS = [
 ];
 
 /* ── Pre-computed dashboard stats ──────────────────────────────────────────── */
-const creditTotal  = ACCOUNTS.reduce((s, a) => s + parseFloat(a.limit.replace(/,/g, '')), 0);
-const debitTotal   = DEBIT_ACCOUNTS.reduce((s, a) => s + parseFloat(a.limit.replace(/,/g, '')), 0);
-const pendingInv   = INVOICE_ROWS.filter(r => r.status === 'Unpaid').length;
-const initiatedPay = PAYMENT_ROWS.filter(r => r.status === 'Initiated').length;
-const recheckPay   = PAYMENT_ROWS.filter(r => r.details.some(d => d.status === 'Unpaid')).length;
-const pendingPay   = PAYMENT_ROWS.filter(r => r.status !== 'Paid').length;
+const creditTotal    = ACCOUNTS.reduce((s, a) => s + parseFloat(a.limit.replace(/,/g, '')), 0);
+const debitTotal     = DEBIT_ACCOUNTS.reduce((s, a) => s + parseFloat(a.limit.replace(/,/g, '')), 0);
+const pendingInv     = INVOICE_ROWS.filter(r => r.status === 'Unpaid').length;
+const pendingInvAmt  = INVOICE_ROWS.filter(r => r.status === 'Unpaid').reduce((s, r) => s + parseFloat(r.balance.replace(/,/g, '')), 0);
+const initiatedPay   = PAYMENT_ROWS.filter(r => r.status === 'Initiated').length;
+const recheckPay     = PAYMENT_ROWS.filter(r => r.details.some(d => d.status === 'Unpaid')).length;
+const pendingPay     = PAYMENT_ROWS.filter(r => r.status !== 'Paid').length;
+const paidPayAmt     = PAYMENT_ROWS.filter(r => r.status === 'Paid').reduce((s, r) => s + parseFloat(r.amount.replace(/,/g, '')), 0);
+const recentPayments = PAYMENT_ROWS.slice(0, 5);
 
 const fmtBalance = (n: number) =>
   'AED ' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -90,6 +93,27 @@ const ALL_ACCOUNTS = [
 
 const ACC_PAGE_SIZE = 8;
 const YEARS  = ['2024', '2025', '2026'];
+const INVOICE_TYPES = [
+  'Auction Receivable',
+  'Berthing/Loading Fee Statement',
+  'Case Management Demand Notice',
+  'CRN SEA Discrepancy Export Manifest Fine Invoice',
+  'CRN SEA Export Late Manifest Fine Invoice',
+  'CRN SEA Export Manifest Service Charges Invoice',
+  'CRN SEA Import Manifest Discrepancy Fine Invoice',
+  'DA Deposit Forfeiture Demand Notice',
+  'Declaration - Short Collection Demand Notice',
+  'Departure Permit Invoice',
+  'Deposit Claim Receivable - Cash',
+  'Deposit Claim Receivable - DA',
+  'Deposit Claim Receivable - SG',
+  'Deposit Forfeiture Demand Notice',
+  'Deposit Receivable Invoice (DIPS)',
+  'Document Submission Invoice',
+  'Duty Claim Receivable - Cash',
+  'Freezone NR Claim Registration Charges Invoice',
+  'General Charge Invoice',
+];
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 type Menu     = 'Overview' | 'Accounts' | 'Invoices' | 'Payments';
@@ -597,6 +621,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const [invPayDetails,   setInvPayDetails]   = useState<typeof PAYMENT_ROWS[0] | null>(null);
   const [payFromDate, setPayFromDate] = useState('09-06-2026');
   const [payToDate,   setPayToDate]   = useState('10-06-2026');
+  const [expandedPayRow, setExpandedPayRow] = useState<number | null>(null);
 
   const flyoutRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -1316,8 +1341,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 style={{ fontFamily: font }}
               >
                 <option value="">All types…</option>
-                <option>Case Management Demand Notice</option>
-                <option>CRN SEA Discrepancy Export Manifest Fine Invoice</option>
+                {INVOICE_TYPES.map(t => <option key={t}>{t}</option>)}
               </select>
             </div>
           ) : (
@@ -1392,7 +1416,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             <FloatDropdown
               label="Invoice Type"
               value={fInvType}
-              options={['Case Management Demand Notice', 'CRN SEA Discrepancy Export Manifest Fine Invoice']}
+              options={INVOICE_TYPES}
               onChange={setFInvType}
             />
             <FloatDropdown
@@ -1715,7 +1739,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                   <span className="text-[16px] font-medium text-[#051937] whitespace-nowrap">{label}</span>
                 </th>
               ))}
-              <th style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'center', width: 72, borderTopRightRadius: 8, borderBottomRightRadius: 8 }}>
+              <th style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'center', width: 100, borderTopRightRadius: 8, borderBottomRightRadius: 8 }}>
                 <span className="text-[16px] font-medium text-[#051937]">Actions</span>
               </th>
             </tr>
@@ -1724,50 +1748,137 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             {paginatedPay.map((row, i) => {
               const absIdx = (payPage - 1) * PAGE_SIZE + i;
               const st = PAY_STATUS[row.status] ?? { bg: 'rgba(105,116,152,0.10)', color: '#697498' };
+              const isMultiple = row.type === 'Multiple Bill Settlement';
+              const isExpanded = expandedPayRow === absIdx;
               return (
-                <tr key={i} className="bg-white hover:bg-[#dce8f8]">
-                  <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', paddingLeft: 16, borderBottom: '1px solid #f0f4ff' }}>
-                    <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.type}</span>
-                  </td>
-                  <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff' }}>
-                    <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.txNo}</span>
-                  </td>
-                  <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff' }}>
-                    <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.txDate}</span>
-                  </td>
-                  <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff' }}>
-                    <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.invoiceNo || '—'}</span>
-                  </td>
-                  <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff' }}>
-                    <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap"><DirhamIcon size={14} color="#0e1b3d" />&nbsp;{row.amount}</span>
-                  </td>
-                  <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff' }}>
-                    <span className="inline-flex items-center px-[10px] py-[3px] rounded-[4px] text-[16px] font-medium whitespace-nowrap" style={{ background: st.bg, color: st.color }}>
-                      {row.status}
-                    </span>
-                  </td>
-                  <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff', textAlign: 'center' }}>
-                    <div className="relative inline-block" ref={openFlyout === absIdx + 100 ? flyoutRef : undefined}>
-                      <button onClick={() => setOpenFlyout(openFlyout === absIdx + 100 ? null : absIdx + 100)}
-                        className="size-[32px] rounded-full flex items-center justify-center hover:bg-[#e2ebf9] transition-colors">
-                        <svg viewBox="0 0 20 20" width="18" height="18" fill="#697498">
-                          <circle cx="10" cy="4" r="1.7" /><circle cx="10" cy="10" r="1.7" /><circle cx="10" cy="16" r="1.7" />
-                        </svg>
-                      </button>
-                      {openFlyout === absIdx + 100 && (
-                        <div className="absolute z-[100] right-0 bg-white rounded-[8px] py-[4px] overflow-hidden"
-                          style={{ top: 36, width: 210, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
-                          {['View Payment Details', 'View & Download Receipt', 'Make Payment', 'Recheck', 'Payment History'].map(item => (
-                            <button key={item} className="group w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
-                              onClick={() => { setOpenFlyout(null); }}>
-                              <span className="text-[15px] text-[#111838] group-hover:text-white" style={{ fontFamily: font }}>{item}</span>
-                            </button>
-                          ))}
+                <React.Fragment key={i}>
+                  {/* Parent row — click anywhere except actions to expand */}
+                  <tr
+                    className={isExpanded ? 'bg-[#edf3ff]' : 'bg-white hover:bg-[#dce8f8]'}
+                    style={{ cursor: isMultiple ? 'pointer' : 'default', outline: openFlyout === absIdx + 100 ? '2px solid #93c5fd' : 'none', outlineOffset: '-2px' }}
+                    onClick={isMultiple ? () => setExpandedPayRow(isExpanded ? null : absIdx) : undefined}
+                  >
+                    <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', paddingLeft: 16, borderBottom: isExpanded ? 'none' : '1px solid #f0f4ff' }}>
+                      <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.type}</span>
+                    </td>
+                    <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: isExpanded ? 'none' : '1px solid #f0f4ff' }}>
+                      <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.txNo}</span>
+                    </td>
+                    <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: isExpanded ? 'none' : '1px solid #f0f4ff' }}>
+                      <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.txDate}</span>
+                    </td>
+                    <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: isExpanded ? 'none' : '1px solid #f0f4ff' }}>
+                      <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.invoiceNo || '—'}</span>
+                    </td>
+                    <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: isExpanded ? 'none' : '1px solid #f0f4ff' }}>
+                      <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap"><DirhamIcon size={14} color="#0e1b3d" />&nbsp;{row.amount}</span>
+                    </td>
+                    <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: isExpanded ? 'none' : '1px solid #f0f4ff' }}>
+                      <span className="inline-flex items-center px-[10px] py-[3px] rounded-[4px] text-[16px] font-medium whitespace-nowrap" style={{ background: st.bg, color: st.color }}>
+                        {row.status}
+                      </span>
+                    </td>
+                    {/* Actions: expand chevron (Multiple only) + three-dot menu */}
+                    <td style={{ padding: '0 8px', height: 54, verticalAlign: 'middle', borderBottom: isExpanded ? 'none' : '1px solid #f0f4ff', textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+                      <div className="flex items-center justify-center gap-[2px]">
+                        {/* Three-dot menu */}
+                        <div className="relative inline-block" ref={openFlyout === absIdx + 100 ? flyoutRef : undefined}>
+                          <button onClick={() => setOpenFlyout(openFlyout === absIdx + 100 ? null : absIdx + 100)}
+                            className="size-[32px] rounded-full flex items-center justify-center hover:bg-[#e2ebf9] transition-colors">
+                            <svg viewBox="0 0 20 20" width="18" height="18" fill="#697498">
+                              <circle cx="10" cy="4" r="1.7" /><circle cx="10" cy="10" r="1.7" /><circle cx="10" cy="16" r="1.7" />
+                            </svg>
+                          </button>
+                          {openFlyout === absIdx + 100 && (
+                            <div className="absolute z-[100] right-0 bg-white rounded-[8px] py-[4px] overflow-hidden"
+                              style={{ top: 36, width: 210, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
+                              {['View Payment Details', 'View & Download Receipt', 'Make Payment', 'Recheck', 'Payment History'].map(item => (
+                                <button key={item} className="group w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
+                                  onClick={() => { setOpenFlyout(null); }}>
+                                  <span className="text-[15px] text-[#111838] group-hover:text-white" style={{ fontFamily: font }}>{item}</span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  </td>
-                </tr>
+                        {/* Expand/collapse chevron — only for Multiple Bill Settlement, placed after three-dot */}
+                        {isMultiple && (
+                          <button
+                            onClick={() => setExpandedPayRow(isExpanded ? null : absIdx)}
+                            className="flex items-center justify-center transition-colors"
+                            style={{ background: 'none', border: 'none', padding: 0 }}
+                          >
+                            {/* Figma u_angle-right icon — rotates 180° when expanded */}
+                            <svg width="28" height="28" viewBox="0 0 49 49" fill="none"
+                              style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', filter: 'drop-shadow(0 0 6px rgba(0,0,0,0.10))' }}>
+                              <rect width="24" height="24" rx="12" transform="matrix(-4.37114e-08 1 1 4.37114e-08 12.18 12.19)" fill="white"/>
+                              <path d="M23.47 27.02L19.23 22.78a1.87 1.87 0 010-2.85c.38-.38.89-.59 1.41-.59s1.03.21 1.41.59l3.54 3.54 3.54-3.54c.38-.38.89-.59 1.41-.59s1.03.21 1.41.59c.19.19.33.41.43.65.1.24.15.49.15.74s-.05.5-.15.73c-.1.24-.24.46-.43.65l-4.24 4.24a1.87 1.87 0 01-2.83 0z" fill="#8F94AE"/>
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+
+                  {/* Inner rows — rendered as sibling <tr>s in the same tbody, aligned to parent columns */}
+                  {isMultiple && isExpanded && row.details.map((d, di) => {
+                    const dst = PAY_STATUS[d.status] ?? { bg: 'rgba(105,116,152,0.10)', color: '#697498' };
+                    const innerFlyoutKey = absIdx * 1000 + di + 5000;
+                    const isLastDetail = di === row.details.length - 1;
+                    return (
+                      <tr key={`detail-${di}`} style={{ background: '#f0f5ff' }}>
+                        {/* Col 1: Invoice Type (indented) */}
+                        <td style={{ padding: '0 12px 0 32px', height: 50, verticalAlign: 'middle', borderBottom: isLastDetail ? '1px solid #f0f4ff' : '1px solid #dce8f8' }}>
+                          <span className="text-[16px] text-[#0e1b3d]">{d.type}</span>
+                        </td>
+                        {/* Col 2: Transaction No. — blank (no tx column in inner rows) */}
+                        <td style={{ padding: '0 12px', height: 50, verticalAlign: 'middle', borderBottom: isLastDetail ? '1px solid #f0f4ff' : '1px solid #dce8f8' }}>
+                          <span className="text-[16px] text-[#697498]">—</span>
+                        </td>
+                        {/* Col 3: Transaction Date */}
+                        <td style={{ padding: '0 12px', height: 50, verticalAlign: 'middle', borderBottom: isLastDetail ? '1px solid #f0f4ff' : '1px solid #dce8f8' }}>
+                          <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.txDate}</span>
+                        </td>
+                        {/* Col 4: Invoice No. */}
+                        <td style={{ padding: '0 12px', height: 50, verticalAlign: 'middle', borderBottom: isLastDetail ? '1px solid #f0f4ff' : '1px solid #dce8f8' }}>
+                          <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{d.invoiceNo}</span>
+                        </td>
+                        {/* Col 5: Amount */}
+                        <td style={{ padding: '0 12px', height: 50, verticalAlign: 'middle', borderBottom: isLastDetail ? '1px solid #f0f4ff' : '1px solid #dce8f8' }}>
+                          <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap"><DirhamIcon size={14} color="#0e1b3d" />&nbsp;{d.amount}</span>
+                        </td>
+                        {/* Col 6: Status */}
+                        <td style={{ padding: '0 12px', height: 50, verticalAlign: 'middle', borderBottom: isLastDetail ? '1px solid #f0f4ff' : '1px solid #dce8f8' }}>
+                          <span className="inline-flex items-center px-[10px] py-[3px] rounded-[4px] text-[16px] font-medium whitespace-nowrap" style={{ background: dst.bg, color: dst.color }}>{d.status}</span>
+                        </td>
+                        {/* Col 7: Actions — three dots for download */}
+                        <td style={{ padding: '0 8px', height: 50, verticalAlign: 'middle', borderBottom: isLastDetail ? '1px solid #f0f4ff' : '1px solid #dce8f8', textAlign: 'center' }}>
+                          <div className="flex items-center justify-center">
+                            <div className="relative inline-block" ref={openFlyout === innerFlyoutKey ? flyoutRef : undefined}>
+                              <button onClick={() => setOpenFlyout(openFlyout === innerFlyoutKey ? null : innerFlyoutKey)}
+                                className="size-[32px] rounded-full flex items-center justify-center hover:bg-[#dce8f8] transition-colors">
+                                <svg viewBox="0 0 20 20" width="18" height="18" fill="#697498">
+                                  <circle cx="10" cy="4" r="1.7" /><circle cx="10" cy="10" r="1.7" /><circle cx="10" cy="16" r="1.7" />
+                                </svg>
+                              </button>
+                              {openFlyout === innerFlyoutKey && (
+                                <div className="absolute z-[100] right-0 bg-white rounded-[8px] py-[4px] overflow-hidden"
+                                  style={{ top: 36, width: 200, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
+                                  {['View Details', 'Download Receipt'].map(item => (
+                                    <button key={item} className="group w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
+                                      onClick={() => setOpenFlyout(null)}>
+                                      <span className="text-[15px] text-[#111838] group-hover:text-white" style={{ fontFamily: font }}>{item}</span>
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </React.Fragment>
               );
             })}
           </tbody>
@@ -2004,194 +2115,124 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
           <div className="flex-1 flex flex-col overflow-hidden min-w-0">
             <div className="flex-1 overflow-y-auto pb-4">
           {activeMenu === 'Overview' && (
-            <div className="flex-1 flex gap-[18px] min-w-0 items-start">
+            <div className="flex flex-col gap-[16px] w-full">
 
-              {/* ── LEFT: Account Overview ─────────────────────────────────── */}
-              <div className="flex flex-col gap-[14px]" style={{ width: '42%', flexShrink: 0 }}>
-                <p className="text-[16px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>
-                  Account Overview
-                </p>
-
-                {/* Credit Accounts card */}
-                <div
-                  className="rounded-[14px] p-[20px] flex flex-col gap-[16px] relative overflow-hidden"
-                  style={{
-                    background: 'linear-gradient(135deg, #dce9ff 0%, #edf4ff 100%)',
-                    border: '1.5px solid #b3caff',
-                    boxShadow: '0 4px 18px rgba(19,96,210,0.10)',
-                  }}
-                >
-                  {/* Decorative circle */}
-                  <div className="absolute -right-6 -top-6 size-[90px] rounded-full opacity-10" style={{ background: '#1360d2' }} />
-                  <div className="flex items-center justify-between relative z-10">
-                    <div className="flex items-center gap-[10px]">
-                      <div className="size-[42px] rounded-[10px] flex items-center justify-center" style={{ background: 'rgba(19,96,210,0.14)' }}>
-                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1360d2" strokeWidth="1.8">
-                          <rect x="2" y="6" width="20" height="13" rx="2" />
-                          <path d="M2 10h20" strokeLinecap="round" />
-                          <path d="M6 14h4" strokeLinecap="round" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-[16px] font-bold text-[#0e1b3d]" style={{ fontFamily: font }}>Credit Accounts</p>
-                        <p className="text-[12px] text-[#697498]" style={{ fontFamily: font }}>Total available credit</p>
-                      </div>
+              {/* ── ROW 1: KPI stat cards ─────────────────────────────────── */}
+              <div className="grid grid-cols-4 gap-[14px]">
+                {[
+                  { label: 'Invoices Pending', value: pendingInv, sub: `AED ${pendingInvAmt.toLocaleString('en-US', {minimumFractionDigits:2})} outstanding`, color: '#e8690d', bg: 'linear-gradient(135deg,#fff7ec,#fffaf4)', border: '#fcd7a0', icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#e8690d" strokeWidth="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5" strokeLinecap="round"/></svg>, onClick: () => setActiveMenu('Invoices') },
+                  { label: 'Initiated Payments', value: initiatedPay, sub: 'Currently processing', color: '#1360d2', bg: 'linear-gradient(135deg,#eef4ff,#f5f8ff)', border: '#b3caff', icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1360d2" strokeWidth="1.8"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M12 13v3M10 14l2-1 2 1" strokeLinecap="round"/></svg>, onClick: () => setActiveMenu('Payments') },
+                  { label: 'Pending Payments', value: pendingPay, sub: 'Awaiting confirmation', color: '#d97706', bg: 'linear-gradient(135deg,#fffbeb,#fef9f0)', border: '#fcd34d', icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#d97706" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3" strokeLinecap="round" strokeLinejoin="round"/></svg>, onClick: () => setActiveMenu('Payments') },
+                  { label: 'Payment Failed', value: recheckPay, sub: 'Requires attention', color: '#c0392b', bg: 'linear-gradient(135deg,#fff0f0,#fff8f8)', border: '#f5b8b8', icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#c0392b" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v5" strokeLinecap="round"/><circle cx="12" cy="16.5" r="0.9" fill="#c0392b"/></svg>, onClick: () => setActiveMenu('Payments') },
+                ].map(({ label, value, sub, color, bg, border, icon, onClick }) => (
+                  <button key={label} onClick={onClick}
+                    className="rounded-[14px] p-[16px] text-left flex items-center gap-[14px] relative overflow-hidden hover:shadow-lg transition-shadow"
+                    style={{ background: bg, border: `1.5px solid ${border}` }}>
+                    <div className="absolute left-0 top-0 bottom-0 w-[4px] rounded-l-[14px]" style={{ background: color }} />
+                    <div className="size-[44px] rounded-[10px] flex items-center justify-center flex-shrink-0 ml-[4px]" style={{ background: `${color}1a` }}>{icon}</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[30px] font-extrabold leading-none mb-[2px]" style={{ color, fontFamily: font, letterSpacing: '-1px' }}>{value}</p>
+                      <p className="text-[16px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>{label}</p>
+                      <p className="text-[14px] text-[#697498] mt-[1px]" style={{ fontFamily: font }}>{sub}</p>
                     </div>
-                    <span className="px-[10px] py-[4px] rounded-full text-[12px] font-bold" style={{ background: 'rgba(19,96,210,0.14)', color: '#1360d2', fontFamily: font }}>
-                      {ACCOUNTS.length} accounts
-                    </span>
-                  </div>
-                  <div className="relative z-10">
-                    <p className="text-[12px] text-[#697498] mb-[2px]" style={{ fontFamily: font }}>Total Available Balance</p>
-                    <p className="text-[26px] font-extrabold text-[#1360d2] leading-tight" style={{ fontFamily: font, letterSpacing: '-0.5px' }}>
-                      {fmtBalance(creditTotal)}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between relative z-10 pt-[4px] border-t border-[rgba(19,96,210,0.15)]">
-                    <span className="text-[12px] text-[#697498]" style={{ fontFamily: font }}>Updated today</span>
-                    <button onClick={() => setActiveMenu('Accounts')} className="text-[13px] text-[#1360d2] font-semibold hover:underline flex items-center gap-1" style={{ fontFamily: font }}>
-                      View all
-                      <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="#1360d2" strokeWidth="2">
-                        <path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Debit Accounts card */}
-                <div
-                  className="rounded-[14px] p-[20px] flex flex-col gap-[16px] relative overflow-hidden"
-                  style={{
-                    background: 'linear-gradient(135deg, #e8f0fe 0%, #f0f5ff 100%)',
-                    border: '1.5px solid #93b4f7',
-                    boxShadow: '0 4px 18px rgba(30,64,175,0.09)',
-                  }}
-                >
-                  <div className="absolute -right-6 -top-6 size-[90px] rounded-full opacity-10" style={{ background: '#1e40af' }} />
-                  <div className="flex items-center justify-between relative z-10">
-                    <div className="flex items-center gap-[10px]">
-                      <div className="size-[42px] rounded-[10px] flex items-center justify-center" style={{ background: 'rgba(30,64,175,0.12)' }}>
-                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1e40af" strokeWidth="1.8">
-                          <rect x="2" y="6" width="20" height="13" rx="2" />
-                          <path d="M2 10h20" strokeLinecap="round" />
-                          <path d="M6 14h4" strokeLinecap="round" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-[16px] font-bold text-[#0e1b3d]" style={{ fontFamily: font }}>Debit Accounts</p>
-                        <p className="text-[12px] text-[#697498]" style={{ fontFamily: font }}>Total available debit</p>
-                      </div>
-                    </div>
-                    <span className="px-[10px] py-[4px] rounded-full text-[12px] font-bold" style={{ background: 'rgba(30,64,175,0.12)', color: '#1e40af', fontFamily: font }}>
-                      {DEBIT_ACCOUNTS.length} accounts
-                    </span>
-                  </div>
-                  <div className="relative z-10">
-                    <p className="text-[12px] text-[#697498] mb-[2px]" style={{ fontFamily: font }}>Total Available Balance</p>
-                    <p className="text-[26px] font-extrabold text-[#1e40af] leading-tight" style={{ fontFamily: font, letterSpacing: '-0.5px' }}>
-                      {fmtBalance(debitTotal)}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between relative z-10 pt-[4px] border-t border-[rgba(30,64,175,0.15)]">
-                    <span className="text-[12px] text-[#697498]" style={{ fontFamily: font }}>Updated today</span>
-                    <button onClick={() => setActiveMenu('Accounts')} className="text-[13px] text-[#1360d2] font-semibold hover:underline flex items-center gap-1" style={{ fontFamily: font }}>
-                      View all
-                      <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="#1360d2" strokeWidth="2">
-                        <path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
+                  </button>
+                ))}
               </div>
 
-              {/* ── RIGHT: Invoice & Payment Summary ───────────────────────── */}
-              <div className="flex-1 flex flex-col gap-[14px] min-w-0">
-                <p className="text-[16px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>
-                  Invoice &amp; Payment Summary
-                </p>
+              {/* ── ROW 2: Accounts + Recent Transactions ─────────────────── */}
+              <div className="flex gap-[16px] items-start">
 
-                <div className="grid grid-cols-2 gap-[14px]">
-                  {/* Pending Invoices */}
-                  <button
-                    onClick={() => setActiveMenu('Invoices')}
-                    className="rounded-[14px] p-[18px] text-left flex items-center gap-[14px] relative overflow-hidden hover:shadow-lg transition-shadow"
-                    style={{ background: 'linear-gradient(135deg, #fff7ec 0%, #fffaf4 100%)', border: '1.5px solid #fcd7a0', boxShadow: '0 4px 18px rgba(255,169,26,0.09)' }}
-                  >
-                    <div className="absolute left-0 top-0 bottom-0 w-[5px] rounded-l-[14px]" style={{ background: '#e8690d' }} />
-                    <div className="size-[44px] rounded-[10px] flex items-center justify-center flex-shrink-0 ml-[4px]" style={{ background: 'rgba(232,105,13,0.12)' }}>
-                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#e8690d" strokeWidth="1.8">
-                        <rect x="4" y="3" width="16" height="18" rx="2" />
-                        <path d="M8 8h8M8 12h8M8 16h5" strokeLinecap="round" />
-                      </svg>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[32px] font-extrabold leading-none mb-[2px]" style={{ color: '#e8690d', fontFamily: font, letterSpacing: '-1px' }}>{pendingInv}</p>
-                      <p className="text-[13px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>Invoices Pending</p>
-                      <p className="text-[11px] text-[#697498] mt-[1px]" style={{ fontFamily: font }}>Awaiting payment</p>
-                    </div>
-                  </button>
+                {/* Account Balances */}
+                <div className="flex flex-col gap-[12px]" style={{ width: '38%', flexShrink: 0 }}>
+                  <p className="text-[15px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>Account Balances</p>
 
-                  {/* Initiated Payments */}
-                  <button
-                    onClick={() => setActiveMenu('Payments')}
-                    className="rounded-[14px] p-[18px] text-left flex items-center gap-[14px] relative overflow-hidden hover:shadow-lg transition-shadow"
-                    style={{ background: 'linear-gradient(135deg, #eef4ff 0%, #f5f8ff 100%)', border: '1.5px solid #b3caff', boxShadow: '0 4px 18px rgba(19,96,210,0.08)' }}
-                  >
-                    <div className="absolute left-0 top-0 bottom-0 w-[5px] rounded-l-[14px]" style={{ background: '#1360d2' }} />
-                    <div className="size-[44px] rounded-[10px] flex items-center justify-center flex-shrink-0 ml-[4px]" style={{ background: 'rgba(19,96,210,0.10)' }}>
-                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1360d2" strokeWidth="1.8">
-                        <rect x="2" y="6" width="20" height="13" rx="2" />
-                        <path d="M2 10h20" strokeLinecap="round" />
-                        <path d="M12 13v3M10 14l2-1 2 1" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
+                  {/* Credit card */}
+                  <div className="rounded-[14px] p-[18px] flex flex-col gap-[12px] relative overflow-hidden"
+                    style={{ background: 'linear-gradient(135deg,#dce9ff,#edf4ff)', border: '1.5px solid #b3caff', boxShadow: '0 4px 18px rgba(19,96,210,0.10)' }}>
+                    <div className="absolute -right-4 -top-4 size-[70px] rounded-full opacity-10" style={{ background: '#1360d2' }} />
+                    <div className="flex items-center justify-between relative z-10">
+                      <div className="flex items-center gap-[10px]">
+                        <div className="size-[38px] rounded-[9px] flex items-center justify-center" style={{ background: 'rgba(19,96,210,0.14)' }}>
+                          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1360d2" strokeWidth="1.8"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 14h4" strokeLinecap="round"/></svg>
+                        </div>
+                        <div>
+                          <p className="text-[14px] font-bold text-[#0e1b3d]" style={{ fontFamily: font }}>Credit Accounts</p>
+                          <p className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>{ACCOUNTS.length} accounts</p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[32px] font-extrabold leading-none mb-[2px]" style={{ color: '#1360d2', fontFamily: font, letterSpacing: '-1px' }}>{initiatedPay}</p>
-                      <p className="text-[13px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>Initiated Payments</p>
-                      <p className="text-[11px] text-[#697498] mt-[1px]" style={{ fontFamily: font }}>Currently in progress</p>
+                    <div className="relative z-10">
+                      <p className="text-[14px] text-[#697498] mb-[1px]" style={{ fontFamily: font }}>Total Available Balance</p>
+                      <p className="text-[22px] font-extrabold text-[#1360d2] leading-tight" style={{ fontFamily: font, letterSpacing: '-0.5px' }}>{fmtBalance(creditTotal)}</p>
                     </div>
-                  </button>
+                    <div className="flex items-center justify-between relative z-10 pt-[8px] border-t border-[rgba(19,96,210,0.15)]">
+                      <span className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>Updated today</span>
+                      <button onClick={() => setActiveMenu('Accounts')} className="text-[12px] text-[#1360d2] font-semibold hover:underline flex items-center gap-1" style={{ fontFamily: font }}>
+                        View all <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#1360d2" strokeWidth="2"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      </button>
+                    </div>
+                  </div>
 
-                  {/* Pending Payments */}
-                  <button
-                    onClick={() => setActiveMenu('Payments')}
-                    className="rounded-[14px] p-[18px] text-left flex items-center gap-[14px] relative overflow-hidden hover:shadow-lg transition-shadow"
-                    style={{ background: 'linear-gradient(135deg, #f0f5ff 0%, #f8faff 100%)', border: '1.5px solid #93b4f7', boxShadow: '0 4px 18px rgba(30,64,175,0.08)' }}
-                  >
-                    <div className="absolute left-0 top-0 bottom-0 w-[5px] rounded-l-[14px]" style={{ background: '#1e40af' }} />
-                    <div className="size-[44px] rounded-[10px] flex items-center justify-center flex-shrink-0 ml-[4px]" style={{ background: 'rgba(30,64,175,0.10)' }}>
-                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1e40af" strokeWidth="1.8">
-                        <circle cx="12" cy="12" r="9" />
-                        <path d="M12 7v5l3 3" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
+                  {/* Debit card */}
+                  <div className="rounded-[14px] p-[18px] flex flex-col gap-[12px] relative overflow-hidden"
+                    style={{ background: 'linear-gradient(135deg,#e8f0fe,#f0f5ff)', border: '1.5px solid #93b4f7', boxShadow: '0 4px 18px rgba(30,64,175,0.09)' }}>
+                    <div className="absolute -right-4 -top-4 size-[70px] rounded-full opacity-10" style={{ background: '#1e40af' }} />
+                    <div className="flex items-center justify-between relative z-10">
+                      <div className="flex items-center gap-[10px]">
+                        <div className="size-[38px] rounded-[9px] flex items-center justify-center" style={{ background: 'rgba(30,64,175,0.12)' }}>
+                          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1e40af" strokeWidth="1.8"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 14h4" strokeLinecap="round"/></svg>
+                        </div>
+                        <div>
+                          <p className="text-[14px] font-bold text-[#0e1b3d]" style={{ fontFamily: font }}>Debit Accounts</p>
+                          <p className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>{DEBIT_ACCOUNTS.length} accounts</p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[32px] font-extrabold leading-none mb-[2px]" style={{ color: '#1e40af', fontFamily: font, letterSpacing: '-1px' }}>{pendingPay}</p>
-                      <p className="text-[13px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>Pending Payments</p>
-                      <p className="text-[11px] text-[#697498] mt-[1px]" style={{ fontFamily: font }}>Awaiting confirmation</p>
+                    <div className="relative z-10">
+                      <p className="text-[14px] text-[#697498] mb-[1px]" style={{ fontFamily: font }}>Total Available Balance</p>
+                      <p className="text-[22px] font-extrabold text-[#1e40af] leading-tight" style={{ fontFamily: font, letterSpacing: '-0.5px' }}>{fmtBalance(debitTotal)}</p>
                     </div>
-                  </button>
+                    <div className="flex items-center justify-between relative z-10 pt-[8px] border-t border-[rgba(30,64,175,0.15)]">
+                      <span className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>Updated today</span>
+                      <button onClick={() => setActiveMenu('Accounts')} className="text-[12px] text-[#1360d2] font-semibold hover:underline flex items-center gap-1" style={{ fontFamily: font }}>
+                        View all <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#1360d2" strokeWidth="2"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      </button>
+                    </div>
+                  </div>
 
-                  {/* Payment Failed */}
-                  <button
-                    onClick={() => setActiveMenu('Payments')}
-                    className="rounded-[14px] p-[18px] text-left flex items-center gap-[14px] relative overflow-hidden hover:shadow-lg transition-shadow"
-                    style={{ background: 'linear-gradient(135deg, #fff0f0 0%, #fff8f8 100%)', border: '1.5px solid #f5b8b8', boxShadow: '0 4px 18px rgba(192,57,43,0.07)' }}
-                  >
-                    <div className="absolute left-0 top-0 bottom-0 w-[5px] rounded-l-[14px]" style={{ background: '#c0392b' }} />
-                    <div className="size-[44px] rounded-[10px] flex items-center justify-center flex-shrink-0 ml-[4px]" style={{ background: 'rgba(192,57,43,0.09)' }}>
-                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#c0392b" strokeWidth="1.8">
-                        <circle cx="12" cy="12" r="9" />
-                        <path d="M12 8v5" strokeLinecap="round" />
-                        <circle cx="12" cy="16.5" r="0.9" fill="#c0392b" />
-                      </svg>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[32px] font-extrabold leading-none mb-[2px]" style={{ color: '#c0392b', fontFamily: font, letterSpacing: '-1px' }}>{recheckPay}</p>
-                      <p className="text-[13px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>Payment Failed</p>
-                      <p className="text-[11px] text-[#697498] mt-[1px]" style={{ fontFamily: font }}>Failed to process</p>
-                    </div>
-                  </button>
+                </div>
+
+                {/* Recent Transactions */}
+                <div className="flex-1 flex flex-col gap-[12px] min-w-0">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[15px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>Recent Transactions</p>
+                    <button onClick={() => setActiveMenu('Payments')} className="text-[16px] text-[#1360d2] font-semibold hover:underline flex items-center gap-1" style={{ fontFamily: font }}>
+                      View all <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#1360d2" strokeWidth="2"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    </button>
+                  </div>
+                  <div className="rounded-[14px] overflow-hidden" style={{ border: '1.5px solid #e0e8f5', boxShadow: '0 2px 12px rgba(19,96,210,0.06)' }}>
+                    {recentPayments.map((tx, i) => {
+                      const st = PAY_STATUS[tx.status] ?? { bg: 'rgba(105,116,152,0.10)', color: '#697498' };
+                      return (
+                        <div key={i} className="flex items-center gap-[12px] px-[16px] py-[13px]" style={{ borderBottom: i < recentPayments.length - 1 ? '1px solid #f0f4ff' : 'none', background: i % 2 === 0 ? 'white' : '#fafbff' }}>
+                          <div className="size-[36px] rounded-[9px] flex items-center justify-center flex-shrink-0" style={{ background: tx.status === 'Paid' ? 'rgba(34,197,94,0.10)' : 'rgba(19,96,210,0.10)' }}>
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke={tx.status === 'Paid' ? '#16a34a' : '#1360d2'} strokeWidth="1.8">
+                              <rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20" strokeLinecap="round"/>
+                            </svg>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[16px] font-semibold text-[#0e1b3d] truncate" style={{ fontFamily: font }}>{tx.type}</p>
+                            <p className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>Tx #{tx.txNo} · {tx.txDate}</p>
+                          </div>
+                          <div className="flex flex-col items-end gap-[3px] flex-shrink-0">
+                            <p className="text-[14px] font-bold text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: font }}><DirhamIcon size={12} color="#0e1b3d" /> {tx.amount}</p>
+                            <span className="inline-flex items-center px-[7px] py-[1px] rounded-[4px] text-[14px] font-medium" style={{ background: st.bg, color: st.color }}>{tx.status}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
                 </div>
               </div>
             </div>
