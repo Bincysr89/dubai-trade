@@ -77,6 +77,7 @@ const debitTotal   = DEBIT_ACCOUNTS.reduce((s, a) => s + parseFloat(a.limit.repl
 const pendingInv   = INVOICE_ROWS.filter(r => r.status === 'Unpaid').length;
 const initiatedPay = PAYMENT_ROWS.filter(r => r.status === 'Initiated').length;
 const recheckPay   = PAYMENT_ROWS.filter(r => r.details.some(d => d.status === 'Unpaid')).length;
+const pendingPay   = PAYMENT_ROWS.filter(r => r.status !== 'Paid').length;
 
 const fmtBalance = (n: number) =>
   'AED ' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -91,7 +92,7 @@ const ACC_PAGE_SIZE = 8;
 const YEARS  = ['2024', '2025', '2026'];
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-type Menu     = 'Dashboard' | 'Accounts' | 'Invoices' | 'Payments';
+type Menu     = 'Overview' | 'Accounts' | 'Invoices' | 'Payments';
 type InvStep  = 'list' | 'pay' | 'success' | 'receipt';
 type AccStep  = 'main' | 'list';
 type AccView  = 'list' | 'pay' | 'success';
@@ -126,7 +127,7 @@ const PaymentsIcon = () => (
 );
 
 const MENU_ITEMS: { label: Menu; Icon: () => JSX.Element }[] = [
-  { label: 'Dashboard', Icon: DashboardIcon },
+  { label: 'Overview', Icon: DashboardIcon },
   { label: 'Accounts',  Icon: AccountsIcon  },
   { label: 'Invoices',  Icon: InvoicesIcon  },
   { label: 'Payments',  Icon: PaymentsIcon  },
@@ -535,7 +536,7 @@ function DateFilterCard({ from, to }: { from?: string; to?: string }) {
 /* ── Main component ─────────────────────────────────────────────────────────── */
 export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const [panelCollapsed, setPanelCollapsed] = useState(false);
-  const [activeMenu, setActiveMenu]         = useState<Menu>('Dashboard');
+  const [activeMenu, setActiveMenu]         = useState<Menu>('Overview');
   const [step, setStep]                     = useState<InvStep>('list');
   const [showFilters, setShowFilters]       = useState(false);
   const [selectedRows, setSelectedRows]     = useState<Set<number>>(new Set());
@@ -2002,7 +2003,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
           {/* Right content */}
           <div className="flex-1 flex flex-col overflow-hidden min-w-0">
             <div className="flex-1 overflow-y-auto pb-4">
-          {activeMenu === 'Dashboard' && (
+          {activeMenu === 'Overview' && (
             <div className="flex-1 flex gap-[18px] min-w-0 items-start">
 
               {/* ── LEFT: Account Overview ─────────────────────────────────── */}
@@ -2061,16 +2062,16 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 <div
                   className="rounded-[14px] p-[20px] flex flex-col gap-[16px] relative overflow-hidden"
                   style={{
-                    background: 'linear-gradient(135deg, #e0f7f4 0%, #f0fffe 100%)',
-                    border: '1.5px solid #99d9d4',
-                    boxShadow: '0 4px 18px rgba(13,148,136,0.09)',
+                    background: 'linear-gradient(135deg, #e8f0fe 0%, #f0f5ff 100%)',
+                    border: '1.5px solid #93b4f7',
+                    boxShadow: '0 4px 18px rgba(30,64,175,0.09)',
                   }}
                 >
-                  <div className="absolute -right-6 -top-6 size-[90px] rounded-full opacity-10" style={{ background: '#0d9488' }} />
+                  <div className="absolute -right-6 -top-6 size-[90px] rounded-full opacity-10" style={{ background: '#1e40af' }} />
                   <div className="flex items-center justify-between relative z-10">
                     <div className="flex items-center gap-[10px]">
-                      <div className="size-[42px] rounded-[10px] flex items-center justify-center" style={{ background: 'rgba(13,148,136,0.12)' }}>
-                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#0d9488" strokeWidth="1.8">
+                      <div className="size-[42px] rounded-[10px] flex items-center justify-center" style={{ background: 'rgba(30,64,175,0.12)' }}>
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1e40af" strokeWidth="1.8">
                           <rect x="2" y="6" width="20" height="13" rx="2" />
                           <path d="M2 10h20" strokeLinecap="round" />
                           <path d="M6 14h4" strokeLinecap="round" />
@@ -2081,17 +2082,17 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                         <p className="text-[12px] text-[#697498]" style={{ fontFamily: font }}>Total available debit</p>
                       </div>
                     </div>
-                    <span className="px-[10px] py-[4px] rounded-full text-[12px] font-bold" style={{ background: 'rgba(13,148,136,0.12)', color: '#0d9488', fontFamily: font }}>
+                    <span className="px-[10px] py-[4px] rounded-full text-[12px] font-bold" style={{ background: 'rgba(30,64,175,0.12)', color: '#1e40af', fontFamily: font }}>
                       {DEBIT_ACCOUNTS.length} accounts
                     </span>
                   </div>
                   <div className="relative z-10">
                     <p className="text-[12px] text-[#697498] mb-[2px]" style={{ fontFamily: font }}>Total Available Balance</p>
-                    <p className="text-[26px] font-extrabold text-[#0d9488] leading-tight" style={{ fontFamily: font, letterSpacing: '-0.5px' }}>
+                    <p className="text-[26px] font-extrabold text-[#1e40af] leading-tight" style={{ fontFamily: font, letterSpacing: '-0.5px' }}>
                       {fmtBalance(debitTotal)}
                     </p>
                   </div>
-                  <div className="flex items-center justify-between relative z-10 pt-[4px] border-t border-[rgba(13,148,136,0.15)]">
+                  <div className="flex items-center justify-between relative z-10 pt-[4px] border-t border-[rgba(30,64,175,0.15)]">
                     <span className="text-[12px] text-[#697498]" style={{ fontFamily: font }}>Updated today</span>
                     <button onClick={() => setActiveMenu('Accounts')} className="text-[13px] text-[#1360d2] font-semibold hover:underline flex items-center gap-1" style={{ fontFamily: font }}>
                       View all
@@ -2109,76 +2110,89 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                   Invoice &amp; Payment Summary
                 </p>
 
-                {/* Pending Invoices */}
-                <button
-                  onClick={() => setActiveMenu('Invoices')}
-                  className="rounded-[14px] p-[20px] text-left flex items-center gap-[18px] relative overflow-hidden hover:shadow-lg transition-shadow"
-                  style={{ background: 'linear-gradient(135deg, #fff7ec 0%, #fffaf4 100%)', border: '1.5px solid #fcd7a0', boxShadow: '0 4px 18px rgba(255,169,26,0.09)' }}
-                >
-                  <div className="absolute left-0 top-0 bottom-0 w-[5px] rounded-l-[14px]" style={{ background: '#e8690d' }} />
-                  <div className="size-[52px] rounded-[12px] flex items-center justify-center flex-shrink-0 ml-[6px]" style={{ background: 'rgba(232,105,13,0.12)' }}>
-                    <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#e8690d" strokeWidth="1.8">
-                      <rect x="4" y="3" width="16" height="18" rx="2" />
-                      <path d="M8 8h8M8 12h8M8 16h5" strokeLinecap="round" />
-                    </svg>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[38px] font-extrabold leading-none mb-[4px]" style={{ color: '#e8690d', fontFamily: font, letterSpacing: '-1px' }}>{pendingInv}</p>
-                    <p className="text-[16px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>Invoices Pending Payment</p>
-                    <p className="text-[12px] text-[#697498] mt-[2px]" style={{ fontFamily: font }}>Awaiting your payment action</p>
-                  </div>
-                  <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#e8690d" strokeWidth="2" className="flex-shrink-0 opacity-50">
-                    <path d="M7 5l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
+                <div className="grid grid-cols-2 gap-[14px]">
+                  {/* Pending Invoices */}
+                  <button
+                    onClick={() => setActiveMenu('Invoices')}
+                    className="rounded-[14px] p-[18px] text-left flex items-center gap-[14px] relative overflow-hidden hover:shadow-lg transition-shadow"
+                    style={{ background: 'linear-gradient(135deg, #fff7ec 0%, #fffaf4 100%)', border: '1.5px solid #fcd7a0', boxShadow: '0 4px 18px rgba(255,169,26,0.09)' }}
+                  >
+                    <div className="absolute left-0 top-0 bottom-0 w-[5px] rounded-l-[14px]" style={{ background: '#e8690d' }} />
+                    <div className="size-[44px] rounded-[10px] flex items-center justify-center flex-shrink-0 ml-[4px]" style={{ background: 'rgba(232,105,13,0.12)' }}>
+                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#e8690d" strokeWidth="1.8">
+                        <rect x="4" y="3" width="16" height="18" rx="2" />
+                        <path d="M8 8h8M8 12h8M8 16h5" strokeLinecap="round" />
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[32px] font-extrabold leading-none mb-[2px]" style={{ color: '#e8690d', fontFamily: font, letterSpacing: '-1px' }}>{pendingInv}</p>
+                      <p className="text-[13px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>Invoices Pending</p>
+                      <p className="text-[11px] text-[#697498] mt-[1px]" style={{ fontFamily: font }}>Awaiting payment</p>
+                    </div>
+                  </button>
 
-                {/* Initiated Payments */}
-                <button
-                  onClick={() => setActiveMenu('Payments')}
-                  className="rounded-[14px] p-[20px] text-left flex items-center gap-[18px] relative overflow-hidden hover:shadow-lg transition-shadow"
-                  style={{ background: 'linear-gradient(135deg, #eef4ff 0%, #f5f8ff 100%)', border: '1.5px solid #b3caff', boxShadow: '0 4px 18px rgba(19,96,210,0.08)' }}
-                >
-                  <div className="absolute left-0 top-0 bottom-0 w-[5px] rounded-l-[14px]" style={{ background: '#1360d2' }} />
-                  <div className="size-[52px] rounded-[12px] flex items-center justify-center flex-shrink-0 ml-[6px]" style={{ background: 'rgba(19,96,210,0.10)' }}>
-                    <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#1360d2" strokeWidth="1.8">
-                      <rect x="2" y="6" width="20" height="13" rx="2" />
-                      <path d="M2 10h20" strokeLinecap="round" />
-                      <path d="M12 13v3M10 14l2-1 2 1" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[38px] font-extrabold leading-none mb-[4px]" style={{ color: '#1360d2', fontFamily: font, letterSpacing: '-1px' }}>{initiatedPay}</p>
-                    <p className="text-[16px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>Initiated Payments</p>
-                    <p className="text-[12px] text-[#697498] mt-[2px]" style={{ fontFamily: font }}>Payments currently in progress</p>
-                  </div>
-                  <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#1360d2" strokeWidth="2" className="flex-shrink-0 opacity-50">
-                    <path d="M7 5l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
+                  {/* Initiated Payments */}
+                  <button
+                    onClick={() => setActiveMenu('Payments')}
+                    className="rounded-[14px] p-[18px] text-left flex items-center gap-[14px] relative overflow-hidden hover:shadow-lg transition-shadow"
+                    style={{ background: 'linear-gradient(135deg, #eef4ff 0%, #f5f8ff 100%)', border: '1.5px solid #b3caff', boxShadow: '0 4px 18px rgba(19,96,210,0.08)' }}
+                  >
+                    <div className="absolute left-0 top-0 bottom-0 w-[5px] rounded-l-[14px]" style={{ background: '#1360d2' }} />
+                    <div className="size-[44px] rounded-[10px] flex items-center justify-center flex-shrink-0 ml-[4px]" style={{ background: 'rgba(19,96,210,0.10)' }}>
+                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1360d2" strokeWidth="1.8">
+                        <rect x="2" y="6" width="20" height="13" rx="2" />
+                        <path d="M2 10h20" strokeLinecap="round" />
+                        <path d="M12 13v3M10 14l2-1 2 1" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[32px] font-extrabold leading-none mb-[2px]" style={{ color: '#1360d2', fontFamily: font, letterSpacing: '-1px' }}>{initiatedPay}</p>
+                      <p className="text-[13px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>Initiated Payments</p>
+                      <p className="text-[11px] text-[#697498] mt-[1px]" style={{ fontFamily: font }}>Currently in progress</p>
+                    </div>
+                  </button>
 
-                {/* Payments for Recheck */}
-                <button
-                  onClick={() => setActiveMenu('Payments')}
-                  className="rounded-[14px] p-[20px] text-left flex items-center gap-[18px] relative overflow-hidden hover:shadow-lg transition-shadow"
-                  style={{ background: 'linear-gradient(135deg, #fff0f0 0%, #fff8f8 100%)', border: '1.5px solid #f5b8b8', boxShadow: '0 4px 18px rgba(192,57,43,0.07)' }}
-                >
-                  <div className="absolute left-0 top-0 bottom-0 w-[5px] rounded-l-[14px]" style={{ background: '#c0392b' }} />
-                  <div className="size-[52px] rounded-[12px] flex items-center justify-center flex-shrink-0 ml-[6px]" style={{ background: 'rgba(192,57,43,0.09)' }}>
-                    <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#c0392b" strokeWidth="1.8">
-                      <circle cx="12" cy="12" r="9" />
-                      <path d="M12 8v5" strokeLinecap="round" />
-                      <circle cx="12" cy="16.5" r="0.9" fill="#c0392b" />
-                    </svg>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[38px] font-extrabold leading-none mb-[4px]" style={{ color: '#c0392b', fontFamily: font, letterSpacing: '-1px' }}>{recheckPay}</p>
-                    <p className="text-[16px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>Payment Failed</p>
-                    <p className="text-[12px] text-[#697498] mt-[2px]" style={{ fontFamily: font }}>Transactions that failed to process</p>
-                  </div>
-                  <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#c0392b" strokeWidth="2" className="flex-shrink-0 opacity-50">
-                    <path d="M7 5l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
+                  {/* Pending Payments */}
+                  <button
+                    onClick={() => setActiveMenu('Payments')}
+                    className="rounded-[14px] p-[18px] text-left flex items-center gap-[14px] relative overflow-hidden hover:shadow-lg transition-shadow"
+                    style={{ background: 'linear-gradient(135deg, #f0f5ff 0%, #f8faff 100%)', border: '1.5px solid #93b4f7', boxShadow: '0 4px 18px rgba(30,64,175,0.08)' }}
+                  >
+                    <div className="absolute left-0 top-0 bottom-0 w-[5px] rounded-l-[14px]" style={{ background: '#1e40af' }} />
+                    <div className="size-[44px] rounded-[10px] flex items-center justify-center flex-shrink-0 ml-[4px]" style={{ background: 'rgba(30,64,175,0.10)' }}>
+                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1e40af" strokeWidth="1.8">
+                        <circle cx="12" cy="12" r="9" />
+                        <path d="M12 7v5l3 3" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[32px] font-extrabold leading-none mb-[2px]" style={{ color: '#1e40af', fontFamily: font, letterSpacing: '-1px' }}>{pendingPay}</p>
+                      <p className="text-[13px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>Pending Payments</p>
+                      <p className="text-[11px] text-[#697498] mt-[1px]" style={{ fontFamily: font }}>Awaiting confirmation</p>
+                    </div>
+                  </button>
+
+                  {/* Payment Failed */}
+                  <button
+                    onClick={() => setActiveMenu('Payments')}
+                    className="rounded-[14px] p-[18px] text-left flex items-center gap-[14px] relative overflow-hidden hover:shadow-lg transition-shadow"
+                    style={{ background: 'linear-gradient(135deg, #fff0f0 0%, #fff8f8 100%)', border: '1.5px solid #f5b8b8', boxShadow: '0 4px 18px rgba(192,57,43,0.07)' }}
+                  >
+                    <div className="absolute left-0 top-0 bottom-0 w-[5px] rounded-l-[14px]" style={{ background: '#c0392b' }} />
+                    <div className="size-[44px] rounded-[10px] flex items-center justify-center flex-shrink-0 ml-[4px]" style={{ background: 'rgba(192,57,43,0.09)' }}>
+                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#c0392b" strokeWidth="1.8">
+                        <circle cx="12" cy="12" r="9" />
+                        <path d="M12 8v5" strokeLinecap="round" />
+                        <circle cx="12" cy="16.5" r="0.9" fill="#c0392b" />
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[32px] font-extrabold leading-none mb-[2px]" style={{ color: '#c0392b', fontFamily: font, letterSpacing: '-1px' }}>{recheckPay}</p>
+                      <p className="text-[13px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>Payment Failed</p>
+                      <p className="text-[11px] text-[#697498] mt-[1px]" style={{ fontFamily: font }}>Failed to process</p>
+                    </div>
+                  </button>
+                </div>
               </div>
             </div>
           )}
