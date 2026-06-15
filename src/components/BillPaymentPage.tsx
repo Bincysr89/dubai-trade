@@ -1754,7 +1754,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 <React.Fragment key={i}>
                   {/* Parent row — click anywhere except actions to expand */}
                   <tr
-                    className={isExpanded ? 'bg-[#edf3ff]' : 'bg-white hover:bg-[#dce8f8]'}
+                    className={isExpanded ? 'bg-[#dce8f8]' : 'bg-white hover:bg-[#dce8f8]'}
                     style={{ cursor: isMultiple ? 'pointer' : 'default', outline: openFlyout === absIdx + 100 ? '2px solid #93c5fd' : 'none', outlineOffset: '-2px' }}
                     onClick={isMultiple ? () => setExpandedPayRow(isExpanded ? null : absIdx) : undefined}
                   >
@@ -1794,7 +1794,13 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                               style={{ top: 36, width: 210, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
                               {['View Payment Details', 'View & Download Receipt', 'Make Payment', 'Recheck', 'Payment History'].map(item => (
                                 <button key={item} className="group w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
-                                  onClick={() => { setOpenFlyout(null); }}>
+                                  onClick={() => {
+                                    setOpenFlyout(null);
+                                    if (item === 'View Payment Details') { setInvPayDetails(row); }
+                                    else if (item === 'Make Payment') { setActiveMenu('Invoices'); }
+                                    else if (item === 'Recheck') { setRecheckIdx(absIdx); setRecheckOpen(true); }
+                                    else if (item === 'Payment History') { setActiveMenu('Payments'); }
+                                  }}>
                                   <span className="text-[15px] text-[#111838] group-hover:text-white" style={{ fontFamily: font }}>{item}</span>
                                 </button>
                               ))}
@@ -1826,10 +1832,13 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                     const innerFlyoutKey = absIdx * 1000 + di + 5000;
                     const isLastDetail = di === row.details.length - 1;
                     return (
-                      <tr key={`detail-${di}`} style={{ background: '#f0f5ff' }}>
-                        {/* Col 1: Invoice Type (indented) */}
+                      <tr key={`detail-${di}`} style={{ background: '#dce8f8' }}>
+                        {/* Col 1: Serial no. + Invoice Type (indented) */}
                         <td style={{ padding: '0 12px 0 32px', height: 50, verticalAlign: 'middle', borderBottom: isLastDetail ? '1px solid #f0f4ff' : '1px solid #dce8f8' }}>
-                          <span className="text-[16px] text-[#0e1b3d]">{d.type}</span>
+                          <div className="flex items-center gap-[10px]">
+                            <span className="inline-flex items-center justify-center size-[22px] rounded-full text-[12px] font-bold flex-shrink-0" style={{ background: '#1360d2', color: '#fff', fontFamily: font }}>{di + 1}</span>
+                            <span className="text-[16px] text-[#0e1b3d]">{d.type}</span>
+                          </div>
                         </td>
                         {/* Col 2: Transaction No. — blank (no tx column in inner rows) */}
                         <td style={{ padding: '0 12px', height: 50, verticalAlign: 'middle', borderBottom: isLastDetail ? '1px solid #f0f4ff' : '1px solid #dce8f8' }}>
@@ -1866,7 +1875,10 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                                   style={{ top: 36, width: 200, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
                                   {['View Details', 'Download Receipt'].map(item => (
                                     <button key={item} className="group w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
-                                      onClick={() => setOpenFlyout(null)}>
+                                      onClick={() => {
+                                        setOpenFlyout(null);
+                                        if (item === 'View Details') { setInvPayDetails(row); }
+                                      }}>
                                       <span className="text-[15px] text-[#111838] group-hover:text-white" style={{ fontFamily: font }}>{item}</span>
                                     </button>
                                   ))}
@@ -2156,18 +2168,18 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1360d2" strokeWidth="1.8"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 14h4" strokeLinecap="round"/></svg>
                         </div>
                         <div>
-                          <p className="text-[14px] font-bold text-[#0e1b3d]" style={{ fontFamily: font }}>Credit Accounts</p>
-                          <p className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>{ACCOUNTS.length} accounts</p>
+                          <p className="text-[16px] font-bold text-[#0e1b3d]" style={{ fontFamily: font }}>Credit Accounts</p>
+                          <span className="inline-flex items-center px-[8px] py-[2px] rounded-full text-[13px] font-semibold mt-[2px]" style={{ background: 'rgba(19,96,210,0.12)', color: '#1360d2', fontFamily: font }}>{ACCOUNTS.length} accounts</span>
                         </div>
                       </div>
                     </div>
                     <div className="relative z-10">
-                      <p className="text-[14px] text-[#697498] mb-[1px]" style={{ fontFamily: font }}>Total Available Balance</p>
+                      <p className="text-[16px] text-[#697498] mb-[1px]" style={{ fontFamily: font }}>Total Available Balance</p>
                       <p className="text-[22px] font-extrabold text-[#1360d2] leading-tight" style={{ fontFamily: font, letterSpacing: '-0.5px' }}>{fmtBalance(creditTotal)}</p>
                     </div>
                     <div className="flex items-center justify-between relative z-10 pt-[8px] border-t border-[rgba(19,96,210,0.15)]">
-                      <span className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>Updated today</span>
-                      <button onClick={() => setActiveMenu('Accounts')} className="text-[12px] text-[#1360d2] font-semibold hover:underline flex items-center gap-1" style={{ fontFamily: font }}>
+                      <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>Updated today</span>
+                      <button onClick={() => setActiveMenu('Accounts')} className="text-[14px] text-[#1360d2] font-semibold hover:underline flex items-center gap-1" style={{ fontFamily: font }}>
                         View all <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#1360d2" strokeWidth="2"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       </button>
                     </div>
@@ -2183,18 +2195,18 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1e40af" strokeWidth="1.8"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 14h4" strokeLinecap="round"/></svg>
                         </div>
                         <div>
-                          <p className="text-[14px] font-bold text-[#0e1b3d]" style={{ fontFamily: font }}>Debit Accounts</p>
-                          <p className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>{DEBIT_ACCOUNTS.length} accounts</p>
+                          <p className="text-[16px] font-bold text-[#0e1b3d]" style={{ fontFamily: font }}>Debit Accounts</p>
+                          <span className="inline-flex items-center px-[8px] py-[2px] rounded-full text-[13px] font-semibold mt-[2px]" style={{ background: 'rgba(30,64,175,0.12)', color: '#1e40af', fontFamily: font }}>{DEBIT_ACCOUNTS.length} accounts</span>
                         </div>
                       </div>
                     </div>
                     <div className="relative z-10">
-                      <p className="text-[14px] text-[#697498] mb-[1px]" style={{ fontFamily: font }}>Total Available Balance</p>
+                      <p className="text-[16px] text-[#697498] mb-[1px]" style={{ fontFamily: font }}>Total Available Balance</p>
                       <p className="text-[22px] font-extrabold text-[#1e40af] leading-tight" style={{ fontFamily: font, letterSpacing: '-0.5px' }}>{fmtBalance(debitTotal)}</p>
                     </div>
                     <div className="flex items-center justify-between relative z-10 pt-[8px] border-t border-[rgba(30,64,175,0.15)]">
-                      <span className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>Updated today</span>
-                      <button onClick={() => setActiveMenu('Accounts')} className="text-[12px] text-[#1360d2] font-semibold hover:underline flex items-center gap-1" style={{ fontFamily: font }}>
+                      <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>Updated today</span>
+                      <button onClick={() => setActiveMenu('Accounts')} className="text-[14px] text-[#1360d2] font-semibold hover:underline flex items-center gap-1" style={{ fontFamily: font }}>
                         View all <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#1360d2" strokeWidth="2"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       </button>
                     </div>

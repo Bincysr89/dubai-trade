@@ -394,6 +394,8 @@ export default function SeaDetailModal({ onClose }: Props) {
                         'Pay Bills or Fines',
                         'Request Customs Transactions Report',
                         'Request Duty Account',
+                        'Join Accreditation Program',
+                        'Request Customs Warehouse License',
                       ]);
                       const TALL_ITEMS = new Set([
                         'Request Goods Landing Certificate',
