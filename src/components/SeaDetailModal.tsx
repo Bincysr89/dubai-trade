@@ -5,6 +5,7 @@ import shipIconSrc from '../assets/Ship (12).svg';
 import catalogueBg from '../assets/catalogue background.jpg';
 import ServiceListingPage, { ColConfig, RowData } from './ServiceListingPage';
 import BillPaymentPage from './BillPaymentPage';
+import DCCertificatesFormPage from './DCCertificatesFormPage';
 
 type Props = { onClose: () => void };
 
@@ -54,6 +55,7 @@ const SEA_COLUMNS: { title: string; items: string[] }[] = [
       'Request Duty Account',
       'Join Accreditation Program',
       'Request Customs Warehouse License',
+      'DC - Certificates',
       'DC - landing Certificate', 'DC - Letter & Certificates', 'DM Permits',
       'DP World Work Permits', 'e-Certificates', 'IMDG NOC Management',
       'Marine NOC', 'Master Declaration', 'DC - Cargo Reconcilation',
@@ -150,9 +152,9 @@ const ACC_COLS: ColConfig[] = [
   { label: 'Remarks',           key: 'remarks',          width: 120 },
 ];
 
-type PageKey = 'glc' | 'jap' | 'cwl' | 'ctr' | 'rda' | 'pbf';
+type PageKey = 'glc' | 'jap' | 'cwl' | 'ctr' | 'rda' | 'pbf' | 'dcc';
 
-const PAGE_CONFIGS: Record<Exclude<PageKey, 'pbf'>, {
+const PAGE_CONFIGS: Record<Exclude<PageKey, 'pbf' | 'dcc'>, {
   title: string; breadcrumb: string; primaryLabel: string;
   searchLabel: string; searchPlaceholder: string;
   columns: ColConfig[]; rows: RowData[]; hasDraftsToggle?: boolean;
@@ -208,17 +210,19 @@ const PAGE_CONFIGS: Record<Exclude<PageKey, 'pbf'>, {
 
 const ITEM_PAGE_MAP: Record<string, PageKey> = {
   'Request Goods Landing Certificate':    'glc',
-  'Bill Payment':                   'pbf',
+  'Bill Payment':                         'pbf',
   'Join Accreditation Program':           'jap',
   'Request Customs Warehouse License':    'cwl',
   'Request Customs Transactions Report':  'ctr',
   'Request Duty Account':                 'rda',
+  'DC - Certificates':                    'dcc',
 };
 /* ─────────────────────────────────────────────────────────────────────── */
 
 export default function SeaDetailModal({ onClose }: Props) {
   const [search, setSearch]         = useState('');
   const [activePage, setActivePage] = useState<PageKey | null>(null);
+  const [showDccForm, setShowDccForm] = useState(false);
 
   const filtered = SEA_COLUMNS.map(col => ({
     ...col,
@@ -231,8 +235,26 @@ export default function SeaDetailModal({ onClose }: Props) {
   if (activePage === 'pbf') {
     return <BillPaymentPage onBack={() => setActivePage(null)} />;
   }
+  if (activePage === 'dcc') {
+    if (showDccForm) {
+      return <DCCertificatesFormPage onBack={() => setShowDccForm(false)} />;
+    }
+    return (
+      <ServiceListingPage
+        title="DC - Certificates"
+        breadcrumb="DC - Certificates"
+        primaryLabel="New Request"
+        searchLabel="Document Number"
+        searchPlaceholder="Document no."
+        columns={DOC_COLS}
+        rows={DOC_ROWS}
+        onBack={() => setActivePage(null)}
+        onNewRequest={() => setShowDccForm(true)}
+      />
+    );
+  }
   if (activePage) {
-    const cfg = PAGE_CONFIGS[activePage as Exclude<PageKey, 'pbf'>];
+    const cfg = PAGE_CONFIGS[activePage as Exclude<PageKey, 'pbf' | 'dcc'>];
     return (
       <ServiceListingPage
         {...cfg}
@@ -396,6 +418,7 @@ export default function SeaDetailModal({ onClose }: Props) {
                         'Request Duty Account',
                         'Join Accreditation Program',
                         'Request Customs Warehouse License',
+                        'DC - Certificates',
                       ]);
                       const TALL_ITEMS = new Set([
                         'Request Goods Landing Certificate',

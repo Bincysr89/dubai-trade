@@ -26,12 +26,13 @@ type Props = {
   columns: ColConfig[];
   rows: RowData[];
   hasDraftsToggle?: boolean;
+  onNewRequest?: () => void;
 };
 
 export default function ServiceListingPage({
   title, breadcrumb, onBack, primaryLabel,
   searchLabel, searchPlaceholder,
-  columns, rows, hasDraftsToggle,
+  columns, rows, hasDraftsToggle, onNewRequest,
 }: Props) {
   const [page, setPage]             = useState(1);
   const [pageSize, setPageSize]     = useState(8);
@@ -163,6 +164,7 @@ export default function ServiceListingPage({
           <button
             className="h-[48px] px-[24px] rounded-[4px] text-[16px] text-white hover:opacity-90 transition-opacity"
             style={{ background: '#1360d2', fontFamily: font, fontWeight: 500 }}
+            onClick={onNewRequest}
           >
             {primaryLabel}
           </button>
