@@ -742,8 +742,9 @@ export default function CargoTransferNewRequestPage({
   const [premModal, setPremModal] = useState<null | 'transferor' | 'transferee'>(null);
   const [hawb, setHawb] = useState('');
   const [showFlightModal, setShowFlightModal] = useState(false);
+  const [cargoChannel, setCargoChannel] = useState(initialCargoChannel || 'Sea');
 
-  const isAir = initialCargoChannel === 'Air';
+  const isAir = cargoChannel === 'Air';
 
 
   return (
@@ -774,7 +775,26 @@ export default function CargoTransferNewRequestPage({
         <div className="bg-white rounded-[8px] px-[40px] py-[20px]" style={{ boxShadow: '0px 4px 16px rgba(0,0,0,0.08)' }}>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-[20px] items-start">
             <ReadOnlyField label="Cargo Transfer Type" value={initialTransferType} />
-            <ReadOnlyField label="Cargo Channel (inbound)" value={initialCargoChannel} />
+            {/* Cargo Channel — editable select */}
+            <div className="relative" style={{ flex: '1 0 200px', minWidth: 200 }}>
+              <select value={cargoChannel} onChange={e => setCargoChannel(e.target.value)}
+                className="w-full focus:outline-none appearance-none cursor-pointer"
+                style={{
+                  height: 56, borderRadius: 4, border: '1px solid #d5ddfb',
+                  background: '#fff', padding: '0 36px 0 16px',
+                  fontSize: 16, color: '#0e1b3d', fontFamily: "'Dubai', sans-serif",
+                }}>
+                <option value="Sea">Sea</option>
+                <option value="Air">Air</option>
+                <option value="Land">Land</option>
+              </select>
+              <label className="absolute pointer-events-none"
+                style={{ left: 12, top: -9, background: '#fff', padding: '0 4px', fontSize: 12, color: '#0e1b3d', fontFamily: "'Dubai', sans-serif" }}>
+                Cargo Channel (inbound)
+              </label>
+              {/* chevron icon */}
+              <svg className="absolute right-[12px] top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+            </div>
             <FloatingField label="Client Doc. Ref. Number" required value={clientRef} onChange={setClientRef} placeholder="Enter Ref. Number" />
           </div>
         </div>

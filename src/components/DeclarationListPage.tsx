@@ -893,7 +893,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   : activeMenu === 'Refund & Claims'
                   ? ['Declaration Number', 'Claim Number']
                   : activeMenu === 'Cargo Transfer'
-                  ? ['Cargo Transfer No.', 'Client Reference Number', 'Container Number', 'MAWB/MBOL', 'Request Number']
+                  ? ['Cargo Transfer No.', 'Request Number', 'Client Reference Number', 'Container Number', 'MAWB/MBOL']
                   : ['Declaration', 'Request No.', 'Client Ref.', 'MAWB/MBOL']
                 ).map(opt => (
                   <button
@@ -1006,7 +1006,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                 className="h-[48px] px-[22px] rounded-[4px] text-[16px] flex-shrink-0 border border-[#1360d2] text-[#1360d2] bg-white hover:bg-[#f0f4ff] transition-colors"
                 style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}
               >
-                CT Release / Receipt
+                Cargo Release/Receipt
               </button>
             )}
 

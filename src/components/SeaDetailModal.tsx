@@ -3,9 +3,19 @@ import Header from './Header';
 // @ts-ignore
 import shipIconSrc from '../assets/Ship (12).svg';
 import catalogueBg from '../assets/catalogue background.jpg';
-import ServiceListingPage, { ColConfig, RowData } from './ServiceListingPage';
+import ServiceListingPage, { ColConfig, RowData, AFFieldDef } from './ServiceListingPage';
 import BillPaymentPage from './BillPaymentPage';
 import DCCertificatesFormPage from './DCCertificatesFormPage';
+import DCCertificatesViewPage from './DCCertificatesViewPage';
+import GenericServiceFormPage, { GenericServiceConfig } from './GenericServiceFormPage';
+import CTRFormPage from './CTRFormPage';
+import CWLFormPage from './CWLFormPage';
+import CWLViewPage from './CWLViewPage';
+import CWLPaymentPage from './CWLPaymentPage';
+import DCServiceChooserPage from './DCServiceChooserPage';
+import JoinClientAccreditationPage from './JoinClientAccreditationPage';
+import SubmitVoluntaryDisclosurePage from './SubmitVoluntaryDisclosurePage';
+import GoodsLandingCertPage from './GoodsLandingCertPage';
 
 type Props = { onClose: () => void };
 
@@ -49,13 +59,11 @@ const SEA_COLUMNS: { title: string; items: string[] }[] = [
     title: 'Cargo Clearance',
     items: [
       'Integrated Clearance',
-      'Request Goods Landing Certificate',
       'Bill Payment',
-      'Request Customs Transactions Report',
-      'Request Duty Account',
-      'Join Accreditation Program',
+      'DC - Service Request',
+      'Request Goods Landing Certificate',
       'Request Customs Warehouse License',
-      'DC - Certificates',
+      'Request Duty Account',
       'DC - landing Certificate', 'DC - Letter & Certificates', 'DM Permits',
       'DP World Work Permits', 'e-Certificates', 'IMDG NOC Management',
       'Marine NOC', 'Master Declaration', 'DC - Cargo Reconcilation',
@@ -90,16 +98,64 @@ const SEA_COLUMNS: { title: string; items: string[] }[] = [
 ];
 
 /* ── Page configs for service listing pages ─────────────────────────── */
+
+// Shared statuses for all 3 main services
+const SVC_STATUSES = ['Approved', 'Submitted', 'Cancelled', 'Payment Pending', 'Approved', 'Submitted', 'Cancelled'];
+
 const STATUSES = ['Closed', 'Submitted', 'Submitted', 'Payment Pending', 'VAT Payment Pending', 'Declined', 'Cancelled'];
 const SUBJECTS = ['Export from Local', 'Export Statistical', 'Re Export to ROW (after import for re export)'];
 
+const GLC_VESSELS   = ['Testname', 'Al Salam', 'Dubai Star', 'Falcon Express', 'Gulf Carrier', 'Ocean Pride', 'Mariner'];
+const GLC_COUNTRIES = ['China', 'India', 'USA', 'Germany', 'Japan', 'South Korea', 'UAE'];
+const GLC_DATES     = ['12-01-2025', '03-03-2025', '18-04-2025', '27-05-2025', '09-06-2025', '14-07-2025', '22-08-2025'];
+
 const DOC_ROWS: RowData[] = STATUSES.map((status, i) => ({
-  docNumber: '1012132132',
-  consigneeType: SUBJECTS[Math.min(i, 2)],
-  consigneeCode: 'New',
-  houseBillNo: '12345788',
-  submittedDate: '05-Dec-24',
-  submittedBy: 'code + name',
+  requestNumber:    `R00723-51324${i}`,
+  requestDate:      GLC_DATES[i],
+  billOfEntryNo:    `101324545${i + 1}`,
+  billDate:         GLC_DATES[i],
+  billOfLadingNo:   `BOL121132${i + 1}`,
+  vessel:           GLC_VESSELS[i],
+  arrivedFrom:      GLC_COUNTRIES[i],
+  arrivedOn:        GLC_DATES[i],
+  paymentAccount:   `3674${6 + i}`,
+  status,
+}));
+
+/* DC Service Request listing columns & rows */
+const DCC_COLS: ColConfig[] = [
+  { label: 'Request Number', key: 'requestNumber', width: 170 },
+  { label: 'Request Date',   key: 'requestDate',   width: 160 },
+  { label: 'Service Name',   key: 'serviceName',   width: 260 },
+  { label: 'Service Type',   key: 'serviceType',   width: 260 },
+];
+const DCC_SERVICE_DATA = [
+  { serviceName: 'Request Certificate',                 serviceType: 'Landing Certificate' },
+  { serviceName: 'Join Client Accreditation',           serviceType: '-' },
+  { serviceName: 'Request Customs Transaction Reports', serviceType: '-' },
+  { serviceName: 'Submit Voluntary Disclosure',         serviceType: '-' },
+  { serviceName: 'Request Certificate',                 serviceType: '-' },
+  { serviceName: 'Join Client Accreditation',           serviceType: '-' },
+  { serviceName: 'Request Customs Transaction Reports', serviceType: '-' },
+];
+const DCC_ROWS: RowData[] = SVC_STATUSES.map((status, i) => ({
+  requestNumber: `R00723-51325${i}`,
+  requestDate:   `${String(i + 1).padStart(2, '0')}-Jun-2025`,
+  serviceName:   DCC_SERVICE_DATA[i].serviceName,
+  serviceType:   DCC_SERVICE_DATA[i].serviceType,
+  status,
+}));
+
+/* CTR listing columns & rows */
+const CTR_COLS: ColConfig[] = [
+  { label: 'Request Number', key: 'requestNumber', width: 180 },
+  { label: 'Request Date',   key: 'requestDate',   width: 160 },
+  { label: 'Request Type',   key: 'requestType',   width: 200 },
+];
+const CTR_ROWS: RowData[] = SVC_STATUSES.map((status, i) => ({
+  requestNumber: `CTR-${2025100 + i}`,
+  requestDate:   `${String(i + 1).padStart(2, '0')}-Jun-2025`,
+  requestType:   'Customs Transaction Report',
   status,
 }));
 
@@ -125,12 +181,15 @@ const ACC_ROWS: RowData[] = STATUSES.map(status => ({
 }));
 
 const DOC_COLS: ColConfig[] = [
-  { label: 'Document Number', key: 'docNumber',      width: 150 },
-  { label: 'Consignee Type',  key: 'consigneeType',  width: 290 },
-  { label: 'Consignee Code',  key: 'consigneeCode',  width: 140 },
-  { label: 'House Bill No.',  key: 'houseBillNo',    width: 130 },
-  { label: 'Submitted Date',  key: 'submittedDate',  width: 140 },
-  { label: 'Submitted by',    key: 'submittedBy',    width: 130 },
+  { label: 'Request Number',      key: 'requestNumber',    width: 170 },
+  { label: 'Request Date',        key: 'requestDate',      width: 140 },
+  { label: 'Bill of Entry No.',   key: 'billOfEntryNo',    width: 160 },
+  { label: 'Bill Date',           key: 'billDate',         width: 130 },
+  { label: 'Bill of Lading No.',  key: 'billOfLadingNo',   width: 155 },
+  { label: 'Vessel',              key: 'vessel',           width: 130 },
+  { label: 'Arrived From',        key: 'arrivedFrom',      width: 130 },
+  { label: 'Arrived On',          key: 'arrivedOn',        width: 130 },
+  { label: 'Payment Account',     key: 'paymentAccount',   width: 150 },
 ];
 
 const REF_COLS: ColConfig[] = [
@@ -142,6 +201,19 @@ const REF_COLS: ColConfig[] = [
   { label: 'Request Type',     key: 'requestType',   width: 120 },
 ];
 
+const CWL_COLS: ColConfig[] = [
+  { label: 'Request Number', key: 'requestNumber', width: 180 },
+  { label: 'Request Date',   key: 'requestDate',   width: 160 },
+  { label: 'Request Type',   key: 'requestType',   width: 200 },
+];
+
+const CWL_ROWS: RowData[] = SVC_STATUSES.map((status, i) => ({
+  requestNumber: `REQ-CWL-${100 + i}`,
+  requestDate:   `${String(i + 1).padStart(2, '0')}-Jun-2025`,
+  requestType:   'New License',
+  status,
+}));
+
 const ACC_COLS: ColConfig[] = [
   { label: 'Request Number',    key: 'requestNumber',    width: 145, isLink: true },
   { label: 'Account Type',      key: 'accountType',      width: 130 },
@@ -152,19 +224,56 @@ const ACC_COLS: ColConfig[] = [
   { label: 'Remarks',           key: 'remarks',          width: 120 },
 ];
 
+/* ── Advanced filter field definitions ─────────────────────────────── */
+const ALL_STATUSES = ['Closed', 'Submitted', 'Payment Pending', 'VAT Payment Pending', 'Declined', 'Cancelled', 'Approved'];
+
+const GLC_FILTER_FIELDS: AFFieldDef[] = [
+  { key: 'reqNo',    label: 'Request Number',    type: 'text' },
+  { key: 'dateFrom', label: 'Request Date From', type: 'date' },
+  { key: 'dateTo',   label: 'Request Date To',   type: 'date' },
+  { key: 'bol',      label: 'BOL Number',        type: 'text' },
+  { key: 'boe',      label: 'BOE Number',        type: 'text' },
+  { key: 'status',   label: 'Status',            type: 'dropdown', options: ALL_STATUSES },
+];
+
+const DCC_SERVICE_NAMES = [
+  'Request Certificate',
+  'Join Client Accreditation',
+  'Request Customs Transaction Reports',
+  'Submit Voluntary Disclosure',
+];
+const DCC_SERVICE_TYPES = [
+  'Landing Certificate',
+  'New Enrollment',
+  'Declaration Report',
+  'Statistical Report',
+  'Voluntary Disclosure',
+];
+const DCC_FILTER_FIELDS: AFFieldDef[] = [
+  { key: 'reqNo',       label: 'Request Number',    type: 'text' },
+  { key: 'status',      label: 'Status',            type: 'dropdown', options: ALL_STATUSES },
+  { key: 'dateFrom',    label: 'Request Date From', type: 'date' },
+  { key: 'dateTo',      label: 'Request Date To',   type: 'date' },
+  { key: 'serviceName', label: 'Service Name',      type: 'dropdown', options: DCC_SERVICE_NAMES },
+  { key: 'serviceType', label: 'Service Type',      type: 'dropdown', options: DCC_SERVICE_TYPES },
+];
+
 type PageKey = 'glc' | 'jap' | 'cwl' | 'ctr' | 'rda' | 'pbf' | 'dcc';
 
-const PAGE_CONFIGS: Record<Exclude<PageKey, 'pbf' | 'dcc'>, {
+const PAGE_CONFIGS: Record<Exclude<PageKey, 'pbf' | 'dcc' | 'ctr' | 'cwl'> | 'ctr' | 'cwl', {
   title: string; breadcrumb: string; primaryLabel: string;
-  searchLabel: string; searchPlaceholder: string;
+  searchLabel: string; searchPlaceholder: string; searchFields?: string[];
+  advancedFilterFields?: AFFieldDef[];
   columns: ColConfig[]; rows: RowData[]; hasDraftsToggle?: boolean;
 }> = {
   glc: {
     title: 'Goods Landing Certificate',
     breadcrumb: 'Goods Landing Certificate',
     primaryLabel: 'New Request',
-    searchLabel: 'Document Number',
-    searchPlaceholder: 'Document no.',
+    searchLabel: 'Request Number',
+    searchPlaceholder: 'Search...',
+    searchFields: ['Request Number', 'Bill of Entry Number'],
+    advancedFilterFields: GLC_FILTER_FIELDS,
     columns: DOC_COLS,
     rows: DOC_ROWS,
   },
@@ -181,21 +290,20 @@ const PAGE_CONFIGS: Record<Exclude<PageKey, 'pbf' | 'dcc'>, {
   cwl: {
     title: 'Custom Warehouse License',
     breadcrumb: 'Custom Warehouse License',
-    primaryLabel: 'New Account',
-    searchLabel: 'Document Number',
-    searchPlaceholder: 'Document no.',
-    columns: DOC_COLS,
-    rows: DOC_ROWS,
+    primaryLabel: 'New Request',
+    searchLabel: 'Request Number',
+    searchPlaceholder: 'Request number',
+    columns: CWL_COLS,
+    rows: CWL_ROWS,
   },
   ctr: {
     title: 'Customs Transaction Report',
     breadcrumb: 'Customs Transaction Report',
     primaryLabel: 'New Request',
-    searchLabel: 'Reference Number',
-    searchPlaceholder: 'Declaration no.',
-    columns: REF_COLS,
-    rows: REF_ROWS,
-    hasDraftsToggle: true,
+    searchLabel: 'Request Number',
+    searchPlaceholder: 'Request number',
+    columns: CTR_COLS,
+    rows: CTR_ROWS,
   },
   rda: {
     title: 'Manage Accounts',
@@ -215,14 +323,50 @@ const ITEM_PAGE_MAP: Record<string, PageKey> = {
   'Request Customs Warehouse License':    'cwl',
   'Request Customs Transactions Report':  'ctr',
   'Request Duty Account':                 'rda',
-  'DC - Certificates':                    'dcc',
+  'DC - Service Request':                 'dcc',
+};
+/* ── Generic Form Configs ────────────────────────────────────────────────── */
+const CTR_CONFIG: GenericServiceConfig = {
+  serviceName: 'Request Customs Transactions Report',
+  serviceDescription: 'This service allows customers to request a comprehensive transactions report from Dubai Customs, providing detailed data on all customs transactions within a specified period.',
+  charges: '200.00',
+  requirements: 'Trade license, Emirates ID, Customs file number, Date range for report, Business code',
+  breadcrumbLabel: 'Customs Transaction Report',
+  serviceTypes: [
+    { name: 'Statistical Report',     fees: '100.00', description: 'Provides aggregate statistical data on customs transactions over a specified period.', requirements: 'Business code, Date range, Trade license' },
+    { name: 'Declaration Report',     fees: '200.00', description: 'Provides detailed information on individual customs declarations within the requested period.', requirements: 'Declaration numbers, Date range, Business code' },
+    { name: 'Summary Transactions',   fees: '150.00', description: 'A summarized overview of all customs transactions grouped by category or type.', requirements: 'Business code, Date range' },
+    { name: 'Detailed Transactions',  fees: '300.00', description: 'A full line-by-line breakdown of each customs transaction including duties, taxes, and fees.', requirements: 'Business code, Date range, Authorization letter' },
+  ],
+};
+
+const CWL_CONFIG: GenericServiceConfig = {
+  serviceName: 'Request Customs Warehouse License',
+  serviceDescription: 'This service allows customers to obtain, renew, or modify a Customs Warehouse License, permitting the storage of goods under customs supervision without immediate duty payment.',
+  charges: '1000.00',
+  requirements: 'Trade license, Site plan, Warehouse lease agreement, Emirates ID, Fire safety certificate, Municipality approval',
+  breadcrumbLabel: 'Customs Warehouse License',
+  serviceTypes: [
+    { name: 'New License',           fees: '1000.00', description: 'Application for a brand new Customs Warehouse License for storing goods under customs control.', requirements: 'Trade license, Site plan, Lease agreement, Fire safety certificate, Municipality NOC' },
+    { name: 'License Renewal',       fees: '500.00',  description: 'Renewal of an existing Customs Warehouse License before its expiry date.', requirements: 'Current license copy, Trade license, Updated lease agreement' },
+    { name: 'License Modification',  fees: '300.00',  description: 'Modification of license details such as warehouse area, location, or authorized goods.', requirements: 'Current license, Modification justification letter, Updated documents' },
+    { name: 'License Cancellation',  fees: '200.00',  description: 'Cancellation of an existing Customs Warehouse License and clearance of all stored goods.', requirements: 'Current license, Clearance certificate for stored goods, Written cancellation request' },
+  ],
 };
 /* ─────────────────────────────────────────────────────────────────────── */
 
 export default function SeaDetailModal({ onClose }: Props) {
   const [search, setSearch]         = useState('');
   const [activePage, setActivePage] = useState<PageKey | null>(null);
-  const [showDccForm, setShowDccForm] = useState(false);
+  // dccService: null=listing, 'chooser'=picker, then the actual service key
+  const [dccService, setDccService] = useState<string | null>(null);
+  const [dccViewRow, setDccViewRow] = useState<RowData | null>(null);
+  const [dccPayRow, setDccPayRow]   = useState<RowData | null>(null);
+  const [showGlcForm, setShowGlcForm] = useState(false);
+  const [showCtrForm, setShowCtrForm] = useState(false);
+  const [showCwlForm, setShowCwlForm] = useState(false);
+  const [cwlViewRow, setCwlViewRow]   = useState<RowData | null>(null);
+  const [cwlPayRow, setCwlPayRow]     = useState<RowData | null>(null);
 
   const filtered = SEA_COLUMNS.map(col => ({
     ...col,
@@ -236,25 +380,101 @@ export default function SeaDetailModal({ onClose }: Props) {
     return <BillPaymentPage onBack={() => setActivePage(null)} />;
   }
   if (activePage === 'dcc') {
-    if (showDccForm) {
-      return <DCCertificatesFormPage onBack={() => setShowDccForm(false)} />;
+    // Service form pages
+    if (dccService === 'certificate') {
+      return <DCCertificatesFormPage onBack={() => setDccService(null)} />;
     }
+    if (dccService === 'accreditation') {
+      return <JoinClientAccreditationPage onBack={() => setDccService(null)} />;
+    }
+    if (dccService === 'ctr') {
+      return <CTRFormPage onBack={() => setDccService(null)} />;
+    }
+    if (dccService === 'disclosure') {
+      return <SubmitVoluntaryDisclosurePage onBack={() => setDccService(null)} />;
+    }
+    if (dccService === 'chooser') {
+      return (
+        <DCServiceChooserPage
+          onBack={() => setDccService(null)}
+          onSelect={(svc) => setDccService(svc)}
+        />
+      );
+    }
+    // View / Pay detail pages
+    if (dccViewRow) {
+      return <DCCertificatesViewPage row={dccViewRow} onBack={() => setDccViewRow(null)} />;
+    }
+    if (dccPayRow) {
+      return <CWLPaymentPage row={dccPayRow} onBack={() => setDccPayRow(null)} />;
+    }
+    // Listing
     return (
       <ServiceListingPage
-        title="DC - Certificates"
-        breadcrumb="DC - Certificates"
+        title="DC - Service Request"
+        breadcrumb="DC - Service Request"
         primaryLabel="New Request"
-        searchLabel="Document Number"
-        searchPlaceholder="Document no."
-        columns={DOC_COLS}
-        rows={DOC_ROWS}
+        searchLabel="Request Number"
+        searchPlaceholder="Search..."
+        advancedFilterFields={DCC_FILTER_FIELDS}
+        columns={DCC_COLS}
+        rows={DCC_ROWS}
         onBack={() => setActivePage(null)}
-        onNewRequest={() => setShowDccForm(true)}
+        onNewRequest={() => setDccService('chooser')}
+        onViewRequest={(row) => setDccViewRow(row)}
+        onMakePayment={(row) => setDccPayRow(row)}
+      />
+    );
+  }
+  if (activePage === 'ctr') {
+    if (showCtrForm) {
+      return <CTRFormPage onBack={() => setShowCtrForm(false)} />;
+    }
+    const cfg = PAGE_CONFIGS['ctr'];
+    return (
+      <ServiceListingPage
+        {...cfg}
+        onBack={() => setActivePage(null)}
+        onNewRequest={() => setShowCtrForm(true)}
+      />
+    );
+  }
+  if (activePage === 'cwl') {
+    if (showCwlForm) {
+      return <CWLFormPage onBack={() => setShowCwlForm(false)} />;
+    }
+    if (cwlViewRow) {
+      return <CWLViewPage row={cwlViewRow} onBack={() => setCwlViewRow(null)} />;
+    }
+    if (cwlPayRow) {
+      return <CWLPaymentPage row={cwlPayRow} onBack={() => setCwlPayRow(null)} />;
+    }
+    const cfg = PAGE_CONFIGS['cwl'];
+    return (
+      <ServiceListingPage
+        {...cfg}
+        onBack={() => setActivePage(null)}
+        onNewRequest={() => setShowCwlForm(true)}
+        onViewRequest={(row) => setCwlViewRow(row)}
+        onMakePayment={(row) => setCwlPayRow(row)}
+      />
+    );
+  }
+  if (activePage === 'glc') {
+    if (showGlcForm) {
+      return <GoodsLandingCertPage onBack={() => setShowGlcForm(false)} />;
+    }
+    const cfg = PAGE_CONFIGS['glc'];
+    return (
+      <ServiceListingPage
+        {...cfg}
+        onBack={() => setActivePage(null)}
+        onNewRequest={() => setShowGlcForm(true)}
       />
     );
   }
   if (activePage) {
-    const cfg = PAGE_CONFIGS[activePage as Exclude<PageKey, 'pbf' | 'dcc'>];
+    const cfg = PAGE_CONFIGS[activePage as Exclude<PageKey, 'pbf' | 'dcc' | 'ctr' | 'cwl' | 'glc'>];
     return (
       <ServiceListingPage
         {...cfg}
@@ -414,15 +634,12 @@ export default function SeaDetailModal({ onClose }: Props) {
                         'Integrated Clearance',
                         'Request Goods Landing Certificate',
                         'Bill Payment',
-                        'Request Customs Transactions Report',
                         'Request Duty Account',
-                        'Join Accreditation Program',
                         'Request Customs Warehouse License',
-                        'DC - Certificates',
+                        'DC - Service Request',
                       ]);
                       const TALL_ITEMS = new Set([
                         'Request Goods Landing Certificate',
-                        'Request Customs Transactions Report',
                       ]);
                       const isHighlighted = HIGHLIGHTED.has(item);
                       const isTall        = TALL_ITEMS.has(item);
