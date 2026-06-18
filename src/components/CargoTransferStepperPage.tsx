@@ -207,6 +207,34 @@ function FloatSelect({ label, required, value, onChange, options }: {
   );
 }
 
+function PlainSelect({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: string[] }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative">
+      <button type="button" onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center px-[12px] bg-white"
+        style={{ height: 56, border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}`, borderRadius: 4, fontFamily: font }}>
+        <span className="flex-1 text-left text-[16px]" style={{ color: '#051937' }}>{value}</span>
+        <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#697498" strokeWidth="2" className={`flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}>
+          <path d="M5 8l5 5 5-5" />
+        </svg>
+      </button>
+      {open && (
+        <ul className="absolute z-[50] left-0 right-0 bg-white rounded-[6px] py-[4px]"
+          style={{ top: 52, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
+          {options.map(opt => (
+            <li key={opt} onClick={() => { onChange(opt); setOpen(false); }}
+              className="px-[12px] py-[10px] text-[16px] cursor-pointer hover:bg-[#e2ebf9] transition-colors"
+              style={{ color: opt === value ? '#1360d2' : '#051937', fontWeight: opt === value ? 500 : 400, fontFamily: font }}>
+              {opt}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 function DateInput({ label, required, value, onChange }: {
   label: string; required?: boolean; value: string; onChange: (v: string) => void;
 }) {
@@ -1782,9 +1810,9 @@ function Step5({ onBack, onSubmit, shippingSummary, onEditShipping, title, stepp
             <h2 className="text-[20px] text-[#051937] mb-[16px]" style={{ fontFamily: font, fontWeight: 500 }}>Payments Details</h2>
 
             {/* Single table */}
-            <div className="rounded-[8px] overflow-hidden" style={{ border: '1px solid #c4d8f5' }}>
+            <div className="rounded-[8px]" style={{ border: '1px solid #c4d8f5' }}>
               {/* Single header */}
-              <div className="flex" style={{ background: '#a6c2e9' }}>
+              <div className="flex" style={{ background: '#a6c2e9', borderRadius: '8px 8px 0 0' }}>
                 <div className="h-[44px] flex items-center pl-[20px]" style={{ flex: '0 0 50%' }}>
                   <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 500 }}>Charges</span>
                 </div>
@@ -1808,10 +1836,10 @@ function Step5({ onBack, onSubmit, shippingSummary, onEditShipping, title, stepp
                     </div>
                   </div>
                   <div className="flex-1">
-                    <FloatSelect label="Payment Mode" value={paymentMode} onChange={setPaymentMode} options={PAYMENT_MODES} />
+                    <PlainSelect value={paymentMode} onChange={setPaymentMode} options={PAYMENT_MODES} />
                   </div>
                   <div className="flex-1">
-                    <FloatSelect label="Payment Reference" value={paymentRef} onChange={setPaymentRef} options={PAYMENT_REFS} />
+                    <PlainSelect value={paymentRef} onChange={setPaymentRef} options={PAYMENT_REFS} />
                   </div>
                 </div>
               ) : (
@@ -1827,10 +1855,10 @@ function Step5({ onBack, onSubmit, shippingSummary, onEditShipping, title, stepp
                       </div>
                     </div>
                     <div className="flex-1">
-                      <FloatSelect label="Payment Mode" value={depositMode} onChange={setDepositMode} options={PAYMENT_MODES} />
+                      <PlainSelect value={depositMode} onChange={setDepositMode} options={PAYMENT_MODES} />
                     </div>
                     <div className="flex-1">
-                      <FloatSelect label="Payment Reference" value={depositRef} onChange={setDepositRef} options={PAYMENT_REFS} />
+                      <PlainSelect value={depositRef} onChange={setDepositRef} options={PAYMENT_REFS} />
                     </div>
                   </div>
                   {/* Other Charges row */}
@@ -1852,10 +1880,10 @@ function Step5({ onBack, onSubmit, shippingSummary, onEditShipping, title, stepp
                       ))}
                     </div>
                     <div className="flex-1">
-                      <FloatSelect label="Payment Mode" value={paymentMode} onChange={setPaymentMode} options={PAYMENT_MODES} />
+                      <PlainSelect value={paymentMode} onChange={setPaymentMode} options={PAYMENT_MODES} />
                     </div>
                     <div className="flex-1">
-                      <FloatSelect label="Payment Reference" value={paymentRef} onChange={setPaymentRef} options={PAYMENT_REFS} />
+                      <PlainSelect value={paymentRef} onChange={setPaymentRef} options={PAYMENT_REFS} />
                     </div>
                   </div>
                 </>
