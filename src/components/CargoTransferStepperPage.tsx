@@ -990,10 +990,7 @@ function Step2({ onBack, onNext, initCargoChannel = '', initCarrierReg = '', ini
             <SectionHeading>Inbound Details</SectionHeading>
             <div className="bg-white rounded-[8px] p-[24px] mt-[12px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.07)' }}>
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-[20px] items-start">
-                {initCargoChannel
-                  ? <PreFilledField label="Cargo Channel (inbound)" value={initCargoChannel} />
-                  : <FloatSelect label="Cargo Channel (inbound)" required value={inCargoChannel} onChange={setInCargoChannel} options={CHANNELS} />
-                }
+                <FloatSelect label="Cargo Channel (inbound)" required value={inCargoChannel} onChange={setInCargoChannel} options={CHANNELS} />
                 {initCarrierReg
                   ? <PreFilledField label="Carrier Registration No. (Inbound)" value={initCarrierReg} />
                   : <SearchWithNameInput label="Carrier Registration No. (Inbound)" required value={carrierReg} onChange={setCarrierReg} suggestions={CARRIER_SUGGESTIONS} onModalOpen={() => setShowCarrierModal(true)} />
@@ -1750,12 +1747,14 @@ function Step4({ onBack, onNext, shippingSummary, onEditShipping, title, stepper
 /* ────────────────────────────────────────────────────────────
    Step 5 — Payment Details
    ──────────────────────────────────────────────────────────── */
-function Step5({ onBack, onSubmit, shippingSummary, onEditShipping, title, stepperEl }: {
+function Step5({ onBack, onSubmit, shippingSummary, onEditShipping, title, stepperEl, isAmend, amendReason }: {
   onBack: () => void; onSubmit: () => void;
   shippingSummary?: { label: string; value: string }[];
   onEditShipping?: () => void;
   title?: string;
   stepperEl?: React.ReactNode;
+  isAmend?: boolean;
+  amendReason?: string;
 }) {
   const [paymentMode, setPaymentMode] = useState('Credit/Debit Account');
   const [paymentRef, setPaymentRef] = useState('Account Number');
@@ -1797,49 +1796,70 @@ function Step5({ onBack, onSubmit, shippingSummary, onEditShipping, title, stepp
                 </div>
               </div>
 
-              {/* Deposit row */}
-              <div className="flex flex-col lg:flex-row gap-[20px] py-[20px] bg-white" style={{ borderBottom: '1px solid #e2e8f0' }}>
-                <div className="flex flex-col gap-[10px] w-full lg:w-[calc(50%-10px)]">
-                  <div className="flex items-center h-[49px] gap-[12px] px-[12px]" style={{ background: '#eff2f7' }}>
-                    <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 600, width: 200 }}>Deposit</span>
-                    <span className="flex items-center gap-[4px] text-[20px] text-[#051937]" style={{ fontFamily: font, fontWeight: 700 }}>
-                      <DirhamIcon size={16} color="#051937" />10,000
-                    </span>
-                  </div>
-                </div>
-                <div className="flex-1">
-                  <FloatSelect label="Payment Mode" value={depositMode} onChange={setDepositMode} options={PAYMENT_MODES} />
-                </div>
-                <div className="flex-1">
-                  <FloatSelect label="Payment Reference" value={depositRef} onChange={setDepositRef} options={PAYMENT_REFS} />
-                </div>
-              </div>
-
-              {/* Other Charges row */}
-              <div className="flex flex-col lg:flex-row gap-[20px] py-[20px] bg-white">
-                <div className="flex flex-col gap-[10px] w-full lg:w-[calc(50%-10px)]">
-                  <div className="flex items-center h-[49px] gap-[12px] px-[12px]" style={{ background: '#eff2f7' }}>
-                    <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 600, width: 200 }}>Other Charges</span>
-                    <span className="flex items-center gap-[4px] text-[20px] text-[#051937]" style={{ fontFamily: font, fontWeight: 700 }}>
-                      <DirhamIcon size={16} color="#051937" />120
-                    </span>
-                  </div>
-                  {CHARGES.map((c, i) => (
-                    <div key={i} className="flex items-start gap-[12px] px-[12px]">
-                      <span className="text-[16px] text-[#696f83]" style={{ fontFamily: font, fontWeight: 500, width: 200 }}>{c.label}</span>
-                      <span className="flex items-center gap-[4px] text-[16px] text-[#051937]" style={{ fontFamily: font, fontWeight: 700 }}>
-                        <DirhamIcon size={13} color="#051937" />{c.amount}
+              {isAmend ? (
+                /* Amend mode — single Amendment charges row */
+                <div className="flex flex-col lg:flex-row gap-[20px] py-[20px] bg-white">
+                  <div className="w-full lg:w-[calc(50%-10px)]">
+                    <div className="flex items-center h-[49px] gap-[12px] px-[12px]" style={{ background: '#eff2f7' }}>
+                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 600, width: 220 }}>Amendment charges</span>
+                      <span className="flex items-center gap-[4px] text-[20px] text-[#051937]" style={{ fontFamily: font, fontWeight: 700 }}>
+                        <DirhamIcon size={16} color="#051937" />25.00
                       </span>
                     </div>
-                  ))}
+                  </div>
+                  <div className="flex-1">
+                    <FloatSelect label="Payment Mode" value={paymentMode} onChange={setPaymentMode} options={PAYMENT_MODES} />
+                  </div>
+                  <div className="flex-1">
+                    <FloatSelect label="Payment Reference" value={paymentRef} onChange={setPaymentRef} options={PAYMENT_REFS} />
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <FloatSelect label="Payment Mode" value={paymentMode} onChange={setPaymentMode} options={PAYMENT_MODES} />
-                </div>
-                <div className="flex-1">
-                  <FloatSelect label="Payment Reference" value={paymentRef} onChange={setPaymentRef} options={PAYMENT_REFS} />
-                </div>
-              </div>
+              ) : (
+                <>
+                  {/* Deposit row */}
+                  <div className="flex flex-col lg:flex-row gap-[20px] py-[20px] bg-white" style={{ borderBottom: '1px solid #e2e8f0' }}>
+                    <div className="flex flex-col gap-[10px] w-full lg:w-[calc(50%-10px)]">
+                      <div className="flex items-center h-[49px] gap-[12px] px-[12px]" style={{ background: '#eff2f7' }}>
+                        <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 600, width: 200 }}>Deposit</span>
+                        <span className="flex items-center gap-[4px] text-[20px] text-[#051937]" style={{ fontFamily: font, fontWeight: 700 }}>
+                          <DirhamIcon size={16} color="#051937" />10,000
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <FloatSelect label="Payment Mode" value={depositMode} onChange={setDepositMode} options={PAYMENT_MODES} />
+                    </div>
+                    <div className="flex-1">
+                      <FloatSelect label="Payment Reference" value={depositRef} onChange={setDepositRef} options={PAYMENT_REFS} />
+                    </div>
+                  </div>
+                  {/* Other Charges row */}
+                  <div className="flex flex-col lg:flex-row gap-[20px] py-[20px] bg-white">
+                    <div className="flex flex-col gap-[10px] w-full lg:w-[calc(50%-10px)]">
+                      <div className="flex items-center h-[49px] gap-[12px] px-[12px]" style={{ background: '#eff2f7' }}>
+                        <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 600, width: 200 }}>Other Charges</span>
+                        <span className="flex items-center gap-[4px] text-[20px] text-[#051937]" style={{ fontFamily: font, fontWeight: 700 }}>
+                          <DirhamIcon size={16} color="#051937" />120
+                        </span>
+                      </div>
+                      {CHARGES.map((c, i) => (
+                        <div key={i} className="flex items-start gap-[12px] px-[12px]">
+                          <span className="text-[16px] text-[#696f83]" style={{ fontFamily: font, fontWeight: 500, width: 200 }}>{c.label}</span>
+                          <span className="flex items-center gap-[4px] text-[16px] text-[#051937]" style={{ fontFamily: font, fontWeight: 700 }}>
+                            <DirhamIcon size={13} color="#051937" />{c.amount}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex-1">
+                      <FloatSelect label="Payment Mode" value={paymentMode} onChange={setPaymentMode} options={PAYMENT_MODES} />
+                    </div>
+                    <div className="flex-1">
+                      <FloatSelect label="Payment Reference" value={paymentRef} onChange={setPaymentRef} options={PAYMENT_REFS} />
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
@@ -1866,8 +1886,6 @@ function Step5({ onBack, onSubmit, shippingSummary, onEditShipping, title, stepp
             </label>
           </div>
 
-          <PartyInfoSection />
-
         </div>
       </div>
       <NavBar onBack={onBack} onNext={onSubmit} nextLabel="Proceed" />
@@ -1888,8 +1906,10 @@ const CHARGE_ROWS = [
   { charge: 'Declaration Amendment Charges', oldAmount: '', newAmount: '25.00' },
 ];
 
-function StepAmendment({ onBack, onNext, title, stepperEl }: { onBack: () => void; onNext: () => void; title?: string; stepperEl?: React.ReactNode }) {
-  const [amendReason, setAmendReason] = useState('');
+function StepAmendment({ onBack, onNext, title, stepperEl, amendReason, onAmendReasonChange }: {
+  onBack: () => void; onNext: () => void; title?: string; stepperEl?: React.ReactNode;
+  amendReason: string; onAmendReasonChange: (v: string) => void;
+}) {
   const [cargoStatus, setCargoStatus] = useState('');
 
   const thStyle: React.CSSProperties = { background: '#a6c2e9', padding: '12px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#000', fontFamily: font };
@@ -1908,7 +1928,7 @@ function StepAmendment({ onBack, onNext, title, stepperEl }: { onBack: () => voi
             <h2 className="text-[20px] text-[#051937]" style={{ fontFamily: font, fontWeight: 500 }}>Amendment Details</h2>
             <div className="bg-white rounded-[8px] p-[24px]" style={{ boxShadow: '0px 1px 4px rgba(0,0,0,0.04)', border: '1px solid #f3f4f6' }}>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[20px]">
-                <FloatSelect label="Amendment Reason" required value={amendReason} onChange={setAmendReason} options={AMENDMENT_REASONS} />
+                <FloatSelect label="Amendment Reason" required value={amendReason} onChange={onAmendReasonChange} options={AMENDMENT_REASONS} />
                 <FloatSelect label="Cargo Status" required value={cargoStatus} onChange={setCargoStatus} options={CARGO_STATUSES} />
               </div>
             </div>
@@ -1960,20 +1980,10 @@ function StepAmendment({ onBack, onNext, title, stepperEl }: { onBack: () => voi
                     <tr key={i}>
                       <td style={i % 2 === 0 ? tdStyle : tdAltStyle}>{row.charge}</td>
                       <td style={i % 2 === 0 ? tdStyle : tdAltStyle}>
-                        {row.oldAmount && (
-                          <span className="flex items-center gap-[3px]">
-                            <DirhamIcon size={13} color="#0e1b3d" />
-                            <span className="text-[16px]">{row.oldAmount}</span>
-                          </span>
-                        )}
+                        {row.oldAmount && <span className="flex items-center gap-[3px]"><DirhamIcon size={13} color="#0e1b3d" /><span className="text-[16px]">{row.oldAmount}</span></span>}
                       </td>
                       <td style={i % 2 === 0 ? tdStyle : tdAltStyle}>
-                        {row.newAmount && (
-                          <span className="flex items-center gap-[3px]">
-                            <DirhamIcon size={13} color="#0e1b3d" />
-                            <span className="text-[16px]">{row.newAmount}</span>
-                          </span>
-                        )}
+                        {row.newAmount && <span className="flex items-center gap-[3px]"><DirhamIcon size={13} color="#0e1b3d" /><span className="text-[16px]">{row.newAmount}</span></span>}
                       </td>
                     </tr>
                   ))}
@@ -1981,8 +1991,6 @@ function StepAmendment({ onBack, onNext, title, stepperEl }: { onBack: () => voi
               </table>
             </div>
           </div>
-
-          <PartyInfoSection />
 
         </div>
       </div>
@@ -2018,6 +2026,7 @@ export default function CargoTransferStepperPage({ onBack, onSubmit, onSaveExit,
   const [step, setStep] = useState(initialStep ?? 0);
   const next = () => setStep(s => Math.min(s + 1, steps.length - 1));
   const prev = () => setStep(s => Math.max(s - 1, 0));
+  const [amendReason, setAmendReason] = useState('');
 
   const shippingSummary = [
     { label: 'Cargo Transfer Type', value: initTransferType || '' },
@@ -2056,9 +2065,9 @@ export default function CargoTransferStepperPage({ onBack, onSubmit, onSaveExit,
                 {step === 0 && <Step2 onBack={onBack} onNext={next} initCargoChannel={initCargoChannel} initCarrierReg={initCarrierReg} initMasterDoc={initMasterDoc} shippingSummary={shippingSummary} onEditShipping={onBack} isAmend={isAmend} title={title} stepperEl={stepperEl} />}
                 {step === 1 && <Step3 onBack={prev} onNext={next} shippingSummary={shippingSummary} onEditShipping={() => setStep(0)} title={title} stepperEl={stepperEl} />}
                 {step === 2 && <Step4 onBack={prev} onNext={next} shippingSummary={shippingSummary} onEditShipping={() => setStep(0)} title={title} stepperEl={stepperEl} />}
-                {step === 3 && isAmend && <StepAmendment onBack={prev} onNext={next} title={title} stepperEl={stepperEl} />}
+                {step === 3 && isAmend && <StepAmendment onBack={prev} onNext={next} title={title} stepperEl={stepperEl} amendReason={amendReason} onAmendReasonChange={setAmendReason} />}
                 {step === 3 && !isAmend && <Step5 onBack={prev} onSubmit={onSubmit} shippingSummary={shippingSummary} onEditShipping={() => setStep(0)} title={title} stepperEl={stepperEl} />}
-                {step === 4 && isAmend && <Step5 onBack={prev} onSubmit={onSubmit} shippingSummary={shippingSummary} onEditShipping={() => setStep(0)} title={title} stepperEl={stepperEl} />}
+                {step === 4 && isAmend && <Step5 onBack={prev} onSubmit={onSubmit} shippingSummary={shippingSummary} onEditShipping={() => setStep(0)} title={title} stepperEl={stepperEl} isAmend amendReason={amendReason} />}
               </>
             );
           })()}

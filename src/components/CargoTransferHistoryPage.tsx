@@ -108,7 +108,7 @@ export default function CargoTransferHistoryPage({ onBack, onBackToListing, onSu
     { label: 'Transferee Code & Name',w: 210 },
     { label: 'Broker',                w: 180 },
     { label: 'Remarks',               w: 180 },
-    { label: 'Assigned Date',         w: 150 },
+    { label: 'Status Date',            w: 150 },
   ];
 
   return (

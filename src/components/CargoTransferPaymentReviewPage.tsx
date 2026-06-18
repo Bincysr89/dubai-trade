@@ -135,11 +135,35 @@ export default function CargoTransferPaymentReviewPage({ onBack, onSubmit, onSav
             </p>
           </div>
 
+          {/* Submission Details card — amend mode only */}
+          {mode === 'amend' && (
+            <div className="flex flex-col gap-[12px]">
+              <h2 className="text-[20px] text-[#051937]" style={{ fontFamily: font, fontWeight: 500 }}>Submission Details</h2>
+              <div className="bg-white rounded-[8px] p-[24px]"
+                style={{ border: '1px solid #f3f4f6', boxShadow: '0px 1px 8px rgba(0,0,0,0.04)' }}>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-[24px] gap-y-[24px]">
+                  <div className="flex flex-col gap-[9px]">
+                    <span className="text-[16px] text-[#696f83]" style={{ fontFamily: font }}>Submission Date</span>
+                    <span className="text-[16px] text-[#051937]" style={{ fontFamily: font, fontWeight: 500 }}>18-Jun-26</span>
+                  </div>
+                  <div className="flex flex-col gap-[9px]">
+                    <span className="text-[16px] text-[#696f83]" style={{ fontFamily: font }}>Customer Name</span>
+                    <span className="text-[16px] text-[#051937]" style={{ fontFamily: font, fontWeight: 500 }}>shaheer</span>
+                  </div>
+                  <div className="flex flex-col gap-[9px]">
+                    <span className="text-[16px] text-[#696f83]" style={{ fontFamily: font }}>Reason for Amendment</span>
+                    <span className="text-[16px] text-[#051937]" style={{ fontFamily: font, fontWeight: 500 }}>Person / Parties Information wrongly declared</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Cargo Transfer Request Summary */}
           <div className="flex flex-col gap-[12px]">
             <div className="flex items-center justify-between gap-[12px]">
               <h2 className="text-[20px] text-[#051937]" style={{ fontFamily: font, fontWeight: 500 }}>
-                {mode === 'amend' ? 'Cargo Transfer Amendment Summary' : mode === 'cancel' ? 'Cargo Transfer Cancellation Summary' : 'Cargo Transfer Request Summary'}
+                {mode === 'amend' ? 'Cargo Transfer Details' : mode === 'cancel' ? 'Cargo Transfer Cancellation Summary' : 'Cargo Transfer Request Summary'}
               </h2>
               {onViewRequest && (
                 <button
@@ -176,157 +200,96 @@ export default function CargoTransferPaymentReviewPage({ onBack, onSubmit, onSav
             )}
 
             {mode === 'amend' ? (
-              /* Amend mode — charge table matching Amendment Details step */
-              <div className="rounded-[8px] overflow-x-auto bg-[#f8fafd]">
+              /* Amend mode — 4-column payment summary style */
+              <div className="rounded-[8px] overflow-x-auto" style={{ border: '1px solid #c4d8f5' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: font }}>
                   <thead>
-                    <tr>
-                      {['Charge', 'Old Amount', 'New Amount'].map(col => (
-                        <th key={col} style={{ background: '#a6c2e9', padding: '12px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#000', fontFamily: font }}>{col}</th>
+                    <tr style={{ background: '#a6c2e9' }}>
+                      {['Charge Type', 'Payable Amount', 'Payment Mode', 'Payment Reference (Account Number / Account Holder)'].map(col => (
+                        <th key={col} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 15, fontWeight: 500, color: '#051937', fontFamily: font, whiteSpace: 'nowrap' }}>{col}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {[
-                      { charge: 'Registration Fee',               oldAmount: '40.00', newAmount: '40.00' },
-                      { charge: 'Declaration Amendment Charges',  oldAmount: '',      newAmount: '25.00' },
-                    ].map((row, i) => {
-                      const td: React.CSSProperties = { background: i % 2 === 0 ? '#fff' : '#f5f5f5', padding: '0 12px', height: 54, borderBottom: '1px solid #f0f4ff', fontSize: 15, color: '#0e1b3d', fontFamily: font };
-                      return (
-                        <tr key={i}>
-                          <td style={td}>{row.charge}</td>
-                          <td style={td}>
-                            {row.oldAmount && (
-                              <span className="flex items-center gap-[3px]">
-                                <DirhamIcon size={13} color="#0e1b3d" />
-                                <span>{row.oldAmount}</span>
-                              </span>
-                            )}
-                          </td>
-                          <td style={td}>
-                            {row.newAmount && (
-                              <span className="flex items-center gap-[3px]">
-                                <DirhamIcon size={13} color="#0e1b3d" />
-                                <span>{row.newAmount}</span>
-                              </span>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
+                    <tr style={{ background: '#fff', borderBottom: '1px solid #e8eef8' }}>
+                      <td style={{ padding: '14px 16px', fontSize: 15, color: '#0e1b3d', fontFamily: font }}>Declaration Amendment Charge</td>
+                      <td style={{ padding: '14px 16px', fontSize: 15, color: '#0e1b3d', fontFamily: font }}>
+                        <span className="flex items-center gap-[4px]"><DirhamIcon size={13} color="#0e1b3d" />25.00</span>
+                      </td>
+                      <td style={{ padding: '14px 16px', fontSize: 15, color: '#0e1b3d', fontFamily: font }}>Credit/Debit Account</td>
+                      <td style={{ padding: '14px 16px', fontSize: 15, color: '#0e1b3d', fontFamily: font }}>1060423 - shaheer</td>
+                    </tr>
+                    <tr style={{ background: '#dce8f7' }}>
+                      <td style={{ padding: '14px 16px', fontSize: 15, fontFamily: font, fontWeight: 600, color: '#051937' }}>Total Payable Amount</td>
+                      <td style={{ padding: '14px 16px', fontSize: 15, fontFamily: font, fontWeight: 600, color: '#051937' }}>
+                        <span className="flex items-center gap-[4px]"><DirhamIcon size={13} color="#051937" />25.00</span>
+                      </td>
+                      <td colSpan={2} />
+                    </tr>
                   </tbody>
                 </table>
               </div>
             ) : (
-              /* Create / Cancel mode — payment mode/reference table */
-              <div className="bg-white rounded-[8px] overflow-hidden" style={{ border: '1px solid #c4d8f5', boxShadow: '0px 2px 8px rgba(0,0,0,0.07)' }}>
-                {/* Header row */}
-                <div className="flex" style={{ background: '#a6c2e9' }}>
-                  <div className="h-[44px] flex items-center pl-[20px]" style={{ flex: '0 0 50%' }}>
-                    <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 500 }}>Charges</span>
-                  </div>
-                  <div className="h-[44px] flex items-center pl-[8px] flex-1">
-                    <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 500 }}>Payment Mode</span>
-                  </div>
-                  <div className="h-[44px] flex items-center pl-[8px] flex-1">
-                    <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 500 }}>Payment Reference</span>
-                  </div>
-                </div>
-                {/* Deposit row */}
-                <div className="flex flex-col lg:flex-row gap-[20px] px-[20px] py-[20px] bg-white" style={{ borderBottom: '1px solid #e2e8f0' }}>
-                  <div className="w-full lg:w-[calc(50%-10px)]">
-                    <div className="flex items-center h-[49px] gap-[12px] px-[12px]" style={{ background: '#eff2f7' }}>
-                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 600, width: 200 }}>Deposit</span>
-                      <span className="flex items-center gap-[4px] text-[20px] text-[#051937]" style={{ fontFamily: font, fontWeight: 700 }}>
-                        <DirhamIcon size={16} color="#051937" />10,000
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex-1 flex items-center">
-                    <span className="text-[16px] text-[#051937]" style={{ fontFamily: font }}>Credit/Debit Account</span>
-                  </div>
-                  <div className="flex-1 flex items-center">
-                    <span className="text-[16px] text-[#051937]" style={{ fontFamily: font }}>Account Number: 123456</span>
-                  </div>
-                </div>
-                {/* Other Charges row */}
-                <div className="flex flex-col lg:flex-row gap-[20px] px-[20px] py-[20px] bg-white" style={{ borderBottom: '1px solid #e2e8f0' }}>
-                  <div className="flex flex-col gap-[10px] w-full lg:w-[calc(50%-10px)]">
-                    <div className="flex items-center h-[49px] gap-[12px] px-[12px]" style={{ background: '#eff2f7' }}>
-                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 600, width: 200 }}>Other Charges</span>
-                      <span className="flex items-center gap-[4px] text-[20px] text-[#051937]" style={{ fontFamily: font, fontWeight: 700 }}>
-                        <DirhamIcon size={16} color="#051937" />120
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-[12px] px-[12px]">
-                      <span className="text-[16px] text-[#696f83]" style={{ fontFamily: font, fontWeight: 500, width: 200 }}>Registration Fee</span>
-                      <span className="flex items-center gap-[4px] text-[16px] text-[#051937]" style={{ fontFamily: font, fontWeight: 700 }}>
-                        <DirhamIcon size={13} color="#051937" />100
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-[12px] px-[12px]">
-                      <span className="text-[16px] text-[#696f83]" style={{ fontFamily: font, fontWeight: 500, width: 200 }}>Knowledge &amp; Innovation Fee</span>
-                      <span className="flex items-center gap-[4px] text-[16px] text-[#051937]" style={{ fontFamily: font, fontWeight: 700 }}>
-                        <DirhamIcon size={13} color="#051937" />20
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex-1 flex items-center">
-                    <span className="text-[16px] text-[#051937]" style={{ fontFamily: font }}>Credit/Debit Account</span>
-                  </div>
-                  <div className="flex-1 flex items-center">
-                    <span className="text-[16px] text-[#051937]" style={{ fontFamily: font }}>Account Number: 123456</span>
-                  </div>
-                </div>
-                {/* Total Payment */}
-                <div className="flex items-center gap-[16px] px-[20px] py-[16px] bg-white">
-                  <span className="text-[18px] text-[#051937]" style={{ fontFamily: font, fontWeight: 500 }}>Total Payment</span>
-                  <span className="text-[18px] text-[#1360d2] flex items-center gap-[4px]" style={{ fontFamily: font, fontWeight: 600 }}>
-                    <DirhamIcon size={16} color="#1360d2" />10,120.00
-                  </span>
-                </div>
+              /* Create / Cancel mode — Payment Summary table */
+              <div className="rounded-[8px] overflow-x-auto" style={{ border: '1px solid #c4d8f5' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: font }}>
+                  <thead>
+                    <tr style={{ background: '#a6c2e9' }}>
+                      {['Charge Type', 'Payable Amount', 'Payment Mode', 'Payment Reference (Account Number / Account Holder)'].map(col => (
+                        <th key={col} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 15, fontWeight: 500, color: '#051937', fontFamily: font, whiteSpace: 'nowrap' }}>{col}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* Deposit row */}
+                    <tr style={{ background: '#fff', borderBottom: '1px solid #e8eef8' }}>
+                      <td style={{ padding: '14px 16px', fontSize: 15, color: '#0e1b3d', fontFamily: font }}>
+                        <div className="flex items-center gap-[10px]">
+                          <span>Deposit</span>
+                          <span className="text-[12px] font-medium px-[10px] py-[3px] rounded-[4px]"
+                            style={{ background: '#e8f0fd', color: '#1360d2', fontFamily: font }}>
+                            Refund / Collect
+                          </span>
+                        </div>
+                      </td>
+                      <td style={{ padding: '14px 16px', fontSize: 15, color: '#0e1b3d', fontFamily: font }}>
+                        <span className="flex items-center gap-[4px]"><DirhamIcon size={13} color="#0e1b3d" />10,000.00</span>
+                      </td>
+                      <td style={{ padding: '14px 16px', fontSize: 15, color: '#0e1b3d', fontFamily: font }}>Credit/Debit Account</td>
+                      <td style={{ padding: '14px 16px', fontSize: 15, color: '#0e1b3d', fontFamily: font }}>1060423 - shaheer</td>
+                    </tr>
+                    {/* Registration Fee row */}
+                    <tr style={{ background: '#f5f8ff', borderBottom: '1px solid #e8eef8' }}>
+                      <td style={{ padding: '14px 16px', fontSize: 15, color: '#0e1b3d', fontFamily: font }}>Registration Fee</td>
+                      <td style={{ padding: '14px 16px', fontSize: 15, color: '#0e1b3d', fontFamily: font }}>
+                        <span className="flex items-center gap-[4px]"><DirhamIcon size={13} color="#0e1b3d" />100.00</span>
+                      </td>
+                      <td style={{ padding: '14px 16px', fontSize: 15, color: '#0e1b3d', fontFamily: font }}>Credit/Debit Account</td>
+                      <td style={{ padding: '14px 16px', fontSize: 15, color: '#0e1b3d', fontFamily: font }}>1060423 - shaheer</td>
+                    </tr>
+                    {/* Knowledge fee row */}
+                    <tr style={{ background: '#fff', borderBottom: '1px solid #e8eef8' }}>
+                      <td style={{ padding: '14px 16px', fontSize: 15, color: '#0e1b3d', fontFamily: font }}>Knowledge &amp; Innovation Fee</td>
+                      <td style={{ padding: '14px 16px', fontSize: 15, color: '#0e1b3d', fontFamily: font }}>
+                        <span className="flex items-center gap-[4px]"><DirhamIcon size={13} color="#0e1b3d" />20.00</span>
+                      </td>
+                      <td style={{ padding: '14px 16px', fontSize: 15, color: '#0e1b3d', fontFamily: font }}>Credit/Debit Account</td>
+                      <td style={{ padding: '14px 16px', fontSize: 15, color: '#0e1b3d', fontFamily: font }}>1060423 - shaheer</td>
+                    </tr>
+                    {/* Total row */}
+                    <tr style={{ background: '#dce8f7' }}>
+                      <td style={{ padding: '14px 16px', fontSize: 15, fontFamily: font, fontWeight: 600, color: '#051937' }}>Total Payable Amount</td>
+                      <td style={{ padding: '14px 16px', fontSize: 15, fontFamily: font, fontWeight: 600, color: '#051937' }}>
+                        <span className="flex items-center gap-[4px]"><DirhamIcon size={13} color="#051937" />10,120.00</span>
+                      </td>
+                      <td colSpan={2} />
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
 
-          {/* Party Information */}
-          <div className="flex flex-col gap-[20px]">
-            <h2 className="text-[24px] text-[#051937]" style={{ fontFamily: font, fontWeight: 500 }}>Party Information</h2>
-            <div className="flex flex-col xl:flex-row gap-[20px]">
-              {OUTBOUND_CARDS.slice(0, 2).map(card => (
-                <div key={card.title} className="flex-1 bg-white rounded-[8px] p-[20px] w-full" style={{ boxShadow: '1px 2px 12px rgba(0,0,0,0.06)' }}>
-                  <div className="flex items-center flex-wrap gap-y-[12px]">
-                    {card.fields.map((f, i) => (
-                      <React.Fragment key={i}>
-                        <div className="flex flex-col gap-[4px] px-[12px] py-[4px]">
-                          <span style={{ fontSize: 14, color: '#696f83', fontFamily: font, fontWeight: 400, whiteSpace: 'nowrap' }}>{f.label}</span>
-                          <span style={{ fontSize: 18, color: '#051937', fontFamily: font, fontWeight: 500 }}>{f.value}</span>
-                        </div>
-                        {i < card.fields.length - 1 && (
-                          <div style={{ width: 1, height: 40, background: '#e8edf5', flexShrink: 0 }} />
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="w-full bg-white rounded-[8px] p-[20px]" style={{ boxShadow: '1px 2px 12px rgba(0,0,0,0.06)' }}>
-              <div className="flex items-center flex-wrap gap-y-[12px]">
-                {OUTBOUND_CARDS[2].fields.map((f, i) => (
-                  <React.Fragment key={i}>
-                    <div className="flex flex-col gap-[4px] px-[12px] py-[4px]">
-                      <span style={{ fontSize: 14, color: '#696f83', fontFamily: font, fontWeight: 400, whiteSpace: 'nowrap' }}>{f.label}</span>
-                      <span style={{ fontSize: 18, color: '#051937', fontFamily: font, fontWeight: 500 }}>{f.value}</span>
-                    </div>
-                    {i < OUTBOUND_CARDS[2].fields.length - 1 && (
-                      <div style={{ width: 1, height: 40, background: '#e8edf5', flexShrink: 0 }} />
-                    )}
-                  </React.Fragment>
-                ))}
-              </div>
-            </div>
-          </div>
 
         </div>
       </div>

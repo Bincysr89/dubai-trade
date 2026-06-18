@@ -493,7 +493,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                 setCargoFormValues({ clientRef: 'CT-2024-00112', carrierReg: 'AE-9876543', mawb: 'AWB-987654321', transferorBizCode: 'AE-1019056', transferorPremCode: 'PRE-001', transfereeBizCode: 'AE-1019057', transfereePremCode: 'PRE-002' });
                 setCargoFlowMode('amend');
                 setCargoTransferNumber('601001745352');
-                setCargoStep('pre');
+                setStepperReturnStep(0);
+                setCargoStep('stepper');
               }}
               onCancel={() => setCargoStep('cancel')}
             />
