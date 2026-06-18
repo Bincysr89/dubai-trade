@@ -311,7 +311,7 @@ export default function VccViewRequestPage({ onBack, requestNumber = '25365', st
                                     <path d="M10 6v4l2.5 2" />
                                   </svg>
                                 </span>
-                                <span className="text-[16px] text-[#111838] group-hover:text-white leading-[20px]">Audit History</span>
+                                <span className="text-[16px] text-[#111838] group-hover:text-white leading-[20px]">Request History</span>
                               </button>
                             </div>
                           )}

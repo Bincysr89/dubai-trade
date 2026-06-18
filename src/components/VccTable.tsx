@@ -44,7 +44,7 @@ const FLYOUT_ITEMS: { id: FlyoutAction; label: string; icon: React.ReactNode }[]
   },
   {
     id: 'audit',
-    label: 'Audit History',
+    label: 'Request History',
     icon: (
       <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="10" cy="10" r="7.5" />

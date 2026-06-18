@@ -113,7 +113,7 @@ export default function CargoTransferPaymentReviewPage({ onBack, onSubmit, onSav
             ? `Amend - ${formatTransferTypeTitle(transferType)}${transferNumber ? ` - ${transferNumber}` : ''}`
             : mode === 'cancel'
             ? 'Cancel Cargo Transfer Request'
-            : `Cargo Transfer - New Request`}
+            : `New - ${formatTransferTypeTitle(transferType) || 'Cargo Transfer'}`}
         </h1>
         <div className="flex flex-col gap-[32px]">
 

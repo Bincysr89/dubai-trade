@@ -448,7 +448,7 @@ const TRANSFER_TYPE_OPTIONS = [
               className="h-[56px] px-[28px] rounded-[4px] text-white text-[16px] hover:opacity-90 transition-opacity w-full sm:w-auto flex-shrink-0"
               style={{ background: '#1360d2', fontFamily: "'Dubai', sans-serif", fontWeight: 500, minWidth: 180 }}
             >
-              Start Journey
+              Proceed
             </button>
           </div>
         </div>

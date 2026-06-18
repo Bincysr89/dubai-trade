@@ -768,7 +768,7 @@ export default function CargoTransferNewRequestPage({
         <h1 className="text-2xl sm:text-3xl lg:text-[28px] text-[#111838] mb-[8px]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
           {mode === 'amend'
             ? `Amend - ${formatTransferTypeTitle(initialTransferType)}${transferNumber ? ` - ${transferNumber}` : ''}`
-            : `Cargo Transfer - ${initialTransferType || 'New Request'}`}
+            : `New - ${initialTransferType || 'Cargo Transfer'}`}
         </h1>
 
         {/* Cargo Transfer Type / Cargo Channel / Client Ref */}

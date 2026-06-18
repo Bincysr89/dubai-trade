@@ -110,17 +110,6 @@ export default function CargoTransferViewPage({ onBack, transferNumber = '', onR
               </svg>
               Refresh
             </button>
-            <button
-              onClick={() => window.print()}
-              className="h-[36px] px-[20px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors flex items-center gap-[6px]"
-              style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
-            >
-              <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 7V2h10v5" /><rect x="2" y="7" width="16" height="8" rx="1" /><path d="M5 15v3h10v-3" />
-                <circle cx="15" cy="11" r="1" fill="currentColor" />
-              </svg>
-              Print Cargo Transfer
-            </button>
           </div>
         </div>
         <div className="flex flex-col gap-[24px]">
