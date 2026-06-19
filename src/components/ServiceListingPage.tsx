@@ -152,7 +152,7 @@ export default function ServiceListingPage({
       <div className="flex-1 overflow-y-auto px-10 pb-8">
         {/* Breadcrumb + agent banner */}
         <div className="flex items-center justify-between mt-[16px] mb-[8px]">
-          <div className="flex items-center gap-[4px] text-[14px]" style={{ fontFamily: font }}>
+          <div className="flex items-center gap-[4px] text-[16px]" style={{ fontFamily: font }}>
             <span
               className="text-[#8f94ae] cursor-pointer hover:text-[#1360d2] transition-colors"
               onClick={onBack}
@@ -170,7 +170,7 @@ export default function ServiceListingPage({
             <span className="text-[#111838] font-medium">{breadcrumb}</span>
           </div>
           <div
-            className="px-[16px] py-[5px] rounded-[4px] text-[14px] text-[#0e1b3d]"
+            className="px-[16px] py-[5px] rounded-[4px] text-[16px] text-[#0e1b3d]"
             style={{ background: '#e2ebf9', fontFamily: font }}
           >
             AE-1019056- Dubai Customs - Test LLC
@@ -443,7 +443,7 @@ export default function ServiceListingPage({
                     }}>
                       <div className="flex items-center gap-[6px]">
                         <span
-                          className="inline-flex items-center px-[10px] py-[3px] rounded-[4px] text-[14px] font-medium whitespace-nowrap"
+                          className="inline-flex items-center px-[10px] py-[3px] rounded-[4px] text-[16px] font-medium whitespace-nowrap"
                           style={{ background: st.bg, color: st.color, fontFamily: font }}
                         >
                           {row.status}

@@ -116,7 +116,7 @@ export default function EPaymentsTable({ filterReqNo }: { filterReqNo?: string }
                 {/* Status */}
                 <td style={{ background: '#fff', padding: '0 12px', height: 54, verticalAlign: 'middle', width: 120, borderBottom: '1px solid #f0f4ff' }}>
                   <span
-                    className="inline-flex items-center justify-center px-[10px] py-[3px] rounded-[4px] text-[14px] font-medium whitespace-nowrap"
+                    className="inline-flex items-center justify-center px-[10px] py-[3px] rounded-[4px] text-[16px] font-medium whitespace-nowrap"
                     style={{ background: st.bg, color: st.color, fontFamily: font }}
                   >
                     {row.status}

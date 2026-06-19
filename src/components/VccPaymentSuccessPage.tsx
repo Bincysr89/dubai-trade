@@ -93,7 +93,7 @@ export default function VccPaymentSuccessPage({
           {onShowPaymentFailed && (
             <button
               onClick={onShowPaymentFailed}
-              className="text-[14px] text-[#697498] underline hover:text-[#1360d2] transition-colors"
+              className="text-[16px] text-[#697498] underline hover:text-[#1360d2] transition-colors"
               style={{ fontFamily: "'Dubai', sans-serif" }}
             >
               show if payment failed

@@ -8,7 +8,7 @@ function FieldItem({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-[4px] py-[12px] px-[16px]" style={{ flex: '1 0 200px', minWidth: 180 }}>
       <span className="text-[16px]" style={{ color: '#455174', fontFamily: font }}>{label}</span>
-      <span className="text-[15px]" style={{ color: '#051937', fontFamily: font, fontWeight: 500 }}>{value || '—'}</span>
+      <span className="text-[16px]" style={{ color: '#051937', fontFamily: font, fontWeight: 500 }}>{value || '—'}</span>
     </div>
   );
 }
@@ -196,7 +196,7 @@ export default function CargoTransferViewPage({ onBack, transferNumber = '', onR
                   <tr>
                     {['Container Number', 'Customs Seal Number'].map(h => (
                       <th key={h} style={{ background: '#a6c2e9', padding: '10px 14px', textAlign: 'left', borderBottom: '1px solid #e8edf5' }}>
-                        <span className="text-[14px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>{h}</span>
+                        <span className="text-[16px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>{h}</span>
                       </th>
                     ))}
                   </tr>
@@ -205,10 +205,10 @@ export default function CargoTransferViewPage({ onBack, transferNumber = '', onR
                   {containerRows.map((row, i) => (
                     <tr key={i} style={{ borderBottom: '1px solid #f0f3fa' }}>
                       <td style={{ padding: '10px 14px' }}>
-                        <span className="text-[14px]" style={{ color: '#051937', fontFamily: font }}>{row.no}</span>
+                        <span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.no}</span>
                       </td>
                       <td style={{ padding: '10px 14px' }}>
-                        <span className="text-[14px]" style={{ color: '#051937', fontFamily: font }}>{row.seal || '—'}</span>
+                        <span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.seal || '—'}</span>
                       </td>
                     </tr>
                   ))}
@@ -225,7 +225,7 @@ export default function CargoTransferViewPage({ onBack, transferNumber = '', onR
                   <tr>
                     {['Package Type', 'Number Of Packages', 'Shipping Marks'].map(h => (
                       <th key={h} style={{ background: '#a6c2e9', padding: '10px 14px', textAlign: 'left', borderBottom: '1px solid #e8edf5' }}>
-                        <span className="text-[14px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>{h}</span>
+                        <span className="text-[16px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>{h}</span>
                       </th>
                     ))}
                   </tr>
@@ -233,9 +233,9 @@ export default function CargoTransferViewPage({ onBack, transferNumber = '', onR
                 <tbody>
                   {packageRows.map((row, i) => (
                     <tr key={i} style={{ borderBottom: '1px solid #f0f3fa' }}>
-                      <td style={{ padding: '10px 14px' }}><span className="text-[14px]" style={{ color: '#051937', fontFamily: font }}>{row.type}</span></td>
-                      <td style={{ padding: '10px 14px' }}><span className="text-[14px]" style={{ color: '#051937', fontFamily: font }}>{row.count}</span></td>
-                      <td style={{ padding: '10px 14px' }}><span className="text-[14px]" style={{ color: '#051937', fontFamily: font }}>{row.marks || '—'}</span></td>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.type}</span></td>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.count}</span></td>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.marks || '—'}</span></td>
                     </tr>
                   ))}
                 </tbody>
@@ -251,7 +251,7 @@ export default function CargoTransferViewPage({ onBack, transferNumber = '', onR
                   <tr>
                     {['Charge Type', 'Charge Amount', 'Payment Mode', 'Payment Reference Number', 'Collection Receipt Number', 'Transaction Number'].map(h => (
                       <th key={h} style={{ background: '#a6c2e9', padding: '10px 14px', textAlign: 'left', borderBottom: '1px solid #e8edf5' }}>
-                        <span className="text-[14px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>{h}</span>
+                        <span className="text-[16px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>{h}</span>
                       </th>
                     ))}
                   </tr>
@@ -259,12 +259,12 @@ export default function CargoTransferViewPage({ onBack, transferNumber = '', onR
                 <tbody>
                   {paymentRows.map((row, i) => (
                     <tr key={i} style={{ borderBottom: '1px solid #f0f3fa' }}>
-                      <td style={{ padding: '10px 14px' }}><span className="text-[14px]" style={{ color: '#051937', fontFamily: font }}>{row.charge}</span></td>
-                      <td style={{ padding: '10px 14px' }}><span className="text-[14px]" style={{ color: '#051937', fontFamily: font }}>{row.amount}</span></td>
-                      <td style={{ padding: '10px 14px' }}><span className="text-[14px]" style={{ color: '#051937', fontFamily: font }}>{row.mode}</span></td>
-                      <td style={{ padding: '10px 14px' }}><span className="text-[14px]" style={{ color: '#051937', fontFamily: font }}>{row.ref}</span></td>
-                      <td style={{ padding: '10px 14px' }}><span className="text-[14px]" style={{ color: '#051937', fontFamily: font }}>{row.receipt || '—'}</span></td>
-                      <td style={{ padding: '10px 14px' }}><span className="text-[14px]" style={{ color: '#051937', fontFamily: font }}>{row.transaction || '—'}</span></td>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.charge}</span></td>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.amount}</span></td>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.mode}</span></td>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.ref}</span></td>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.receipt || '—'}</span></td>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.transaction || '—'}</span></td>
                     </tr>
                   ))}
                 </tbody>
@@ -280,7 +280,7 @@ export default function CargoTransferViewPage({ onBack, transferNumber = '', onR
                   <tr>
                     {['Version', 'Submitted Date', 'Cleared Date', 'Action'].map(h => (
                       <th key={h} style={{ background: '#a6c2e9', padding: '12px 10px', textAlign: 'left', borderBottom: '1px solid #e8edf5' }}>
-                        <span className="text-[14px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>{h}</span>
+                        <span className="text-[16px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>{h}</span>
                       </th>
                     ))}
                   </tr>
@@ -290,7 +290,7 @@ export default function CargoTransferViewPage({ onBack, transferNumber = '', onR
                     <tr key={i} style={{ background: row.isCurrentlyViewing ? '#f6faff' : '#ffffff', borderBottom: '1px solid #f0f3fa' }}>
                       <td style={{ padding: '0 10px', height: 54 }}>
                         <div className="flex items-center gap-[10px]">
-                          <span className="text-[14px]" style={{ color: '#051937', fontFamily: font }}>{row.version}</span>
+                          <span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.version}</span>
                           {row.isCurrentlyViewing && (
                             <span
                               className="text-[12px]"
@@ -302,16 +302,16 @@ export default function CargoTransferViewPage({ onBack, transferNumber = '', onR
                         </div>
                       </td>
                       <td style={{ padding: '0 10px', height: 54 }}>
-                        <span className="text-[14px]" style={{ color: '#051937', fontFamily: font }}>{row.submittedDate}</span>
+                        <span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.submittedDate}</span>
                       </td>
                       <td style={{ padding: '0 10px', height: 54 }}>
-                        <span className="text-[14px]" style={{ color: '#051937', fontFamily: font }}>{row.clearedDate}</span>
+                        <span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.clearedDate}</span>
                       </td>
                       <td style={{ padding: '0 10px', height: 54 }}>
                         {row.isCurrentlyViewing ? (
-                          <span className="text-[14px]" style={{ color: '#8f94ae', fontFamily: font, fontWeight: 500 }}>View</span>
+                          <span className="text-[16px]" style={{ color: '#8f94ae', fontFamily: font, fontWeight: 500 }}>View</span>
                         ) : (
-                          <button className="text-[14px]" style={{ color: '#1360d2', fontFamily: font, fontWeight: 500, textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>View</button>
+                          <button className="text-[16px]" style={{ color: '#1360d2', fontFamily: font, fontWeight: 500, textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>View</button>
                         )}
                       </td>
                     </tr>
@@ -329,7 +329,7 @@ export default function CargoTransferViewPage({ onBack, transferNumber = '', onR
                   <tr>
                     {['Document Name', 'Document Type', 'Uploaded Size', 'Uploaded On', 'Action'].map(h => (
                       <th key={h} style={{ background: '#a6c2e9', padding: '12px 10px', textAlign: 'left', borderBottom: '1px solid #e8edf5' }}>
-                        <span className="text-[14px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>{h}</span>
+                        <span className="text-[16px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>{h}</span>
                       </th>
                     ))}
                   </tr>
@@ -338,16 +338,16 @@ export default function CargoTransferViewPage({ onBack, transferNumber = '', onR
                   {documentRows.map((row, i) => (
                     <tr key={i} style={{ background: '#ffffff', borderBottom: '1px solid #f0f3fa' }}>
                       <td style={{ padding: '0 10px', height: 54 }}>
-                        <span className="text-[14px]" style={{ color: '#051937', fontFamily: font }}>{row.name}</span>
+                        <span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.name}</span>
                       </td>
                       <td style={{ padding: '0 10px', height: 54 }}>
-                        <span className="text-[14px]" style={{ color: '#051937', fontFamily: font }}>{row.type}</span>
+                        <span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.type}</span>
                       </td>
                       <td style={{ padding: '0 10px', height: 54 }}>
-                        <span className="text-[14px]" style={{ color: '#051937', fontFamily: font }}>{row.size}</span>
+                        <span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.size}</span>
                       </td>
                       <td style={{ padding: '0 10px', height: 54 }}>
-                        <span className="text-[14px]" style={{ color: '#051937', fontFamily: font }}>{row.uploadedOn}</span>
+                        <span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.uploadedOn}</span>
                       </td>
                       <td style={{ padding: '0 10px', height: 54 }}>
                         <button style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#1360d2', display: 'flex', alignItems: 'center' }} title="Download">

@@ -7,7 +7,7 @@ type Props = {
   labelClass?: string;
 };
 
-export function ColumnFilter({ label, labelClass = 'text-[14px] font-medium text-[#051937]' }: Props) {
+export function ColumnFilter({ label, labelClass = 'text-[16px] font-medium text-[#051937]' }: Props) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<'oldest' | 'newest'>('newest');

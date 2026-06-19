@@ -95,7 +95,7 @@ export default function SuspensionResponsePage({ onBack, onBackToListing, onSubm
           <h1 style={{ fontSize: 32, fontWeight: 500, color: '#0e1b3d', fontFamily: font }}>
             Suspension Response - CT - 601232423898
           </h1>
-          <span className="text-[14px] font-medium px-[12px] py-[4px] rounded-[4px]" style={{ background: 'rgba(220,53,69,0.10)', color: '#dc3545', fontFamily: font }}>
+          <span className="text-[16px] font-medium px-[12px] py-[4px] rounded-[4px]" style={{ background: 'rgba(220,53,69,0.10)', color: '#dc3545', fontFamily: font }}>
             Suspended
           </span>
         </div>

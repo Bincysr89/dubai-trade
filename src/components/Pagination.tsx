@@ -51,7 +51,7 @@ export default function Pagination({
     <div className="flex items-center justify-end gap-[20px] flex-wrap" style={{ fontFamily: font }}>
       {/* Left: Results per page + dropdown + range */}
       <div className="flex items-center gap-[10px]">
-        <span className="text-[14px] text-[#111838] whitespace-nowrap" style={{ fontWeight: 500 }}>
+        <span className="text-[16px] text-[#111838] whitespace-nowrap" style={{ fontWeight: 500 }}>
           Results per page:
         </span>
 
@@ -64,7 +64,7 @@ export default function Pagination({
             aria-haspopup="listbox"
             aria-expanded={open}
           >
-            <span className="text-[14px] text-[#111838]" style={{ fontWeight: 500 }}>{pageSize}</span>
+            <span className="text-[16px] text-[#111838]" style={{ fontWeight: 500 }}>{pageSize}</span>
             <svg
               viewBox="0 0 20 20"
               width="16"
@@ -92,7 +92,7 @@ export default function Pagination({
                     role="option"
                     aria-selected={active}
                     onClick={() => { onPageSizeChange(n); setOpen(false); }}
-                    className="px-[14px] py-[8px] text-[14px] cursor-pointer hover:bg-[#e2ebf9] hover:text-[#1360d2] transition-colors"
+                    className="px-[14px] py-[8px] text-[16px] cursor-pointer hover:bg-[#e2ebf9] hover:text-[#1360d2] transition-colors"
                     style={{
                       color: active ? '#1360d2' : '#111838',
                       background: active ? '#e2ebf9' : 'transparent',
@@ -108,7 +108,7 @@ export default function Pagination({
         </div>
 
         {/* Range text */}
-        <span className="text-[14px] text-[#8f94ae] whitespace-nowrap">
+        <span className="text-[16px] text-[#8f94ae] whitespace-nowrap">
           {start} – {end} of {total}
         </span>
       </div>

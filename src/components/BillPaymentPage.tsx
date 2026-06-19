@@ -161,7 +161,7 @@ const MENU_ITEMS: { label: Menu; Icon: () => JSX.Element }[] = [
 function Breadcrumb({ onBack, extra }: { onBack: () => void; extra?: string }) {
   return (
     <div className="flex items-center justify-between mt-[16px] mb-[8px]">
-      <div className="flex items-center gap-[4px] text-[14px]" style={{ fontFamily: font }}>
+      <div className="flex items-center gap-[4px] text-[16px]" style={{ fontFamily: font }}>
         <span className="text-[#8f94ae] cursor-pointer hover:text-[#1360d2] transition-colors" onClick={onBack}>Home</span>
         <span className="text-[#dc3545] px-[4px]">/</span>
         <span className="text-[#8f94ae] cursor-pointer hover:text-[#1360d2] transition-colors" onClick={onBack}>Service Catalog</span>
@@ -210,7 +210,7 @@ function ReceiptModal({ onClose, rows }: { onClose: () => void; rows: typeof PAY
               ['Receipt No.', 'Z-12645'],
             ].map(([label, value]) => (
               <div key={label}>
-                <p className="text-[14px] text-[#697498] mb-[3px]" style={{ fontFamily: font }}>{label}</p>
+                <p className="text-[16px] text-[#697498] mb-[3px]" style={{ fontFamily: font }}>{label}</p>
                 <p className="text-[16px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>{value}</p>
               </div>
             ))}
@@ -255,7 +255,7 @@ function ReceiptModal({ onClose, rows }: { onClose: () => void; rows: typeof PAY
                         </span>
                       </td>
                       <td style={{ background: '#fff', padding: '13px 12px', verticalAlign: 'middle', maxWidth: 260 }}>
-                        <span className="text-[14px] text-[#0e1b3d]">{r.remarks || '—'}</span>
+                        <span className="text-[16px] text-[#0e1b3d]">{r.remarks || '—'}</span>
                       </td>
                     </tr>
                   ))}
@@ -277,7 +277,7 @@ function ReceiptModal({ onClose, rows }: { onClose: () => void; rows: typeof PAY
                   ['Amount',                    '5,540.00'],
                 ].map(([label, value]) => (
                   <div key={label}>
-                    <p className="text-[14px] text-[#697498] mb-[3px]" style={{ fontFamily: font }}>{label}</p>
+                    <p className="text-[16px] text-[#697498] mb-[3px]" style={{ fontFamily: font }}>{label}</p>
                     <p className="text-[16px] font-semibold text-[#0e1b3d] flex items-center gap-[3px]" style={{ fontFamily: font }}>
                       {label === 'Amount' && <DirhamIcon size={13} color="#0e1b3d" />}{value}
                     </p>
@@ -662,7 +662,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               style={{ boxShadow: 'rgba(143, 155, 186, 0.16) 0px 5px 32px' }}>
               <div className="flex items-center justify-between px-6 py-4 border-b border-[#e0e8f5]" style={{ background: '#f5f8ff' }}>
                 <span className="text-[20px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 500 }}>Payment Details</span>
-                <span className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>
+                <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>
                   {selectedList.length} invoice{selectedList.length !== 1 ? 's' : ''} selected
                 </span>
               </div>
@@ -725,7 +725,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             <div className="bg-white rounded-[12px] border border-[#e0e8f5] p-6 mb-4"
               style={{ boxShadow: 'rgba(143, 155, 186, 0.16) 0px 5px 32px' }}>
               <p className="text-[16px] font-semibold text-[#0e1b3d] mb-1" style={{ fontFamily: font }}>Payment Method</p>
-              <p className="text-[14px] text-[#697498] mb-5" style={{ fontFamily: font }}>
+              <p className="text-[16px] text-[#697498] mb-5" style={{ fontFamily: font }}>
                 Note* Card payment has maximum limit of AED 1,000,000.00
               </p>
               <div className="flex items-center gap-8 flex-wrap">
@@ -907,7 +907,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               style={{ boxShadow: 'rgba(143, 155, 186, 0.16) 0px 5px 32px' }}>
               <div className="flex items-center justify-between px-6 py-4 border-b border-[#e0e8f5]" style={{ background: '#f5f8ff' }}>
                 <span className="text-[20px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 500 }}>Payment Details</span>
-                <span className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>1 account selected</span>
+                <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>1 account selected</span>
               </div>
               <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 0', fontFamily: font }}>
                 <thead>
@@ -956,7 +956,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             <div className="bg-white rounded-[12px] border border-[#e0e8f5] p-6 mb-4"
               style={{ boxShadow: 'rgba(143, 155, 186, 0.16) 0px 5px 32px' }}>
               <p className="text-[16px] font-semibold text-[#0e1b3d] mb-1" style={{ fontFamily: font }}>Payment Method</p>
-              <p className="text-[14px] text-[#697498] mb-5" style={{ fontFamily: font }}>
+              <p className="text-[16px] text-[#697498] mb-5" style={{ fontFamily: font }}>
                 Note* Card payment has maximum limit of AED 1,000,000.00
               </p>
               <div className="flex items-center gap-8 flex-wrap">
@@ -1044,7 +1044,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               style={{ boxShadow: 'rgba(143, 155, 186, 0.16) 0px 5px 32px' }}>
               <div className="flex items-center justify-between px-6 py-4 border-b border-[#e0e8f5]">
                 <span className="text-[20px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 500 }}>Payment Transaction Details</span>
-                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-[6px] text-[14px] font-semibold"
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-[6px] text-[16px] font-semibold"
                   style={{ background: 'rgba(40,167,69,0.12)', color: '#28a745', fontFamily: font }}>
                   <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="#28a745" strokeWidth="2">
                     <circle cx="10" cy="10" r="8" /><path d="M6 10l3 3 5-5" strokeLinecap="round" strokeLinejoin="round" />
@@ -1189,7 +1189,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                     ['Receipt No.',   'Z-12648'],
                   ].map(([label, value]) => (
                     <div key={label}>
-                      <p className="text-[14px] text-[#697498] mb-[3px]" style={{ fontFamily: font }}>{label}</p>
+                      <p className="text-[16px] text-[#697498] mb-[3px]" style={{ fontFamily: font }}>{label}</p>
                       <p className="text-[16px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>{value}</p>
                     </div>
                   ))}
@@ -1224,11 +1224,11 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                             <span className="text-[16px] text-[#0e1b3d] flex items-center gap-[3px]"><DirhamIcon size={14} color="#0e1b3d" />{accPayAmount || '1,000.00'}</span>
                           </td>
                           <td style={{ background: '#fff', padding: '13px 12px', verticalAlign: 'middle' }}>
-                            <span className="inline-flex items-center px-[8px] py-[2px] rounded-[4px] text-[14px] font-semibold"
+                            <span className="inline-flex items-center px-[8px] py-[2px] rounded-[4px] text-[16px] font-semibold"
                               style={{ background: 'rgba(40,167,69,0.12)', color: '#28a745' }}>Paid</span>
                           </td>
                           <td style={{ background: '#fff', padding: '13px 12px', verticalAlign: 'middle', maxWidth: 260 }}>
-                            <span className="text-[14px] text-[#0e1b3d]">M1CS 1927058; BPS Transaction for DDR-{selAccRow.account.split(' - ')[0]}</span>
+                            <span className="text-[16px] text-[#0e1b3d]">M1CS 1927058; BPS Transaction for DDR-{selAccRow.account.split(' - ')[0]}</span>
                           </td>
                         </tr>
                       </tbody>
@@ -1249,7 +1249,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                         ['Amount',                    accPayAmount || '1,000.00'],
                       ].map(([label, value]) => (
                         <div key={label}>
-                          <p className="text-[14px] text-[#697498] mb-[3px]" style={{ fontFamily: font }}>{label}</p>
+                          <p className="text-[16px] text-[#697498] mb-[3px]" style={{ fontFamily: font }}>{label}</p>
                           <p className="text-[16px] font-semibold text-[#0e1b3d] flex items-center gap-[3px]" style={{ fontFamily: font }}>
                             {label === 'Amount' && <DirhamIcon size={13} color="#0e1b3d" />}{value}
                           </p>
@@ -2145,7 +2145,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                     <div className="flex-1 min-w-0">
                       <p className="text-[30px] font-extrabold leading-none mb-[2px]" style={{ color, fontFamily: font, letterSpacing: '-1px' }}>{value}</p>
                       <p className="text-[16px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>{label}</p>
-                      <p className="text-[14px] text-[#697498] mt-[1px]" style={{ fontFamily: font }}>{sub}</p>
+                      <p className="text-[16px] text-[#697498] mt-[1px]" style={{ fontFamily: font }}>{sub}</p>
                     </div>
                   </button>
                 ))}
@@ -2179,7 +2179,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                     </div>
                     <div className="flex items-center justify-between relative z-10 pt-[8px] border-t border-[rgba(19,96,210,0.15)]">
                       <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>Updated today</span>
-                      <button onClick={() => setActiveMenu('Accounts')} className="text-[14px] text-[#1360d2] font-semibold hover:underline flex items-center gap-1" style={{ fontFamily: font }}>
+                      <button onClick={() => setActiveMenu('Accounts')} className="text-[16px] text-[#1360d2] font-semibold hover:underline flex items-center gap-1" style={{ fontFamily: font }}>
                         View all <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#1360d2" strokeWidth="2"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       </button>
                     </div>
@@ -2206,7 +2206,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                     </div>
                     <div className="flex items-center justify-between relative z-10 pt-[8px] border-t border-[rgba(30,64,175,0.15)]">
                       <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>Updated today</span>
-                      <button onClick={() => setActiveMenu('Accounts')} className="text-[14px] text-[#1360d2] font-semibold hover:underline flex items-center gap-1" style={{ fontFamily: font }}>
+                      <button onClick={() => setActiveMenu('Accounts')} className="text-[16px] text-[#1360d2] font-semibold hover:underline flex items-center gap-1" style={{ fontFamily: font }}>
                         View all <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#1360d2" strokeWidth="2"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       </button>
                     </div>
@@ -2234,11 +2234,11 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-[16px] font-semibold text-[#0e1b3d] truncate" style={{ fontFamily: font }}>{tx.type}</p>
-                            <p className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>Tx #{tx.txNo} · {tx.txDate}</p>
+                            <p className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>Tx #{tx.txNo} · {tx.txDate}</p>
                           </div>
                           <div className="flex flex-col items-end gap-[3px] flex-shrink-0">
-                            <p className="text-[14px] font-bold text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: font }}><DirhamIcon size={12} color="#0e1b3d" /> {tx.amount}</p>
-                            <span className="inline-flex items-center px-[7px] py-[1px] rounded-[4px] text-[14px] font-medium" style={{ background: st.bg, color: st.color }}>{tx.status}</span>
+                            <p className="text-[16px] font-bold text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: font }}><DirhamIcon size={12} color="#0e1b3d" /> {tx.amount}</p>
+                            <span className="inline-flex items-center px-[7px] py-[1px] rounded-[4px] text-[16px] font-medium" style={{ background: st.bg, color: st.color }}>{tx.status}</span>
                           </div>
                         </div>
                       );

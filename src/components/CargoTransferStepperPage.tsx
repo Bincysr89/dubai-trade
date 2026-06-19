@@ -411,14 +411,14 @@ function SearchWithNameInput({ label, required, value, onChange, suggestions, on
           </div>
           {selectedItem.expiryDate && (
             <div className="px-[12px] py-[8px] rounded-[4px]" style={{ background: '#e2ebf9' }}>
-              <span className="text-[14px]" style={{ color: '#051937', fontFamily: font, fontWeight: 600 }}>
+              <span className="text-[16px]" style={{ color: '#051937', fontFamily: font, fontWeight: 600 }}>
                 Expiry Date: {selectedItem.expiryDate}
               </span>
             </div>
           )}
           {selectedItem.trnNumber && (
             <div className="px-[12px] py-[8px] rounded-[4px]" style={{ background: '#e2ebf9' }}>
-              <span className="text-[14px]" style={{ color: '#051937', fontFamily: font, fontWeight: 600 }}>
+              <span className="text-[16px]" style={{ color: '#051937', fontFamily: font, fontWeight: 600 }}>
                 TRN Number: {selectedItem.trnNumber}
               </span>
             </div>
@@ -1469,16 +1469,16 @@ function Step3({ onBack, onNext, shippingSummary, onEditShipping, title, stepper
                   </table>
                 </div>
                 <div className="mt-[12px] flex items-center justify-end gap-[8px]">
-                  <span className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>Results per page:</span>
+                  <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>Results per page:</span>
                   <div className="flex items-center border border-[#d5ddfb] rounded-[4px] px-[8px] h-[28px] gap-[4px]">
-                    <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: font }}>10</span>
+                    <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>10</span>
                     <svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="#697498" strokeWidth="2"><path d="M5 8l5 5 5-5" /></svg>
                   </div>
-                  <span className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>1 - {packages.length} of {packages.length}</span>
+                  <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>1 - {packages.length} of {packages.length}</span>
                   <button className="size-[28px] flex items-center justify-center rounded border border-[#d5ddfb]">
                     <svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="#697498" strokeWidth="2"><path d="M12 5l-7 5 7 5" /></svg>
                   </button>
-                  <button className="size-[28px] flex items-center justify-center rounded text-[14px] text-white" style={{ background: '#1360d2', fontFamily: font }}>1</button>
+                  <button className="size-[28px] flex items-center justify-center rounded text-[16px] text-white" style={{ background: '#1360d2', fontFamily: font }}>1</button>
                   <button className="size-[28px] flex items-center justify-center rounded border border-[#d5ddfb]">
                     <svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="#697498" strokeWidth="2"><path d="M8 5l7 5-7 5" /></svg>
                   </button>
@@ -1530,7 +1530,7 @@ function Step3({ onBack, onNext, shippingSummary, onEditShipping, title, stepper
                       Download Template
                     </button>
                   </div>
-                  <p className="text-[14px] text-[#697498] mb-[16px]" style={{ fontFamily: font }}>*Supported file type of .TXT max file size up to 1MB</p>
+                  <p className="text-[16px] text-[#697498] mb-[16px]" style={{ fontFamily: font }}>*Supported file type of .TXT max file size up to 1MB</p>
                   <div
                     onDragOver={e => { e.preventDefault(); setDragging(true); }}
                     onDragLeave={() => setDragging(false)}

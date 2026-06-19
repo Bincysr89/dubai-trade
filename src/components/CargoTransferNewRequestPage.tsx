@@ -164,14 +164,14 @@ function SearchPickerField({ label, required, value, onChange, suggestions, onMo
           </div>
           {selectedItem.expiryDate && (
             <div className="px-[12px] py-[8px] rounded-[4px]" style={{ background: '#e2ebf9' }}>
-              <span className="text-[14px]" style={{ color: '#051937', fontFamily: "'Dubai', sans-serif", fontWeight: 600 }}>
+              <span className="text-[16px]" style={{ color: '#051937', fontFamily: "'Dubai', sans-serif", fontWeight: 600 }}>
                 Expiry Date: {selectedItem.expiryDate}
               </span>
             </div>
           )}
           {selectedItem.trnNumber && (
             <div className="px-[12px] py-[8px] rounded-[4px]" style={{ background: '#e2ebf9' }}>
-              <span className="text-[14px]" style={{ color: '#051937', fontFamily: "'Dubai', sans-serif", fontWeight: 600 }}>
+              <span className="text-[16px]" style={{ color: '#051937', fontFamily: "'Dubai', sans-serif", fontWeight: 600 }}>
                 TRN Number: {selectedItem.trnNumber}
               </span>
             </div>

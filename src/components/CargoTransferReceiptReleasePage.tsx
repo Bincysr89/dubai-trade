@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import CargoTransferViewPage from './CargoTransferViewPage';
+import Pagination from './Pagination';
 
 const font = "'Dubai', sans-serif";
 
@@ -24,34 +25,16 @@ type Props = { onBack: () => void };
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 const INITIAL_ROWS: Row[] = [
-  {
-    ctNo: '6020000194926', submittedDate: '03-06-2026', mawbMbol: 'VIKRAM0306202601',
-    clientRef: 'CT1 VIK 2026 01', transferorCode: 'AE-1000143-Al Cargo', transfereeCode: 'AE-1019056-Dubai Trade',
-    releaseDate: '', releaseStatus: 'Not Released',
-    receiptDate: '', receiptStatus: 'Not Receipted',
-    receivedDate: '03-06-2026', receivedStatus: 'Received',
-  },
-  {
-    ctNo: '6020000194927', submittedDate: '03-06-2026', mawbMbol: 'VIKRAM0306202602',
-    clientRef: 'CT2 VIK 2026 01', transferorCode: 'AE-1000144-Al Cargo', transfereeCode: 'AE-1019056-Dubai Trade',
-    releaseDate: '03-06-2026', releaseStatus: 'Released',
-    receiptDate: '03-06-2026', receiptStatus: 'Receipted',
-    receivedDate: '', receivedStatus: 'Not Received',
-  },
-  {
-    ctNo: '6020000194928', submittedDate: '02-06-2026', mawbMbol: 'VIKRAM0306202603',
-    clientRef: 'CT3 VIK 2026 01', transferorCode: 'AE-1000145-Al Cargo', transfereeCode: 'AE-1019056-Dubai Trade',
-    releaseDate: '', releaseStatus: 'Not Released',
-    receiptDate: '', receiptStatus: 'Not Receipted',
-    receivedDate: '02-06-2026', receivedStatus: 'Received',
-  },
-  {
-    ctNo: '6020000194929', submittedDate: '01-06-2026', mawbMbol: 'VIKRAM0306202604',
-    clientRef: 'CT4 VIK 2026 02', transferorCode: 'AE-1000146-Al Cargo', transfereeCode: 'AE-1019057-Dubai Trade',
-    releaseDate: '', releaseStatus: 'Not Released',
-    receiptDate: '', receiptStatus: 'Not Receipted',
-    receivedDate: '', receivedStatus: 'Not Received',
-  },
+  { ctNo: '6020000194926', submittedDate: '03-06-2026', mawbMbol: 'VIKRAM0306202601', clientRef: 'CT1 VIK 2026 01', transferorCode: 'AE-1000143-Al Cargo', transfereeCode: 'AE-1019056-Dubai Trade', releaseDate: '', releaseStatus: 'Not Released', receiptDate: '', receiptStatus: 'Not Receipted', receivedDate: '03-06-2026', receivedStatus: 'Received' },
+  { ctNo: '6020000194927', submittedDate: '03-06-2026', mawbMbol: 'VIKRAM0306202602', clientRef: 'CT2 VIK 2026 01', transferorCode: 'AE-1000144-Al Cargo', transfereeCode: 'AE-1019056-Dubai Trade', releaseDate: '03-06-2026', releaseStatus: 'Released', receiptDate: '03-06-2026', receiptStatus: 'Receipted', receivedDate: '', receivedStatus: 'Not Received' },
+  { ctNo: '6020000194928', submittedDate: '02-06-2026', mawbMbol: 'VIKRAM0306202603', clientRef: 'CT3 VIK 2026 01', transferorCode: 'AE-1000145-Al Cargo', transfereeCode: 'AE-1019056-Dubai Trade', releaseDate: '', releaseStatus: 'Not Released', receiptDate: '', receiptStatus: 'Not Receipted', receivedDate: '02-06-2026', receivedStatus: 'Received' },
+  { ctNo: '6020000194929', submittedDate: '01-06-2026', mawbMbol: 'VIKRAM0306202604', clientRef: 'CT4 VIK 2026 02', transferorCode: 'AE-1000146-Al Cargo', transfereeCode: 'AE-1019057-Dubai Trade', releaseDate: '', releaseStatus: 'Not Released', receiptDate: '', receiptStatus: 'Not Receipted', receivedDate: '', receivedStatus: 'Not Received' },
+  { ctNo: '6020000194930', submittedDate: '01-06-2026', mawbMbol: 'VIKRAM0306202605', clientRef: 'CT5 VIK 2026 01', transferorCode: 'AE-1000147-Al Cargo', transfereeCode: 'AE-1019056-Dubai Trade', releaseDate: '', releaseStatus: 'Not Released', receiptDate: '', receiptStatus: 'Not Receipted', receivedDate: '01-06-2026', receivedStatus: 'Received' },
+  { ctNo: '6020000194931', submittedDate: '31-05-2026', mawbMbol: 'VIKRAM3105202601', clientRef: 'CT6 VIK 2026 01', transferorCode: 'AE-1000148-Al Cargo', transfereeCode: 'AE-1019057-Dubai Trade', releaseDate: '31-05-2026', releaseStatus: 'Released', receiptDate: '', receiptStatus: 'Not Receipted', receivedDate: '', receivedStatus: 'Not Received' },
+  { ctNo: '6020000194932', submittedDate: '30-05-2026', mawbMbol: 'VIKRAM3005202601', clientRef: 'CT7 VIK 2026 02', transferorCode: 'AE-1000149-Al Cargo', transfereeCode: 'AE-1019056-Dubai Trade', releaseDate: '', releaseStatus: 'Not Released', receiptDate: '30-05-2026', receiptStatus: 'Receipted', receivedDate: '30-05-2026', receivedStatus: 'Received' },
+  { ctNo: '6020000194933', submittedDate: '29-05-2026', mawbMbol: 'VIKRAM2905202601', clientRef: 'CT8 VIK 2026 01', transferorCode: 'AE-1000150-Al Cargo', transfereeCode: 'AE-1019057-Dubai Trade', releaseDate: '', releaseStatus: 'Not Released', receiptDate: '', receiptStatus: 'Not Receipted', receivedDate: '', receivedStatus: 'Not Received' },
+  { ctNo: '6020000194934', submittedDate: '28-05-2026', mawbMbol: 'VIKRAM2805202601', clientRef: 'CT9 VIK 2026 01', transferorCode: 'AE-1000151-Al Cargo', transfereeCode: 'AE-1019056-Dubai Trade', releaseDate: '28-05-2026', releaseStatus: 'Released', receiptDate: '28-05-2026', receiptStatus: 'Receipted', receivedDate: '28-05-2026', receivedStatus: 'Received' },
+  { ctNo: '6020000194935', submittedDate: '27-05-2026', mawbMbol: 'VIKRAM2705202601', clientRef: 'CT10 VIK 2026 01', transferorCode: 'AE-1000152-Al Cargo', transfereeCode: 'AE-1019057-Dubai Trade', releaseDate: '', releaseStatus: 'Not Released', receiptDate: '', receiptStatus: 'Not Receipted', receivedDate: '27-05-2026', receivedStatus: 'Received' },
 ];
 
 const SEARCH_FIELDS  = ['Cargo Transfer No', 'Client Dec. Ref No', 'MAWB/MBOL'];
@@ -274,7 +257,7 @@ function DateCell({ value, onChange, onApplyAll, locked, disabled }: {
 
   // Confirmed row — show as plain read-only text
   if (locked) {
-    return <span className="text-[14px] text-[#051937] whitespace-nowrap" style={{ fontFamily: font }}>{value || '—'}</span>;
+    return <span className="text-[16px] text-[#051937] whitespace-nowrap" style={{ fontFamily: font }}>{value || '—'}</span>;
   }
 
   // Row not selected — show grayed-out disabled input
@@ -282,7 +265,7 @@ function DateCell({ value, onChange, onApplyAll, locked, disabled }: {
     return (
       <div style={{ minWidth: 150 }}>
         <input type="date" disabled value=""
-          className="h-[36px] px-[8px] text-[14px] rounded-[4px] w-full cursor-not-allowed"
+          className="h-[36px] px-[8px] text-[16px] rounded-[4px] w-full cursor-not-allowed"
           style={{
             fontFamily: font, colorScheme: 'light',
             border: '1px solid #e5eaf5',
@@ -301,7 +284,7 @@ function DateCell({ value, onChange, onApplyAll, locked, disabled }: {
       <input type="date" value={isoVal} onChange={handleChange}
         onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
         max={new Date().toISOString().split('T')[0]}
-        className="h-[36px] px-[8px] text-[14px] text-[#051937] rounded-[4px] focus:outline-none bg-white w-full"
+        className="h-[36px] px-[8px] text-[16px] text-[#051937] rounded-[4px] focus:outline-none bg-white w-full"
         style={{ fontFamily: font, colorScheme: 'light', border: `1px solid ${focused ? '#1360d2' : '#d5ddfb'}` }}
       />
     </div>
@@ -394,6 +377,10 @@ export default function CargoTransferReceiptReleasePage({ onBack }: Props) {
   const [successCount, setSuccessCount] = useState(0);
   const [viewCtNo, setViewCtNo]         = useState<string | null>(null);
 
+  // ── Pagination ──────────────────────────────────────────────────────────────
+  const [page, setPage]         = useState(1);
+  const [pageSize, setPageSize] = useState(8);
+
   // ── Search ─────────────────────────────────────────────────────────────────
   const [searchField, setSearchField]         = useState(SEARCH_FIELDS[0]);
   const [searchFieldOpen, setSearchFieldOpen] = useState(false);
@@ -437,12 +424,24 @@ export default function CargoTransferReceiptReleasePage({ onBack }: Props) {
     setAfFromDate(''); setAfToDate('');
   };
 
+  // ── Pagination helpers ──────────────────────────────────────────────────────
+  const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+  const pageStart  = (page - 1) * pageSize;
+  const pagedRows  = rows.slice(pageStart, pageStart + pageSize);
+  const pagedIdxs  = pagedRows.map((_, i) => pageStart + i);
+
   // ── Row actions ─────────────────────────────────────────────────────────────
   const toggleRow = (i: number) => setSelected(prev => {
     const next = new Set(prev); next.has(i) ? next.delete(i) : next.add(i); return next;
   });
-  const allSelected = rows.length > 0 && selected.size === rows.length;
-  const toggleAll = () => setSelected(allSelected ? new Set() : new Set(rows.map((_, i) => i)));
+  const allPageSelected = pagedIdxs.length > 0 && pagedIdxs.every(i => selected.has(i));
+  const toggleAll = () => {
+    if (allPageSelected) {
+      setSelected(prev => { const n = new Set(prev); pagedIdxs.forEach(i => n.delete(i)); return n; });
+    } else {
+      setSelected(prev => { const n = new Set(prev); pagedIdxs.forEach(i => n.add(i)); return n; });
+    }
+  };
 
   const updateDate = (rowIdx: number, field: 'releaseDate' | 'receiptDate', val: string) =>
     setRows(prev => prev.map((r, i) => i === rowIdx ? { ...r, [field]: val } : r));
@@ -658,7 +657,7 @@ export default function CargoTransferReceiptReleasePage({ onBack }: Props) {
           )}
 
           {/* ══ ROW 2: Tabs (left) + Status As On (center) + Bulk apply (right) ══ */}
-          <div className="flex items-center mb-[12px] gap-[12px] flex-wrap">
+          <div className="flex items-center mb-[30px] gap-[12px] flex-wrap">
 
             {/* Tabs — declaration-style blue pill active */}
             <div className="bg-white flex items-center gap-[12px] h-[48px] px-[16px] py-[8px] rounded-[6px] flex-shrink-0"
@@ -695,7 +694,7 @@ export default function CargoTransferReceiptReleasePage({ onBack }: Props) {
             {/* Bulk apply date — right corner */}
             <div className="bg-white flex items-center gap-[10px] h-[48px] px-[14px] rounded-[6px] flex-shrink-0"
               style={{ boxShadow: '0px 4px 10px rgba(0,0,0,0.08)', border: '1px solid #e5efff' }}>
-              <span className="text-[14px] font-medium whitespace-nowrap" style={{ fontFamily: font, color: '#0e1b3d' }}>
+              <span className="text-[16px] font-medium whitespace-nowrap" style={{ fontFamily: font, color: '#0e1b3d' }}>
                 {tab === 'release' ? 'Release Date' : 'Receipt Date'}
               </span>
               <input
@@ -703,27 +702,69 @@ export default function CargoTransferReceiptReleasePage({ onBack }: Props) {
                 value={bulkDate}
                 onChange={e => setBulkDate(e.target.value)}
                 max={new Date().toISOString().split('T')[0]}
-                className="h-[34px] px-[8px] text-[14px] rounded-[4px] focus:outline-none bg-white"
+                className="h-[34px] px-[8px] text-[16px] rounded-[4px] focus:outline-none bg-white"
                 style={{ fontFamily: font, colorScheme: 'light', border: '1px solid #d5ddfb', color: '#051937', minWidth: 140 }}
               />
               <button
-                disabled={!bulkDate || selected.size === 0}
+                disabled={selected.size === 0}
                 onClick={() => {
                   if (!bulkDate || selected.size === 0) return;
                   const display = bulkDate.split('-').reverse().join('-');
                   applyDateToAll(tab === 'release' ? 'releaseDate' : 'receiptDate', display);
                   setBulkDate('');
                 }}
-                className="h-[34px] px-[14px] rounded-[4px] text-[14px] font-medium whitespace-nowrap transition-opacity"
+                className="text-[16px] font-medium whitespace-nowrap transition-opacity underline"
                 style={{
                   fontFamily: font,
-                  background: (bulkDate && selected.size > 0) ? '#1360d2' : '#a7c3eb',
-                  color: '#fff',
-                  cursor: (bulkDate && selected.size > 0) ? 'pointer' : 'not-allowed',
+                  color: selected.size > 0 ? '#1360d2' : '#a7c3eb',
+                  cursor: selected.size > 0 ? 'pointer' : 'not-allowed',
+                  background: 'none',
                 }}>
                 Apply to all selected rows
               </button>
             </div>
+          </div>
+
+          {/* ══ Availability bar ══ */}
+          <div className="flex items-center gap-[20px] mb-[10px] flex-wrap">
+            <span className="text-[16px] text-[#051937]" style={{ fontFamily: font }}>
+              <strong>{rows.length}</strong> <span style={{ color: '#697498' }}>records available</span>
+            </span>
+            <span style={{ color: '#c0c8e0' }}>•</span>
+            {/* Select current page */}
+            <label className="flex items-center gap-[8px] cursor-pointer">
+              <span className="relative flex items-center justify-center size-[20px] flex-shrink-0">
+                <input type="radio" name="selectMode" className="sr-only"
+                  checked={allPageSelected && selected.size === pagedIdxs.length}
+                  onChange={() => { setSelected(new Set(pagedIdxs)); }} />
+                <span className="size-[20px] rounded-full border-2 flex items-center justify-center"
+                  style={{ borderColor: allPageSelected && selected.size === pagedIdxs.length ? '#1360d2' : '#c0c8e0' }}>
+                  {allPageSelected && selected.size === pagedIdxs.length && (
+                    <span className="size-[10px] rounded-full" style={{ background: '#1360d2' }} />
+                  )}
+                </span>
+              </span>
+              <span className="text-[16px] text-[#051937]" style={{ fontFamily: font }}>
+                Select {pagedRows.length} per page
+              </span>
+            </label>
+            {/* Select all */}
+            <label className="flex items-center gap-[8px] cursor-pointer">
+              <span className="relative flex items-center justify-center size-[20px] flex-shrink-0">
+                <input type="radio" name="selectMode" className="sr-only"
+                  checked={selected.size === rows.length}
+                  onChange={() => setSelected(new Set(rows.map((_, i) => i)))} />
+                <span className="size-[20px] rounded-full border-2 flex items-center justify-center"
+                  style={{ borderColor: selected.size === rows.length ? '#1360d2' : '#c0c8e0' }}>
+                  {selected.size === rows.length && (
+                    <span className="size-[10px] rounded-full" style={{ background: '#1360d2' }} />
+                  )}
+                </span>
+              </span>
+              <span className="text-[16px] text-[#051937]" style={{ fontFamily: font }}>
+                Select all {rows.length} records
+              </span>
+            </label>
           </div>
 
           {/* ══ Table — data cols scrollable, last 2 status cols sticky right ══ */}
@@ -739,8 +780,8 @@ export default function CargoTransferReceiptReleasePage({ onBack }: Props) {
                   <th style={{ width: 48, background: '#a6c2e9', padding: '10px 8px 10px 16px', textAlign: 'left', borderRadius: '8px 0 0 0' }}>
                     <div onClick={toggleAll}
                       className="size-[18px] rounded-[4px] border-2 flex items-center justify-center cursor-pointer transition-colors"
-                      style={{ borderColor: allSelected ? '#1360d2' : '#6b84ab', background: allSelected ? '#1360d2' : 'transparent' }}>
-                      {allSelected && <svg viewBox="0 0 12 12" width="10" height="10" fill="none"><path d="M2 6l3 3 5-5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+                      style={{ borderColor: allPageSelected ? '#1360d2' : '#6b84ab', background: allPageSelected ? '#1360d2' : 'transparent' }}>
+                      {allPageSelected && <svg viewBox="0 0 12 12" width="10" height="10" fill="none"><path d="M2 6l3 3 5-5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
                     </div>
                   </th>
 
@@ -773,7 +814,8 @@ export default function CargoTransferReceiptReleasePage({ onBack }: Props) {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row, i) => {
+                {pagedRows.map((row, pageIdx) => {
+                  const i      = pageStart + pageIdx;
                   const isSel  = selected.has(i);
                   const cellBg = isSel ? '#eef4ff' : '#fff';
                   const cs: React.CSSProperties = {
@@ -856,6 +898,19 @@ export default function CargoTransferReceiptReleasePage({ onBack }: Props) {
                 })}
               </tbody>
             </table>
+          </div>
+
+          {/* ══ Pagination ══ */}
+          <div className="mt-[16px]">
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              pageSizeOptions={[5, 8, 10, 25]}
+              totalItems={rows.length}
+              onPageChange={p => { setPage(p); setSelected(new Set()); }}
+              onPageSizeChange={n => { setPageSize(n); setPage(1); setSelected(new Set()); }}
+            />
           </div>
         </div>
 

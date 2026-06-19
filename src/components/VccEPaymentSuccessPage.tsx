@@ -95,7 +95,7 @@ export default function VccEPaymentSuccessPage({
             {onPaymentFailed && (
               <button
                 onClick={onPaymentFailed}
-                className="text-[14px] text-[#c0392b] underline hover:opacity-80 transition-opacity"
+                className="text-[16px] text-[#c0392b] underline hover:opacity-80 transition-opacity"
                 style={{ fontFamily: "'Dubai', sans-serif" }}
               >
                 Simulate Payment Failed

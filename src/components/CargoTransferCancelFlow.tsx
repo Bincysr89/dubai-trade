@@ -470,7 +470,7 @@ function Step3({ onBack, onProceed, onViewRequest }: { onBack: () => void; onPro
                       <div className="flex items-center gap-[12px]">
                         <span className="text-[18px]" style={{ fontFamily: font, color: '#051937' }}>AED 1124.45</span>
                         <span
-                          className="text-[14px] px-[12px] py-[4px] rounded-[4px]"
+                          className="text-[16px] px-[12px] py-[4px] rounded-[4px]"
                           style={{ background: 'rgba(19,96,210,0.08)', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
                         >
                           Collect
