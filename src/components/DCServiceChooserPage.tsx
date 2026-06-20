@@ -672,6 +672,7 @@ export default function DCServiceChooserPage({ onBack }: {
   const [emailVerified, setEmailVerified] = useState(true);
   const [phone,         setPhone]         = useState(AUTOFILL_USER.phone);
   const [mobile,        setMobile]        = useState(AUTOFILL_USER.mobile);
+  const [fax,           setFax]           = useState('');
 
   /* ── Request Info ── */
   const [subject, setSubject] = useState('');
@@ -717,7 +718,7 @@ export default function DCServiceChooserPage({ onBack }: {
     setService(''); setServiceType('');
     setName(AUTOFILL_USER.name); setCompany(AUTOFILL_USER.company); setContactPerson(AUTOFILL_USER.contactPerson);
     setEmail(AUTOFILL_USER.email); setEmailVerified(true);
-    setPhone(AUTOFILL_USER.phone); setMobile(AUTOFILL_USER.mobile); setSubject(''); setDesc('');
+    setPhone(AUTOFILL_USER.phone); setMobile(AUTOFILL_USER.mobile); setFax(''); setSubject(''); setDesc('');
     setPurpose('');
     setCertDocType(''); setCertDocNo(''); setCertHouseBill(''); setCertBillInfo(false);
     setCertGoodDesc(''); setCertPayAcct('');
@@ -1096,39 +1097,110 @@ export default function DCServiceChooserPage({ onBack }: {
                 </div>
               )}
 
-              {/* §2c — Voluntary Disclosure Details */}
+              {/* §2c — Voluntary Disclosure Basic Information */}
               {service === 'Submit Voluntary Disclosure' && (
                 <div className="dc-form-section">
-                  <h4 className="dc-form-section__heading">Disclosure Details</h4>
+                  <h4 className="dc-form-section__heading">Basic Information</h4>
+                  {/* Row 1: Service Name | Service Description */}
+                  <div className="dc-form-row">
+                    <div className="dc-float-wrapper dc-field--half">
+                      <div className="dc-float-field" style={{ background: '#f5f7fa' }}>
+                        <input className="dc-float-input" placeholder=" " value="Submit Voluntary Disclosure" readOnly
+                          style={{ background: 'transparent', color: '#697498', cursor: 'not-allowed' }} />
+                        <label className="dc-float-label">Service Name <span className="dc-req">*</span></label>
+                      </div>
+                    </div>
+                    <div className="dc-float-wrapper dc-field--half">
+                      <div className="dc-float-field" style={{ background: '#f5f7fa', height: 'auto', minHeight: 56, alignItems: 'flex-start', paddingTop: 20 }}>
+                        <textarea className="dc-float-input" placeholder=" " readOnly rows={3}
+                          value="This service enables customers to disclose errors and omissions committed in customs declarations according to specific terms and conditions."
+                          style={{ background: 'transparent', color: '#697498', cursor: 'not-allowed', height: 'auto', paddingTop: 0, resize: 'none', border: 'none', outline: 'none', padding: 0 }} />
+                        <label className="dc-float-label" style={{ top: 8, fontSize: 12, color: '#697498' }}>Service Description</label>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Row 2: Requirements (full) */}
+                  <div className="dc-float-field" style={{ width: '100%', background: '#f5f7fa', height: 'auto', minHeight: 56, alignItems: 'flex-start', paddingTop: 20, marginBottom: 12 }}>
+                    <textarea className="dc-float-input" placeholder=" " readOnly rows={2}
+                      value={'Voluntary Disclosure Form\nSupporting Documents -if required-'}
+                      style={{ background: 'transparent', color: '#697498', cursor: 'not-allowed', height: 'auto', paddingTop: 0, resize: 'none', border: 'none', outline: 'none', padding: 0 }} />
+                    <label className="dc-float-label" style={{ top: 8, fontSize: 12, color: '#697498' }}>Requirements</label>
+                  </div>
+                  {/* Row 3: Name | Company */}
                   <div className="dc-form-row">
                     <div className="dc-float-wrapper dc-field--half">
                       <div className="dc-float-field">
-                        <input className="dc-float-input" placeholder=" " value={declNo} onChange={e => setDeclNo(e.target.value)} />
-                        <label className="dc-float-label">Declaration Number <span className="dc-req">*</span></label>
+                        <input className="dc-float-input" placeholder=" " value={name} onChange={e => setName(e.target.value)} />
+                        <label className="dc-float-label">Name <span className="dc-req">*</span></label>
                       </div>
                     </div>
                     <div className="dc-float-wrapper dc-field--half">
                       <div className="dc-float-field">
-                        <input className="dc-float-input" placeholder=" " value={disclDate} onChange={e => setDisclDate(e.target.value)} />
-                        <label className="dc-float-label">Disclosure Date <span className="dc-req">*</span></label>
+                        <input className="dc-float-input" placeholder=" " value={company} onChange={e => setCompany(e.target.value)} />
+                        <label className="dc-float-label">Company <span className="dc-req">*</span></label>
                       </div>
                     </div>
                   </div>
+                  {/* Row 4: Contact Person | Email */}
                   <div className="dc-form-row">
-                    <div style={{ width: 'calc(50% - 6px)' }}>
-                      <FloatDropdown label="Disclosure Type" required value={serviceType} onChange={setServiceType} options={DISCLOSURE_TYPES} />
+                    <div className="dc-float-wrapper dc-field--half">
+                      <div className="dc-float-field">
+                        <input className="dc-float-input" placeholder=" " value={contactPerson} onChange={e => setContactPerson(e.target.value)} />
+                        <label className="dc-float-label">Contact Person <span className="dc-req">*</span></label>
+                      </div>
+                    </div>
+                    <div className="dc-float-wrapper dc-field--half">
+                      <div className="dc-float-field" style={{ paddingRight: emailVerified ? 96 : 72 }}>
+                        <input className="dc-float-input" placeholder=" " value={email}
+                          onChange={e => { setEmail(e.target.value); setEmailVerified(false); }} />
+                        <label className="dc-float-label">Email <span className="dc-req">*</span></label>
+                        {emailVerified ? (
+                          <span className="dc-verified-badge">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            Verified
+                          </span>
+                        ) : (
+                          <button type="button" onClick={() => setEmailVerified(true)}
+                            style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
+                              background: '#1360d2', color: '#fff', border: 'none', borderRadius: 4,
+                              padding: '5px 14px', fontSize: 13, cursor: 'pointer', fontFamily: font, whiteSpace: 'nowrap' }}>
+                            Verify
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
+                  {/* Row 5: Phone | Mobile */}
+                  <div className="dc-form-row">
+                    <PhoneField label="Phone" value={phone} onChange={setPhone} />
+                    <PhoneField label="Mobile" value={mobile} onChange={setMobile} />
+                  </div>
+                  {/* Row 6: Fax | Subject */}
+                  <div className="dc-form-row">
+                    <div className="dc-float-wrapper dc-field--half">
+                      <div className="dc-float-field">
+                        <input className="dc-float-input" placeholder=" " value={fax} onChange={e => setFax(e.target.value)} />
+                        <label className="dc-float-label">Fax</label>
+                      </div>
+                    </div>
+                    <div className="dc-float-wrapper dc-field--half">
+                      <div className="dc-float-field">
+                        <input className="dc-float-input" placeholder=" " value={subject} onChange={e => setSubject(e.target.value)} />
+                        <label className="dc-float-label">Subject <span className="dc-req">*</span></label>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Row 7: Description (full) */}
                   <div className="dc-float-field" style={{ width: '100%', marginTop: 8 }}>
-                    <textarea className="dc-float-input" placeholder=" " value={reason} onChange={e => setReason(e.target.value)}
+                    <textarea className="dc-float-input" placeholder=" " value={desc} onChange={e => setDesc(e.target.value)}
                       rows={4} style={{ height: 'auto', paddingTop: 20, paddingBottom: 12, resize: 'vertical' }} />
-                    <label className="dc-float-label">Reason for Disclosure <span className="dc-req">*</span></label>
+                    <label className="dc-float-label">Description <span className="dc-req">*</span></label>
                   </div>
                 </div>
               )}
 
-              {/* §3 — Contact Information */}
-              <div className="dc-form-section">
+              {/* §3 — Contact Information (hidden for VD which has its own Basic Information section) */}
+              {service !== 'Submit Voluntary Disclosure' && <div className="dc-form-section">
                 <h4 className="dc-form-section__heading">Contact Information</h4>
                 <div className="dc-form-row">
                   <div className="dc-float-wrapper dc-field--half">
@@ -1167,9 +1239,9 @@ export default function DCServiceChooserPage({ onBack }: {
                   <PhoneField label="Phone" value={phone} onChange={setPhone} disabled />
                   <PhoneField label="Mobile" value={mobile} onChange={setMobile} disabled />
                 </div>
-              </div>
+              </div>}
 
-              {/* §4 — Request Information (skip for Voluntary Disclosure which has its own Reason field) */}
+              {/* §4 — Request Information (skip for Voluntary Disclosure which has its own combined section) */}
               {service !== 'Submit Voluntary Disclosure' && (
                 <div className="dc-form-section">
                   <h4 className="dc-form-section__heading">Request Information</h4>
@@ -1192,6 +1264,22 @@ export default function DCServiceChooserPage({ onBack }: {
               {/* §5 — Attachments */}
               <div className="dc-form-section">
                 <h4 className="dc-form-section__heading">Attachments</h4>
+                {service === 'Submit Voluntary Disclosure' && (
+                  <div style={{ marginBottom: 12 }}>
+                    <span style={{ fontSize: 14, color: '#697498', fontWeight: 600, fontFamily: font }}>NOTES:-</span>
+                    <div style={{ marginTop: 6 }}>
+                      <a href="#" onClick={e => e.preventDefault()}
+                        style={{ fontSize: 14, color: '#1360d2', textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: font }}>
+                        Download Voluntary Disclosure Form
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                          <polyline points="7 10 12 15 17 10"/>
+                          <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                      </a>
+                    </div>
+                  </div>
+                )}
                 <div className="dc-field-hint" style={{ marginBottom: 12, marginTop: 0 }}>
                   <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0 }}>
                     <path d="M9.9974 13.3327V9.99935M9.9974 6.66602H10.0057M18.3307 9.99935C18.3307 14.6017 14.5998 18.3327 9.9974 18.3327C5.39502 18.3327 1.66406 14.6017 1.66406 9.99935C1.66406 5.39698 5.39502 1.66602 9.9974 1.66602C14.5998 1.66602 18.3307 5.39698 18.3307 9.99935Z"
