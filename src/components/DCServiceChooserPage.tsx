@@ -1053,17 +1053,14 @@ export default function DCServiceChooserPage({ onBack }: {
                     <h4 className="dc-form-section__heading" style={{ margin: 0 }}>Report Details</h4>
                   </div>
                   <div className="dc-basic-info-cards">
-                    <div style={{ width: '100%', display: 'flex', gap: 12, alignItems: 'center' }}>
-                      <div style={{ width: 'calc(50% - 6px)' }}>
-                        <FloatDropdown label="Report Type" required value={serviceType} onChange={setServiceType} options={CTR_TYPES.map(t => t.name)} />
-                      </div>
-                      {ctrType && (
+                    {ctrType && (
+                      <div style={{ width: '100%', display: 'flex', gap: 12, alignItems: 'center' }}>
                         <InfoCard iconColor="green" label="Charges"
                           value={<span className="dc-basic-info-card__value--charge">AED {ctrType.fees}</span>}
                           icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>}
                         />
-                      )}
-                    </div>
+                      </div>
+                    )}
                     {ctrType && (
                       <div style={{ width: '100%', display: 'flex', gap: 12 }}>
                         <InfoCard iconColor="indigo" label="Report Description" value={ctrType.description}
@@ -1075,7 +1072,15 @@ export default function DCServiceChooserPage({ onBack }: {
                       </div>
                     )}
                   </div>
-                  <div className="dc-form-row" style={{ marginTop: 16 }}>
+                  <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <FloatDropdown label="Report Type" required value={serviceType} onChange={setServiceType} options={CTR_TYPES.map(t => t.name)} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <FloatDropdown label="Format" required value={ctrFormat} onChange={setCtrFormat} options={['PDF', 'Excel', 'CSV']} />
+                    </div>
+                  </div>
+                  <div className="dc-form-row">
                     <div className="dc-float-wrapper dc-field--half">
                       <div className="dc-float-field">
                         <input className="dc-float-input" placeholder=" " value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
@@ -1087,11 +1092,6 @@ export default function DCServiceChooserPage({ onBack }: {
                         <input className="dc-float-input" placeholder=" " value={dateTo} onChange={e => setDateTo(e.target.value)} />
                         <label className="dc-float-label">Date To <span className="dc-req">*</span></label>
                       </div>
-                    </div>
-                  </div>
-                  <div className="dc-form-row">
-                    <div style={{ width: 'calc(50% - 6px)' }}>
-                      <FloatDropdown label="Format" required value={ctrFormat} onChange={setCtrFormat} options={['PDF', 'Excel', 'CSV']} />
                     </div>
                   </div>
                 </div>
