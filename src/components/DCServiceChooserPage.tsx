@@ -150,7 +150,7 @@ const COUNTRY_CODES = [
   { code: '+49',  flag: '🇩🇪' },
 ];
 
-function PhoneField({ label, value, onChange }: {
+function PhoneField({ label, value, onChange, disabled }: {
   label: string; value: string; onChange: (v: string) => void; disabled?: boolean;
 }) {
   const [cc, setCc]           = useState('+971');
