@@ -471,18 +471,18 @@ export default function CargoTransferReceiptReleasePage({ onBack }: Props) {
     ...(tab === 'release'
       ? [{ key: 'releaseDate', label: 'Release Date', w: 190 }]
       : [{ key: 'receiptDate', label: 'Receipt Date', w: 190 }]),
-    { key: 'receivedDate',   label: 'Receipt Date',        w: 150 },
+    { key: 'receivedDate',   label: tab === 'release' ? 'Receipt Date' : 'Release Date', w: 150 },
   ];
 
   // Sticky right columns — last 2
   const STICKY_COLS = tab === 'release'
     ? [
         { key: 'releaseStatus',  label: 'Release Status',  w: 155 },
-        { key: 'receivedStatus', label: 'Receipt Status', w: 155 },
+        { key: 'receivedStatus', label: 'Receipt Status',  w: 155 },
       ]
     : [
         { key: 'receiptStatus',  label: 'Receipt Status',  w: 155 },
-        { key: 'receivedStatus', label: 'Receipt Status', w: 155 },
+        { key: 'receivedStatus', label: 'Release Status',  w: 155 },
       ];
 
   const STICKY_RIGHT_0 = 0;
