@@ -365,6 +365,8 @@ export default function SeaDetailModal({ onClose }: Props) {
   const [showGlcForm, setShowGlcForm] = useState(false);
   const [showCtrForm, setShowCtrForm] = useState(false);
   const [showCwlForm, setShowCwlForm] = useState(false);
+  const [showJapForm, setShowJapForm] = useState(false);
+  const [showRdaForm, setShowRdaForm] = useState(false);
   const [cwlViewRow, setCwlViewRow]   = useState<RowData | null>(null);
   const [cwlPayRow, setCwlPayRow]     = useState<RowData | null>(null);
 
@@ -473,8 +475,38 @@ export default function SeaDetailModal({ onClose }: Props) {
       />
     );
   }
+  if (activePage === 'jap') {
+    if (showJapForm) {
+      return <JoinClientAccreditationPage onBack={() => setShowJapForm(false)} />;
+    }
+    const cfg = PAGE_CONFIGS['jap'];
+    return (
+      <ServiceListingPage
+        {...cfg}
+        onBack={() => setActivePage(null)}
+        onNewRequest={() => setShowJapForm(true)}
+      />
+    );
+  }
+  if (activePage === 'rda') {
+    if (showRdaForm) {
+      return <GenericServiceFormPage
+        config={{ serviceName: 'Request Duty Account', serviceDescription: 'Apply to open or manage a duty account with Dubai Customs.', charges: '0.00', requirements: 'Trade license, Emirates ID, Customs file number', breadcrumbLabel: 'Manage Accounts', serviceTypes: [{ name: 'New Account', fees: '0.00', description: 'Open a new duty account with Dubai Customs.', requirements: 'Trade license, Emirates ID, Customs file number' }] }}
+        onBack={() => setShowRdaForm(false)}
+      />;
+    }
+    const cfg = PAGE_CONFIGS['rda'];
+    return (
+      <ServiceListingPage
+        {...cfg}
+        onBack={() => setActivePage(null)}
+        onNewRequest={() => setShowRdaForm(true)}
+      />
+    );
+  }
   if (activePage) {
-    const cfg = PAGE_CONFIGS[activePage as Exclude<PageKey, 'pbf' | 'dcc' | 'ctr' | 'cwl' | 'glc'>];
+    const cfg = PAGE_CONFIGS[activePage as 'glc'];
+    if (!cfg) return null;
     return (
       <ServiceListingPage
         {...cfg}

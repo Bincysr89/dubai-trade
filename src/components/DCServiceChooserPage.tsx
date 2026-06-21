@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Header from './Header';
+import Dh from './Dh';
 import '../dc-form.css';
 
 const font = "'Dubai', sans-serif";
@@ -125,11 +126,11 @@ function SField({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-function InfoCard({ iconColor, icon, label, value }: {
-  iconColor: string; icon: React.ReactNode; label: string; value: React.ReactNode;
+function InfoCard({ iconColor, icon, label, value, style }: {
+  iconColor: string; icon: React.ReactNode; label: string; value: React.ReactNode; style?: React.CSSProperties;
 }) {
   return (
-    <div className="dc-basic-info-card" style={{ flex: 1 }}>
+    <div className="dc-basic-info-card" style={{ flex: 1, ...style }}>
       <div className={`dc-basic-info-card__icon dc-basic-info-card__icon--${iconColor}`}>{icon}</div>
       <div className="dc-basic-info-card__body">
         <span className="dc-basic-info-card__label">{label}</span>
@@ -806,7 +807,8 @@ export default function DCServiceChooserPage({ onBack }: {
               {meta && service !== 'Request Certificate' && (
                 <InfoCard iconColor="green" label="Charges"
                   value={<span className="dc-basic-info-card__value--charge">{meta.baseCharges === '0.00' ? 'No Charge' : `AED ${meta.baseCharges}`}</span>}
-                  icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>}
+                  icon={<Dh style={{ width: 18, height: 18 }} />}
+                  style={{ height: 56 }}
                 />
               )}
             </div>
@@ -847,7 +849,8 @@ export default function DCServiceChooserPage({ onBack }: {
                       {certType && serviceType !== 'Landing Certificate' && (
                         <InfoCard iconColor="green" label="Charges"
                           value={<span className="dc-basic-info-card__value--charge">AED {certType.fees}</span>}
-                          icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>}
+                          icon={<Dh style={{ width: 18, height: 18 }} />}
+                          style={{ height: 56 }}
                         />
                       )}
                     </div>
@@ -1057,7 +1060,8 @@ export default function DCServiceChooserPage({ onBack }: {
                       <div style={{ width: '100%', display: 'flex', gap: 12, alignItems: 'center' }}>
                         <InfoCard iconColor="green" label="Charges"
                           value={<span className="dc-basic-info-card__value--charge">AED {ctrType.fees}</span>}
-                          icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>}
+                          icon={<Dh style={{ width: 18, height: 18 }} />}
+                          style={{ height: 56 }}
                         />
                       </div>
                     )}
@@ -1072,7 +1076,7 @@ export default function DCServiceChooserPage({ onBack }: {
                       </div>
                     )}
                   </div>
-                  <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+                  <div style={{ display: 'flex', gap: 12, marginTop: 16, marginBottom: 20 }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <FloatDropdown label="Report Type" required value={serviceType} onChange={setServiceType} options={CTR_TYPES.map(t => t.name)} />
                     </div>
