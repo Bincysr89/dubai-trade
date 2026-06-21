@@ -314,16 +314,18 @@ export default function ServiceListingPage({
               {advancedFilterFields!.map(def => (
                 <AFField key={def.key} def={def} value={afValues[def.key] ?? ''} onChange={v => setAF(def.key, v)} />
               ))}
-              {/* Search & Reset sit in the next available grid cells — compact/auto width */}
-              <button className="h-[44px] px-5 rounded-[4px] text-[15px] text-white self-end w-fit"
-                style={{ background: '#1360d2', fontFamily: font }}>
-                Search
-              </button>
-              <button onClick={resetAF}
-                className="h-[44px] px-5 rounded-[4px] border border-[#1360d2] text-[15px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] self-end w-fit"
-                style={{ fontFamily: font }}>
-                Reset
-              </button>
+              {/* Search & Reset together in one grid cell */}
+              <div className="flex gap-2 self-end">
+                <button className="h-[44px] px-5 rounded-[4px] text-[15px] text-white"
+                  style={{ background: '#1360d2', fontFamily: font }}>
+                  Search
+                </button>
+                <button onClick={resetAF}
+                  className="h-[44px] px-5 rounded-[4px] border border-[#1360d2] text-[15px] text-[#1360d2] bg-white hover:bg-[#f0f4ff]"
+                  style={{ fontFamily: font }}>
+                  Reset
+                </button>
+              </div>
             </div>
           </div>
         )}

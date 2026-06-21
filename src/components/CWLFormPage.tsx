@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import Header from './Header';
+import Dh from './Dh';
 import '../dc-form.css';
 
 const font = "'Dubai', sans-serif";
@@ -149,31 +150,46 @@ function FloatField({ label, required, value, onChange, readOnly, style }: {
   );
 }
 
-// ─── Float Select (dropdown) ──────────────────────────────────────────────────
+// ─── Float Select (custom dropdown matching FloatField design) ────────────────
 function FloatSelect({ label, required, value, onChange, options, style }: {
   label: string; required?: boolean; value: string; onChange: (v: string) => void; options: string[]; style?: React.CSSProperties;
 }) {
+  const [open, setOpen] = useState(false);
+  const hasValue = !!value;
+  const active = hasValue || open;
   return (
-    <div className="dc-float-wrapper dc-field--half" style={style}>
-      <div className="dc-float-field" style={{ position: 'relative' }}>
-        <select
-          className="dc-float-input"
-          value={value}
-          onChange={e => onChange(e.target.value)}
-          style={{ appearance: 'none', WebkitAppearance: 'none', cursor: 'pointer', paddingRight: 32 }}
-        >
-          <option value="" disabled></option>
-          {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-        </select>
-        <label className="dc-float-label" style={{ pointerEvents: 'none', top: 0, transform: 'translateY(-50%)', fontSize: '12px', color: '#1360D2', fontWeight: 500, background: '#fff' }}>
+    <div className="dc-float-wrapper dc-field--half" style={{ ...style, position: 'relative' }}>
+      <div
+        className="dc-float-field"
+        onClick={() => setOpen(o => !o)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        tabIndex={0}
+        style={{ cursor: 'pointer', outline: 'none', borderColor: open ? '#1360D2' : undefined, boxShadow: open ? '0 0 0 2px rgba(19,96,210,0.10)' : undefined }}
+      >
+        <div style={{ height: '100%', display: 'flex', alignItems: 'center', fontSize: 16, fontFamily: font, color: hasValue ? '#0e1b3d' : 'transparent', paddingLeft: 14, paddingRight: 36, boxSizing: 'border-box' as const }}>
+          {value || ' '}
+        </div>
+        <label className="dc-float-label" style={active ? { pointerEvents: 'none', top: 0, transform: 'translateY(-50%)', fontSize: '12px', color: open ? '#1360D2' : '#697498', fontWeight: 500, background: '#fff', padding: '0 4px' } : { pointerEvents: 'none' }}>
           {label}{required && <span className="dc-req"> *</span>}
         </label>
         <div style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
           <svg viewBox="0 0 20 20" width="16" height="16" fill="none">
-            <path d="M5 8l5 5 5-5" stroke="#697498" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d={open ? 'M5 12l5-5 5 5' : 'M5 8l5 5 5-5'} stroke="#697498" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
       </div>
+      {open && (
+        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 300, background: '#fff', border: '1px solid #d5ddfb', borderRadius: 4, boxShadow: '0 4px 12px rgba(0,0,0,0.12)' }}>
+          {options.map(opt => (
+            <div key={opt} onMouseDown={() => { onChange(opt); setOpen(false); }}
+              style={{ padding: '10px 14px', cursor: 'pointer', fontSize: 16, fontFamily: font, color: '#0e1b3d', borderBottom: '1px solid #f0f4ff' }}
+              onMouseEnter={e => (e.currentTarget.style.background = '#e2ebf9')}
+              onMouseLeave={e => (e.currentTarget.style.background = '')}>
+              {opt}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -223,8 +239,8 @@ function SearchField({ label, required, value, onChange, suggestions, onSelect }
               onMouseEnter={e => (e.currentTarget.style.background = '#e2ebf9')}
               onMouseLeave={e => (e.currentTarget.style.background = '')}
             >
-              <span style={{ color: '#1360D2', fontWeight: 600, fontSize: 14, minWidth: 80 }}>{s.id}</span>
-              <span style={{ color: '#697498', fontSize: 13 }}>{s.desc}</span>
+              <span style={{ color: '#1360D2', fontWeight: 600, fontSize: 16, minWidth: 80 }}>{s.id}</span>
+              <span style={{ color: '#697498', fontSize: 16 }}>{s.desc}</span>
             </div>
           ))}
         </div>
@@ -429,9 +445,7 @@ export default function CWLFormPage({ onBack }: { onBack: () => void }) {
           </div>
           <div className="dc-basic-info-card" style={{ flex: 1 }}>
             <div className="dc-basic-info-card__icon dc-basic-info-card__icon--green">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-              </svg>
+              <Dh style={{ width: 18, height: 18 }} />
             </div>
             <div className="dc-basic-info-card__body">
               <span className="dc-basic-info-card__label">Charges</span>

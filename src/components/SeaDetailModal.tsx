@@ -250,7 +250,6 @@ const DCC_SERVICE_TYPES = [
   'Voluntary Disclosure',
 ];
 const DCC_FILTER_FIELDS: AFFieldDef[] = [
-  { key: 'reqNo',       label: 'Request Number',    type: 'text' },
   { key: 'status',      label: 'Status',            type: 'dropdown', options: ALL_STATUSES },
   { key: 'dateFrom',    label: 'Request Date From', type: 'date' },
   { key: 'dateTo',      label: 'Request Date To',   type: 'date' },
