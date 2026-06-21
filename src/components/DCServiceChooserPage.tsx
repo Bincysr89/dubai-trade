@@ -808,7 +808,7 @@ export default function DCServiceChooserPage({ onBack }: {
                 <InfoCard iconColor="green" label="Charges"
                   value={<span className="dc-basic-info-card__value--charge">{meta.baseCharges === '0.00' ? 'No Charge' : `AED ${meta.baseCharges}`}</span>}
                   icon={<Dh style={{ width: 18, height: 18 }} />}
-                  style={{ height: 56 }}
+                  style={{ height: 56, alignItems: 'center' }}
                 />
               )}
             </div>
@@ -850,7 +850,7 @@ export default function DCServiceChooserPage({ onBack }: {
                         <InfoCard iconColor="green" label="Charges"
                           value={<span className="dc-basic-info-card__value--charge">AED {certType.fees}</span>}
                           icon={<Dh style={{ width: 18, height: 18 }} />}
-                          style={{ height: 56 }}
+                          style={{ height: 56, alignItems: 'center' }}
                         />
                       )}
                     </div>
@@ -1061,7 +1061,7 @@ export default function DCServiceChooserPage({ onBack }: {
                         <InfoCard iconColor="green" label="Charges"
                           value={<span className="dc-basic-info-card__value--charge">AED {ctrType.fees}</span>}
                           icon={<Dh style={{ width: 18, height: 18 }} />}
-                          style={{ height: 56 }}
+                          style={{ height: 56, alignItems: 'center' }}
                         />
                       </div>
                     )}

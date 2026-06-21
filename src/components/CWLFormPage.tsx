@@ -443,7 +443,7 @@ export default function CWLFormPage({ onBack }: { onBack: () => void }) {
               <span className="dc-basic-info-card__value">Custom Warehouse License</span>
             </div>
           </div>
-          <div className="dc-basic-info-card" style={{ flex: 1 }}>
+          <div className="dc-basic-info-card" style={{ flex: 1, alignItems: 'center' }}>
             <div className="dc-basic-info-card__icon dc-basic-info-card__icon--green">
               <Dh style={{ width: 18, height: 18 }} />
             </div>

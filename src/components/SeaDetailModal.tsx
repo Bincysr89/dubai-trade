@@ -250,11 +250,11 @@ const DCC_SERVICE_TYPES = [
   'Voluntary Disclosure',
 ];
 const DCC_FILTER_FIELDS: AFFieldDef[] = [
+  { key: 'serviceName', label: 'Service Name',      type: 'dropdown', options: DCC_SERVICE_NAMES },
+  { key: 'serviceType', label: 'Service Type',      type: 'dropdown', options: DCC_SERVICE_TYPES },
   { key: 'status',      label: 'Status',            type: 'dropdown', options: ALL_STATUSES },
   { key: 'dateFrom',    label: 'Request Date From', type: 'date' },
   { key: 'dateTo',      label: 'Request Date To',   type: 'date' },
-  { key: 'serviceName', label: 'Service Name',      type: 'dropdown', options: DCC_SERVICE_NAMES },
-  { key: 'serviceType', label: 'Service Type',      type: 'dropdown', options: DCC_SERVICE_TYPES },
 ];
 
 type PageKey = 'glc' | 'jap' | 'cwl' | 'ctr' | 'rda' | 'pbf' | 'dcc';
