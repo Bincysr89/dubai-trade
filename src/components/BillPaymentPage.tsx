@@ -133,7 +133,7 @@ const INVOICE_TYPES = [
 ];
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-type Menu     = 'Overview' | 'Accounts' | 'Invoices' | 'Payments' | 'Miscellaneous';
+type Menu     = 'Overview' | 'Accounts' | 'Invoices' | 'Payments';
 type InvStep  = 'list' | 'pay' | 'success' | 'receipt';
 type AccStep  = 'main' | 'list';
 type AccView  = 'list' | 'pay' | 'success';
@@ -166,19 +166,11 @@ const PaymentsIcon = () => (
     <circle cx="7" cy="14.5" r="1.5" fill="#1360d2" stroke="none" />
   </svg>
 );
-const MiscellaneousIcon = () => (
-  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1360d2" strokeWidth="1.8">
-    <circle cx="12" cy="12" r="3" />
-    <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" strokeLinecap="round" />
-  </svg>
-);
-
 const MENU_ITEMS: { label: Menu; Icon: () => JSX.Element }[] = [
-  { label: 'Overview',      Icon: DashboardIcon     },
-  { label: 'Accounts',      Icon: AccountsIcon      },
-  { label: 'Invoices',      Icon: InvoicesIcon      },
-  { label: 'Payments',      Icon: PaymentsIcon      },
-  { label: 'Miscellaneous', Icon: MiscellaneousIcon },
+  { label: 'Overview',  Icon: DashboardIcon },
+  { label: 'Accounts',  Icon: AccountsIcon  },
+  { label: 'Invoices',  Icon: InvoicesIcon  },
+  { label: 'Payments',  Icon: PaymentsIcon  },
 ];
 
 /* ── Shared breadcrumb ──────────────────────────────────────────────────────── */
@@ -652,11 +644,6 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const [payToDate,   setPayToDate]   = useState('10-06-2026');
   const [expandedPayRow, setExpandedPayRow] = useState<number | null>(null);
 
-  /* Miscellaneous tab state */
-  const [miscServiceType, setMiscServiceType] = useState('');
-  const [miscSubject,     setMiscSubject]     = useState('');
-  const [miscDesc,        setMiscDesc]        = useState('');
-  const [miscSubmitted,   setMiscSubmitted]   = useState(false);
 
   const flyoutRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -2419,142 +2406,9 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               </div>
             </div>
           )}
-            {activeMenu === 'Invoices'      && <InvoicesContent />}
-            {activeMenu === 'Payments'      && <PaymentsContent />}
-            {activeMenu === 'Accounts'      && <AccountsContent />}
-            {activeMenu === 'Miscellaneous' && (() => {
-              const MISC_SERVICE_TYPES = [
-                'Certificate of Origin Fee',
-                'Trade License Renewal Fee',
-                'Customs Broker Registration Fee',
-                'Warehouse Storage Fee',
-                'Document Processing Fee',
-                'Inspection Fee',
-                'Other Miscellaneous Fee',
-              ];
-              const selectedMiscType = MISC_SERVICE_TYPES.includes(miscServiceType) ? miscServiceType : null;
-
-              if (miscSubmitted) {
-                return (
-                  <div className="flex flex-col gap-[16px] pt-[8px]">
-                    <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 10, padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                      </div>
-                      <span style={{ fontSize: 15, color: '#166534', fontWeight: 600, fontFamily: font }}>Request submitted successfully.</span>
-                    </div>
-                    <div className="rounded-[12px] bg-white p-[24px]" style={{ border: '1.5px solid #e0e8f5' }}>
-                      <h3 className="text-[18px] font-bold text-[#0e1b3d] mb-[16px]" style={{ fontFamily: font }}>Request Summary</h3>
-                      <div className="grid grid-cols-2 gap-[12px]">
-                        {[['Service Type', miscServiceType], ['Subject', miscSubject || '—'], ['Status', 'Submitted']].map(([l, v]) => (
-                          <div key={l}>
-                            <p className="text-[13px] text-[#697498]" style={{ fontFamily: font }}>{l}</p>
-                            <p className="text-[16px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>{v}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div style={{ paddingBottom: 20 }}>
-                      <button className="h-[44px] px-6 rounded-[6px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white hover:bg-[#f0f4ff]"
-                        style={{ fontFamily: font }}
-                        onClick={() => { setMiscServiceType(''); setMiscSubject(''); setMiscDesc(''); setMiscSubmitted(false); }}>
-                        New Request
-                      </button>
-                    </div>
-                  </div>
-                );
-              }
-
-              return (
-                <div className="flex flex-col gap-[16px] pt-[8px]">
-                  {/* Service Type Selection */}
-                  <div className="rounded-[12px] bg-white p-[24px]" style={{ border: '1.5px solid #e0e8f5' }}>
-                    <h3 className="text-[18px] font-bold text-[#0e1b3d] mb-[4px]" style={{ fontFamily: font }}>Miscellaneous Service</h3>
-                    <p className="text-[14px] text-[#697498] mb-[20px]" style={{ fontFamily: font }}>Select a service type to proceed with your request.</p>
-                    <div style={{ maxWidth: 400 }}>
-                      <label className="block text-[13px] text-[#697498] mb-[6px]" style={{ fontFamily: font }}>Service Type <span style={{ color: '#dc3545' }}>*</span></label>
-                      <select
-                        value={miscServiceType}
-                        onChange={e => setMiscServiceType(e.target.value)}
-                        className="w-full h-[48px] border rounded-[6px] px-3 text-[16px] text-[#0e1b3d] focus:outline-none focus:border-[#1360d2] bg-white"
-                        style={{ borderColor: miscServiceType ? '#1360d2' : '#d5ddfb', fontFamily: font }}>
-                        <option value="">— Select service type —</option>
-                        {MISC_SERVICE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Rest of form — shown only after service type selected */}
-                  {selectedMiscType && (<>
-                    <div className="rounded-[12px] bg-white p-[24px]" style={{ border: '1.5px solid #e0e8f5' }}>
-                      <h3 className="text-[16px] font-bold text-[#0e1b3d] mb-[16px]" style={{ fontFamily: font }}>Contact Information</h3>
-                      <div className="grid grid-cols-2 gap-[16px]">
-                        {[
-                          { label: 'Name', value: 'Ahmed Al Mansoori' },
-                          { label: 'Company', value: 'Dubai Trade LLC' },
-                          { label: 'Contact Person', value: 'Ahmed Al Mansoori' },
-                          { label: 'Email', value: 'ahmed.almansoori@dubaitrade.ae' },
-                          { label: 'Phone', value: '42123456' },
-                          { label: 'Mobile', value: '551234567' },
-                        ].map(({ label, value }) => (
-                          <div key={label}>
-                            <label className="block text-[13px] text-[#697498] mb-[4px]" style={{ fontFamily: font }}>{label}</label>
-                            <div className="h-[44px] border border-[#e0e8f5] rounded-[6px] px-3 flex items-center text-[16px] text-[#9ca3af]"
-                              style={{ background: '#f5f7fa', fontFamily: font }}>{value}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="rounded-[12px] bg-white p-[24px]" style={{ border: '1.5px solid #e0e8f5' }}>
-                      <h3 className="text-[16px] font-bold text-[#0e1b3d] mb-[16px]" style={{ fontFamily: font }}>Request Information</h3>
-                      <div className="mb-[16px]">
-                        <label className="block text-[13px] text-[#697498] mb-[6px]" style={{ fontFamily: font }}>Subject <span style={{ color: '#dc3545' }}>*</span></label>
-                        <input type="text" value={miscSubject} onChange={e => setMiscSubject(e.target.value)}
-                          placeholder="Enter subject"
-                          className="w-full h-[48px] border border-[#d5ddfb] rounded-[6px] px-3 text-[16px] text-[#0e1b3d] placeholder-[#8f94ae] focus:outline-none focus:border-[#1360d2]"
-                          style={{ fontFamily: font }} />
-                      </div>
-                      <div>
-                        <label className="block text-[13px] text-[#697498] mb-[6px]" style={{ fontFamily: font }}>Description <span style={{ color: '#dc3545' }}>*</span></label>
-                        <textarea value={miscDesc} onChange={e => setMiscDesc(e.target.value)}
-                          rows={4} placeholder="Enter description"
-                          className="w-full border border-[#d5ddfb] rounded-[6px] px-3 py-3 text-[16px] text-[#0e1b3d] placeholder-[#8f94ae] focus:outline-none focus:border-[#1360d2] resize-vertical"
-                          style={{ fontFamily: font }} />
-                      </div>
-                    </div>
-
-                    <div className="rounded-[12px] bg-white p-[24px]" style={{ border: '1.5px solid #e0e8f5' }}>
-                      <h3 className="text-[16px] font-bold text-[#0e1b3d] mb-[8px]" style={{ fontFamily: font }}>Attachments</h3>
-                      <p className="text-[13px] text-[#697498] mb-[12px]" style={{ fontFamily: font }}>Only .rtf .doc .docx .pdf .jpg .jpeg .gif .png .bmp .tiff allowed, max 5MB per file</p>
-                      <label className="flex flex-col items-center justify-center h-[120px] border-2 border-dashed border-[#d5ddfb] rounded-[8px] cursor-pointer hover:border-[#1360d2] hover:bg-[#f0f6ff] transition-colors">
-                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#9CA3AF" strokeWidth="1.8">
-                          <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
-                          <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
-                        </svg>
-                        <span className="text-[14px] text-[#697498] mt-[8px]" style={{ fontFamily: font }}>Drag and drop or <span className="text-[#1360d2] font-medium">browse file</span></span>
-                        <input type="file" multiple className="hidden" />
-                      </label>
-                    </div>
-
-                    <div style={{ paddingBottom: 20, display: 'flex', gap: 12 }}>
-                      <button
-                        className="h-[44px] px-6 rounded-[6px] border border-[#d5ddfb] text-[16px] text-[#0e1b3d] bg-white hover:bg-[#f5f7fa]"
-                        style={{ fontFamily: font }}
-                        onClick={() => { setMiscServiceType(''); setMiscSubject(''); setMiscDesc(''); }}>
-                        Reset
-                      </button>
-                      <button
-                        className="h-[44px] px-8 rounded-[6px] text-[16px] text-white"
-                        style={{ background: '#1360d2', fontFamily: font }}
-                        onClick={() => setMiscSubmitted(true)}>
-                        Submit
-                      </button>
-                    </div>
-                  </>)}
-                </div>
-              );
-            })()}
+            {activeMenu === 'Invoices' && <InvoicesContent />}
+            {activeMenu === 'Payments' && <PaymentsContent />}
+            {activeMenu === 'Accounts' && <AccountsContent />}
             </div>{/* end scrollable */}
           </div>{/* end right content wrapper */}
         </div>
