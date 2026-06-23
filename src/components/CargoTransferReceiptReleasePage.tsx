@@ -38,8 +38,9 @@ const INITIAL_ROWS: Row[] = [
 ];
 
 const SEARCH_FIELDS  = ['Cargo Transfer No', 'Client Dec. Ref No', 'MAWB/MBOL'];
-const STATUS_OPTS    = ['Released', 'Received', 'Not Released', 'Not Received'];
 const DATE_TYPE_OPTS = ['Clearance Date', 'Released Date', 'Received Date'];
+const RELEASE_STATUS_OPTS = ['Released', 'Not Released'];
+const RECEIPT_STATUS_OPTS = ['Receipted', 'Not Receipted'];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function statusStyle(val: string) {
@@ -399,27 +400,24 @@ export default function CargoTransferReceiptReleasePage({ onBack }: Props) {
   const [afOpen, setAfOpen]             = useState(false);
   const [afMawb, setAfMawb]             = useState('');
   const [afCarrierReg, setAfCarrierReg] = useState('');
-  const [afStatusType, setAfStatusType] = useState('');
   const [afStatuses, setAfStatuses]     = useState<string[]>([]);
   const [afDateType, setAfDateType]     = useState('Clearance Date');
   const [afFromDate, setAfFromDate]     = useState('');
   const [afToDate, setAfToDate]         = useState('');
 
-  const STATUS_TYPE_OPTS = tab === 'release'
-    ? ['Cargo Release', 'Cargo Receipt']
-    : ['Cargo Receipt', 'Cargo Release'];
-
-  // Reset status type default when tab changes
+  // Reset selections when tab changes
   const prevTabRef = useRef(tab);
   if (prevTabRef.current !== tab) {
     prevTabRef.current = tab;
-    setAfStatusType(STATUS_TYPE_OPTS[0]);
+    setAfStatuses([]);
     setSelected(new Set());
   }
 
+  const statusOpts = tab === 'release' ? RELEASE_STATUS_OPTS : RECEIPT_STATUS_OPTS;
+  const statusLabel = tab === 'release' ? 'Release Status' : 'Receipt Status';
+
   const resetAF = () => {
     setAfMawb(''); setAfCarrierReg('');
-    setAfStatusType(STATUS_TYPE_OPTS[0]);
     setAfStatuses([]); setAfDateType('Clearance Date');
     setAfFromDate(''); setAfToDate('');
   };
@@ -528,7 +526,7 @@ export default function CargoTransferReceiptReleasePage({ onBack }: Props) {
         </div>
 
         {/* ── Scrollable content ── */}
-        <div className="flex-1 overflow-auto px-4 sm:px-10 pb-[100px]">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-10 pb-[100px]">
 
           {/* Page title */}
           <h1 style={{ fontSize: 32, fontWeight: 500, color: '#0e1b3d', fontFamily: font, marginBottom: 14, marginTop: 0 }}>
@@ -594,7 +592,7 @@ export default function CargoTransferReceiptReleasePage({ onBack }: Props) {
               {/* Toolbar Status dropdown */}
               <ToolbarStatusDropdown
                 values={toolbarStatuses}
-                options={STATUS_OPTS}
+                options={statusOpts}
                 onChange={setToolbarStatuses}
               />
             </div>
@@ -631,16 +629,15 @@ export default function CargoTransferReceiptReleasePage({ onBack }: Props) {
               <div className="grid grid-cols-4 gap-4 mb-4">
                 <AFInput       label="MAWB / MBOL"         value={afMawb}        onChange={setAfMawb} />
                 <AFInput       label="Carrier Reg. Number"  value={afCarrierReg}  onChange={setAfCarrierReg} />
-                <AFDropdown    label="Status Type"          value={afStatusType}  options={STATUS_TYPE_OPTS} onChange={setAfStatusType} />
-                <AFMultiSelect label="Status"               selected={afStatuses} options={STATUS_OPTS}      onChange={setAfStatuses} />
+                <AFMultiSelect label={statusLabel}          selected={afStatuses} options={statusOpts}       onChange={setAfStatuses} />
+                <AFDropdown    label="Date Type"            value={afDateType}    options={DATE_TYPE_OPTS}   onChange={setAfDateType} />
               </div>
 
-              {/* Row 2: Date Type + From + To + Search/Reset in same grid */}
+              {/* Row 2: From + To + Search/Reset */}
               <div className="grid grid-cols-4 gap-4">
-                <AFDropdown label="Date Type"   value={afDateType}  options={DATE_TYPE_OPTS} onChange={setAfDateType} />
-                <AFDate     label="From Date"   value={afFromDate}  onChange={setAfFromDate} />
-                <AFDate     label="To Date"     value={afToDate}    onChange={setAfToDate} />
-                {/* Search + Reset in the 4th cell, aligned to bottom */}
+                <AFDate label="From Date" value={afFromDate} onChange={setAfFromDate} />
+                <AFDate label="To Date"   value={afToDate}   onChange={setAfToDate} />
+                {/* Search + Reset in the 3rd cell, aligned to bottom */}
                 <div className="flex items-end gap-[10px]">
                   <button className="h-[44px] px-[22px] rounded-[4px] text-[15px] text-white hover:opacity-90 whitespace-nowrap"
                     style={{ background: '#1360d2', fontFamily: font, fontWeight: 500 }}>

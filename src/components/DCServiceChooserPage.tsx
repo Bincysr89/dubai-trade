@@ -239,6 +239,10 @@ const SERVICE_NAMES = [
   'Join Client Accreditation',
   'Request Customs Transaction Reports',
   'Submit Voluntary Disclosure',
+  'Submit Trade Intellectual Property Complaint',
+  'Request Customs Opinion',
+  'Appeal Customs Decision',
+  'Request Goods Classification',
 ];
 
 const CERT_TYPES = [
@@ -267,18 +271,51 @@ const CTR_TYPES = [
 
 const DISCLOSURE_TYPES = ['Incorrect Declaration of Value', 'Incorrect Declaration of Origin', 'Incorrect HS Code', 'Under-Declaration of Goods', 'Prohibited Goods Declaration', 'Other'];
 
+const IP_COMPLAINT_TYPES = [
+  { name: 'Trademark',         fees: '5000.00', description: 'Submit a complaint regarding trademark infringement in trade activities at Dubai Customs.', requirements: 'Trademark registration certificate, Evidence of infringement, Passport copy, Authorization letter' },
+  { name: 'Patent',            fees: '5000.00', description: 'Submit a complaint regarding patent infringement in imported or exported goods.', requirements: 'Patent registration certificate, Evidence of infringement, Technical specifications' },
+  { name: 'Copyright',         fees: '3000.00', description: 'Submit a complaint regarding copyright infringement in goods passing through Dubai Customs.', requirements: 'Copyright registration, Proof of ownership, Evidence of infringement' },
+  { name: 'Industrial Design', fees: '3000.00', description: 'Submit a complaint regarding industrial design rights infringement.', requirements: 'Design registration certificate, Evidence of infringement, Product images' },
+];
+
+const CUSTOMS_OPINION_TYPES = [
+  { name: 'Tariff Classification', fees: '200.00', description: 'Request an official opinion on the tariff classification of goods under the harmonized system.', requirements: 'Detailed product description, Technical specifications, Samples if applicable' },
+  { name: 'Customs Valuation',     fees: '200.00', description: 'Request an official opinion on the customs valuation method applicable to specific goods.', requirements: 'Commercial invoice, Valuation documents, Previous rulings if any' },
+  { name: 'Rules of Origin',       fees: '200.00', description: 'Request an official opinion on the origin determination of goods.', requirements: 'Manufacturing process details, Bill of materials, Certificates of origin' },
+];
+
+const APPEAL_CUSTOMS_TYPES = [
+  { name: 'Appeal Against Fine',           fees: '100.00', description: 'Submit a formal appeal against a customs fine or penalty imposed.', requirements: 'Original decision letter, Grounds for appeal, Supporting documents, Emirates ID' },
+  { name: 'Appeal Against Seizure',        fees: '100.00', description: 'Submit a formal appeal against the seizure of goods by Dubai Customs.', requirements: 'Seizure notice, Proof of ownership, Grounds for appeal, Supporting documents' },
+  { name: 'Appeal Against Classification', fees: '100.00', description: 'Submit a formal appeal against a tariff classification decision issued by customs.', requirements: 'Original classification decision, Technical evidence, Expert opinion' },
+];
+
+const GOODS_CLASSIFICATION_TYPES = [
+  { name: 'Standard Classification', fees: '300.00', description: 'Request standard HS code classification for goods under the harmonized system.', requirements: 'Product description, Technical specifications, Product images or samples' },
+  { name: 'Advance Ruling',          fees: '500.00', description: 'Request an advance binding ruling on HS code classification before importation.', requirements: 'Detailed product information, Technical documentation, Manufacturing process description' },
+  { name: 'Review Classification',   fees: '200.00', description: 'Request a review of an existing HS code classification decision.', requirements: 'Current HS code, Justification for review, Supporting technical documents' },
+];
+
 const SERVICE_META: Record<string, { description: string; baseCharges: string; requirements: string }> = {
-  'Request Certificate':                 { description: 'This service allows clients to request various official customs certificates for their trade activities.', baseCharges: '100.00', requirements: 'Valid trade license, Original customs documents, Emirates ID' },
-  'Join Client Accreditation':           { description: 'This service allows clients to submit a request for enrollment in Dubai Customs Client Accreditation Program.', baseCharges: '200.00', requirements: 'Copy of trade license' },
-  'Request Customs Transaction Reports': { description: 'This service allows customers to request a comprehensive transactions report from Dubai Customs.', baseCharges: '200.00', requirements: 'Trade license, Emirates ID, Customs file number, Date range' },
-  'Submit Voluntary Disclosure':         { description: 'This service allows clients to voluntarily disclose incorrect or incomplete customs declarations to Dubai Customs.', baseCharges: '0.00', requirements: 'Original declaration documents, Correction justification letter' },
+  'Request Certificate':                                 { description: 'This service allows clients to request various official customs certificates for their trade activities.', baseCharges: '100.00', requirements: 'Valid trade license, Original customs documents, Emirates ID' },
+  'Join Client Accreditation':                           { description: 'This service allows clients to submit a request for enrollment in Dubai Customs Client Accreditation Program.', baseCharges: '200.00', requirements: 'Copy of trade license' },
+  'Request Customs Transaction Reports':                 { description: 'This service allows customers to request a comprehensive transactions report from Dubai Customs.', baseCharges: '200.00', requirements: 'Trade license, Emirates ID, Customs file number, Date range' },
+  'Submit Voluntary Disclosure':                         { description: 'This service allows clients to voluntarily disclose incorrect or incomplete customs declarations to Dubai Customs.', baseCharges: '0.00', requirements: 'Original declaration documents, Correction justification letter' },
+  'Submit Trade Intellectual Property Complaint':        { description: 'This service allows rights holders to submit complaints against suspected IP rights violations in trade activities at Dubai Customs.', baseCharges: '5000.00', requirements: 'IPR registration certificate, Evidence of infringement, Passport copy, Authorization letter' },
+  'Request Customs Opinion':                             { description: 'This service allows traders to obtain official opinions from Dubai Customs on classification, valuation or origin matters.', baseCharges: '200.00', requirements: 'Detailed query, Supporting documents, Trade license' },
+  'Appeal Customs Decision':                             { description: 'This service allows clients to submit formal appeals against customs decisions, fines or rulings.', baseCharges: '100.00', requirements: 'Original decision letter, Supporting documents, Grounds for appeal, Emirates ID' },
+  'Request Goods Classification':                        { description: 'This service allows traders to request official HS code classification for goods under the harmonized system.', baseCharges: '300.00', requirements: 'Product description, Technical specifications, Product samples or images, Manufacturer details' },
 };
 
 const REQ_NUMBERS: Record<string, string> = {
-  'Request Certificate':                 'R00723-513234',
-  'Join Client Accreditation':           'R00724-513235',
-  'Request Customs Transaction Reports': 'R00725-513236',
-  'Submit Voluntary Disclosure':         'R00726-513237',
+  'Request Certificate':                                 'R00723-513234',
+  'Join Client Accreditation':                           'R00724-513235',
+  'Request Customs Transaction Reports':                 'R00725-513236',
+  'Submit Voluntary Disclosure':                         'R00726-513237',
+  'Submit Trade Intellectual Property Complaint':        'R00727-513238',
+  'Request Customs Opinion':                             'R00728-513239',
+  'Appeal Customs Decision':                             'R00729-513240',
+  'Request Goods Classification':                        'R00730-513241',
 };
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -701,14 +738,38 @@ export default function DCServiceChooserPage({ onBack }: {
   const [disclDate, setDisclDate] = useState('');
   const [reason,    setReason]    = useState('');
 
+  /* ── IP Complaint-specific ── */
+  const [iprRefNo, setIprRefNo] = useState('');
+
+  /* ── Goods Classification-specific ── */
+  const [hsCodeCount, setHsCodeCount] = useState('');
+
   /* ── Derived ── */
-  const meta     = service ? SERVICE_META[service] : null;
-  const certType = CERT_TYPES.find(t => t.name === serviceType) ?? null;
-  const ctrType  = CTR_TYPES.find(t => t.name === serviceType) ?? null;
+  const meta              = service ? SERVICE_META[service] : null;
+  const certType          = CERT_TYPES.find(t => t.name === serviceType) ?? null;
+  const ctrType           = CTR_TYPES.find(t => t.name === serviceType) ?? null;
+  const ipComplaintType   = IP_COMPLAINT_TYPES.find(t => t.name === serviceType) ?? null;
+  const customsOpinionType = CUSTOMS_OPINION_TYPES.find(t => t.name === serviceType) ?? null;
+  const appealType        = APPEAL_CUSTOMS_TYPES.find(t => t.name === serviceType) ?? null;
+  const goodsClassType    = GOODS_CLASSIFICATION_TYPES.find(t => t.name === serviceType) ?? null;
+
+  /* Services that gate the full form behind service type selection */
+  const PROGRESSIVE_SERVICES = [
+    'Submit Trade Intellectual Property Complaint',
+    'Request Customs Opinion',
+    'Appeal Customs Decision',
+    'Request Goods Classification',
+  ];
+  const isProgressiveService = PROGRESSIVE_SERVICES.includes(service);
+  const showFullForm = !isProgressiveService || !!serviceType;
 
   const chargeAmount = (() => {
     if (service === 'Request Certificate' && certType) return certType.fees;
     if (service === 'Request Customs Transaction Reports' && ctrType) return ctrType.fees;
+    if (service === 'Submit Trade Intellectual Property Complaint' && ipComplaintType) return ipComplaintType.fees;
+    if (service === 'Request Customs Opinion' && customsOpinionType) return customsOpinionType.fees;
+    if (service === 'Appeal Customs Decision' && appealType) return appealType.fees;
+    if (service === 'Request Goods Classification' && goodsClassType) return goodsClassType.fees;
     return meta?.baseCharges ?? '100.00';
   })();
 
@@ -725,6 +786,7 @@ export default function DCServiceChooserPage({ onBack }: {
     setCertGoodDesc(''); setCertPayAcct('');
     setDateFrom(''); setDateTo(''); setCtrFormat('');
     setDeclNo(''); setDisclDate(''); setReason('');
+    setIprRefNo(''); setHsCodeCount('');
   };
 
   /* ── Stage routing ── */
@@ -1049,6 +1111,143 @@ export default function DCServiceChooserPage({ onBack }: {
                   ALL OTHER SERVICES — generic layout
               ════════════════════════════════════════════════════════ */}
 
+              {/* §2-IP — IP Complaint Service Type */}
+              {service === 'Submit Trade Intellectual Property Complaint' && (
+                <div className="dc-form-section dc-basic-info-section">
+                  <div className="dc-basic-info-header">
+                    <h4 className="dc-form-section__heading" style={{ margin: 0 }}>Service Type Details</h4>
+                  </div>
+                  <div className="dc-basic-info-cards">
+                    <div style={{ width: '100%', display: 'flex', gap: 12, alignItems: 'center' }}>
+                      <div style={{ width: 'calc(50% - 6px)' }}>
+                        <FloatDropdown label="Service Type" required value={serviceType}
+                          onChange={v => { setServiceType(v); setIprRefNo(''); }}
+                          options={IP_COMPLAINT_TYPES.map(t => t.name)} />
+                      </div>
+                      {ipComplaintType && (
+                        <InfoCard iconColor="green" label="Charges"
+                          value={<span className="dc-basic-info-card__value--charge">AED {ipComplaintType.fees}</span>}
+                          icon={<Dh style={{ width: 18, height: 18 }} />}
+                          style={{ height: 56, alignItems: 'center' }}
+                        />
+                      )}
+                    </div>
+                    {ipComplaintType && (
+                      <div style={{ width: '100%', display: 'flex', gap: 12 }}>
+                        <InfoCard iconColor="indigo" label="Service Type Description" value={ipComplaintType.description}
+                          icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>}
+                        />
+                        <InfoCard iconColor="teal" label="Requirements" value={ipComplaintType.requirements}
+                          icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* §2-OPINION — Customs Opinion Service Type */}
+              {service === 'Request Customs Opinion' && (
+                <div className="dc-form-section dc-basic-info-section">
+                  <div className="dc-basic-info-header">
+                    <h4 className="dc-form-section__heading" style={{ margin: 0 }}>Service Type Details</h4>
+                  </div>
+                  <div className="dc-basic-info-cards">
+                    <div style={{ width: '100%', display: 'flex', gap: 12, alignItems: 'center' }}>
+                      <div style={{ width: 'calc(50% - 6px)' }}>
+                        <FloatDropdown label="Service Type" required value={serviceType} onChange={setServiceType}
+                          options={CUSTOMS_OPINION_TYPES.map(t => t.name)} />
+                      </div>
+                      {customsOpinionType && (
+                        <InfoCard iconColor="green" label="Charges"
+                          value={<span className="dc-basic-info-card__value--charge">AED {customsOpinionType.fees}</span>}
+                          icon={<Dh style={{ width: 18, height: 18 }} />}
+                          style={{ height: 56, alignItems: 'center' }}
+                        />
+                      )}
+                    </div>
+                    {customsOpinionType && (
+                      <div style={{ width: '100%', display: 'flex', gap: 12 }}>
+                        <InfoCard iconColor="indigo" label="Service Type Description" value={customsOpinionType.description}
+                          icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>}
+                        />
+                        <InfoCard iconColor="teal" label="Requirements" value={customsOpinionType.requirements}
+                          icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* §2-APPEAL — Appeal Customs Decision Service Type */}
+              {service === 'Appeal Customs Decision' && (
+                <div className="dc-form-section dc-basic-info-section">
+                  <div className="dc-basic-info-header">
+                    <h4 className="dc-form-section__heading" style={{ margin: 0 }}>Service Type Details</h4>
+                  </div>
+                  <div className="dc-basic-info-cards">
+                    <div style={{ width: '100%', display: 'flex', gap: 12, alignItems: 'center' }}>
+                      <div style={{ width: 'calc(50% - 6px)' }}>
+                        <FloatDropdown label="Service Type" required value={serviceType} onChange={setServiceType}
+                          options={APPEAL_CUSTOMS_TYPES.map(t => t.name)} />
+                      </div>
+                      {appealType && (
+                        <InfoCard iconColor="green" label="Charges"
+                          value={<span className="dc-basic-info-card__value--charge">AED {appealType.fees}</span>}
+                          icon={<Dh style={{ width: 18, height: 18 }} />}
+                          style={{ height: 56, alignItems: 'center' }}
+                        />
+                      )}
+                    </div>
+                    {appealType && (
+                      <div style={{ width: '100%', display: 'flex', gap: 12 }}>
+                        <InfoCard iconColor="indigo" label="Service Type Description" value={appealType.description}
+                          icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>}
+                        />
+                        <InfoCard iconColor="teal" label="Requirements" value={appealType.requirements}
+                          icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* §2-GC — Goods Classification Service Type */}
+              {service === 'Request Goods Classification' && (
+                <div className="dc-form-section dc-basic-info-section">
+                  <div className="dc-basic-info-header">
+                    <h4 className="dc-form-section__heading" style={{ margin: 0 }}>Service Type Details</h4>
+                  </div>
+                  <div className="dc-basic-info-cards">
+                    <div style={{ width: '100%', display: 'flex', gap: 12, alignItems: 'center' }}>
+                      <div style={{ width: 'calc(50% - 6px)' }}>
+                        <FloatDropdown label="Service Type" required value={serviceType} onChange={setServiceType}
+                          options={GOODS_CLASSIFICATION_TYPES.map(t => t.name)} />
+                      </div>
+                      {goodsClassType && (
+                        <InfoCard iconColor="green" label="Charges"
+                          value={<span className="dc-basic-info-card__value--charge">AED {goodsClassType.fees}</span>}
+                          icon={<Dh style={{ width: 18, height: 18 }} />}
+                          style={{ height: 56, alignItems: 'center' }}
+                        />
+                      )}
+                    </div>
+                    {goodsClassType && (
+                      <div style={{ width: '100%', display: 'flex', gap: 12 }}>
+                        <InfoCard iconColor="indigo" label="Service Type Description" value={goodsClassType.description}
+                          icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>}
+                        />
+                        <InfoCard iconColor="teal" label="Requirements" value={goodsClassType.requirements}
+                          icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* §2b — CTR Report Type */}
               {service === 'Request Customs Transaction Reports' && (
                 <div className="dc-form-section dc-basic-info-section">
@@ -1161,8 +1360,8 @@ export default function DCServiceChooserPage({ onBack }: {
                 </div>
               </>)}
 
-              {/* §3 — Contact Information (hidden for VD which has its own Basic Information section) */}
-              {service !== 'Submit Voluntary Disclosure' && <div className="dc-form-section">
+              {/* §3 — Contact Information (hidden for VD; gated for progressive services) */}
+              {service !== 'Submit Voluntary Disclosure' && showFullForm && <div className="dc-form-section">
                 <h4 className="dc-form-section__heading">Contact Information</h4>
                 <div className="dc-form-row">
                   <div className="dc-float-wrapper dc-field--half">
@@ -1203,8 +1402,8 @@ export default function DCServiceChooserPage({ onBack }: {
                 </div>
               </div>}
 
-              {/* §4 — Request Information (skip for Voluntary Disclosure which has its own combined section) */}
-              {service !== 'Submit Voluntary Disclosure' && (
+              {/* §4 — Request Information (skip for Voluntary Disclosure; gated for progressive services) */}
+              {service !== 'Submit Voluntary Disclosure' && showFullForm && (
                 <div className="dc-form-section">
                   <h4 className="dc-form-section__heading">Request Information</h4>
                   <div className="dc-form-row">
@@ -1223,34 +1422,83 @@ export default function DCServiceChooserPage({ onBack }: {
                 </div>
               )}
 
-              {/* §5 — Attachments */}
-              <div className="dc-form-section">
-                <h4 className="dc-form-section__heading">Attachments</h4>
-                {service === 'Submit Voluntary Disclosure' && (
-                  <div style={{ marginBottom: 12 }}>
-                    <span style={{ fontSize: 14, color: '#697498', fontWeight: 600, fontFamily: font }}>NOTES:-</span>
-                    <div style={{ marginTop: 6 }}>
-                      <a href="#" onClick={e => e.preventDefault()}
-                        style={{ fontSize: 14, color: '#1360d2', textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: font }}>
-                        Download Voluntary Disclosure Form
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                          <polyline points="7 10 12 15 17 10"/>
-                          <line x1="12" y1="15" x2="12" y2="3"/>
-                        </svg>
-                      </a>
+              {/* §4a — Additional Information: IP Complaint + Trademark */}
+              {service === 'Submit Trade Intellectual Property Complaint' && serviceType === 'Trademark' && (
+                <div className="dc-form-section">
+                  <h4 className="dc-form-section__heading">Additional Information</h4>
+                  <div className="dc-form-row">
+                    <div className="dc-float-wrapper dc-field--half">
+                      <div className="dc-float-field">
+                        <input className="dc-float-input" placeholder=" " value={iprRefNo} onChange={e => setIprRefNo(e.target.value)} />
+                        <label className="dc-float-label">IPR Reference Number</label>
+                      </div>
                     </div>
                   </div>
-                )}
-                <div className="dc-field-hint" style={{ marginBottom: 12, marginTop: 0 }}>
-                  <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0 }}>
-                    <path d="M9.9974 13.3327V9.99935M9.9974 6.66602H10.0057M18.3307 9.99935C18.3307 14.6017 14.5998 18.3327 9.9974 18.3327C5.39502 18.3327 1.66406 14.6017 1.66406 9.99935C1.66406 5.39698 5.39502 1.66602 9.9974 1.66602C14.5998 1.66602 18.3307 5.39698 18.3307 9.99935Z"
-                      stroke="#5E6B7A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  <span>Only .rtf .doc .docx .pdf .jpg .jpeg .gif .png .bmp .tiff allowed, max 5MB per file</span>
+                  <div className="dc-field-hint" style={{ marginBottom: 8, marginTop: 8, flexDirection: 'column', gap: 6, alignItems: 'flex-start' }}>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                      <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0, marginTop: 2 }}>
+                        <path d="M9.9974 13.3327V9.99935M9.9974 6.66602H10.0057M18.3307 9.99935C18.3307 14.6017 14.5998 18.3327 9.9974 18.3327C5.39502 18.3327 1.66406 14.6017 1.66406 9.99935C1.66406 5.39698 5.39502 1.66602 9.9974 1.66602C14.5998 1.66602 18.3307 5.39698 18.3307 9.99935Z"
+                          stroke="#5E6B7A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <span>A refundable deposit of AED 5000 will be charged if IPR Reference number is not provided.</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                      <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0, marginTop: 2 }}>
+                        <path d="M9.9974 13.3327V9.99935M9.9974 6.66602H10.0057M18.3307 9.99935C18.3307 14.6017 14.5998 18.3327 9.9974 18.3327C5.39502 18.3327 1.66406 14.6017 1.66406 9.99935C1.66406 5.39698 5.39502 1.66602 9.9974 1.66602C14.5998 1.66602 18.3307 5.39698 18.3307 9.99935Z"
+                          stroke="#5E6B7A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <span>An extra fee of AED 500 will be charged for urgent request and a fee of AED 1000 for complaint submitted on holidays.</span>
+                    </div>
+                  </div>
                 </div>
-                <FileUploadRow />
-              </div>
+              )}
+
+              {/* §4b — Additional Information: Goods Classification — No. of HS Code */}
+              {service === 'Request Goods Classification' && showFullForm && (
+                <div className="dc-form-section">
+                  <h4 className="dc-form-section__heading">Additional Information</h4>
+                  <div className="dc-form-row">
+                    <div className="dc-float-wrapper dc-field--half">
+                      <div className="dc-float-field">
+                        <input className="dc-float-input" placeholder=" " type="number" min="1"
+                          value={hsCodeCount} onChange={e => setHsCodeCount(e.target.value)} />
+                        <label className="dc-float-label">No. of HS Code <span className="dc-req">*</span></label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* §5 — Attachments (gated for progressive services) */}
+              {showFullForm && (
+                <div className="dc-form-section">
+                  <h4 className="dc-form-section__heading">Attachments</h4>
+                  {service === 'Submit Voluntary Disclosure' && (
+                    <div style={{ marginBottom: 12 }}>
+                      <span style={{ fontSize: 14, color: '#697498', fontWeight: 600, fontFamily: font }}>NOTES:-</span>
+                      <div style={{ marginTop: 6 }}>
+                        <a href="#" onClick={e => e.preventDefault()}
+                          style={{ fontSize: 14, color: '#1360d2', textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: font }}>
+                          Download Voluntary Disclosure Form
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                          </svg>
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                  <div className="dc-field-hint" style={{ marginBottom: 12, marginTop: 0 }}>
+                    <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0 }}>
+                      <path d="M9.9974 13.3327V9.99935M9.9974 6.66602H10.0057M18.3307 9.99935C18.3307 14.6017 14.5998 18.3327 9.9974 18.3327C5.39502 18.3327 1.66406 14.6017 1.66406 9.99935C1.66406 5.39698 5.39502 1.66602 9.9974 1.66602C14.5998 1.66602 18.3307 5.39698 18.3307 9.99935Z"
+                        stroke="#5E6B7A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    <span>Only .rtf .doc .docx .pdf .jpg .jpeg .gif .png .bmp .tiff allowed, max 5MB per file</span>
+                  </div>
+                  <FileUploadRow />
+                </div>
+              )}
 
             </>)}
             {/* end ternary */}

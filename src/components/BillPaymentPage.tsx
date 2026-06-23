@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import Header from './Header';
 import Pagination from './Pagination';
 
@@ -453,18 +454,32 @@ function FloatInput({ label, value, onChange }: { label: string; value: string; 
 
 function FloatDate({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   const [focused, setFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   return (
     <div className="relative">
       <input
+        ref={inputRef}
         type="date"
         value={value}
         onChange={e => onChange(e.target.value)}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        className="h-[56px] w-full rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none bg-white"
+        className="h-[56px] w-full rounded-[4px] px-[12px] pr-[38px] text-[16px] text-[#0e1b3d] focus:outline-none bg-white"
         style={{ fontFamily: font, border: `1px solid ${focused ? '#1360d2' : '#d5ddfb'}`, colorScheme: 'light' }}
       />
       <span style={floatLabel(true, focused)}>{label}</span>
+      <button
+        type="button"
+        tabIndex={-1}
+        onClick={() => { inputRef.current?.focus(); (inputRef.current as any)?.showPicker?.(); }}
+        className="absolute right-[8px] top-1/2 -translate-y-1/2 flex items-center justify-center"
+        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
+      >
+        <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke={focused ? '#1360d2' : '#697498'} strokeWidth="1.6">
+          <rect x="3" y="4" width="14" height="13" rx="2" />
+          <path d="M3 8h14M7 2v4M13 2v4" />
+        </svg>
+      </button>
     </div>
   );
 }
@@ -575,6 +590,9 @@ function DateFilterCard({ from, to }: { from?: string; to?: string }) {
 
 /* ── Main component ─────────────────────────────────────────────────────────── */
 export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
+  const navigate = useNavigate();
+  const { agent } = useParams<{ agent?: string }>();
+  const handleHome = () => { onBack(); navigate(`/landing/${agent ?? 'trader'}`); };
   const [panelCollapsed, setPanelCollapsed] = useState(false);
   const [activeMenu, setActiveMenu]         = useState<Menu>('Overview');
   const [step, setStep]                     = useState<InvStep>('list');
@@ -614,6 +632,10 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const [stmtFromDate, setStmtFromDate] = useState('09-06-2026');
   const [stmtToDate, setStmtToDate]     = useState('10-06-2026');
   const [downloadFmt, setDownloadFmt]   = useState('');
+  const [stmtAccount, setStmtAccount]   = useState('');
+  const [stmtAccSearch, setStmtAccSearch] = useState('');
+  const [stmtAccOpen, setStmtAccOpen]   = useState(false);
+  const stmtAccRef = useRef<HTMLDivElement>(null);
 
   /* Advanced filter fields */
   const [fFromDate,  setFFromDate]  = useState('');
@@ -664,6 +686,15 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
     return () => document.removeEventListener('mousedown', h);
   }, [accDebitOpen]);
 
+  useEffect(() => {
+    if (!stmtAccOpen) return;
+    const h = (e: MouseEvent) => {
+      if (stmtAccRef.current && !stmtAccRef.current.contains(e.target as Node)) setStmtAccOpen(false);
+    };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, [stmtAccOpen]);
+
   const selectedList = Array.from(selectedRows).map(i => INVOICE_ROWS[i]).filter(Boolean);
   const totalAmt     = selectedList.reduce((s, r) => s + parseFloat(r.balance.replace(',', '')), 0);
 
@@ -678,7 +709,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   if (step === 'pay') {
     return (
       <div className="fixed inset-0 z-50 bg-[#f8fafd] flex flex-col overflow-hidden">
-        <div className="flex-shrink-0"><Header onServiceCatalogue={onBack} /></div>
+        <div className="flex-shrink-0"><Header onServiceCatalogue={onBack} onHome={handleHome} /></div>
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="px-10 flex-shrink-0">
             <Breadcrumb onBack={onBack} extra={selectedList.length === 1 ? `Pay - ${selectedList[0].number}` : 'Pay - Multiple Invoices'} />
@@ -824,7 +855,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
 
     return (
       <div className="fixed inset-0 z-50 bg-[#f8fafd] flex flex-col overflow-hidden">
-        <div className="flex-shrink-0"><Header onServiceCatalogue={onBack} /></div>
+        <div className="flex-shrink-0"><Header onServiceCatalogue={onBack} onHome={handleHome} /></div>
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="px-10 flex-shrink-0">
             <Breadcrumb onBack={onBack} extra="Payment Confirmation" />
@@ -928,7 +959,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   if (activeMenu === 'Accounts' && accView === 'pay' && selAccRow) {
     return (
       <div className="fixed inset-0 z-50 bg-[#f8fafd] flex flex-col overflow-hidden">
-        <div className="flex-shrink-0"><Header onServiceCatalogue={onBack} /></div>
+        <div className="flex-shrink-0"><Header onServiceCatalogue={onBack} onHome={handleHome} /></div>
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="px-10 flex-shrink-0">
             <Breadcrumb onBack={onBack} extra="Pay - Accounts" />
@@ -1121,7 +1152,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   if (activeMenu === 'Accounts' && accView === 'success' && selAccRow) {
     return (
       <div className="fixed inset-0 z-50 bg-[#f8fafd] flex flex-col overflow-hidden">
-        <div className="flex-shrink-0"><Header onServiceCatalogue={onBack} /></div>
+        <div className="flex-shrink-0"><Header onServiceCatalogue={onBack} onHome={handleHome} /></div>
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="px-10 flex-shrink-0">
             <Breadcrumb onBack={onBack} extra="Payment Confirmation" />
@@ -2216,7 +2247,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   /* ── Main render ─────────────────────────────────────────────────────────── */
   return (
     <div className="fixed inset-0 z-50 bg-[#f8fafd] flex flex-col overflow-hidden">
-      <div className="flex-shrink-0"><Header onServiceCatalogue={onBack} /></div>
+      <div className="flex-shrink-0"><Header onServiceCatalogue={onBack} onHome={handleHome} /></div>
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="px-4 md:px-10 flex-shrink-0">
@@ -2287,11 +2318,9 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             <div className="flex flex-col gap-[16px] w-full">
 
               {/* ── ROW 1: KPI stat cards ─────────────────────────────────── */}
-              <div className="grid grid-cols-4 gap-[14px]">
+              <div className="grid grid-cols-2 gap-[14px]">
                 {[
                   { label: 'Invoices Pending', value: `AED ${pendingInvAmt.toLocaleString('en-US', {minimumFractionDigits:2})}`, sub: `${pendingInv} invoice${pendingInv !== 1 ? 's' : ''} overdue`, color: '#e8690d', bg: 'linear-gradient(135deg,#fff7ec,#fffaf4)', border: '#fcd7a0', icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#e8690d" strokeWidth="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5" strokeLinecap="round"/></svg>, onClick: () => setActiveMenu('Invoices') },
-                  { label: 'Initiated Payments', value: initiatedPay, sub: 'Currently processing', color: '#1360d2', bg: 'linear-gradient(135deg,#eef4ff,#f5f8ff)', border: '#b3caff', icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1360d2" strokeWidth="1.8"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M12 13v3M10 14l2-1 2 1" strokeLinecap="round"/></svg>, onClick: () => setActiveMenu('Payments') },
-                  { label: 'Pending Payments', value: pendingPay, sub: 'Awaiting confirmation', color: '#d97706', bg: 'linear-gradient(135deg,#fffbeb,#fef9f0)', border: '#fcd34d', icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#d97706" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3" strokeLinecap="round" strokeLinejoin="round"/></svg>, onClick: () => setActiveMenu('Payments') },
                   { label: 'Payment Failed', value: recheckPay, sub: 'Requires attention', color: '#c0392b', bg: 'linear-gradient(135deg,#fff0f0,#fff8f8)', border: '#f5b8b8', icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#c0392b" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v5" strokeLinecap="round"/><circle cx="12" cy="16.5" r="0.9" fill="#c0392b"/></svg>, onClick: () => setActiveMenu('Payments') },
                 ].map(({ label, value, sub, color, bg, border, icon, onClick }) => (
                   <button key={label} onClick={onClick}
@@ -2433,8 +2462,74 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             </div>
             {/* Modal body */}
             <div className="px-6 py-5">
+              {/* Account Number searchable dropdown */}
+              <p className="text-[16px] font-semibold text-[#697498] mb-2" style={{ fontFamily: font }}>Account Number</p>
+              <div ref={stmtAccRef} className="relative mb-5">
+                <div
+                  className="flex items-center border rounded-[4px] overflow-hidden transition-colors"
+                  style={{ borderColor: stmtAccOpen ? '#1360d2' : '#d5ddfb', background: 'white' }}
+                >
+                  <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#697498" strokeWidth="1.8"
+                    className="ml-3 flex-shrink-0">
+                    <circle cx="9" cy="9" r="6" /><path d="M15 15l3 3" strokeLinecap="round" />
+                  </svg>
+                  <input
+                    type="text"
+                    value={stmtAccOpen ? stmtAccSearch : (stmtAccount || stmtAccSearch)}
+                    onChange={e => { setStmtAccSearch(e.target.value); setStmtAccOpen(true); }}
+                    onFocus={() => { setStmtAccOpen(true); setStmtAccSearch(''); }}
+                    placeholder="Search account number…"
+                    className="flex-1 h-[44px] px-3 text-[16px] placeholder-[#8f94ae] focus:outline-none bg-transparent"
+                    style={{ fontFamily: font, color: '#0e1b3d' }}
+                  />
+                  {stmtAccount && (
+                    <button type="button" onClick={() => { setStmtAccount(''); setStmtAccSearch(''); }}
+                      className="px-2 text-[#697498] hover:text-[#dc3545] transition-colors">
+                      <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M5 5l10 10M15 5L5 15" strokeLinecap="round" />
+                      </svg>
+                    </button>
+                  )}
+                  <button type="button" onClick={() => setStmtAccOpen(o => !o)}
+                    className="px-3 flex items-center text-[#1360d2]">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"
+                      style={{ transform: stmtAccOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
+                      <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                </div>
+                {stmtAccOpen && (() => {
+                  const q = stmtAccSearch.toLowerCase();
+                  const filtered = ALL_ACCOUNTS.filter(a =>
+                    a.account.toLowerCase().includes(q) || a.type.toLowerCase().includes(q)
+                  );
+                  return (
+                    <div className="absolute left-0 right-0 bg-white rounded-[8px] overflow-hidden z-[80]"
+                      style={{ top: 48, maxHeight: 220, overflowY: 'auto', boxShadow: '0px 4px 20px rgba(0,0,0,0.14)', border: '1px solid #e0e8f5' }}>
+                      {filtered.length === 0 ? (
+                        <p className="px-4 py-3 text-[15px] text-[#697498]" style={{ fontFamily: font }}>No accounts found</p>
+                      ) : filtered.map((a, idx) => (
+                        <button key={idx} type="button"
+                          onClick={() => { setStmtAccount(a.account); setStmtAccSearch(''); setStmtAccOpen(false); }}
+                          className="w-full px-4 py-[10px] text-left hover:bg-[#f0f4ff] transition-colors flex items-center justify-between gap-3"
+                          style={{ background: stmtAccount === a.account ? '#e8f0ff' : undefined }}>
+                          <div>
+                            <p className="text-[15px] font-medium" style={{ fontFamily: font, color: stmtAccount === a.account ? '#1360d2' : '#0e1b3d' }}>{a.account}</p>
+                            <p className="text-[13px] text-[#697498]" style={{ fontFamily: font }}>{a.type}</p>
+                          </div>
+                          {stmtAccount === a.account && (
+                            <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#1360d2" strokeWidth="2.2">
+                              <path d="M4 10l4 4 8-8" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
               {/* Statement type radios */}
-              <p className="text-[13px] font-semibold text-[#697498] mb-3 uppercase tracking-wide" style={{ fontFamily: font }}>Statement Type</p>
+              <p className="text-[16px] font-semibold text-[#697498] mb-3" style={{ fontFamily: font }}>Statement Type</p>
               <div className="flex flex-col gap-3 mb-5">
                 {([
                   ['summary',     'Monthly Statement (Summary)'],
@@ -2495,7 +2590,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 )}
               </div>
               {/* Download format */}
-              <p className="text-[13px] font-semibold text-[#697498] mb-3 uppercase tracking-wide" style={{ fontFamily: font }}>Download Format</p>
+              <p className="text-[16px] font-semibold text-[#697498] mb-3" style={{ fontFamily: font }}>Download Format</p>
               <div className="flex gap-3 mb-6">
                 {(['PDF', 'Excel'] as const).map(fmt => (
                   <button key={fmt} onClick={() => setDownloadFmt(fmt)}
@@ -2508,7 +2603,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             </div>
             {/* Modal footer */}
             <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#e0e8f5] bg-[#f8fafd]">
-              <button onClick={() => setShowStmtModal(false)}
+              <button onClick={() => { setShowStmtModal(false); setStmtAccount(''); setStmtAccSearch(''); }}
                 className="h-[44px] px-6 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white hover:bg-[#f0f4ff]" style={{ fontFamily: font }}>
                 Cancel
               </button>
