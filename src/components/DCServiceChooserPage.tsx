@@ -1314,13 +1314,13 @@ export default function DCServiceChooserPage({ onBack }: {
                   <div className="dc-form-row">
                     <div className="dc-float-wrapper dc-field--half">
                       <div className="dc-float-field">
-                        <input className="dc-float-input" placeholder=" " value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
+                        <input className="dc-float-input" type="date" placeholder=" " value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
                         <label className="dc-float-label">Date From <span className="dc-req">*</span></label>
                       </div>
                     </div>
                     <div className="dc-float-wrapper dc-field--half">
                       <div className="dc-float-field">
-                        <input className="dc-float-input" placeholder=" " value={dateTo} onChange={e => setDateTo(e.target.value)} />
+                        <input className="dc-float-input" type="date" placeholder=" " value={dateTo} onChange={e => setDateTo(e.target.value)} />
                         <label className="dc-float-label">Date To <span className="dc-req">*</span></label>
                       </div>
                     </div>
