@@ -237,12 +237,8 @@ function PhoneField({ label, value, onChange, disabled }: {
 const SERVICE_NAMES = [
   'Request Certificate',
   'Join Client Accreditation',
-  'Request Customs Transaction Reports',
+  'Request Reports',
   'Submit Voluntary Disclosure',
-  'Submit Trade Intellectual Property Complaint',
-  'Request Customs Opinion',
-  'Appeal Customs Decision',
-  'Request Goods Classification',
 ];
 
 const CERT_TYPES = [
@@ -299,7 +295,7 @@ const GOODS_CLASSIFICATION_TYPES = [
 const SERVICE_META: Record<string, { description: string; baseCharges: string; requirements: string }> = {
   'Request Certificate':                                 { description: 'This service allows clients to request various official customs certificates for their trade activities.', baseCharges: '100.00', requirements: 'Valid trade license, Original customs documents, Emirates ID' },
   'Join Client Accreditation':                           { description: 'This service allows clients to submit a request for enrollment in Dubai Customs Client Accreditation Program.', baseCharges: '200.00', requirements: 'Copy of trade license' },
-  'Request Customs Transaction Reports':                 { description: 'This service allows customers to request a comprehensive transactions report from Dubai Customs.', baseCharges: '200.00', requirements: 'Trade license, Emirates ID, Customs file number, Date range' },
+  'Request Reports':                                     { description: 'This service allows customers to request a comprehensive transactions report from Dubai Customs.', baseCharges: '200.00', requirements: 'Trade license, Emirates ID, Customs file number, Date range' },
   'Submit Voluntary Disclosure':                         { description: 'This service allows clients to voluntarily disclose incorrect or incomplete customs declarations to Dubai Customs.', baseCharges: '0.00', requirements: 'Original declaration documents, Correction justification letter' },
   'Submit Trade Intellectual Property Complaint':        { description: 'This service allows rights holders to submit complaints against suspected IP rights violations in trade activities at Dubai Customs.', baseCharges: '5000.00', requirements: 'IPR registration certificate, Evidence of infringement, Passport copy, Authorization letter' },
   'Request Customs Opinion':                             { description: 'This service allows traders to obtain official opinions from Dubai Customs on classification, valuation or origin matters.', baseCharges: '200.00', requirements: 'Detailed query, Supporting documents, Trade license' },
@@ -310,7 +306,7 @@ const SERVICE_META: Record<string, { description: string; baseCharges: string; r
 const REQ_NUMBERS: Record<string, string> = {
   'Request Certificate':                                 'R00723-513234',
   'Join Client Accreditation':                           'R00724-513235',
-  'Request Customs Transaction Reports':                 'R00725-513236',
+  'Request Reports':                                     'R00725-513236',
   'Submit Voluntary Disclosure':                         'R00726-513237',
   'Submit Trade Intellectual Property Complaint':        'R00727-513238',
   'Request Customs Opinion':                             'R00728-513239',
@@ -729,9 +725,10 @@ export default function DCServiceChooserPage({ onBack }: {
   const CONSIGNEE_CODE = 'Dubai Customs - Test LLC';
 
   /* ── CTR-specific ── */
-  const [dateFrom,  setDateFrom]  = useState('');
-  const [dateTo,    setDateTo]    = useState('');
-  const [ctrFormat, setCtrFormat] = useState('');
+  const [dateFrom,     setDateFrom]     = useState('');
+  const [dateTo,       setDateTo]       = useState('');
+  const [ctrFormat,    setCtrFormat]    = useState('');
+  const [ctrReportType, setCtrReportType] = useState('');
 
   /* ── Disclosure-specific ── */
   const [declNo,    setDeclNo]    = useState('');
@@ -747,7 +744,7 @@ export default function DCServiceChooserPage({ onBack }: {
   /* ── Derived ── */
   const meta              = service ? SERVICE_META[service] : null;
   const certType          = CERT_TYPES.find(t => t.name === serviceType) ?? null;
-  const ctrType           = CTR_TYPES.find(t => t.name === serviceType) ?? null;
+  const ctrType           = CTR_TYPES.find(t => t.name === ctrReportType) ?? null;
   const ipComplaintType   = IP_COMPLAINT_TYPES.find(t => t.name === serviceType) ?? null;
   const customsOpinionType = CUSTOMS_OPINION_TYPES.find(t => t.name === serviceType) ?? null;
   const appealType        = APPEAL_CUSTOMS_TYPES.find(t => t.name === serviceType) ?? null;
@@ -755,17 +752,14 @@ export default function DCServiceChooserPage({ onBack }: {
 
   /* Services that gate the full form behind service type selection */
   const PROGRESSIVE_SERVICES = [
-    'Submit Trade Intellectual Property Complaint',
-    'Request Customs Opinion',
-    'Appeal Customs Decision',
-    'Request Goods Classification',
+    'Request Reports',
   ];
   const isProgressiveService = PROGRESSIVE_SERVICES.includes(service);
   const showFullForm = !isProgressiveService || !!serviceType;
 
   const chargeAmount = (() => {
     if (service === 'Request Certificate' && certType) return certType.fees;
-    if (service === 'Request Customs Transaction Reports' && ctrType) return ctrType.fees;
+    if (service === 'Request Reports' && ctrType) return ctrType.fees;
     if (service === 'Submit Trade Intellectual Property Complaint' && ipComplaintType) return ipComplaintType.fees;
     if (service === 'Request Customs Opinion' && customsOpinionType) return customsOpinionType.fees;
     if (service === 'Appeal Customs Decision' && appealType) return appealType.fees;
@@ -784,7 +778,7 @@ export default function DCServiceChooserPage({ onBack }: {
     setPurpose('');
     setCertDocType(''); setCertDocNo(''); setCertHouseBill(''); setCertBillInfo(false);
     setCertGoodDesc(''); setCertPayAcct('');
-    setDateFrom(''); setDateTo(''); setCtrFormat('');
+    setDateFrom(''); setDateTo(''); setCtrFormat(''); setCtrReportType('');
     setDeclNo(''); setDisclDate(''); setReason('');
     setIprRefNo(''); setHsCodeCount('');
   };
@@ -866,7 +860,7 @@ export default function DCServiceChooserPage({ onBack }: {
               <div style={{ width: 'calc(50% - 6px)', flexShrink: 0 }}>
                 <FloatDropdown label="Service Name" required value={service} onChange={handleServiceChange} options={SERVICE_NAMES} />
               </div>
-              {meta && service !== 'Request Certificate' && (
+              {meta && service !== 'Request Certificate' && service !== 'Request Reports' && (
                 <InfoCard iconColor="green" label="Charges"
                   value={<span className="dc-basic-info-card__value--charge">{meta.baseCharges === '0.00' ? 'No Charge' : `AED ${meta.baseCharges}`}</span>}
                   icon={<Dh style={{ width: 18, height: 18 }} />}
@@ -874,13 +868,13 @@ export default function DCServiceChooserPage({ onBack }: {
                 />
               )}
             </div>
-            {/* Description tile (always) + Requirements tile (hidden for Request Certificate) */}
+            {/* Description tile (always) + Requirements tile (hidden for Certificate and Reports) */}
             {meta && (
               <div style={{ width: '100%', display: 'flex', gap: 12, marginTop: 12 }}>
                 <InfoCard iconColor="indigo" label="Service Description" value={meta.description}
                   icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>}
                 />
-                {service !== 'Request Certificate' && (
+                {service !== 'Request Certificate' && service !== 'Request Reports' && (
                   <InfoCard iconColor="teal" label="Requirements" value={meta.requirements}
                     icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>}
                   />
@@ -1248,8 +1242,45 @@ export default function DCServiceChooserPage({ onBack }: {
                 </div>
               )}
 
-              {/* §2b — CTR Report Type */}
-              {service === 'Request Customs Transaction Reports' && (
+              {/* §2b — Request Reports: Service Type selection (progressive) */}
+              {service === 'Request Reports' && (
+                <div className="dc-form-section dc-basic-info-section">
+                  <div className="dc-basic-info-header">
+                    <h4 className="dc-form-section__heading" style={{ margin: 0 }}>Service Type Selection</h4>
+                  </div>
+                  <div className="dc-basic-info-cards">
+                    <div style={{ width: '100%', display: 'flex', gap: 12, alignItems: 'center' }}>
+                      <div style={{ width: 'calc(50% - 6px)' }}>
+                        <FloatDropdown label="Service Type" required value={serviceType}
+                          onChange={v => { setServiceType(v); setCtrReportType(''); setDateFrom(''); setDateTo(''); }}
+                          options={['Download Customs Transaction Reports']} />
+                      </div>
+                      {serviceType && (
+                        <InfoCard iconColor="green" label="Charges"
+                          value={<span className="dc-basic-info-card__value--charge">AED {meta?.baseCharges ?? '200.00'}</span>}
+                          icon={<Dh style={{ width: 18, height: 18 }} />}
+                          style={{ height: 56, alignItems: 'center' }}
+                        />
+                      )}
+                    </div>
+                    {serviceType && (
+                      <div style={{ width: '100%', display: 'flex', gap: 12, marginTop: 12 }}>
+                        <InfoCard iconColor="indigo" label="Service Type Description"
+                          value="Download comprehensive customs transaction reports for your business activities from Dubai Customs."
+                          icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>}
+                        />
+                        <InfoCard iconColor="teal" label="Requirements"
+                          value={meta?.requirements ?? 'Trade license, Emirates ID, Customs file number, Date range'}
+                          icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* §2c — Request Reports: Report Details (shown after service type selected) */}
+              {service === 'Request Reports' && serviceType === 'Download Customs Transaction Reports' && (
                 <div className="dc-form-section dc-basic-info-section">
                   <div className="dc-basic-info-header">
                     <h4 className="dc-form-section__heading" style={{ margin: 0 }}>Report Details</h4>
@@ -1276,11 +1307,8 @@ export default function DCServiceChooserPage({ onBack }: {
                     )}
                   </div>
                   <div style={{ display: 'flex', gap: 12, marginTop: 16, marginBottom: 20 }}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <FloatDropdown label="Report Type" required value={serviceType} onChange={setServiceType} options={CTR_TYPES.map(t => t.name)} />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <FloatDropdown label="Format" required value={ctrFormat} onChange={setCtrFormat} options={['PDF', 'Excel', 'CSV']} />
+                    <div style={{ width: 'calc(50% - 6px)' }}>
+                      <FloatDropdown label="Report Type" required value={ctrReportType} onChange={setCtrReportType} options={CTR_TYPES.map(t => t.name)} />
                     </div>
                   </div>
                   <div className="dc-form-row">
