@@ -1192,7 +1192,7 @@ export type ClaimSummary = {
 export type PaymentDetails = { mode: string; accountNo: string };
 
 export function PaymentDetailsPage({
-  summary, onBack, onContinue,
+  summary, onBack, onBackToListing, onContinue,
 }: {
   summary: ClaimSummary;
   onBack: () => void;

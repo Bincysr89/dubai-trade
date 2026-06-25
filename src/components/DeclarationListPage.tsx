@@ -1831,8 +1831,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
 
         {/* Tabs row + date filter + show drafts */}
         <div className="flex items-center mb-[12px] gap-[12px] flex-wrap">
-          {/* Tabs — All Records | E-Payments (shown for all modules except the ePayments sidebar itself) */}
-          {activeMenu !== 'E-Payment' && (
+          {/* Tabs — All Records | E-Payments (shown for all modules except the ePayments sidebar itself and Cargo Transfer) */}
+          {activeMenu !== 'E-Payment' && activeMenu !== 'Cargo Transfer' && (
           <div className="bg-white flex items-center gap-[12px] h-[48px] px-[16px] py-[8px] rounded-[6px] flex-shrink-0" style={{ boxShadow: '0px 4px 10px rgba(0,0,0,0.08)' }}>
             <button
               onClick={() => { setActiveTab('all'); setEPayVccFilter(''); }}
