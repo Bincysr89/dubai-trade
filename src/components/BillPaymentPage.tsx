@@ -1893,7 +1893,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             <path d="M12 3v12M8 11l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
             <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" strokeLinecap="round" />
           </svg>
-          Download Excel
+          Download
         </button>
       </div>
 
