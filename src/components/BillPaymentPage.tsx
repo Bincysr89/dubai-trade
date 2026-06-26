@@ -603,6 +603,163 @@ function DateFilterCard({ from, to }: { from?: string; to?: string }) {
   );
 }
 
+/* ── Custom date + time picker ──────────────────────────────────────────────── */
+function DateTimePicker({ value, onConfirm }: { value: string; onConfirm: (v: string) => void }) {
+  const today = new Date();
+  const init  = value ? new Date(value + 'T00:00') : today;
+  const safe  = isNaN(init.getTime()) ? today : init;
+
+  const [viewYear,  setViewYear]  = useState(safe.getFullYear());
+  const [viewMonth, setViewMonth] = useState(safe.getMonth());
+  const [selDay,    setSelDay]    = useState<number | null>(value ? safe.getDate() : null);
+  const [hour,      setHour]      = useState(today.getHours());
+  const [minute,    setMinute]    = useState(today.getMinutes());
+
+  const MS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const daysInMo   = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const firstDow   = new Date(viewYear, viewMonth, 1).getDay();
+  const prevMoDays = new Date(viewYear, viewMonth, 0).getDate();
+
+  const cells: { day: number; t: 'p'|'c'|'n' }[] = [];
+  for (let i = firstDow - 1; i >= 0; i--) cells.push({ day: prevMoDays - i, t: 'p' });
+  for (let d = 1; d <= daysInMo; d++)     cells.push({ day: d, t: 'c' });
+  for (let nd = 1; cells.length < 42; nd++) cells.push({ day: nd, t: 'n' });
+
+  const navMonth = (delta: number) => {
+    const d = new Date(viewYear, viewMonth + delta, 1);
+    setViewMonth(d.getMonth()); setViewYear(d.getFullYear());
+  };
+  const p2 = (n: number) => String(n).padStart(2, '0');
+  const confirm = () => {
+    if (!selDay) return;
+    onConfirm(`${viewYear}-${p2(viewMonth + 1)}-${p2(selDay)}`);
+  };
+
+  const ChevSvg = ({ dir }: { dir: 'l'|'r' }) => (
+    <svg viewBox="0 0 20 20" width="12" height="12" fill="none">
+      <path d={dir === 'l' ? 'M13 4l-6 6 6 6' : 'M7 4l6 6-6 6'} stroke="#0e1b3d" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  );
+  const ChevDown = () => (
+    <svg viewBox="0 0 20 20" width="11" height="11" fill="none">
+      <path d="M5 8l5 5 5-5" stroke="#697498" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  );
+  const NavBtn = ({ onClick, ch }: { onClick: () => void; ch: React.ReactNode }) => (
+    <button type="button" onClick={onClick}
+      className="size-[26px] flex items-center justify-center rounded hover:bg-[#f0f4ff] transition-colors"
+      style={{ border:'none', background:'transparent', cursor:'pointer', flexShrink:0 }}>
+      {ch}
+    </button>
+  );
+
+  return (
+    <div style={{ display:'flex', gap:20, fontFamily: font }}>
+      {/* ── Calendar ── */}
+      <div style={{ width:280 }}>
+        {/* Month / Year header */}
+        <div className="flex items-center justify-between mb-[14px]">
+          <div className="flex items-center gap-[2px]">
+            <NavBtn onClick={() => navMonth(-1)} ch={<ChevSvg dir="l" />} />
+            <span className="flex items-center gap-[3px] text-[14px] font-bold text-[#0e1b3d] px-[4px]">
+              {MS[viewMonth]}&nbsp;<ChevDown />
+            </span>
+            <NavBtn onClick={() => navMonth(1)} ch={<ChevSvg dir="r" />} />
+          </div>
+          <div className="flex items-center gap-[2px]">
+            <NavBtn onClick={() => setViewYear(y => y - 1)} ch={<ChevSvg dir="l" />} />
+            <span className="flex items-center gap-[3px] text-[14px] font-bold text-[#0e1b3d] px-[4px]">
+              {viewYear}&nbsp;<ChevDown />
+            </span>
+            <NavBtn onClick={() => setViewYear(y => y + 1)} ch={<ChevSvg dir="r" />} />
+          </div>
+        </div>
+
+        {/* Day-of-week headers */}
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', marginBottom:6 }}>
+          {['S','M','T','W','T','F','S'].map((d, i) => (
+            <div key={i} style={{ textAlign:'center', fontSize:12, fontWeight:700, color:'#697498', paddingBottom:6 }}>{d}</div>
+          ))}
+        </div>
+
+        {/* Day cells */}
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)' }}>
+          {cells.map((cell, i) => {
+            const isCur = cell.t === 'c';
+            const isSel = isCur && selDay === cell.day;
+            return (
+              <button key={i} type="button"
+                onClick={() => { if (isCur) setSelDay(cell.day); }}
+                style={{
+                  height:38, width:'100%', display:'flex', alignItems:'center', justifyContent:'center',
+                  fontSize:13, borderRadius:'50%', border:'none',
+                  background: isSel ? '#1360d2' : 'transparent',
+                  color: isSel ? '#fff' : isCur ? '#0e1b3d' : '#c8d0e0',
+                  fontWeight: isSel ? 700 : 400,
+                  cursor: isCur ? 'pointer' : 'default',
+                  transition:'background 0.1s',
+                }}
+                onMouseEnter={e => { if (isCur && !isSel) e.currentTarget.style.background = '#e8f0ff'; }}
+                onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = 'transparent'; }}
+              >
+                {cell.day}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Time + Confirm ── */}
+      <div style={{ width:160, display:'flex', flexDirection:'column', paddingTop:4 }}>
+        <div style={{ display:'flex', alignItems:'flex-start', gap:6 }}>
+          {/* Hours */}
+          <div style={{ flex:1 }}>
+            <p style={{ fontSize:13, fontWeight:700, color:'#0e1b3d', margin:'0 0 8px', fontFamily: font }}>Hours</p>
+            <div style={{ position:'relative' }}>
+              <div style={{ border:'1px solid #c0c8e0', borderRadius:8, padding:'10px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                <span style={{ fontSize:18, fontWeight:600, color:'#0e1b3d' }}>{p2(hour)}</span>
+                <ChevDown />
+              </div>
+              <select value={hour} onChange={e => setHour(+e.target.value)}
+                style={{ position:'absolute', inset:0, opacity:0, width:'100%', height:'100%', cursor:'pointer' }}>
+                {Array.from({length:24},(_,i)=><option key={i} value={i}>{p2(i)}</option>)}
+              </select>
+            </div>
+          </div>
+          {/* Colon */}
+          <div style={{ fontSize:20, fontWeight:700, color:'#0e1b3d', flexShrink:0, marginTop:34 }}>:</div>
+          {/* Minutes */}
+          <div style={{ flex:1 }}>
+            <p style={{ fontSize:13, fontWeight:700, color:'#0e1b3d', margin:'0 0 8px', fontFamily: font }}>Minutes</p>
+            <div style={{ position:'relative' }}>
+              <div style={{ border:'1px solid #c0c8e0', borderRadius:8, padding:'10px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                <span style={{ fontSize:18, fontWeight:600, color:'#0e1b3d' }}>{p2(minute)}</span>
+                <ChevDown />
+              </div>
+              <select value={minute} onChange={e => setMinute(+e.target.value)}
+                style={{ position:'absolute', inset:0, opacity:0, width:'100%', height:'100%', cursor:'pointer' }}>
+                {Array.from({length:60},(_,i)=><option key={i} value={i}>{p2(i)}</option>)}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Confirm */}
+        <button type="button" onClick={confirm}
+          style={{
+            width:'100%', padding:'13px 0', borderRadius:8, marginTop:20,
+            fontSize:15, fontWeight:600, color:'white', border:'none',
+            background: selDay ? '#3a5fd9' : '#a6c2e9',
+            cursor: selDay ? 'pointer' : 'not-allowed',
+            fontFamily: font,
+          }}>
+          Confirm
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /* ── Main component ─────────────────────────────────────────────────────────── */
 export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const navigate = useNavigate();
@@ -781,24 +938,21 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
         </div>
         {isOpen && (
           <div ref={filterRef} className="absolute z-[500] bg-white rounded-[12px] border border-[#e0e8f5] p-[20px]"
-            style={{ top: 'calc(100% + 6px)', ...(ra ? { right: 0 } : { left: 0 }), minWidth: 260, boxShadow: '0 8px 32px rgba(14,27,61,0.16)', fontFamily: font }}
+            style={{ top: 'calc(100% + 6px)', ...(ra ? { right: 0 } : { left: 0 }), minWidth: isDate ? 480 : 260, boxShadow: '0 8px 32px rgba(14,27,61,0.16)', fontFamily: font }}
             onClick={e => e.stopPropagation()}>
             {isDate ? (
               <>
-                <input type="date" value={value} onChange={e => setFilterValues(p => ({ ...p, [key]: e.target.value }))}
-                  className="w-full h-[48px] border border-[#d5ddfb] rounded-[6px] px-[12px] text-[15px] text-[#0e1b3d] focus:outline-none focus:border-[#1360d2] mb-[16px]"
-                  style={{ fontFamily: font }} />
-                {(['oldest', 'newest'] as const).map(opt => (
-                  <label key={opt} className="flex items-center gap-[12px] mb-[12px] cursor-pointer">
-                    <div className="size-[20px] rounded-full border-[2px] flex items-center justify-center flex-shrink-0"
-                      style={{ borderColor: order === opt ? '#1360d2' : '#c0c8e0' }}>
-                      {order === opt && <div className="size-[10px] rounded-full bg-[#1360d2]" />}
-                    </div>
-                    <input type="radio" className="sr-only" checked={order === opt}
-                      onChange={() => setFilterOrders(p => ({ ...p, [key]: opt }))} />
-                    <span className="text-[15px] text-[#0e1b3d]">{opt === 'oldest' ? 'Oldest First' : 'Newest First'}</span>
-                  </label>
-                ))}
+                <DateTimePicker
+                  value={value}
+                  onConfirm={dateStr => { setFilterValues(p => ({ ...p, [key]: dateStr })); setFilterOpen(null); }}
+                />
+                <button
+                  type="button"
+                  onClick={() => { setFilterValues(p => { const n = { ...p }; delete n[key]; return n; }); setFilterOrders(p => { const n = { ...p }; delete n[key]; return n; }); }}
+                  className="mt-[12px] text-[14px] text-[#1360d2] hover:underline bg-transparent border-none cursor-pointer w-full text-center block"
+                  style={{ fontFamily: font }}>
+                  Reset filter
+                </button>
               </>
             ) : (
               <>
@@ -822,17 +976,17 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                     <span className="text-[15px] text-[#0e1b3d]">{opt === 'oldest' ? 'Oldest First' : 'Newest First'}</span>
                   </label>
                 ))}
+                <div className="flex items-center gap-[10px]">
+                  <button
+                    onClick={() => { setFilterValues(p => { const n = { ...p }; delete n[key]; return n; }); setFilterOrders(p => { const n = { ...p }; delete n[key]; return n; }); }}
+                    className="flex-1 h-[40px] rounded-[6px] border border-[#d5ddfb] text-[15px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] transition-colors"
+                    style={{ fontFamily: font }}>Reset</button>
+                  <button onClick={() => setFilterOpen(null)}
+                    className="flex-1 h-[40px] rounded-[6px] text-[15px] text-white transition-colors"
+                    style={{ background: '#1360d2', fontFamily: font }}>Apply</button>
+                </div>
               </>
             )}
-            <div className="flex items-center gap-[10px]">
-              <button
-                onClick={() => { setFilterValues(p => { const n = { ...p }; delete n[key]; return n; }); setFilterOrders(p => { const n = { ...p }; delete n[key]; return n; }); }}
-                className="flex-1 h-[40px] rounded-[6px] border border-[#d5ddfb] text-[15px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] transition-colors"
-                style={{ fontFamily: font }}>Reset</button>
-              <button onClick={() => setFilterOpen(null)}
-                className="flex-1 h-[40px] rounded-[6px] text-[15px] text-white transition-colors"
-                style={{ background: '#1360d2', fontFamily: font }}>Apply</button>
-            </div>
           </div>
         )}
       </th>
