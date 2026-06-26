@@ -185,33 +185,68 @@ export function DateTimePicker({
     </div>
   );
 
+  const confirmBtn = (fullWidth = true) => (
+    <button type="button"
+      onClick={() => {
+        if (!selDay) return;
+        const dateStr = `${viewYear}-${p2(viewMonth + 1)}-${p2(selDay)}`;
+        onConfirm(showTime ? `${dateStr} ${p2(hour)}:${p2(minute)}` : dateStr);
+      }}
+      style={{
+        width: fullWidth ? '100%' : undefined, padding: '14px 0', borderRadius: 8, marginTop: 16,
+        fontSize: 15, fontWeight: 600, color: 'white', border: 'none',
+        background: selDay ? '#3a5fd9' : '#a6c2e9',
+        cursor: selDay ? 'pointer' : 'not-allowed',
+        fontFamily: FONT,
+      }}>
+      Confirm
+    </button>
+  );
+
+  const BigTimeSelect = ({ val, max, label: tLabel, onChg }: { val: number; max: number; label: string; onChg: (v: number) => void }) => (
+    <div style={{ flex: 1 }}>
+      <div style={{ fontSize: 15, fontWeight: 700, color: '#0e1b3d', fontFamily: FONT, marginBottom: 10 }}>{tLabel}</div>
+      <div style={{ position: 'relative' }}>
+        <div style={{ border: '1px solid #d5ddfb', borderRadius: 8, padding: '14px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fff' }}>
+          <span style={{ fontSize: 26, fontWeight: 700, color: '#0e1b3d', fontFamily: FONT }}>{p2(val)}</span>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M6 9l6 6 6-6" stroke="#697498" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        </div>
+        <select value={val} onChange={e => onChg(+e.target.value)}
+          style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }}>
+          {Array.from({ length: max }, (_, i) => <option key={i} value={i}>{p2(i)}</option>)}
+        </select>
+      </div>
+    </div>
+  );
+
+  if (showTime) {
+    return (
+      <div style={{ display: 'flex', gap: 0, fontFamily: FONT, alignItems: 'stretch' }}>
+        {/* Calendar */}
+        <div style={{ width: 300, flexShrink: 0 }}>
+          {header}
+          {mode === 'month' ? monthGrid : mode === 'year' ? yearGrid : dayGrid}
+        </div>
+        {/* Divider */}
+        <div style={{ width: 1, background: '#e8edf5', margin: '0 24px', flexShrink: 0 }} />
+        {/* Time + Confirm */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: 220 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
+            <BigTimeSelect val={hour}   max={24} label="Hours"   onChg={setHour} />
+            <span style={{ fontSize: 28, fontWeight: 700, color: '#0e1b3d', paddingBottom: 14, flexShrink: 0 }}>:</span>
+            <BigTimeSelect val={minute} max={60} label="Minutes" onChg={setMinute} />
+          </div>
+          {confirmBtn()}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ width: 300, fontFamily: FONT }}>
       {header}
       {mode === 'month' ? monthGrid : mode === 'year' ? yearGrid : dayGrid}
-      {showTime && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 14, padding: '12px 0', borderTop: '1px solid #e8edf5' }}>
-          <span style={{ fontSize: 12, fontWeight: 600, color: '#697498', marginRight: 4, flexShrink: 0, fontFamily: FONT }}>TIME</span>
-          <TimeSelect val={hour}   max={24} onChange={setHour} />
-          <span style={{ fontSize: 20, fontWeight: 700, color: '#0e1b3d', flexShrink: 0 }}>:</span>
-          <TimeSelect val={minute} max={60} onChange={setMinute} />
-        </div>
-      )}
-      <button type="button"
-        onClick={() => {
-          if (!selDay) return;
-          const dateStr = `${viewYear}-${p2(viewMonth + 1)}-${p2(selDay)}`;
-          onConfirm(showTime ? `${dateStr} ${p2(hour)}:${p2(minute)}` : dateStr);
-        }}
-        style={{
-          width: '100%', padding: '12px 0', borderRadius: 8, marginTop: showTime ? 10 : 16,
-          fontSize: 15, fontWeight: 600, color: 'white', border: 'none',
-          background: selDay ? '#3a5fd9' : '#a6c2e9',
-          cursor: selDay ? 'pointer' : 'not-allowed',
-          fontFamily: FONT,
-        }}>
-        Confirm
-      </button>
+      {confirmBtn()}
     </div>
   );
 }
@@ -231,6 +266,22 @@ const CalIcon = ({ color = '#0e1b3d' }: { color?: string }) => (
  * DateInput — floating-label style date field that opens the custom calendar.
  * value / onChange use "YYYY-MM-DD" (date) or "YYYY-MM-DD HH:mm" (datetime) format.
  */
+const XIcon = ({ onClear }: { onClear: (e: React.MouseEvent) => void }) => (
+  <button
+    type="button"
+    onClick={onClear}
+    style={{
+      width: 22, height: 22, borderRadius: '50%', border: 'none',
+      background: '#b0b8d0', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      cursor: 'pointer', flexShrink: 0, padding: 0,
+    }}>
+    <svg viewBox="0 0 10 10" width="10" height="10" fill="none">
+      <line x1="2" y1="2" x2="8" y2="8" stroke="#fff" strokeWidth="1.6" strokeLinecap="round"/>
+      <line x1="8" y1="2" x2="2" y2="8" stroke="#fff" strokeWidth="1.6" strokeLinecap="round"/>
+    </svg>
+  </button>
+);
+
 export function DateInput({
   label,
   value,
@@ -249,6 +300,7 @@ export function DateInput({
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [hovered, setHovered] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -283,21 +335,28 @@ export function DateInput({
   };
 
   return (
-    <div ref={wrapRef} className={`relative ${className ?? ''}`} style={style}>
+    <div ref={wrapRef} className={`relative ${className ?? ''}`} style={style}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}>
       {/* Trigger field */}
       <div
         onClick={() => setOpen(o => !o)}
         style={{
           height: 56, border: `1.5px solid ${open ? '#1360d2' : '#d5ddfb'}`,
-          borderRadius: 4, background: '#fff', display: 'flex', alignItems: 'flex-end',
-          paddingLeft: 12, paddingRight: 12, paddingBottom: 8, cursor: 'pointer',
+          borderRadius: 4, background: '#fff', display: 'flex', alignItems: 'center',
+          paddingLeft: 12, paddingRight: 12, cursor: 'pointer',
           justifyContent: 'space-between', boxSizing: 'border-box',
           transition: 'border-color 0.15s',
         }}>
-        <span style={{ fontSize: 16, color: hasVal ? '#0e1b3d' : 'transparent', fontFamily: FONT, lineHeight: 1 }}>
+        <span style={{ fontSize: 16, color: hasVal ? '#0e1b3d' : 'transparent', fontFamily: FONT, lineHeight: 1, flex: 1 }}>
           {displayVal || 'placeholder'}
         </span>
-        <CalIcon />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingBottom: 0 }}>
+          {hasVal && hovered && (
+            <XIcon onClear={e => { e.stopPropagation(); onChange(''); }} />
+          )}
+          <CalIcon />
+        </div>
       </div>
       {/* Floating label */}
       <span style={labelStyle}>
@@ -308,7 +367,7 @@ export function DateInput({
         <div style={{
           position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 600,
           background: '#fff', borderRadius: 12, border: '1px solid #e0e8f5',
-          padding: 20, minWidth: 340,
+          padding: 20, minWidth: showTime ? 620 : 340,
           boxShadow: '0 8px 32px rgba(14,27,61,0.16)',
         }}>
           <DateTimePicker
@@ -354,6 +413,7 @@ export function DateInputOutlined({
   font?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [hovered, setHovered] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const f = fontOverride ?? FONT;
 
@@ -367,7 +427,9 @@ export function DateInputOutlined({
   }, [open]);
 
   return (
-    <div ref={wrapRef} className={`relative ${className ?? ''}`} style={style}>
+    <div ref={wrapRef} className={`relative ${className ?? ''}`} style={style}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}>
       <div style={{
         height: 56, border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}`,
         borderRadius: 4, background: '#fff', display: 'flex', alignItems: 'center',
@@ -378,7 +440,10 @@ export function DateInputOutlined({
         <span style={{ flex: 1, fontSize: 16, color: value ? '#051937' : '#b0b8d0', fontFamily: f }}>
           {value ? fmtDate(value) : ''}
         </span>
-        <div style={{ width: 48, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingRight: 12, flexShrink: 0 }}>
+          {value && hovered && (
+            <XIcon onClear={e => { e.stopPropagation(); onChange(''); }} />
+          )}
           <CalIcon />
         </div>
       </div>

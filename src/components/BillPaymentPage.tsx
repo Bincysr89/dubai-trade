@@ -435,11 +435,24 @@ function floatLabel(active: boolean, focused = false): React.CSSProperties {
   };
 }
 
+const ClearXBtn = ({ onClear, right = 10 }: { onClear: (e: React.MouseEvent) => void; right?: number }) => (
+  <button type="button" onClick={onClear}
+    style={{ position: 'absolute', right, top: '50%', transform: 'translateY(-50%)',
+      width: 22, height: 22, borderRadius: '50%', border: 'none', background: '#b0b8d0',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0, zIndex: 2 }}>
+    <svg viewBox="0 0 10 10" width="10" height="10" fill="none">
+      <line x1="2" y1="2" x2="8" y2="8" stroke="#fff" strokeWidth="1.6" strokeLinecap="round"/>
+      <line x1="8" y1="2" x2="2" y2="8" stroke="#fff" strokeWidth="1.6" strokeLinecap="round"/>
+    </svg>
+  </button>
+);
+
 function FloatInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   const [focused, setFocused] = useState(false);
+  const [hovered, setHovered] = useState(false);
   const active = focused || value.length > 0;
   return (
-    <div className="relative">
+    <div className="relative" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
       <input
         type="text"
         value={value}
@@ -447,9 +460,10 @@ function FloatInput({ label, value, onChange }: { label: string; value: string; 
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         className="h-[56px] w-full rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none bg-white"
-        style={{ fontFamily: font, paddingTop: active ? 18 : 0, border: `1px solid ${focused ? '#1360d2' : '#d5ddfb'}` }}
+        style={{ fontFamily: font, paddingRight: (value && hovered) ? 40 : 12, border: `1px solid ${focused ? '#1360d2' : '#d5ddfb'}` }}
       />
       <span style={floatLabel(active, focused)}>{label}</span>
+      {value && hovered && <ClearXBtn onClear={e => { e.preventDefault(); onChange(''); }} />}
     </div>
   );
 }
@@ -457,6 +471,7 @@ function FloatInput({ label, value, onChange }: { label: string; value: string; 
 function FloatDropdown({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (v: string) => void }) {
   const [open, setOpen] = useState(false);
   const [focused, setFocused] = useState(false);
+  const [hovered, setHovered] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) { setOpen(false); setFocused(false); } };
@@ -464,15 +479,25 @@ function FloatDropdown({ label, value, options, onChange }: { label: string; val
     return () => document.removeEventListener('mousedown', h);
   }, []);
   const active = open || focused || value !== '';
+  const showX = !!(value && hovered);
   return (
-    <div className="relative" ref={ref}>
+    <div className="relative" ref={ref} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
       <button
         type="button"
         onClick={() => { setOpen(o => !o); setFocused(true); }}
-        className="h-[56px] w-full rounded-[4px] px-[12px] flex items-center text-[16px] text-[#0e1b3d] focus:outline-none bg-white text-left"
-        style={{ fontFamily: font, paddingTop: active ? 18 : 0, border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}` }}
+        className="h-[56px] w-full rounded-[4px] px-[12px] flex items-center gap-[6px] text-[16px] text-[#0e1b3d] focus:outline-none bg-white text-left"
+        style={{ fontFamily: font, border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}` }}
       >
         <span className="flex-1 truncate">{value}</span>
+        {showX && (
+          <span onClick={e => { e.stopPropagation(); onChange(''); setOpen(false); setFocused(false); }}
+            style={{ width: 22, height: 22, borderRadius: '50%', background: '#b0b8d0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: 'pointer' }}>
+            <svg viewBox="0 0 10 10" width="10" height="10" fill="none">
+              <line x1="2" y1="2" x2="8" y2="8" stroke="#fff" strokeWidth="1.6" strokeLinecap="round"/>
+              <line x1="8" y1="2" x2="2" y2="8" stroke="#fff" strokeWidth="1.6" strokeLinecap="round"/>
+            </svg>
+          </span>
+        )}
         <svg viewBox="0 0 24 24" className={`size-[18px] text-[#697498] flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 9l6 6 6-6" /></svg>
       </button>
       <span style={floatLabel(active, open)}>{label}</span>

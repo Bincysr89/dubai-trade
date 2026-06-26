@@ -1125,8 +1125,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onBlur={() => blurField('ackDeclType')}
                     >
                       <span style={floatLabel(isFloated('ackDeclType'))}>Declaration Type</span>
-                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ackDeclType'] || 'Declaration Type'}</span>
-                      <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                      <span className="flex-1 text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ackDeclType']}</span>
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
                     </div>
                   </div>
 
@@ -1139,12 +1139,12 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onBlur={() => blurField('ackStatus')}
                     >
                       <span style={floatLabel(isFloated('ackStatus'))}>Acknowledgement Status</span>
-                      <span className="text-[16px] text-[#697498]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ackStatus'] || 'Select'}</span>
-                      <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                      <span className="flex-1 text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ackStatus']}</span>
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
                     </div>
                   </div>
 
-                  {/* *Party Type — dropdown */}
+                  {/* *Party Type — dropdown (default: Both) */}
                   <div className="relative">
                     <div
                       tabIndex={0}
@@ -1152,9 +1152,9 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onClick={() => focusField('ackPartyType')}
                       onBlur={() => blurField('ackPartyType')}
                     >
-                      <span style={floatLabel(isFloated('ackPartyType'))}><span style={{ color: '#e8212e' }}>*</span>Party Type</span>
-                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ackPartyType'] || 'Both'}</span>
-                      <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                      <span style={floatLabel(true)}><span style={{ color: '#e8212e' }}>*</span>Party Type</span>
+                      <span className="flex-1 text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ackPartyType'] || 'Both'}</span>
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
                     </div>
                   </div>
 
@@ -1173,7 +1173,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                     <svg className="absolute right-[12px] top-1/2 -translate-y-1/2" viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><circle cx="9" cy="9" r="6" /><path d="M14 14l4 4" strokeLinecap="round" /></svg>
                   </div>
 
-                  {/* *Date Type — dropdown */}
+                  {/* *Date Type — dropdown (default: Clearance Date) */}
                   <div className="relative">
                     <div
                       tabIndex={0}
@@ -1181,9 +1181,9 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onClick={() => focusField('ackDateType')}
                       onBlur={() => blurField('ackDateType')}
                     >
-                      <span style={floatLabel(isFloated('ackDateType'))}><span style={{ color: '#e8212e' }}>*</span>Date Type</span>
-                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ackDateType'] || 'Clearance Date'}</span>
-                      <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                      <span style={floatLabel(true)}><span style={{ color: '#e8212e' }}>*</span>Date Type</span>
+                      <span className="flex-1 text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ackDateType'] || 'Clearance Date'}</span>
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
                     </div>
                   </div>
 
@@ -1230,8 +1230,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onBlur={() => blurField('vccStatus')}
                     >
                       <span style={floatLabel(isFloated('vccStatus'))}>Status</span>
-                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['vccStatus'] || ''}</span>
-                      <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                      <span className="flex-1 text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['vccStatus'] || ''}</span>
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
                     </div>
                   </div>
 
@@ -1245,8 +1245,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                         onBlur={() => blurField('vccCustomerType')}
                       >
                         <span style={floatLabel(isFloated('vccCustomerType'))}>Customer Type</span>
-                        <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['vccCustomerType'] || ''}</span>
-                        <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                        <span className="flex-1 text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['vccCustomerType'] || ''}</span>
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
                       </div>
                     </div>
                   )}
@@ -1348,8 +1348,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onBlur={() => blurField('rcClaimType')}
                     >
                       <span style={floatLabel(isFloated('rcClaimType'))}>Claim Type</span>
-                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcClaimType'] || ''}</span>
-                      <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                      <span className="flex-1 text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcClaimType'] || ''}</span>
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
                     </div>
                   </div>
 
@@ -1362,8 +1362,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onBlur={() => blurField('rcClaimStatus')}
                     >
                       <span style={floatLabel(isFloated('rcClaimStatus'))}>Claim Status</span>
-                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcClaimStatus'] || ''}</span>
-                      <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                      <span className="flex-1 text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcClaimStatus'] || ''}</span>
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
                     </div>
                   </div>
 
@@ -1390,8 +1390,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onBlur={() => blurField('rcTimeInterval')}
                     >
                       <span style={floatLabel(isFloated('rcTimeInterval'))}>Time Interval</span>
-                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcTimeInterval'] || ''}</span>
-                      <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                      <span className="flex-1 text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcTimeInterval'] || ''}</span>
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
                     </div>
                   </div>
 
@@ -1418,8 +1418,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onBlur={() => blurField('rcClaimantType')}
                     >
                       <span style={floatLabel(isFloated('rcClaimantType'))}>Claimant Type</span>
-                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcClaimantType'] || ''}</span>
-                      <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                      <span className="flex-1 text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcClaimantType'] || ''}</span>
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
                     </div>
                   </div>
 
@@ -1460,8 +1460,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onBlur={() => blurField('rcSubclaimStatus')}
                     >
                       <span style={floatLabel(isFloated('rcSubclaimStatus'))}>Subclaim Status</span>
-                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcSubclaimStatus'] || ''}</span>
-                      <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                      <span className="flex-1 text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcSubclaimStatus'] || ''}</span>
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
                     </div>
                   </div>
 
@@ -1474,8 +1474,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                       onBlur={() => blurField('rcSubmissionMode')}
                     >
                       <span style={floatLabel(isFloated('rcSubmissionMode'))}>Submission Mode</span>
-                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcSubmissionMode'] || ''}</span>
-                      <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                      <span className="flex-1 text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcSubmissionMode'] || ''}</span>
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
                     </div>
                   </div>
                 </>
@@ -1491,8 +1491,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   onBlur={() => blurField('ctCargoChannel')}
                 >
                   <span style={floatLabel(isFloated('ctCargoChannel'))}>Cargo Channel (inbound)</span>
-                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ctCargoChannel'] || ''}</span>
-                  <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                  <span className="flex-1 text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ctCargoChannel'] || ''}</span>
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
                 </div>
               </div>
 
@@ -1519,8 +1519,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   onBlur={() => blurField('ctTransferType')}
                 >
                   <span style={floatLabel(isFloated('ctTransferType'))}>Cargo Transfer Type</span>
-                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ctTransferType'] || ''}</span>
-                  <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                  <span className="flex-1 text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ctTransferType'] || ''}</span>
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
                 </div>
               </div>
 
@@ -1533,8 +1533,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   onBlur={() => blurField('ctStatus')}
                 >
                   <span style={floatLabel(isFloated('ctStatus'))}>Cargo Transfer Status</span>
-                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ctStatus'] || ''}</span>
-                  <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                  <span className="flex-1 text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ctStatus'] || ''}</span>
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
                 </div>
               </div>
 
@@ -1609,8 +1609,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   onBlur={() => blurField('cargoChannel')}
                 >
                   <span style={floatLabel(isFloated('cargoChannel'))}>Cargo Channel</span>
-                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['cargoChannel'] || ''}</span>
-                  <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                  <span className="flex-1 text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['cargoChannel'] || ''}</span>
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
                 </div>
               </div>
 
@@ -1623,8 +1623,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   onBlur={() => blurField('regimeType')}
                 >
                   <span style={floatLabel(isFloated('regimeType'))}>Regime Type</span>
-                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['regimeType'] || ''}</span>
-                  <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                  <span className="flex-1 text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['regimeType'] || ''}</span>
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
                 </div>
               </div>
 
@@ -1637,8 +1637,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   onBlur={() => blurField('declType')}
                 >
                   <span style={floatLabel(isFloated('declType'))}>Declaration Type</span>
-                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['declType'] || ''}</span>
-                  <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                  <span className="flex-1 text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['declType'] || ''}</span>
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
                 </div>
               </div>
 
@@ -1651,8 +1651,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   onBlur={() => blurField('permit')}
                 >
                   <span style={floatLabel(isFloated('permit'))}>Permit</span>
-                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['permit'] || ''}</span>
-                  <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                  <span className="flex-1 text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['permit'] || ''}</span>
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
                 </div>
               </div>
 
@@ -1665,8 +1665,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   onBlur={() => blurField('declStatus')}
                 >
                   <span style={floatLabel(isFloated('declStatus'))}>Declaration Status</span>
-                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['declStatus'] || ''}</span>
-                  <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                  <span className="flex-1 text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['declStatus'] || ''}</span>
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
                 </div>
               </div>
 
@@ -1723,8 +1723,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   onBlur={() => blurField('customerCode')}
                 >
                   <span style={floatLabel(isFloated('customerCode'))}>Customer Code</span>
-                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['customerCode'] || ''}</span>
-                  <svg className="absolute right-[12px]" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                  <span className="flex-1 text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['customerCode'] || ''}</span>
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
                 </div>
               </div>
 
