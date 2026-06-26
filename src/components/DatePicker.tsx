@@ -4,11 +4,11 @@ const FONT = "'Dubai', 'Segoe UI', sans-serif";
 const MS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const p2 = (n: number) => String(n).padStart(2, '0');
 
-/** Format YYYY-MM-DD → "05-Jun-26" */
+/** Format YYYY-MM-DD → "05-06-2026" */
 export function fmtDate(iso: string): string {
   if (!iso) return '';
   const [y, m, d] = iso.split('-').map(Number);
-  return `${p2(d)}-${MS[m - 1]}-${String(y).slice(2)}`;
+  return `${p2(d)}-${p2(m)}-${y}`;
 }
 
 /* ── Calendar picker ──────────────────────────────────────────────────────── */
@@ -176,8 +176,8 @@ export function DateTimePicker({
 
 /* ── Reusable DateInput field ─────────────────────────────────────────────── */
 
-const CalIcon = () => (
-  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+const CalIcon = ({ color = '#0e1b3d' }: { color?: string }) => (
+  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <rect x="3" y="4" width="18" height="18" rx="2" />
     <line x1="16" y1="2" x2="16" y2="6" />
     <line x1="8" y1="2" x2="8" y2="6" />
@@ -225,7 +225,7 @@ export function DateInput({
     top: hasVal || open ? 8 : '50%',
     transform: hasVal || open ? 'none' : 'translateY(-50%)',
     fontSize: hasVal || open ? 11 : 16,
-    color: open ? '#1360d2' : hasVal ? '#697498' : '#b0b8d0',
+    color: open ? '#1360d2' : '#0e1b3d',
     pointerEvents: 'none',
     transition: 'all 0.15s',
     fontFamily: FONT,
