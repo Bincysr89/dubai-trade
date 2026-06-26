@@ -700,7 +700,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
     return () => document.removeEventListener('mousedown', h);
   }, [filterOpen]);
 
-  const DATE_COLS   = new Set(['Invoice Date', 'Transaction Date']);
+  const DATE_COLS     = new Set(['Invoice Date', 'Transaction Date']);
+  const DATETIME_COLS = new Set(['pay:Transaction Date']); // date + time picker
   const STATUS_OPTS: Record<string, string[]> = {
     inv: ['Unpaid', 'Paid', 'Partially Paid', 'Initiated'],
     pay: ['Success', 'Initiated'],
@@ -717,6 +718,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
     const key = `${table}:${label}`;
     const isOpen = filterOpen === key;
     const isDate = DATE_COLS.has(label);
+    const isDateTime = DATETIME_COLS.has(key);
     const isStatus = label === 'Status';
     const value = filterValues[key] ?? '';
     const order = filterOrders[key] ?? 'newest';
@@ -761,9 +763,10 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             {isDate ? (
               <>
                 <DateInput
-                  label="Select date"
+                  label={isDateTime ? 'Select date & time' : 'Select date'}
                   value={value}
                   onChange={v => setFilterValues(p => ({ ...p, [key]: v }))}
+                  showTime={isDateTime}
                   style={{ marginBottom: 16 }}
                 />
                 {(['oldest', 'newest'] as const).map(opt => (

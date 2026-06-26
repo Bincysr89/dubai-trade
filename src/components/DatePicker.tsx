@@ -7,27 +7,41 @@ const p2 = (n: number) => String(n).padStart(2, '0');
 /** Format YYYY-MM-DD → "05-06-2026" */
 export function fmtDate(iso: string): string {
   if (!iso) return '';
-  const [y, m, d] = iso.split('-').map(Number);
+  const datePart = iso.split('T')[0].split(' ')[0]; // handle both ISO and "YYYY-MM-DD HH:mm"
+  const [y, m, d] = datePart.split('-').map(Number);
   return `${p2(d)}-${p2(m)}-${y}`;
+}
+
+/** Format "YYYY-MM-DD HH:mm" → "05-06-2026 14:30" */
+export function fmtDateTime(val: string): string {
+  if (!val) return '';
+  const [datePart, timePart] = val.split(' ');
+  return timePart ? `${fmtDate(datePart)} ${timePart}` : fmtDate(datePart);
 }
 
 /* ── Calendar picker ──────────────────────────────────────────────────────── */
 export function DateTimePicker({
   value,
   onConfirm,
+  showTime = false,
 }: {
   value: string;
   onConfirm: (v: string) => void;
+  showTime?: boolean;
 }) {
   const today = new Date();
-  const init = value ? new Date(value + 'T00:00') : today;
+  const datePart = value ? value.split(' ')[0] : '';
+  const timePart = value ? (value.split(' ')[1] ?? '') : '';
+  const init = datePart ? new Date(datePart + 'T00:00') : today;
   const safe = isNaN(init.getTime()) ? today : init;
 
   const [viewYear,  setViewYear]  = useState(safe.getFullYear());
   const [viewMonth, setViewMonth] = useState(safe.getMonth());
-  const [selDay,    setSelDay]    = useState<number | null>(value ? safe.getDate() : null);
+  const [selDay,    setSelDay]    = useState<number | null>(datePart ? safe.getDate() : null);
   const [mode,      setMode]      = useState<'day' | 'month' | 'year'>('day');
   const [yrStart,   setYrStart]   = useState(safe.getFullYear() - 10);
+  const [hour,      setHour]      = useState(timePart ? parseInt(timePart.split(':')[0]) : 0);
+  const [minute,    setMinute]    = useState(timePart ? parseInt(timePart.split(':')[1] ?? '0') : 0);
 
   const daysInMo   = new Date(viewYear, viewMonth + 1, 0).getDate();
   const firstDow   = new Date(viewYear, viewMonth, 1).getDay();
@@ -152,17 +166,45 @@ export function DateTimePicker({
     </>
   );
 
+  const ChevDown = () => (
+    <svg viewBox="0 0 20 20" width="11" height="11" fill="none">
+      <path d="M5 8l5 5 5-5" stroke="#697498" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  );
+
+  const TimeSelect = ({ val, max, onChange: onChg }: { val: number; max: number; onChange: (v: number) => void }) => (
+    <div style={{ position: 'relative', flex: 1 }}>
+      <div style={{ border: '1px solid #d5ddfb', borderRadius: 8, padding: '8px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fff' }}>
+        <span style={{ fontSize: 17, fontWeight: 600, color: '#0e1b3d', fontFamily: FONT }}>{p2(val)}</span>
+        <ChevDown />
+      </div>
+      <select value={val} onChange={e => onChg(+e.target.value)}
+        style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }}>
+        {Array.from({ length: max }, (_, i) => <option key={i} value={i}>{p2(i)}</option>)}
+      </select>
+    </div>
+  );
+
   return (
     <div style={{ width: 300, fontFamily: FONT }}>
       {header}
       {mode === 'month' ? monthGrid : mode === 'year' ? yearGrid : dayGrid}
+      {showTime && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 14, padding: '12px 0', borderTop: '1px solid #e8edf5' }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: '#697498', marginRight: 4, flexShrink: 0, fontFamily: FONT }}>TIME</span>
+          <TimeSelect val={hour}   max={24} onChange={setHour} />
+          <span style={{ fontSize: 20, fontWeight: 700, color: '#0e1b3d', flexShrink: 0 }}>:</span>
+          <TimeSelect val={minute} max={60} onChange={setMinute} />
+        </div>
+      )}
       <button type="button"
         onClick={() => {
           if (!selDay) return;
-          onConfirm(`${viewYear}-${p2(viewMonth + 1)}-${p2(selDay)}`);
+          const dateStr = `${viewYear}-${p2(viewMonth + 1)}-${p2(selDay)}`;
+          onConfirm(showTime ? `${dateStr} ${p2(hour)}:${p2(minute)}` : dateStr);
         }}
         style={{
-          width: '100%', padding: '12px 0', borderRadius: 8, marginTop: 16,
+          width: '100%', padding: '12px 0', borderRadius: 8, marginTop: showTime ? 10 : 16,
           fontSize: 15, fontWeight: 600, color: 'white', border: 'none',
           background: selDay ? '#3a5fd9' : '#a6c2e9',
           cursor: selDay ? 'pointer' : 'not-allowed',
@@ -187,13 +229,14 @@ const CalIcon = ({ color = '#0e1b3d' }: { color?: string }) => (
 
 /**
  * DateInput — floating-label style date field that opens the custom calendar.
- * value / onChange use ISO YYYY-MM-DD format.
+ * value / onChange use "YYYY-MM-DD" (date) or "YYYY-MM-DD HH:mm" (datetime) format.
  */
 export function DateInput({
   label,
   value,
   onChange,
   required,
+  showTime = false,
   style,
   className,
 }: {
@@ -201,6 +244,7 @@ export function DateInput({
   value: string;
   onChange: (v: string) => void;
   required?: boolean;
+  showTime?: boolean;
   style?: React.CSSProperties;
   className?: string;
 }) {
@@ -217,6 +261,7 @@ export function DateInput({
   }, [open]);
 
   const hasVal = !!value;
+  const displayVal = hasVal ? (showTime ? fmtDateTime(value) : fmtDate(value)) : '';
 
   /* floating label style — always floated when value set or open */
   const labelStyle: React.CSSProperties = {
@@ -246,7 +291,7 @@ export function DateInput({
           transition: 'border-color 0.15s',
         }}>
         <span style={{ fontSize: 16, color: hasVal ? '#0e1b3d' : 'transparent', fontFamily: FONT, lineHeight: 1 }}>
-          {hasVal ? fmtDate(value) : 'placeholder'}
+          {displayVal || 'placeholder'}
         </span>
         <CalIcon />
       </div>
@@ -265,6 +310,7 @@ export function DateInput({
           <DateTimePicker
             value={value}
             onConfirm={v => { onChange(v); setOpen(false); }}
+            showTime={showTime}
           />
           {hasVal && (
             <button type="button"
