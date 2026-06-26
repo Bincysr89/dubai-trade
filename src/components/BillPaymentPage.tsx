@@ -897,7 +897,12 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
     return () => document.removeEventListener('mousedown', h);
   }, [filterOpen]);
 
-  const DATE_COLS = new Set(['Invoice Date', 'Transaction Date']);
+  const DATE_COLS   = new Set(['Invoice Date', 'Transaction Date']);
+  const STATUS_OPTS: Record<string, string[]> = {
+    inv: ['Unpaid', 'Paid', 'Partially Paid', 'Initiated'],
+    pay: ['Success', 'Initiated'],
+    acc: [],
+  };
 
   const renderFilterHeader = (
     table: string,
@@ -909,10 +914,12 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
     const key = `${table}:${label}`;
     const isOpen = filterOpen === key;
     const isDate = DATE_COLS.has(label);
+    const isStatus = label === 'Status';
     const value = filterValues[key] ?? '';
     const order = filterOrders[key] ?? 'newest';
     const isActive = !!value;
     const ra = align === 'right';
+    const statusOpts = STATUS_OPTS[table] ?? [];
     return (
       <th key={label} style={{
         background: '#a6c2e9', padding: '10px 12px',
@@ -946,7 +953,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
         </div>
         {isOpen && (
           <div ref={filterRef} className="absolute z-[500] bg-white rounded-[12px] border border-[#e0e8f5] p-[20px]"
-            style={{ top: 'calc(100% + 6px)', ...(ra ? { right: 0 } : { left: 0 }), minWidth: isDate ? 340 : 260, boxShadow: '0 8px 32px rgba(14,27,61,0.16)', fontFamily: font }}
+            style={{ top: 'calc(100% + 6px)', ...(ra ? { right: 0 } : { left: 0 }), minWidth: isDate ? 340 : 220, boxShadow: '0 8px 32px rgba(14,27,61,0.16)', fontFamily: font }}
             onClick={e => e.stopPropagation()}>
             {isDate ? (
               <>
@@ -961,6 +968,61 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                   style={{ fontFamily: font }}>
                   Reset filter
                 </button>
+              </>
+            ) : isStatus && statusOpts.length > 0 ? (
+              <>
+                <p style={{ fontSize: 12, fontWeight: 600, color: '#697498', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10, fontFamily: font }}>Filter by Status</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+                  {statusOpts.map(opt => {
+                    const allStatuses: Record<string, { bg: string; color: string }> = {
+                      'Unpaid':         { bg: 'rgba(255,169,26,0.16)', color: '#b45309' },
+                      'Paid':           { bg: '#e6f4ec',               color: '#1b6c3a' },
+                      'Initiated':      { bg: '#e8f0ff',               color: '#1360d2' },
+                      'Partially Paid': { bg: 'rgba(249,115,22,0.10)', color: '#ea580c' },
+                      'Success':        { bg: '#e6f4ec',               color: '#1b6c3a' },
+                    };
+                    const s = allStatuses[opt] ?? { bg: '#f0f4ff', color: '#0e1b3d' };
+                    const isSelected = value === opt;
+                    return (
+                      <button key={opt} type="button"
+                        onClick={() => setFilterValues(p => ({ ...p, [key]: isSelected ? '' : opt }))}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 10,
+                          padding: '8px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', textAlign: 'left',
+                          background: isSelected ? s.bg : 'transparent',
+                          outline: isSelected ? `2px solid ${s.color}` : '2px solid transparent',
+                          transition: 'all 0.12s', fontFamily: font,
+                        }}
+                        onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLButtonElement).style.background = '#f5f7ff'; }}
+                        onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}>
+                        {/* Selection dot */}
+                        <div style={{
+                          width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
+                          border: `2px solid ${isSelected ? s.color : '#c0c8e0'}`,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                          {isSelected && <div style={{ width: 9, height: 9, borderRadius: '50%', background: s.color }} />}
+                        </div>
+                        {/* Status badge pill */}
+                        <span style={{
+                          padding: '3px 10px', borderRadius: 20, fontSize: 13, fontWeight: 600,
+                          background: s.bg, color: s.color,
+                        }}>
+                          {opt}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="flex items-center gap-[10px]">
+                  <button
+                    onClick={() => { setFilterValues(p => { const n = { ...p }; delete n[key]; return n; }); }}
+                    className="flex-1 h-[40px] rounded-[6px] border border-[#d5ddfb] text-[15px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] transition-colors"
+                    style={{ fontFamily: font }}>Reset</button>
+                  <button onClick={() => setFilterOpen(null)}
+                    className="flex-1 h-[40px] rounded-[6px] text-[15px] text-white transition-colors"
+                    style={{ background: '#1360d2', fontFamily: font }}>Apply</button>
+                </div>
               </>
             ) : (
               <>
