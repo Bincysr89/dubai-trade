@@ -754,7 +754,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
         ...(sticky ? { right: stickyRight ?? 0, zIndex: 2 } : {}),
         ...style,
       }}>
-        <div className={`flex items-center gap-[5px] ${ra ? 'justify-end' : 'justify-start'}`}>
+        <div className="inline-flex items-center gap-[5px]">
           <span className="text-[16px] font-medium text-[#051937] whitespace-nowrap">{label}</span>
           {tip && (
             <div className="group/tip relative cursor-help flex-shrink-0">
