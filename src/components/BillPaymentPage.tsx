@@ -464,7 +464,7 @@ function FloatDate({ label, value, onChange }: { label: string; value: string; o
         onChange={e => onChange(e.target.value)}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        className="h-[56px] w-full rounded-[4px] px-[12px] pr-[38px] text-[16px] text-[#0e1b3d] focus:outline-none bg-white"
+        className="h-[56px] w-full rounded-[4px] px-[12px] pr-[38px] text-[16px] text-[#0e1b3d] focus:outline-none bg-white [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-inner-spin-button]:hidden"
         style={{ fontFamily: font, border: `1px solid ${focused ? '#1360d2' : '#d5ddfb'}`, colorScheme: 'light' }}
       />
       <span style={floatLabel(true, focused)}>{label}</span>
@@ -524,7 +524,7 @@ function FloatDropdown({ label, value, options, onChange }: { label: string; val
 }
 
 /* ── E-Payment confirmation popup (Figma 2650:42899) ─────────────────────── */
-function EPayConfirmModal({ amount, count, onConfirm, onClose }: { amount: string; count: number; onConfirm: () => void; onClose: () => void }) {
+function EPayConfirmModal({ amount, count, onConfirm, onClose, paymentMethod }: { amount: string; count: number; onConfirm: () => void; onClose: () => void; paymentMethod?: 'epayment' | 'debit' }) {
   useEffect(() => {
     const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', h);
@@ -540,11 +540,26 @@ function EPayConfirmModal({ amount, count, onConfirm, onClose }: { amount: strin
         {/* Body */}
         <div className="px-[40px] py-[48px]">
           <p className="text-[24px] text-[#0e1b3d] text-center" style={{ fontFamily: font, lineHeight: 1.55 }}>
-            By clicking the confirm button, you are authorizing us to redirect your request for payment of{' '}
-            <span style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 600 }}>{count} account(s)</span>
-            {' '}of total{' '}
-            <span style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 600 }}>AED {amount}</span>
-            {' '}through Dubai E-Government payment site
+            {paymentMethod === 'debit' ? (
+              <>
+                By clicking the confirm button, you are authorizing us to use your{' '}
+                <span style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 600 }}>Debit A/C</span>
+                {' '}for payment of{' '}
+                <span style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 600 }}>{count} transaction(s)</span>
+                {' '}of total amount{' '}
+                <span style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 600 }} className="inline-flex items-center gap-[3px]">
+                  <DirhamIcon size={18} color="#0e1b3d" />{amount}
+                </span>.
+              </>
+            ) : (
+              <>
+                By clicking the confirm button, you are authorizing us to redirect your request for payment of{' '}
+                <span style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 600 }}>{count} account(s)</span>
+                {' '}of total{' '}
+                <span style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 600 }}>AED {amount}</span>
+                {' '}through Dubai E-Government payment site
+              </>
+            )}
           </p>
         </div>
         {/* Footer */}
@@ -599,6 +614,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const [showFilters, setShowFilters]       = useState(false);
   const [selectedRows, setSelectedRows]     = useState<Set<number>>(new Set());
   const [openFlyout, setOpenFlyout]         = useState<number | null>(null);
+  const [flyoutPos, setFlyoutPos]           = useState<{ top?: number; bottom?: number; right: number } | null>(null);
   const [recheckOpen, setRecheckOpen]       = useState(false);
   const [recheckIdx, setRecheckIdx]         = useState(0);
   const [paymentMethod, setPaymentMethod]   = useState<'epayment' | 'debit'>('epayment');
@@ -606,6 +622,12 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const [showAccReceipt, setShowAccReceipt]       = useState(false);
   const [showEPayConfirm, setShowEPayConfirm]     = useState(false);
   const [showAccEPayConfirm, setShowAccEPayConfirm] = useState(false);
+  const [showInvReceipt, setShowInvReceipt]       = useState(false);
+  const [invReceiptRows, setInvReceiptRows]       = useState<typeof PAYMENT_ROWS[0]['details']>([]);
+  const [showPayFlyoutReceipt, setShowPayFlyoutReceipt] = useState(false);
+  const [payFlyoutReceiptRows, setPayFlyoutReceiptRows] = useState<typeof PAYMENT_ROWS[0]['details']>([]);
+  const [showAccDetails, setShowAccDetails]       = useState(false);
+  const [accDetailsAccount, setAccDetailsAccount] = useState<typeof ALL_ACCOUNTS[0] | null>(null);
   const [searchType, setSearchType]         = useState('Invoice Number');
   const [searchTypeOpen, setSearchTypeOpen] = useState(false);
   const [searchValue, setSearchValue]       = useState('');
@@ -724,7 +746,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               style={{ boxShadow: 'rgba(143, 155, 186, 0.16) 0px 5px 32px' }}>
               <div className="flex items-center justify-between px-6 py-4 border-b border-[#e0e8f5]" style={{ background: '#f5f8ff' }}>
                 <span className="text-[20px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 500 }}>Payment Details</span>
-                <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>
+                <span className="text-[16px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>
                   {selectedList.length} invoice{selectedList.length !== 1 ? 's' : ''} selected
                 </span>
               </div>
@@ -737,13 +759,13 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                     <th style={{ background: '#a6c2e9', padding: '12px 12px', textAlign: 'left', fontWeight: 500 }}>
                       <span className="text-[16px] font-medium text-[#051937]">Invoice No.</span>
                     </th>
-                    <th style={{ background: '#a6c2e9', padding: '12px 12px', textAlign: 'left', fontWeight: 500 }}>
+                    <th style={{ background: '#a6c2e9', padding: '12px 12px', textAlign: 'right', fontWeight: 500 }}>
                       <span className="text-[16px] font-medium text-[#051937]">Invoice Amount (AED)</span>
                     </th>
-                    <th style={{ background: '#a6c2e9', padding: '12px 12px', textAlign: 'left', fontWeight: 500 }}>
+                    <th style={{ background: '#a6c2e9', padding: '12px 12px', textAlign: 'right', fontWeight: 500 }}>
                       <span className="text-[16px] font-medium text-[#051937]">Settled Amount (AED)</span>
                     </th>
-                    <th style={{ background: '#a6c2e9', padding: '12px 16px', textAlign: 'left', fontWeight: 500 }}>
+                    <th style={{ background: '#a6c2e9', padding: '12px 16px', textAlign: 'right', fontWeight: 500 }}>
                       <span className="text-[16px] font-medium text-[#051937]">Amount (AED)</span>
                     </th>
                   </tr>
@@ -757,14 +779,14 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                       <td style={{ background: '#fff', padding: '14px 12px', verticalAlign: 'middle' }}>
                         <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>{row.number}</span>
                       </td>
-                      <td style={{ background: '#fff', padding: '14px 12px', verticalAlign: 'middle' }}>
+                      <td style={{ background: '#fff', padding: '14px 12px', verticalAlign: 'middle', textAlign: 'right' }}>
                         <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}><DirhamIcon size={14} color="#0e1b3d" />&nbsp;{row.amount}</span>
                       </td>
-                      <td style={{ background: '#fff', padding: '14px 12px', verticalAlign: 'middle' }}>
+                      <td style={{ background: '#fff', padding: '14px 12px', verticalAlign: 'middle', textAlign: 'right' }}>
                         <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}><DirhamIcon size={14} color="#0e1b3d" />&nbsp;{row.settled}</span>
                       </td>
-                      <td style={{ background: '#fff', padding: '14px 16px', verticalAlign: 'middle' }}>
-                        <div className="flex items-center gap-2">
+                      <td style={{ background: '#fff', padding: '14px 16px', verticalAlign: 'middle', textAlign: 'right' }}>
+                        <div className="flex items-center justify-end gap-2">
                           <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>AED</span>
                           <input
                             defaultValue={row.balance}
@@ -777,9 +799,22 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                   ))}
                 </tbody>
               </table>
-              <div className="px-6 py-4 border-t border-[#e0e8f5] flex items-center justify-between" style={{ background: '#f5f8ff', fontFamily: font }}>
-                <span className="text-[16px] text-[#697498]">Total Selected Transactions: {selectedList.length}</span>
-                <span className="text-[16px] font-bold text-[#0e1b3d] flex items-center gap-[4px]">Total <DirhamIcon size={14} color="#0e1b3d" /> {totalAmt.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+              <div className="border-t border-[#e0e8f5]" style={{ background: '#f5f8ff', fontFamily: font }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <tbody>
+                    <tr>
+                      <td style={{ padding: '16px 16px', width: '33%' }}>
+                        <span className="text-[16px] font-semibold text-[#0e1b3d]">Total Selected Transactions: {selectedList.length}</span>
+                      </td>
+                      <td style={{ padding: '16px 12px' }} />
+                      <td style={{ padding: '16px 12px' }} />
+                      <td style={{ padding: '16px 12px' }} />
+                      <td style={{ padding: '16px 16px', textAlign: 'right' }}>
+                        <span className="text-[16px] font-bold text-[#0e1b3d] flex items-center justify-end gap-[4px]">Total <DirhamIcon size={14} color="#0e1b3d" /> {totalAmt.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
 
@@ -838,6 +873,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
           <EPayConfirmModal
             amount={totalAmt.toLocaleString('en-US', { minimumFractionDigits: 2 })}
             count={selectedRows.size}
+            paymentMethod={paymentMethod}
             onConfirm={() => setStep('success')}
             onClose={() => setShowEPayConfirm(false)}
           />
@@ -983,7 +1019,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                     <th style={{ background: '#a6c2e9', padding: '12px 12px', textAlign: 'left', fontWeight: 500 }}>
                       <span className="text-[16px] font-medium text-[#051937]">Account Number</span>
                     </th>
-                    <th style={{ background: '#a6c2e9', padding: '12px 12px', textAlign: 'left', fontWeight: 500 }}>
+                    <th style={{ background: '#a6c2e9', padding: '12px 12px', textAlign: 'right', fontWeight: 500 }}>
                       <span className="text-[16px] font-medium text-[#051937]">Amount Due (AED)</span>
                     </th>
                     <th style={{ background: '#a6c2e9', padding: '12px 16px', textAlign: 'right', fontWeight: 500 }}>
@@ -1000,9 +1036,9 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                       <td style={{ background: '#fff', padding: '14px 12px', verticalAlign: 'middle' }}>
                         <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>{acc.account}</span>
                       </td>
-                      <td style={{ background: '#fff', padding: '14px 12px', verticalAlign: 'middle' }}>
-                        <span className="text-[16px] text-[#dc3545] flex items-center gap-[4px]" style={{ fontFamily: font }}>
-                          <DirhamIcon size={13} color="#dc3545" />{acc.amountDue}
+                      <td style={{ background: '#fff', padding: '14px 12px', verticalAlign: 'middle', textAlign: 'right' }}>
+                        <span className="text-[16px] text-[#0e1b3d] flex items-center justify-end gap-[4px]" style={{ fontFamily: font }}>
+                          <DirhamIcon size={13} color="#0e1b3d" />{acc.amountDue}
                         </span>
                       </td>
                       <td style={{ background: '#fff', padding: '14px 16px', verticalAlign: 'middle' }}>
@@ -1115,6 +1151,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
           <EPayConfirmModal
             amount={totalAccPayAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
             count={selectedAccsList.length}
+            paymentMethod={accPayMethod}
             onConfirm={() => setAccView('success')}
             onClose={() => setShowAccEPayConfirm(false)}
           />
@@ -1584,6 +1621,19 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
         </div>
       </div>
 
+      {/* Info bar — totals / selection summary */}
+      <div className="flex items-center gap-[6px] mb-[8px] text-[15px]" style={{ fontFamily: font }}>
+        <span className="text-[#697498]">Total Invoices: <span className="font-semibold text-[#0e1b3d]">{INVOICE_ROWS.length}</span></span>
+        <span className="text-[#d5ddfb]">|</span>
+        <span className="text-[#697498]">Selected: <span className="font-semibold text-[#1360d2]">{selectedRows.size}</span></span>
+        {selectedRows.size > 0 && (
+          <>
+            <span className="text-[#d5ddfb]">|</span>
+            <span className="text-[#697498]">Total Balance Amount of Selected: <span className="font-semibold text-[#0e1b3d] inline-flex items-center gap-[3px]"><DirhamIcon size={13} color="#0e1b3d" />{[...selectedRows].reduce((s, i) => s + parseFloat(INVOICE_ROWS[i]?.balance ?? '0'), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></span>
+          </>
+        )}
+      </div>
+
       {/* Table */}
       <div className="overflow-x-auto" style={{ position: 'relative' }}>
         <table style={{ width: '100%', minWidth: 1100, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }}>
@@ -1594,11 +1644,14 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 <input type="checkbox" checked={selectedRows.size === INVOICE_ROWS.length} onChange={toggleAll}
                   className="size-4 accent-[#1360d2] cursor-pointer" />
               </th>
-              {['Invoice Type', 'Invoice Number', 'Invoice Date', 'Amount (AED)', 'Settled Amount (AED)', 'Balance Amount (AED)', 'Source', 'Payment Mode'].map((h) => (
-                <th key={h} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, whiteSpace: 'nowrap' }}>
-                  <span className="text-[16px] font-medium text-[#051937]">{h}</span>
-                </th>
-              ))}
+              {['Invoice Type', 'Invoice Number', 'Invoice Date', 'Amount (AED)', 'Settled Amount (AED)', 'Balance Amount (AED)', 'Source'].map((h) => {
+                const ra = h === 'Amount (AED)' || h === 'Settled Amount (AED)' || h === 'Balance Amount (AED)';
+                return (
+                  <th key={h} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: ra ? 'right' : 'left', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                    <span className="text-[16px] font-medium text-[#051937]">{h}</span>
+                  </th>
+                );
+              })}
               <th style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, minWidth: 160, position: 'sticky', right: 80, zIndex: 2 }}>
                 <span className="text-[16px] font-medium text-[#051937]">Status</span>
               </th>
@@ -1627,20 +1680,17 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                   <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff' }}>
                     <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.date}</span>
                   </td>
-                  <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff' }}>
+                  <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff', textAlign: 'right' }}>
                     <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap"><DirhamIcon size={14} color="#0e1b3d" />&nbsp;{row.amount}</span>
                   </td>
-                  <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff' }}>
+                  <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff', textAlign: 'right' }}>
                     <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap"><DirhamIcon size={14} color="#0e1b3d" />&nbsp;{row.settled}</span>
                   </td>
-                  <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff' }}>
+                  <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff', textAlign: 'right' }}>
                     <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap"><DirhamIcon size={14} color="#0e1b3d" />&nbsp;{row.balance}</span>
                   </td>
                   <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff' }}>
                     <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.source}</span>
-                  </td>
-                  <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff' }}>
-                    <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.payMode}</span>
                   </td>
                   <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff', position: 'sticky', right: 80, zIndex: 1, background: isSelected ? '#dce8f8' : 'white' }}>
                     <span className="inline-flex items-center px-[10px] py-[3px] rounded-[4px] text-[16px] font-medium whitespace-nowrap" style={{ background: st.bg, color: st.color, fontFamily: font }}>
@@ -1648,17 +1698,22 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                     </span>
                   </td>
                   {/* Actions */}
-                  <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff', textAlign: 'center', position: 'sticky', right: 0, zIndex: 1, background: isSelected ? '#dce8f8' : 'white' }}>
+                  <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff', textAlign: 'center', position: 'sticky', right: 0, zIndex: openFlyout === absIdx ? 200 : 1, background: isSelected ? '#dce8f8' : 'white' }}>
                     <div className="relative inline-block" ref={openFlyout === absIdx ? flyoutRef : undefined}>
-                      <button onClick={() => setOpenFlyout(openFlyout === absIdx ? null : absIdx)}
+                      <button onClick={(e) => {
+                          const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                          const goUp = rect.bottom + 280 > window.innerHeight;
+                          setFlyoutPos({ ...(goUp ? { bottom: window.innerHeight - rect.top + 4 } : { top: rect.bottom + 4 }), right: window.innerWidth - rect.right });
+                          setOpenFlyout(openFlyout === absIdx ? null : absIdx);
+                        }}
                         className="size-[32px] rounded-full flex items-center justify-center hover:bg-[#e2ebf9] transition-colors">
                         <svg viewBox="0 0 20 20" width="18" height="18" fill="#697498">
                           <circle cx="10" cy="4" r="1.7" /><circle cx="10" cy="10" r="1.7" /><circle cx="10" cy="16" r="1.7" />
                         </svg>
                       </button>
                       {openFlyout === absIdx && (
-                        <div className="absolute z-[100] right-0 bg-white rounded-[8px] py-[4px] overflow-hidden"
-                          style={{ ...(i >= paginatedInv.length - 2 ? { bottom: 36 } : { top: 36 }), width: 200, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
+                        <div className="fixed z-[9999] bg-white rounded-[8px] py-[4px] overflow-hidden"
+                          style={{ top: flyoutPos?.top, bottom: flyoutPos?.bottom, right: flyoutPos?.right, width: 200, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
                           {[
                             'View Payment Details',
                             'Download Invoice',
@@ -1676,6 +1731,11 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                                   setOpenFlyout(null);
                                   if (item === 'Initiate Payment') { setSelectedRows(new Set([absIdx])); setStep('pay'); }
                                   else if (item === 'View Payment Details' && payRow) { setInvPayDetails(payRow); }
+                                  else if (item === 'View & Print Receipt') {
+                                    const rows = payRow?.details ?? [{ type: row.type, invoiceNo: row.number, amount: row.balance, receiptNo: '—', remarks: '', status: row.status }];
+                                    setInvReceiptRows(rows);
+                                    setShowInvReceipt(true);
+                                  }
                                 }}>
                                 <span className="text-[15px] text-[#111838] group-hover:text-white" style={{ fontFamily: font }}>{item}</span>
                               </button>
@@ -1700,6 +1760,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
         />
       </div>
       {invPayDetails && <TransactionModal row={invPayDetails} onClose={() => setInvPayDetails(null)} />}
+      {showInvReceipt && <ReceiptModal onClose={() => setShowInvReceipt(false)} rows={invReceiptRows} />}
     </div>
   );
 
@@ -1866,7 +1927,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 ['Transaction No.',       'left'  ],
                 ['Transaction Date',      'left'  ],
                 ['Invoice / Account No.', 'left'  ],
-                ['Amount (AED)',          'left'  ],
+                ['Amount (AED)',          'right' ],
               ].map(([label, align], i) => (
                 <th key={label as string} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: align as 'left' | 'right', fontWeight: 500, borderTopLeftRadius: i === 0 ? 8 : 0, borderBottomLeftRadius: i === 0 ? 8 : 0, paddingLeft: i === 0 ? 16 : 12 }}>
                   <span className="text-[16px] font-medium text-[#051937] whitespace-nowrap">{label}</span>
@@ -1906,7 +1967,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                     <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: isExpanded ? 'none' : '1px solid #f0f4ff' }}>
                       <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.invoiceNo || '—'}</span>
                     </td>
-                    <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: isExpanded ? 'none' : '1px solid #f0f4ff' }}>
+                    <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: isExpanded ? 'none' : '1px solid #f0f4ff', textAlign: 'right' }}>
                       <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap"><DirhamIcon size={14} color="#0e1b3d" />&nbsp;{row.amount}</span>
                     </td>
                     <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: isExpanded ? 'none' : '1px solid #f0f4ff', position: 'sticky', right: 100, zIndex: 1, background: isExpanded ? '#dce8f8' : 'white' }}>
@@ -1915,24 +1976,30 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                       </span>
                     </td>
                     {/* Actions: expand chevron (Multiple only) + three-dot menu */}
-                    <td style={{ padding: '0 8px', height: 54, verticalAlign: 'middle', borderBottom: isExpanded ? 'none' : '1px solid #f0f4ff', textAlign: 'center', position: 'sticky', right: 0, zIndex: 1, background: isExpanded ? '#dce8f8' : 'white' }} onClick={e => e.stopPropagation()}>
+                    <td style={{ padding: '0 8px', height: 54, verticalAlign: 'middle', borderBottom: isExpanded ? 'none' : '1px solid #f0f4ff', textAlign: 'center', position: 'sticky', right: 0, zIndex: openFlyout === absIdx + 100 ? 200 : 1, background: isExpanded ? '#dce8f8' : 'white' }} onClick={e => e.stopPropagation()}>
                       <div className="flex items-center justify-center gap-[2px]">
                         {/* Three-dot menu */}
                         <div className="relative inline-block" ref={openFlyout === absIdx + 100 ? flyoutRef : undefined}>
-                          <button onClick={() => setOpenFlyout(openFlyout === absIdx + 100 ? null : absIdx + 100)}
+                          <button onClick={(e) => {
+                              const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                              const goUp = rect.bottom + 240 > window.innerHeight;
+                              setFlyoutPos({ ...(goUp ? { bottom: window.innerHeight - rect.top + 4 } : { top: rect.bottom + 4 }), right: window.innerWidth - rect.right });
+                              setOpenFlyout(openFlyout === absIdx + 100 ? null : absIdx + 100);
+                            }}
                             className="size-[32px] rounded-full flex items-center justify-center hover:bg-[#e2ebf9] transition-colors">
                             <svg viewBox="0 0 20 20" width="18" height="18" fill="#697498">
                               <circle cx="10" cy="4" r="1.7" /><circle cx="10" cy="10" r="1.7" /><circle cx="10" cy="16" r="1.7" />
                             </svg>
                           </button>
                           {openFlyout === absIdx + 100 && (
-                            <div className="absolute z-[100] right-0 bg-white rounded-[8px] py-[4px] overflow-hidden"
-                              style={{ ...(i >= paginatedPay.length - 2 ? { bottom: 36 } : { top: 36 }), width: 210, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
-                              {['View Payment Details', 'View & Download Receipt', 'Make Payment', 'Recheck', 'Payment History'].map(item => (
+                            <div className="fixed z-[9999] bg-white rounded-[8px] py-[4px] overflow-hidden"
+                              style={{ top: flyoutPos?.top, bottom: flyoutPos?.bottom, right: flyoutPos?.right, width: 210, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
+                              {['View Payment Details', 'View & Print Receipt', 'Make Payment', 'Recheck', 'Payment History'].map(item => (
                                 <button key={item} className="group w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
                                   onClick={() => {
                                     setOpenFlyout(null);
                                     if (item === 'View Payment Details') { setInvPayDetails(row); }
+                                    else if (item === 'View & Print Receipt') { setPayFlyoutReceiptRows(row.details); setShowPayFlyoutReceipt(true); }
                                     else if (item === 'Make Payment') { setActiveMenu('Invoices'); }
                                     else if (item === 'Recheck') { setRecheckIdx(absIdx); setRecheckOpen(true); }
                                     else if (item === 'Payment History') { setActiveMenu('Payments'); }
@@ -2000,15 +2067,20 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                         <td style={{ padding: '0 8px', height: 50, verticalAlign: 'middle', borderBottom: isLastDetail ? '1px solid #f0f4ff' : '1px solid #dce8f8', textAlign: 'center' }}>
                           <div className="flex items-center justify-center">
                             <div className="relative inline-block" ref={openFlyout === innerFlyoutKey ? flyoutRef : undefined}>
-                              <button onClick={() => setOpenFlyout(openFlyout === innerFlyoutKey ? null : innerFlyoutKey)}
+                              <button onClick={(e) => {
+                                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                                  const goUp = rect.bottom + 120 > window.innerHeight;
+                                  setFlyoutPos({ ...(goUp ? { bottom: window.innerHeight - rect.top + 4 } : { top: rect.bottom + 4 }), right: window.innerWidth - rect.right });
+                                  setOpenFlyout(openFlyout === innerFlyoutKey ? null : innerFlyoutKey);
+                                }}
                                 className="size-[32px] rounded-full flex items-center justify-center hover:bg-[#dce8f8] transition-colors">
                                 <svg viewBox="0 0 20 20" width="18" height="18" fill="#697498">
                                   <circle cx="10" cy="4" r="1.7" /><circle cx="10" cy="10" r="1.7" /><circle cx="10" cy="16" r="1.7" />
                                 </svg>
                               </button>
                               {openFlyout === innerFlyoutKey && (
-                                <div className="absolute z-[100] right-0 bg-white rounded-[8px] py-[4px] overflow-hidden"
-                                  style={{ top: 36, width: 200, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
+                                <div className="fixed z-[9999] bg-white rounded-[8px] py-[4px] overflow-hidden"
+                                  style={{ top: flyoutPos?.top, bottom: flyoutPos?.bottom, right: flyoutPos?.right, width: 200, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
                                   {['View Details', 'Download Receipt'].map(item => (
                                     <button key={item} className="group w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
                                       onClick={() => {
@@ -2040,6 +2112,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
           onPageSizeChange={() => {}}
         />
       </div>
+      {showPayFlyoutReceipt && <ReceiptModal onClose={() => setShowPayFlyoutReceipt(false)} rows={payFlyoutReceiptRows} />}
+      {invPayDetails && <TransactionModal row={invPayDetails} onClose={() => setInvPayDetails(null)} />}
     </div>
   );
 
@@ -2157,11 +2231,14 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               <th style={{ background: '#a6c2e9', padding: '10px 16px', width: 44, borderTopLeftRadius: 8, borderBottomLeftRadius: 8 }}>
                 <span />
               </th>
-              {(['Account Type', 'Account Number', 'Total Limit (AED)', 'Amount Due to Pay (AED)', 'Current Limit (AED)', 'Available Limit (AED)'] as const).map((h) => (
-                <th key={h} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500 }}>
-                  <span className="text-[16px] font-medium text-[#051937] whitespace-nowrap">{h}</span>
-                </th>
-              ))}
+              {(['Account Type', 'Account Number', 'Total Limit (AED)', 'Amount Due to Pay (AED)', 'Current Limit (AED)', 'Available Limit (AED)'] as const).map((h) => {
+                const ra = h === 'Total Limit (AED)' || h === 'Amount Due to Pay (AED)' || h === 'Current Limit (AED)' || h === 'Available Limit (AED)';
+                return (
+                  <th key={h} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: ra ? 'right' : 'left', fontWeight: 500 }}>
+                    <span className="text-[16px] font-medium text-[#051937] whitespace-nowrap">{h}</span>
+                  </th>
+                );
+              })}
               <th style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'center', width: 120, borderTopRightRadius: 8, borderBottomRightRadius: 8 }}>
                 <span className="text-[16px] font-medium text-[#051937]">Actions</span>
               </th>
@@ -2180,7 +2257,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                   </td>
                   <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff' }}>
                     <div className="flex items-center gap-[8px]">
-                      <span className="text-[16px] text-[#0e1b3d]">{acc.type}</span>
+                      <span className="text-[16px] text-[#0e1b3d]">{acc.type === 'Credit Account' ? 'Credit-CDR' : acc.type}</span>
                       {isDebit && (
                         <span className="inline-flex items-center gap-[3px] px-[7px] py-[2px] rounded-[4px] text-[13px] font-semibold"
                           style={{ background: 'rgba(19,96,210,0.10)', color: '#1360d2' }}>
@@ -2193,25 +2270,25 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                     </div>
                   </td>
                   <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff' }}>
-                    <a href="#" onClick={e => e.preventDefault()} className="text-[16px] text-[#1360d2] underline hover:opacity-75 transition-opacity whitespace-nowrap">{acc.account}</a>
+                    <a href="#" onClick={e => { e.preventDefault(); e.stopPropagation(); setAccDetailsAccount(acc); setShowAccDetails(true); }} className="text-[16px] text-[#1360d2] underline hover:opacity-75 transition-opacity whitespace-nowrap">{acc.account}</a>
                   </td>
-                  <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff' }}>
-                    <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap flex items-center gap-[4px]">
+                  <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff', textAlign: 'right' }}>
+                    <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap flex items-center justify-end gap-[4px]">
                       <DirhamIcon size={14} color="#0e1b3d" /> {acc.totalLimit}
                     </span>
                   </td>
-                  <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff' }}>
-                    <span className="text-[16px] whitespace-nowrap flex items-center gap-[4px]" style={{ color: '#dc3545' }}>
-                      <DirhamIcon size={14} color="#dc3545" /> {acc.amountDue}
+                  <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff', textAlign: 'right' }}>
+                    <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap flex items-center justify-end gap-[4px]">
+                      <DirhamIcon size={14} color="#0e1b3d" /> {acc.amountDue}
                     </span>
                   </td>
-                  <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff' }}>
-                    <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap flex items-center gap-[4px]">
+                  <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff', textAlign: 'right' }}>
+                    <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap flex items-center justify-end gap-[4px]">
                       <DirhamIcon size={14} color="#0e1b3d" /> {acc.currentLimit}
                     </span>
                   </td>
-                  <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff' }}>
-                    <span className="text-[16px] text-[#0e1b3d] font-medium whitespace-nowrap flex items-center gap-[4px]">
+                  <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff', textAlign: 'right' }}>
+                    <span className="text-[16px] text-[#0e1b3d] font-medium whitespace-nowrap flex items-center justify-end gap-[4px]">
                       <DirhamIcon size={14} color="#0e1b3d" /> {acc.availableLimit}
                     </span>
                   </td>
@@ -2241,6 +2318,107 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
           onPageSizeChange={() => {}}
         />
       </div>
+      {showAccDetails && accDetailsAccount && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center" style={{ background: 'rgba(14,27,61,0.5)' }} onClick={() => setShowAccDetails(false)}>
+          <div className="bg-white rounded-[12px] overflow-hidden max-h-[90vh] overflow-y-auto" style={{ width: 1100, maxWidth: '96vw', boxShadow: 'rgba(143,155,186,0.16) 0px 5px 32px' }} onClick={e => e.stopPropagation()}>
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4" style={{ background: '#0e1b3d' }}>
+              <span className="text-white text-[18px] font-medium" style={{ fontFamily: font }}>Account Details</span>
+              <button onClick={() => setShowAccDetails(false)} className="text-white hover:opacity-70 transition-opacity">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M18 6L6 18M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="p-6 flex flex-col gap-5">
+              {/* Account Details section */}
+              <div className="rounded-[8px] border border-[#d5ddfb] p-5" style={{ background: 'white' }}>
+                <div className="grid grid-cols-4 gap-x-8 gap-y-4">
+                  {[
+                    ['Account Type',    accDetailsAccount.type],
+                    ['Account',         accDetailsAccount.account],
+                    ['Business Code',   'AE-1050879'],
+                    ['Consignee Code',  'I - 21358'],
+                    ['Consignee Name',  'AEOUAT1'],
+                    ['Contact Person',  'TEST'],
+                    ['Mobile',          '2374623466'],
+                    ['Email',           'esquire.induja@dubaicustoms.ae'],
+                    ['Phone',           '971-4-4444444'],
+                    ['Email 2',         'janice.torneo@dubaicustoms.ae'],
+                    ['Phone 2',         ''],
+                    ['Email 3',         'esquire.induja@dubaicustoms.ae'],
+                    ['Phone 3',         ''],
+                    ['Account Status',  'Inactive'],
+                  ].map(([label, value]) => (
+                    <div key={label}>
+                      <span className="text-[15px] text-[#697498]" style={{ fontFamily: font }}>{label}</span>
+                      <p className="text-[15px] font-semibold text-[#0e1b3d] mt-[2px]" style={{ fontFamily: font }}>{value || '—'}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {/* Guarantee Details */}
+              <div>
+                <p className="text-[18px] font-semibold text-[#0e1b3d] mb-3" style={{ fontFamily: font }}>Guarantee Details</p>
+                <div className="rounded-[8px] border border-[#e0e8f5] overflow-hidden">
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: font }}>
+                    <thead>
+                      <tr>
+                        {['Guarantee Type', 'Guarantee Ref. No.', 'Amount', 'Master Guarantee', 'Bank', 'Guarantee Status'].map((h, i) => (
+                          <th key={h} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, paddingLeft: i === 0 ? 16 : 12 }}>
+                            <span className="text-[15px] font-medium text-[#051937] whitespace-nowrap">{h}</span>
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { gtype: 'Bank', ref: '54678787', amount: '8,569,711,119.00', master: 'Yes', bank: 'COMMERCIAL BANK INTL, R.A.K', gstatus: 'Inactive' },
+                        { gtype: 'Cash', ref: 'Z11817',   amount: '10,000.00',         master: 'No',  bank: '',                         gstatus: 'Inactive' },
+                        { gtype: 'Cash', ref: 'Z5621',    amount: '70,000.00',         master: 'No',  bank: '',                         gstatus: 'Inactive' },
+                      ].map((g, i) => (
+                        <tr key={i} style={{ borderBottom: '1px solid #f0f4ff' }}>
+                          <td style={{ padding: '11px 12px', paddingLeft: 16 }}><span className="text-[15px] text-[#0e1b3d]">{g.gtype}</span></td>
+                          <td style={{ padding: '11px 12px' }}><span className="text-[15px] text-[#0e1b3d]">{g.ref}</span></td>
+                          <td style={{ padding: '11px 12px' }}><span className="text-[15px] text-[#0e1b3d] flex items-center gap-[3px]"><DirhamIcon size={13} color="#0e1b3d" />{g.amount}</span></td>
+                          <td style={{ padding: '11px 12px' }}><span className="text-[15px] text-[#0e1b3d]">{g.master}</span></td>
+                          <td style={{ padding: '11px 12px' }}><span className="text-[15px] text-[#0e1b3d]">{g.bank || '—'}</span></td>
+                          <td style={{ padding: '11px 12px' }}><span className="text-[15px] text-[#0e1b3d]">{g.gstatus}</span></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              {/* Virtual Account Details */}
+              <div>
+                <p className="text-[18px] font-semibold text-[#0e1b3d] mb-3" style={{ fontFamily: font }}>Virtual Account Details</p>
+                <div className="rounded-[8px] border border-[#e0e8f5] overflow-hidden">
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: font }}>
+                    <thead>
+                      <tr>
+                        {['Bank', 'Virtual Account No.', 'IBAN'].map((h, i) => (
+                          <th key={h} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, paddingLeft: i === 0 ? 16 : 12 }}>
+                            <span className="text-[15px] font-medium text-[#051937]">{h}</span>
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td style={{ padding: '11px 12px', paddingLeft: 16 }}><span className="text-[15px] text-[#0e1b3d] font-semibold">DUBAI ISLAMIC BANK</span></td>
+                        <td style={{ padding: '11px 12px' }}><span className="text-[15px] text-[#0e1b3d]">0017000007098406</span></td>
+                        <td style={{ padding: '11px 12px' }}><span className="text-[15px] text-[#0e1b3d]">AE220240001700007098406</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div className="flex justify-center pt-2">
+                <button onClick={() => setShowAccDetails(false)} className="px-10 py-2 rounded-[4px] text-[16px]" style={{ border: '1px solid #1360d2', color: '#1360d2', background: 'white', fontFamily: font }}>Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 

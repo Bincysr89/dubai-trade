@@ -743,6 +743,7 @@ export default function CargoTransferNewRequestPage({
   const [hawb, setHawb] = useState('');
   const [showFlightModal, setShowFlightModal] = useState(false);
   const [cargoChannel, setCargoChannel] = useState(initialCargoChannel || 'Sea');
+  const [scheduledDate, setScheduledDate] = useState('');
 
   const isAir = cargoChannel === 'Air';
 
@@ -803,12 +804,15 @@ export default function CargoTransferNewRequestPage({
         <div className="bg-white rounded-[8px] px-[40px] py-[20px]" style={{ boxShadow: '0px 4px 16px rgba(0,0,0,0.08)' }}>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-[20px] items-start">
             <SearchPickerField
-              label="Carrier Registration No.(inbound)" required
+              label={isAir ? 'Flight Number' : 'Carrier Registration No.(inbound)'} required
               value={carrierReg}
-              onChange={v => { setCarrierReg(v); if (!CARRIER_SUGGESTIONS.find(s => s.code === v)) setCarrierVesselName(''); }}
+              onChange={v => { setCarrierReg(v); if (!CARRIER_SUGGESTIONS.find(s => s.code === v)) setCarrierVesselName(''); if (!v) setScheduledDate(''); }}
               suggestions={isAir ? [] : CARRIER_SUGGESTIONS}
               onModalOpen={() => isAir ? setShowFlightModal(true) : setShowCarrierModal(true)}
             />
+            {isAir && scheduledDate && (
+              <ReadOnlyField label="Scheduled Date" value={scheduledDate} />
+            )}
             <FloatingField label="MAWB/MBOL No." required value={mawb} onChange={setMawb} placeholder="Enter MAWB / MBOL" />
             {isAir && (
               <FloatingField label="HAWB" value={hawb} onChange={setHawb} placeholder="Enter HAWB" />
@@ -865,8 +869,9 @@ export default function CargoTransferNewRequestPage({
       <FlightSearchModal
         open={showFlightModal}
         onClose={() => setShowFlightModal(false)}
-        onSelect={(flightNo) => {
+        onSelect={(flightNo, date) => {
           setCarrierReg(flightNo);
+          setScheduledDate(date);
           setCarrierVesselName('');
           setShowFlightModal(false);
         }}

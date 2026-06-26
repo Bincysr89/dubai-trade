@@ -935,40 +935,36 @@ export default function DCServiceChooserPage({ onBack }: {
                     <h4 className="dc-form-section__heading">Contact Information</h4>
                     <div className="dc-form-row">
                       <div className="dc-float-wrapper dc-field--half">
-                        <div className="dc-float-field" style={{ background: '#f5f7fa' }}>
-                          <input className="dc-float-input" placeholder=" " value={name} readOnly
-                            style={{ background: 'transparent', color: '#9ca3af', cursor: 'not-allowed' }} />
+                        <div className="dc-float-field">
+                          <input className="dc-float-input" placeholder=" " value={name} onChange={e => setName(e.target.value)} />
                           <label className="dc-float-label">Name <span className="dc-req">*</span></label>
                         </div>
                       </div>
                       <div className="dc-float-wrapper dc-field--half">
-                        <div className="dc-float-field" style={{ background: '#f5f7fa' }}>
-                          <input className="dc-float-input" placeholder=" " value={company} readOnly
-                            style={{ background: 'transparent', color: '#9ca3af', cursor: 'not-allowed' }} />
+                        <div className="dc-float-field">
+                          <input className="dc-float-input" placeholder=" " value={company} onChange={e => setCompany(e.target.value)} />
                           <label className="dc-float-label">Company <span className="dc-req">*</span></label>
                         </div>
                       </div>
                     </div>
                     <div className="dc-form-row">
                       <div className="dc-float-wrapper dc-field--half">
-                        <div className="dc-float-field" style={{ background: '#f5f7fa' }}>
-                          <input className="dc-float-input" placeholder=" " value={contactPerson} readOnly
-                            style={{ background: 'transparent', color: '#9ca3af', cursor: 'not-allowed' }} />
+                        <div className="dc-float-field">
+                          <input className="dc-float-input" placeholder=" " value={contactPerson} onChange={e => setContactPerson(e.target.value)} />
                           <label className="dc-float-label">Contact Person <span className="dc-req">*</span></label>
                         </div>
                       </div>
                       <div className="dc-float-wrapper dc-field--half">
-                        <div className="dc-float-field" style={{ background: '#f5f7fa' }}>
-                          <input className="dc-float-input" placeholder=" " value={email} readOnly
-                            style={{ background: 'transparent', color: '#9ca3af', cursor: 'not-allowed', paddingRight: 100 }} />
+                        <div className="dc-float-field">
+                          <input className="dc-float-input" placeholder=" " value={email} onChange={e => setEmail(e.target.value)} style={{ paddingRight: 100 }} />
                           <label className="dc-float-label">Email <span className="dc-req">*</span></label>
                           <span className="dc-verified-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>Verified</span>
                         </div>
                       </div>
                     </div>
                     <div className="dc-form-row">
-                      <PhoneField label="Phone" value={phone} onChange={setPhone} disabled />
-                      <PhoneField label="Mobile" value={mobile} onChange={setMobile} disabled />
+                      <PhoneField label="Phone" value={phone} onChange={setPhone} />
+                      <PhoneField label="Mobile" value={mobile} onChange={setMobile} />
                     </div>
                   </div>
 
@@ -1306,12 +1302,7 @@ export default function DCServiceChooserPage({ onBack }: {
                       </div>
                     )}
                   </div>
-                  <div style={{ display: 'flex', gap: 12, marginTop: 16, marginBottom: 20 }}>
-                    <div style={{ width: 'calc(50% - 6px)' }}>
-                      <FloatDropdown label="Report Type" required value={ctrReportType} onChange={setCtrReportType} options={CTR_TYPES.map(t => t.name)} />
-                    </div>
-                  </div>
-                  <div className="dc-form-row">
+                  <div className="dc-form-row" style={{ marginTop: 16 }}>
                     <div className="dc-float-wrapper dc-field--half">
                       <div className="dc-float-field">
                         <input className="dc-float-input" type="date" placeholder=" " value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
@@ -1334,40 +1325,36 @@ export default function DCServiceChooserPage({ onBack }: {
                   <h4 className="dc-form-section__heading">Contact Information</h4>
                   <div className="dc-form-row">
                     <div className="dc-float-wrapper dc-field--half">
-                      <div className="dc-float-field" style={{ background: '#f5f7fa' }}>
-                        <input className="dc-float-input" placeholder=" " value={name} readOnly
-                          style={{ background: 'transparent', color: '#9ca3af', cursor: 'not-allowed' }} />
+                      <div className="dc-float-field">
+                        <input className="dc-float-input" placeholder=" " value={name} onChange={e => setName(e.target.value)} />
                         <label className="dc-float-label">Name <span className="dc-req">*</span></label>
                       </div>
                     </div>
                     <div className="dc-float-wrapper dc-field--half">
-                      <div className="dc-float-field" style={{ background: '#f5f7fa' }}>
-                        <input className="dc-float-input" placeholder=" " value={company} readOnly
-                          style={{ background: 'transparent', color: '#9ca3af', cursor: 'not-allowed' }} />
+                      <div className="dc-float-field">
+                        <input className="dc-float-input" placeholder=" " value={company} onChange={e => setCompany(e.target.value)} />
                         <label className="dc-float-label">Company <span className="dc-req">*</span></label>
                       </div>
                     </div>
                   </div>
                   <div className="dc-form-row">
                     <div className="dc-float-wrapper dc-field--half">
-                      <div className="dc-float-field" style={{ background: '#f5f7fa' }}>
-                        <input className="dc-float-input" placeholder=" " value={contactPerson} readOnly
-                          style={{ background: 'transparent', color: '#9ca3af', cursor: 'not-allowed' }} />
+                      <div className="dc-float-field">
+                        <input className="dc-float-input" placeholder=" " value={contactPerson} onChange={e => setContactPerson(e.target.value)} />
                         <label className="dc-float-label">Contact Person <span className="dc-req">*</span></label>
                       </div>
                     </div>
                     <div className="dc-float-wrapper dc-field--half">
-                      <div className="dc-float-field" style={{ background: '#f5f7fa' }}>
-                        <input className="dc-float-input" placeholder=" " value={email} readOnly
-                          style={{ background: 'transparent', color: '#9ca3af', cursor: 'not-allowed', paddingRight: 100 }} />
+                      <div className="dc-float-field">
+                        <input className="dc-float-input" placeholder=" " value={email} onChange={e => setEmail(e.target.value)} style={{ paddingRight: 100 }} />
                         <label className="dc-float-label">Email <span className="dc-req">*</span></label>
                         <span className="dc-verified-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>Verified</span>
                       </div>
                     </div>
                   </div>
                   <div className="dc-form-row">
-                    <PhoneField label="Phone" value={phone} onChange={setPhone} disabled />
-                    <PhoneField label="Mobile" value={mobile} onChange={setMobile} disabled />
+                    <PhoneField label="Phone" value={phone} onChange={setPhone} />
+                    <PhoneField label="Mobile" value={mobile} onChange={setMobile} />
                   </div>
                 </div>
                 <div className="dc-form-section">
@@ -1393,40 +1380,36 @@ export default function DCServiceChooserPage({ onBack }: {
                 <h4 className="dc-form-section__heading">Contact Information</h4>
                 <div className="dc-form-row">
                   <div className="dc-float-wrapper dc-field--half">
-                    <div className="dc-float-field" style={{ background: '#f5f7fa' }}>
-                      <input className="dc-float-input" placeholder=" " value={name} readOnly
-                        style={{ background: 'transparent', color: '#9ca3af', cursor: 'not-allowed' }} />
+                    <div className="dc-float-field">
+                      <input className="dc-float-input" placeholder=" " value={name} onChange={e => setName(e.target.value)} />
                       <label className="dc-float-label">Name <span className="dc-req">*</span></label>
                     </div>
                   </div>
                   <div className="dc-float-wrapper dc-field--half">
-                    <div className="dc-float-field" style={{ background: '#f5f7fa' }}>
-                      <input className="dc-float-input" placeholder=" " value={company} readOnly
-                        style={{ background: 'transparent', color: '#9ca3af', cursor: 'not-allowed' }} />
+                    <div className="dc-float-field">
+                      <input className="dc-float-input" placeholder=" " value={company} onChange={e => setCompany(e.target.value)} />
                       <label className="dc-float-label">Company <span className="dc-req">*</span></label>
                     </div>
                   </div>
                 </div>
                 <div className="dc-form-row">
                   <div className="dc-float-wrapper dc-field--half">
-                    <div className="dc-float-field" style={{ background: '#f5f7fa' }}>
-                      <input className="dc-float-input" placeholder=" " value={contactPerson} readOnly
-                        style={{ background: 'transparent', color: '#9ca3af', cursor: 'not-allowed' }} />
+                    <div className="dc-float-field">
+                      <input className="dc-float-input" placeholder=" " value={contactPerson} onChange={e => setContactPerson(e.target.value)} />
                       <label className="dc-float-label">Contact Person <span className="dc-req">*</span></label>
                     </div>
                   </div>
                   <div className="dc-float-wrapper dc-field--half">
-                    <div className="dc-float-field" style={{ background: '#f5f7fa' }}>
-                      <input className="dc-float-input" placeholder=" " value={email} readOnly
-                        style={{ background: 'transparent', color: '#9ca3af', cursor: 'not-allowed', paddingRight: 100 }} />
+                    <div className="dc-float-field">
+                      <input className="dc-float-input" placeholder=" " value={email} onChange={e => setEmail(e.target.value)} style={{ paddingRight: 100 }} />
                       <label className="dc-float-label">Email <span className="dc-req">*</span></label>
                       <span className="dc-verified-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>Verified</span>
                     </div>
                   </div>
                 </div>
                 <div className="dc-form-row">
-                  <PhoneField label="Phone" value={phone} onChange={setPhone} disabled />
-                  <PhoneField label="Mobile" value={mobile} onChange={setMobile} disabled />
+                  <PhoneField label="Phone" value={phone} onChange={setPhone} />
+                  <PhoneField label="Mobile" value={mobile} onChange={setMobile} />
                 </div>
               </div>}
 

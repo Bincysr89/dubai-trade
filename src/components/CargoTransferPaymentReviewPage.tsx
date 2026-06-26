@@ -212,7 +212,15 @@ export default function CargoTransferPaymentReviewPage({ onBack, onSubmit, onSav
                   </thead>
                   <tbody>
                     <tr style={{ background: '#fff', borderBottom: '1px solid #e8eef8' }}>
-                      <td style={{ padding: '14px 16px', fontSize: 15, color: '#0e1b3d', fontFamily: font }}>Declaration Amendment Charge</td>
+                      <td style={{ padding: '14px 16px', fontSize: 15, color: '#0e1b3d', fontFamily: font }}>
+                        <div className="flex items-center gap-[10px]">
+                          <span>Declaration Amendment Charge</span>
+                          <span className="text-[12px] font-medium px-[10px] py-[3px] rounded-[4px]"
+                            style={{ background: '#e8f0fd', color: '#1360d2', fontFamily: font }}>
+                            Refundable
+                          </span>
+                        </div>
+                      </td>
                       <td style={{ padding: '14px 16px', fontSize: 15, color: '#0e1b3d', fontFamily: font }}>
                         <span className="flex items-center gap-[4px]"><DirhamIcon size={13} color="#0e1b3d" />25.00</span>
                       </td>
@@ -244,13 +252,7 @@ export default function CargoTransferPaymentReviewPage({ onBack, onSubmit, onSav
                     {/* Deposit row */}
                     <tr style={{ background: '#fff', borderBottom: '1px solid #e8eef8' }}>
                       <td style={{ padding: '14px 16px', fontSize: 15, color: '#0e1b3d', fontFamily: font }}>
-                        <div className="flex items-center gap-[10px]">
-                          <span>Deposit</span>
-                          <span className="text-[12px] font-medium px-[10px] py-[3px] rounded-[4px]"
-                            style={{ background: '#e8f0fd', color: '#1360d2', fontFamily: font }}>
-                            Refund / Collect
-                          </span>
-                        </div>
+                        <span>Deposit</span>
                       </td>
                       <td style={{ padding: '14px 16px', fontSize: 15, color: '#0e1b3d', fontFamily: font }}>
                         <span className="flex items-center gap-[4px]"><DirhamIcon size={13} color="#0e1b3d" />10,000.00</span>
