@@ -756,21 +756,36 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
         </div>
         {isOpen && (
           <div ref={filterRef} className="absolute z-[500] bg-white rounded-[12px] border border-[#e0e8f5] p-[20px]"
-            style={{ top: 'calc(100% + 6px)', ...(ra ? { right: 0 } : { left: 0 }), minWidth: isDate ? 340 : 220, boxShadow: '0 8px 32px rgba(14,27,61,0.16)', fontFamily: font }}
+            style={{ top: 'calc(100% + 6px)', ...(ra ? { right: 0 } : { left: 0 }), minWidth: 260, boxShadow: '0 8px 32px rgba(14,27,61,0.16)', fontFamily: font }}
             onClick={e => e.stopPropagation()}>
             {isDate ? (
               <>
-                <DateTimePicker
+                <DateInput
+                  label="Select date"
                   value={value}
-                  onConfirm={dateStr => { setFilterValues(p => ({ ...p, [key]: dateStr })); setFilterOpen(null); }}
+                  onChange={v => setFilterValues(p => ({ ...p, [key]: v }))}
+                  style={{ marginBottom: 16 }}
                 />
-                <button
-                  type="button"
-                  onClick={() => { setFilterValues(p => { const n = { ...p }; delete n[key]; return n; }); setFilterOrders(p => { const n = { ...p }; delete n[key]; return n; }); }}
-                  className="mt-[12px] text-[14px] text-[#1360d2] hover:underline bg-transparent border-none cursor-pointer w-full text-center block"
-                  style={{ fontFamily: font }}>
-                  Reset filter
-                </button>
+                {(['oldest', 'newest'] as const).map(opt => (
+                  <label key={opt} className="flex items-center gap-[12px] mb-[12px] cursor-pointer">
+                    <div className="size-[20px] rounded-full border-[2px] flex items-center justify-center flex-shrink-0"
+                      style={{ borderColor: order === opt ? '#1360d2' : '#c0c8e0' }}>
+                      {order === opt && <div className="size-[10px] rounded-full bg-[#1360d2]" />}
+                    </div>
+                    <input type="radio" className="sr-only" checked={order === opt}
+                      onChange={() => setFilterOrders(p => ({ ...p, [key]: opt }))} />
+                    <span className="text-[15px] text-[#0e1b3d]">{opt === 'oldest' ? 'Oldest First' : 'Newest First'}</span>
+                  </label>
+                ))}
+                <div className="flex items-center gap-[10px]">
+                  <button
+                    onClick={() => { setFilterValues(p => { const n = { ...p }; delete n[key]; return n; }); setFilterOrders(p => { const n = { ...p }; delete n[key]; return n; }); }}
+                    className="flex-1 h-[40px] rounded-[6px] border border-[#d5ddfb] text-[15px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] transition-colors"
+                    style={{ fontFamily: font }}>Reset</button>
+                  <button onClick={() => setFilterOpen(null)}
+                    className="flex-1 h-[40px] rounded-[6px] text-[15px] text-white transition-colors"
+                    style={{ background: '#1360d2', fontFamily: font }}>Apply</button>
+                </div>
               </>
             ) : isStatus && statusOpts.length > 0 ? (
               <>
