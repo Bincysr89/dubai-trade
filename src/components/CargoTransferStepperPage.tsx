@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { DateInputOutlined } from './DatePicker';
 
 const font = "'Dubai', sans-serif";
 
@@ -238,40 +239,13 @@ function PlainSelect({ value, onChange, options }: { value: string; onChange: (v
 function DateInput({ label, required, value, onChange }: {
   label: string; required?: boolean; value: string; onChange: (v: string) => void;
 }) {
-  const [focused, setFocused] = useState(false);
-  const floated = true; // date inputs always show dd/mm/yyyy so label must always float
-  const inputRef = useRef<HTMLInputElement>(null);
   return (
-    <div className="relative">
-      <div style={{ height: 56, border: `1px solid ${focused ? '#1360d2' : '#d5ddfb'}`, borderRadius: 4, background: '#fff', display: 'flex', alignItems: 'center', padding: '0 12px' }}>
-        <input
-          ref={inputRef}
-          type="date"
-          value={value}
-          onChange={e => onChange(e.target.value)}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          className="flex-1 text-[16px] text-[#051937] outline-none bg-transparent"
-          style={{ fontFamily: font, colorScheme: 'light' }}
-        />
-        <button type="button" onClick={() => (inputRef.current as any)?.showPicker?.()} className="flex-shrink-0 size-[22px] flex items-center justify-center ml-[4px]">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-            <line x1="16" y1="2" x2="16" y2="6" />
-            <line x1="8" y1="2" x2="8" y2="6" />
-            <line x1="3" y1="10" x2="21" y2="10" />
-          </svg>
-        </button>
-      </div>
-      <label className="absolute pointer-events-none transition-all" style={{
-        left: floated ? 10 : 13, top: floated ? -9 : '50%', transform: floated ? 'none' : 'translateY(-50%)',
-        background: floated ? '#fff' : 'transparent', padding: floated ? '0 3px' : '0',
-        fontSize: floated ? 11 : 14, color: focused ? '#1360d2' : '#0e1b3d', fontFamily: font,
-        transitionDuration: '120ms', transitionProperty: 'top, left, font-size, transform',
-      }}>
-        {required && <span style={{ color: '#dc3545' }}>*</span>}{required ? ' ' : ''}{label}
-      </label>
-    </div>
+    <DateInputOutlined
+      label={required ? `* ${label}` : label}
+      value={value}
+      onChange={onChange}
+      font={font}
+    />
   );
 }
 
@@ -584,9 +558,6 @@ function CarrierSearchModal({ open, onClose, onSelect }: { open: boolean; onClos
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [portOpen, setPortOpen] = useState(false);
-  const fromRef = useRef<HTMLInputElement>(null);
-  const toRef = useRef<HTMLInputElement>(null);
-
   const filtered = CARRIER_ROWS_MODAL.filter(r =>
     (!vesselName || r.vesselName.toLowerCase().includes(vesselName.toLowerCase())) &&
     (!callingPort || true)
@@ -643,31 +614,21 @@ function CarrierSearchModal({ open, onClose, onSelect }: { open: boolean; onClos
               )}
             </div>
             {/* From Date */}
-            <div className="relative" style={{ flex: '1 1 260px', minWidth: 220 }}>
-              <div style={{ height: 56, border: '1px solid #d5ddfb', borderRadius: 4, background: '#fff', display: 'flex', alignItems: 'center', paddingLeft: 16 }}>
-                <input ref={fromRef} type="date" value={fromDate} onChange={e => setFromDate(e.target.value)}
-                  className="flex-1 text-[16px] text-[#051937] outline-none bg-transparent" style={{ fontFamily: font, colorScheme: 'light' }} />
-                <button type="button" onClick={() => (fromRef.current as any)?.showPicker?.()} className="size-[48px] flex items-center justify-center flex-shrink-0">
-                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#697498" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
-                  </svg>
-                </button>
-              </div>
-              <label className="absolute pointer-events-none" style={{ left: 13, top: -8, background: '#fff', padding: '0 4px', fontSize: 12, color: '#060c28', fontFamily: font }}>From Date (one month)</label>
-            </div>
+            <DateInputOutlined
+              label="From Date (one month)"
+              value={fromDate}
+              onChange={setFromDate}
+              font={font}
+              style={{ flex: '1 1 260px', minWidth: 220 }}
+            />
             {/* To Date */}
-            <div className="relative" style={{ flex: '1 1 260px', minWidth: 220 }}>
-              <div style={{ height: 56, border: '1px solid #d5ddfb', borderRadius: 4, background: '#fff', display: 'flex', alignItems: 'center', paddingLeft: 16 }}>
-                <input ref={toRef} type="date" value={toDate} onChange={e => setToDate(e.target.value)}
-                  className="flex-1 text-[16px] text-[#051937] outline-none bg-transparent" style={{ fontFamily: font, colorScheme: 'light' }} />
-                <button type="button" onClick={() => (toRef.current as any)?.showPicker?.()} className="size-[48px] flex items-center justify-center flex-shrink-0">
-                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#697498" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
-                  </svg>
-                </button>
-              </div>
-              <label className="absolute pointer-events-none" style={{ left: 13, top: -8, background: '#fff', padding: '0 4px', fontSize: 12, color: '#060c28', fontFamily: font }}>To Date</label>
-            </div>
+            <DateInputOutlined
+              label="To Date"
+              value={toDate}
+              onChange={setToDate}
+              font={font}
+              style={{ flex: '1 1 260px', minWidth: 220 }}
+            />
             {/* Buttons */}
             <div className="flex gap-[20px] items-center">
               <button type="button" onClick={handleReset}

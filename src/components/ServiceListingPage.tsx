@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Header from './Header';
 import Pagination from './Pagination';
+import { DateInput } from './DatePicker';
 
 const font = "'Dubai', sans-serif";
 
@@ -36,16 +37,8 @@ function AFInput({ label, value, onChange }: { label: string; value: string; onC
   );
 }
 function AFDate({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
-  const [focused, setFocused] = useState(false);
   return (
-    <div className="relative">
-      <input type="date" value={value} onChange={e => onChange(e.target.value)}
-        onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-        className="h-[56px] w-full rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none bg-white"
-        style={{ fontFamily: font, border: `1px solid ${focused ? '#1360d2' : '#d5ddfb'}`, colorScheme: 'light' }}
-      />
-      <span style={flLabel(true, focused)}>{label}</span>
-    </div>
+    <DateInput label={label} value={value} onChange={onChange} />
   );
 }
 function AFDropdown({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (v: string) => void }) {

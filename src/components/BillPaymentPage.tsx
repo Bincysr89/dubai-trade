@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Header from './Header';
 import Pagination from './Pagination';
 import infoIconSrc from '../assets/icon-info.svg';
+import { DateTimePicker, DateInput } from './DatePicker';
 
 const font = "'Dubai', sans-serif";
 
@@ -453,38 +454,6 @@ function FloatInput({ label, value, onChange }: { label: string; value: string; 
   );
 }
 
-function FloatDate({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
-  const [focused, setFocused] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-  return (
-    <div className="relative">
-      <input
-        ref={inputRef}
-        type="date"
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        className="h-[56px] w-full rounded-[4px] px-[12px] pr-[38px] text-[16px] text-[#0e1b3d] focus:outline-none bg-white [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-inner-spin-button]:hidden"
-        style={{ fontFamily: font, border: `1px solid ${focused ? '#1360d2' : '#d5ddfb'}`, colorScheme: 'light' }}
-      />
-      <span style={floatLabel(true, focused)}>{label}</span>
-      <button
-        type="button"
-        tabIndex={-1}
-        onClick={() => { inputRef.current?.focus(); (inputRef.current as any)?.showPicker?.(); }}
-        className="absolute right-[8px] top-1/2 -translate-y-1/2 flex items-center justify-center"
-        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
-      >
-        <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke={focused ? '#1360d2' : '#697498'} strokeWidth="1.6">
-          <rect x="3" y="4" width="14" height="13" rx="2" />
-          <path d="M3 8h14M7 2v4M13 2v4" />
-        </svg>
-      </button>
-    </div>
-  );
-}
-
 function FloatDropdown({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (v: string) => void }) {
   const [open, setOpen] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -600,172 +569,6 @@ function DateFilterCard({ from, to }: { from?: string; to?: string }) {
         <span>Status as {from || '01-Jan-26'} to {to || '14-Jun-26'}</span>
         <button className="text-[#1360d2] font-medium hover:opacity-70 ml-[2px]">Modify</button>
       </div>
-    </div>
-  );
-}
-
-/* ── Custom date + time picker ──────────────────────────────────────────────── */
-function DateTimePicker({ value, onConfirm }: { value: string; onConfirm: (v: string) => void }) {
-  const today = new Date();
-  const init  = value ? new Date(value + 'T00:00') : today;
-  const safe  = isNaN(init.getTime()) ? today : init;
-
-  const [viewYear,  setViewYear]  = useState(safe.getFullYear());
-  const [viewMonth, setViewMonth] = useState(safe.getMonth());
-  const [selDay,    setSelDay]    = useState<number | null>(value ? safe.getDate() : null);
-  const [mode,      setMode]      = useState<'day'|'month'|'year'>('day');
-  const [yrStart,   setYrStart]   = useState(safe.getFullYear() - 10);
-
-  const MS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-  const p2 = (n: number) => String(n).padStart(2, '0');
-
-  const daysInMo   = new Date(viewYear, viewMonth + 1, 0).getDate();
-  const firstDow   = new Date(viewYear, viewMonth, 1).getDay();
-  const prevMoDays = new Date(viewYear, viewMonth, 0).getDate();
-  const cells: { day: number; t: 'p'|'c'|'n' }[] = [];
-  for (let i = firstDow - 1; i >= 0; i--) cells.push({ day: prevMoDays - i, t: 'p' });
-  for (let d = 1; d <= daysInMo; d++)     cells.push({ day: d, t: 'c' });
-  for (let nd = 1; cells.length < 42; nd++) cells.push({ day: nd, t: 'n' });
-
-  const navMonth = (delta: number) => {
-    const d = new Date(viewYear, viewMonth + delta, 1);
-    setViewMonth(d.getMonth()); setViewYear(d.getFullYear());
-  };
-
-  /* ── shared sub-components ── */
-  const ChevSvg = ({ dir }: { dir: 'l'|'r' }) => (
-    <svg viewBox="0 0 20 20" width="12" height="12" fill="none">
-      <path d={dir === 'l' ? 'M13 4l-6 6 6 6' : 'M7 4l6 6-6 6'} stroke="#0e1b3d" strokeWidth="2" strokeLinecap="round"/>
-    </svg>
-  );
-  const TriUp = () => (
-    <svg viewBox="0 0 10 10" width="9" height="9" fill="#697498"><polygon points="5,2 9,8 1,8"/></svg>
-  );
-  const TriDown = () => (
-    <svg viewBox="0 0 10 10" width="9" height="9" fill="#697498"><polygon points="1,2 9,2 5,8"/></svg>
-  );
-  const NavBtn = ({ onClick, ch }: { onClick: () => void; ch: React.ReactNode }) => (
-    <button type="button" onClick={onClick}
-      style={{ width:26, height:26, display:'flex', alignItems:'center', justifyContent:'center',
-               border:'none', background:'transparent', cursor:'pointer', borderRadius:4, flexShrink:0 }}
-      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#f0f4ff'; }}
-      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}>
-      {ch}
-    </button>
-  );
-
-  const pillBtn = (label: string|number, isActive: boolean, activeBg: string, onClick: () => void) => (
-    <button type="button" onClick={onClick}
-      style={{
-        padding:'10px 0', borderRadius:20, border:'none', width:'100%',
-        background: isActive ? activeBg : 'transparent',
-        color: isActive ? '#fff' : '#0e1b3d',
-        fontWeight: isActive ? 700 : 400,
-        fontSize:14, cursor:'pointer', transition:'background 0.1s',
-        fontFamily: font,
-      }}
-      onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = '#e8f0ff'; }}
-      onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}>
-      {label}
-    </button>
-  );
-
-  /* ── header ── */
-  const header = (
-    <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
-      {/* Month side */}
-      <div style={{ display:'flex', alignItems:'center', gap:2 }}>
-        <NavBtn onClick={() => mode === 'year' ? setYrStart(y => y - 21) : navMonth(-1)} ch={<ChevSvg dir="l" />} />
-        <button type="button"
-          onClick={() => setMode(m => m === 'month' ? 'day' : 'month')}
-          style={{ display:'flex', alignItems:'center', gap:4, padding:'4px 8px', border:'none', cursor:'pointer',
-                   borderRadius:16, fontFamily: font, fontSize:14, fontWeight:700, color:'#0e1b3d',
-                   background: mode === 'month' ? '#e8ecf4' : 'transparent' }}>
-          {MS[viewMonth]}{mode === 'month' ? <TriUp /> : <TriDown />}
-        </button>
-        <NavBtn onClick={() => mode === 'year' ? setYrStart(y => y + 21) : navMonth(1)} ch={<ChevSvg dir="r" />} />
-      </div>
-      {/* Year side */}
-      <div style={{ display:'flex', alignItems:'center', gap:2 }}>
-        <NavBtn onClick={() => mode === 'year' ? setYrStart(y => y - 21) : setViewYear(y => y - 1)} ch={<ChevSvg dir="l" />} />
-        <button type="button"
-          onClick={() => setMode(m => m === 'year' ? 'day' : 'year')}
-          style={{ display:'flex', alignItems:'center', gap:4, padding:'4px 8px', border:'none', cursor:'pointer',
-                   borderRadius:16, fontFamily: font, fontSize:14, fontWeight:700, color:'#0e1b3d',
-                   background: mode === 'year' ? '#e8ecf4' : 'transparent' }}>
-          {viewYear}{mode === 'year' ? <TriUp /> : <TriDown />}
-        </button>
-        <NavBtn onClick={() => mode === 'year' ? setYrStart(y => y + 21) : setViewYear(y => y + 1)} ch={<ChevSvg dir="r" />} />
-      </div>
-    </div>
-  );
-
-  /* ── month grid ── */
-  const monthGrid = (
-    <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:'4px 12px' }}>
-      {MS.map((m, i) => pillBtn(m, i === viewMonth, '#3a4a6b', () => { setViewMonth(i); setMode('day'); }))}
-    </div>
-  );
-
-  /* ── year grid ── */
-  const years = Array.from({ length: 21 }, (_, i) => yrStart + i);
-  const yearGrid = (
-    <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'4px 8px' }}>
-      {years.map(y => pillBtn(y, y === viewYear, '#5b7de8', () => { setViewYear(y); setMode('day'); }))}
-    </div>
-  );
-
-  /* ── day grid ── */
-  const dayGrid = (
-    <>
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', marginBottom:6 }}>
-        {['S','M','T','W','T','F','S'].map((d, i) => (
-          <div key={i} style={{ textAlign:'center', fontSize:12, fontWeight:700, color:'#697498', paddingBottom:6 }}>{d}</div>
-        ))}
-      </div>
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)' }}>
-        {cells.map((cell, i) => {
-          const isCur = cell.t === 'c';
-          const isSel = isCur && selDay === cell.day;
-          return (
-            <button key={i} type="button"
-              onClick={() => { if (isCur) setSelDay(cell.day); }}
-              style={{
-                height:36, width:'100%', display:'flex', alignItems:'center', justifyContent:'center',
-                fontSize:13, borderRadius:'50%', border:'none',
-                background: isSel ? '#1360d2' : 'transparent',
-                color: isSel ? '#fff' : isCur ? '#0e1b3d' : '#c8d0e0',
-                fontWeight: isSel ? 700 : 400,
-                cursor: isCur ? 'pointer' : 'default',
-                transition:'background 0.1s',
-              }}
-              onMouseEnter={e => { if (isCur && !isSel) e.currentTarget.style.background = '#e8f0ff'; }}
-              onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = 'transparent'; }}>
-              {cell.day}
-            </button>
-          );
-        })}
-      </div>
-    </>
-  );
-
-  return (
-    <div style={{ width:300, fontFamily: font }}>
-      {header}
-      {mode === 'month' ? monthGrid : mode === 'year' ? yearGrid : dayGrid}
-      {/* Confirm */}
-      <button type="button"
-        onClick={() => { if (!selDay) return; onConfirm(`${viewYear}-${p2(viewMonth + 1)}-${p2(selDay)}`); }}
-        style={{
-          width:'100%', padding:'12px 0', borderRadius:8, marginTop:16,
-          fontSize:15, fontWeight:600, color:'white', border:'none',
-          background: selDay ? '#3a5fd9' : '#a6c2e9',
-          cursor: selDay ? 'pointer' : 'not-allowed',
-          fontFamily: font,
-        }}>
-        Confirm
-      </button>
     </div>
   );
 }
@@ -1932,8 +1735,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             </svg>
           </button>
           <div className="grid grid-cols-4 gap-4 mb-4">
-            <FloatDate label="From Date" value={fFromDate} onChange={setFFromDate} />
-            <FloatDate label="To Date"   value={fToDate}   onChange={setFToDate}   />
+            <DateInput label="From Date" value={fFromDate} onChange={setFFromDate} />
+            <DateInput label="To Date"   value={fToDate}   onChange={setFToDate}   />
             <FloatDropdown
               label="Source"
               value={fSource}
@@ -2246,8 +2049,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               value={paySearchType === 'Transaction No.' ? paySearchValue : ''}
               onChange={v => { setPaySearchType('Transaction No.'); setPaySearchValue(v); }}
             />
-            <FloatDate label="From Date" value={payFromDate} onChange={setPayFromDate} />
-            <FloatDate label="To Date"   value={payToDate}   onChange={setPayToDate}   />
+            <DateInput label="From Date" value={payFromDate} onChange={setPayFromDate} />
+            <DateInput label="To Date"   value={payToDate}   onChange={setPayToDate}   />
           </div>
           {/* Row 2: 1 field + buttons */}
           <div className="flex items-center gap-4">

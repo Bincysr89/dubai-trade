@@ -1,5 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import FloatingField from './FloatingField';
+import { DateInputOutlined } from './DatePicker';
 
 // Figma asset URLs (valid 7 days)
 const guideIcon      = 'https://www.figma.com/api/mcp/asset/bf8c61a3-23ab-4f57-ae9d-3cd3204577b5';
@@ -81,9 +82,6 @@ function VesselSearchModal({ open, onClose, onSelect }: {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [portOpen, setPortOpen] = useState(false);
-  const fromRef = useRef<HTMLInputElement>(null);
-  const toRef = useRef<HTMLInputElement>(null);
-
   const filtered = VESSEL_ROWS_PRE.filter(r =>
     !vesselName || r.vesselName.toLowerCase().includes(vesselName.toLowerCase())
   );
@@ -127,24 +125,20 @@ function VesselSearchModal({ open, onClose, onSelect }: {
                 </ul>
               )}
             </div>
-            <div className="relative" style={{ flex: '1 1 260px', minWidth: 220 }}>
-              <div style={{ height: 56, border: '1px solid #d5ddfb', borderRadius: 4, background: '#fff', display: 'flex', alignItems: 'center', paddingLeft: 16 }}>
-                <input ref={fromRef} type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} className="flex-1 text-[16px] text-[#051937] outline-none bg-transparent" style={{ fontFamily: f, colorScheme: 'light' }} />
-                <button type="button" onClick={() => (fromRef.current as any)?.showPicker?.()} className="size-[48px] flex items-center justify-center flex-shrink-0">
-                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#697498" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
-                </button>
-              </div>
-              <label className="absolute pointer-events-none" style={{ left: 13, top: -8, background: '#fff', padding: '0 4px', fontSize: 12, color: '#060c28', fontFamily: f }}>From Date (one month)</label>
-            </div>
-            <div className="relative" style={{ flex: '1 1 260px', minWidth: 220 }}>
-              <div style={{ height: 56, border: '1px solid #d5ddfb', borderRadius: 4, background: '#fff', display: 'flex', alignItems: 'center', paddingLeft: 16 }}>
-                <input ref={toRef} type="date" value={toDate} onChange={e => setToDate(e.target.value)} className="flex-1 text-[16px] text-[#051937] outline-none bg-transparent" style={{ fontFamily: f, colorScheme: 'light' }} />
-                <button type="button" onClick={() => (toRef.current as any)?.showPicker?.()} className="size-[48px] flex items-center justify-center flex-shrink-0">
-                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#697498" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
-                </button>
-              </div>
-              <label className="absolute pointer-events-none" style={{ left: 13, top: -8, background: '#fff', padding: '0 4px', fontSize: 12, color: '#060c28', fontFamily: f }}>To Date</label>
-            </div>
+            <DateInputOutlined
+              label="From Date (one month)"
+              value={fromDate}
+              onChange={setFromDate}
+              style={{ flex: '1 1 260px', minWidth: 220 }}
+              font={f}
+            />
+            <DateInputOutlined
+              label="To Date"
+              value={toDate}
+              onChange={setToDate}
+              style={{ flex: '1 1 260px', minWidth: 220 }}
+              font={f}
+            />
             <div className="flex gap-[20px] items-center">
               <button type="button" onClick={handleReset} style={{ height: 48, border: '1px solid #1360d2', borderRadius: 3, background: '#fff', color: '#1360d2', fontFamily: f, fontWeight: 700, fontSize: 16, minWidth: 92, padding: '0 20px' }}>Reset</button>
               <button type="button" style={{ height: 48, borderRadius: 3, background: '#1360d2', color: '#fff', fontFamily: f, fontWeight: 500, fontSize: 16, minWidth: 134, padding: '0 20px' }}>Apply</button>

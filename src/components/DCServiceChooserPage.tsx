@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Header from './Header';
 import Dh from './Dh';
+import { DateInput } from './DatePicker';
 import '../dc-form.css';
 
 const font = "'Dubai', sans-serif";
@@ -1304,16 +1305,10 @@ export default function DCServiceChooserPage({ onBack }: {
                   </div>
                   <div className="dc-form-row" style={{ marginTop: 16 }}>
                     <div className="dc-float-wrapper dc-field--half">
-                      <div className="dc-float-field">
-                        <input className="dc-float-input" type="date" placeholder=" " value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
-                        <label className="dc-float-label">Date From <span className="dc-req">*</span></label>
-                      </div>
+                      <DateInput label="Date From" required value={dateFrom} onChange={setDateFrom} />
                     </div>
                     <div className="dc-float-wrapper dc-field--half">
-                      <div className="dc-float-field">
-                        <input className="dc-float-input" type="date" placeholder=" " value={dateTo} onChange={e => setDateTo(e.target.value)} />
-                        <label className="dc-float-label">Date To <span className="dc-req">*</span></label>
-                      </div>
+                      <DateInput label="Date To" required value={dateTo} onChange={setDateTo} />
                     </div>
                   </div>
                 </div>

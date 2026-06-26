@@ -42,6 +42,7 @@ import SuspensionResponsePage from './SuspensionResponsePage';
 import SuspensionSuccessModal from './SuspensionSuccessModal';
 import ClaimSubmittedSuccessPage from './ClaimSubmittedSuccessPage';
 import { ColumnFilter } from './ColumnFilter';
+import { DateInput } from './DatePicker';
 // @ts-ignore
 import importBySeaSrc from '../assets/importbysea.svg';
 // @ts-ignore
@@ -1187,62 +1188,38 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   </div>
 
                   {/* *From Date — calendar */}
-                  <div className="relative">
-                    <div
-                      tabIndex={0}
-                      className={`h-[56px] border rounded-[4px] flex items-center px-[12px] cursor-pointer transition-colors bg-white focus:outline-none ${filterFocused['ackFromDate'] ? 'border-[#1360d2]' : 'border-[#d5ddfb] hover:border-[#1360d2]'}`}
-                      onClick={() => focusField('ackFromDate')}
-                      onBlur={() => blurField('ackFromDate')}
-                    >
-                      <span style={floatLabel(isFloated('ackFromDate'))}><span style={{ color: '#e8212e' }}>*</span>From Date</span>
-                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ackFromDate'] || '23-Aug-25'}</span>
-                      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNjk3NDk4IiBzdHJva2Utd2lkdGg9IjEuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIyIiB5PSI0IiB3aWR0aD0iMTYiIGhlaWdodD0iMTQiIHJ4PSIyIi8+PHBhdGggZD0iTTYgMnY0TTE0IDJ2NE0yIDloMTYiLz48L3N2Zz4=" alt="" className="absolute right-[12px] size-[20px]" />
-                    </div>
-                  </div>
+                  <DateInput
+                    label="From Date"
+                    required
+                    value={filterValues['ackFromDate'] || ''}
+                    onChange={v => setFilterValues(prev => ({ ...prev, ackFromDate: v }))}
+                  />
 
                   {/* *To Date — calendar */}
-                  <div className="relative">
-                    <div
-                      tabIndex={0}
-                      className={`h-[56px] border rounded-[4px] flex items-center px-[12px] cursor-pointer transition-colors bg-white focus:outline-none ${filterFocused['ackToDate'] ? 'border-[#1360d2]' : 'border-[#d5ddfb] hover:border-[#1360d2]'}`}
-                      onClick={() => focusField('ackToDate')}
-                      onBlur={() => blurField('ackToDate')}
-                    >
-                      <span style={floatLabel(isFloated('ackToDate'))}><span style={{ color: '#e8212e' }}>*</span>To Date</span>
-                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ackToDate'] || '23-Sep-25'}</span>
-                      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNjk3NDk4IiBzdHJva2Utd2lkdGg9IjEuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIyIiB5PSI0IiB3aWR0aD0iMTYiIGhlaWdodD0iMTQiIHJ4PSIyIi8+PHBhdGggZD0iTTYgMnY0TTE0IDJ2NE0yIDloMTYiLz48L3N2Zz4=" alt="" className="absolute right-[12px] size-[20px]" />
-                    </div>
-                  </div>
+                  <DateInput
+                    label="To Date"
+                    required
+                    value={filterValues['ackToDate'] || ''}
+                    onChange={v => setFilterValues(prev => ({ ...prev, ackToDate: v }))}
+                  />
                 </>
               ) : activeMenu === 'VCC' ? (
                 <>
                   {/* *Request Date From — calendar (mandatory) */}
-                  <div className="relative">
-                    <div
-                      tabIndex={0}
-                      className={`h-[56px] border rounded-[4px] flex items-center px-[12px] cursor-pointer transition-colors bg-white focus:outline-none ${filterFocused['vccDateFrom'] ? 'border-[#1360d2]' : 'border-[#d5ddfb] hover:border-[#1360d2]'}`}
-                      onClick={() => focusField('vccDateFrom')}
-                      onBlur={() => blurField('vccDateFrom')}
-                    >
-                      <span style={floatLabel(isFloated('vccDateFrom'))}><span style={{ color: '#e8212e' }}>*</span>Request Date From</span>
-                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['vccDateFrom'] || ''}</span>
-                      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNjk3NDk4IiBzdHJva2Utd2lkdGg9IjEuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIyIiB5PSI0IiB3aWR0aD0iMTYiIGhlaWdodD0iMTQiIHJ4PSIyIi8+PHBhdGggZD0iTTYgMnY0TTE0IDJ2NE0yIDloMTYiLz48L3N2Zz4=" alt="" className="absolute right-[12px] size-[20px]" />
-                    </div>
-                  </div>
+                  <DateInput
+                    label="Request Date From"
+                    required
+                    value={filterValues['vccDateFrom'] || ''}
+                    onChange={v => setFilterValues(prev => ({ ...prev, vccDateFrom: v }))}
+                  />
 
                   {/* *Request Date To — calendar (mandatory) */}
-                  <div className="relative">
-                    <div
-                      tabIndex={0}
-                      className={`h-[56px] border rounded-[4px] flex items-center px-[12px] cursor-pointer transition-colors bg-white focus:outline-none ${filterFocused['vccDateTo'] ? 'border-[#1360d2]' : 'border-[#d5ddfb] hover:border-[#1360d2]'}`}
-                      onClick={() => focusField('vccDateTo')}
-                      onBlur={() => blurField('vccDateTo')}
-                    >
-                      <span style={floatLabel(isFloated('vccDateTo'))}><span style={{ color: '#e8212e' }}>*</span>Request Date To</span>
-                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['vccDateTo'] || ''}</span>
-                      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNjk3NDk4IiBzdHJva2Utd2lkdGg9IjEuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIyIiB5PSI0IiB3aWR0aD0iMTYiIGhlaWdodD0iMTQiIHJ4PSIyIi8+PHBhdGggZD0iTTYgMnY0TTE0IDJ2NE0yIDloMTYiLz48L3N2Zz4=" alt="" className="absolute right-[12px] size-[20px]" />
-                    </div>
-                  </div>
+                  <DateInput
+                    label="Request Date To"
+                    required
+                    value={filterValues['vccDateTo'] || ''}
+                    onChange={v => setFilterValues(prev => ({ ...prev, vccDateTo: v }))}
+                  />
 
                   {/* Status dropdown */}
                   <div className="relative">
@@ -1419,32 +1396,18 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   </div>
 
                   {/* From Date — calendar */}
-                  <div className="relative">
-                    <div
-                      tabIndex={0}
-                      className={`h-[56px] border rounded-[4px] flex items-center px-[12px] cursor-pointer transition-colors bg-white focus:outline-none ${filterFocused['rcFromDate'] ? 'border-[#1360d2]' : 'border-[#d5ddfb] hover:border-[#1360d2]'}`}
-                      onClick={() => focusField('rcFromDate')}
-                      onBlur={() => blurField('rcFromDate')}
-                    >
-                      <span style={floatLabel(isFloated('rcFromDate'))}>From Date</span>
-                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcFromDate'] || ''}</span>
-                      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNjk3NDk4IiBzdHJva2Utd2lkdGg9IjEuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIyIiB5PSI0IiB3aWR0aD0iMTYiIGhlaWdodD0iMTQiIHJ4PSIyIi8+PHBhdGggZD0iTTYgMnY0TTE0IDJ2NE0yIDloMTYiLz48L3N2Zz4=" alt="" className="absolute right-[12px] size-[20px]" />
-                    </div>
-                  </div>
+                  <DateInput
+                    label="From Date"
+                    value={filterValues['rcFromDate'] || ''}
+                    onChange={v => setFilterValues(prev => ({ ...prev, rcFromDate: v }))}
+                  />
 
                   {/* To Date — calendar */}
-                  <div className="relative">
-                    <div
-                      tabIndex={0}
-                      className={`h-[56px] border rounded-[4px] flex items-center px-[12px] cursor-pointer transition-colors bg-white focus:outline-none ${filterFocused['rcToDate'] ? 'border-[#1360d2]' : 'border-[#d5ddfb] hover:border-[#1360d2]'}`}
-                      onClick={() => focusField('rcToDate')}
-                      onBlur={() => blurField('rcToDate')}
-                    >
-                      <span style={floatLabel(isFloated('rcToDate'))}>To Date</span>
-                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcToDate'] || ''}</span>
-                      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNjk3NDk4IiBzdHJva2Utd2lkdGg9IjEuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIyIiB5PSI0IiB3aWR0aD0iMTYiIGhlaWdodD0iMTQiIHJ4PSIyIi8+PHBhdGggZD0iTTYgMnY0TTE0IDJ2NE0yIDloMTYiLz48L3N2Zz4=" alt="" className="absolute right-[12px] size-[20px]" />
-                    </div>
-                  </div>
+                  <DateInput
+                    label="To Date"
+                    value={filterValues['rcToDate'] || ''}
+                    onChange={v => setFilterValues(prev => ({ ...prev, rcToDate: v }))}
+                  />
 
                   {/* Claimant Type — dropdown */}
                   <div className="relative">
@@ -1604,32 +1567,20 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               </div>
 
               {/* *From Date — calendar */}
-              <div className="relative">
-                <div
-                  tabIndex={0}
-                  className={`h-[56px] border rounded-[4px] flex items-center px-[12px] cursor-pointer transition-colors bg-white focus:outline-none ${filterFocused['ctFromDate'] ? 'border-[#1360d2]' : 'border-[#d5ddfb] hover:border-[#1360d2]'}`}
-                  onClick={() => focusField('ctFromDate')}
-                  onBlur={() => blurField('ctFromDate')}
-                >
-                  <span style={floatLabel(isFloated('ctFromDate'))}><span style={{ color: '#e8212e' }}>*</span>From Date (15 days)</span>
-                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ctFromDate'] || ''}</span>
-                  <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNjk3NDk4IiBzdHJva2Utd2lkdGg9IjEuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIyIiB5PSI0IiB3aWR0aD0iMTYiIGhlaWdodD0iMTQiIHJ4PSIyIi8+PHBhdGggZD0iTTYgMnY0TTE0IDJ2NE0yIDloMTYiLz48L3N2Zz4=" alt="" className="absolute right-[12px] size-[20px]" />
-                </div>
-              </div>
+              <DateInput
+                label="From Date (15 days)"
+                required
+                value={filterValues['ctFromDate'] || ''}
+                onChange={v => setFilterValues(prev => ({ ...prev, ctFromDate: v }))}
+              />
 
               {/* *To Date — calendar */}
-              <div className="relative">
-                <div
-                  tabIndex={0}
-                  className={`h-[56px] border rounded-[4px] flex items-center px-[12px] cursor-pointer transition-colors bg-white focus:outline-none ${filterFocused['ctToDate'] ? 'border-[#1360d2]' : 'border-[#d5ddfb] hover:border-[#1360d2]'}`}
-                  onClick={() => focusField('ctToDate')}
-                  onBlur={() => blurField('ctToDate')}
-                >
-                  <span style={floatLabel(isFloated('ctToDate'))}><span style={{ color: '#e8212e' }}>*</span>To Date</span>
-                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['ctToDate'] || ''}</span>
-                  <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNjk3NDk4IiBzdHJva2Utd2lkdGg9IjEuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIyIiB5PSI0IiB3aWR0aD0iMTYiIGhlaWdodD0iMTQiIHJ4PSIyIi8+PHBhdGggZD0iTTYgMnY0TTE0IDJ2NE0yIDloMTYiLz48L3N2Zz4=" alt="" className="absolute right-[12px] size-[20px]" />
-                </div>
-              </div>
+              <DateInput
+                label="To Date"
+                required
+                value={filterValues['ctToDate'] || ''}
+                onChange={v => setFilterValues(prev => ({ ...prev, ctToDate: v }))}
+              />
 
               {/* Broker Code — text input */}
               <div className="relative">
@@ -1720,32 +1671,20 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               </div>
 
               {/* *From Date — calendar */}
-              <div className="relative">
-                <div
-                  tabIndex={0}
-                  className={`h-[56px] border rounded-[4px] flex items-center px-[12px] cursor-pointer transition-colors bg-white focus:outline-none ${filterFocused['fromDate'] ? 'border-[#1360d2]' : 'border-[#d5ddfb] hover:border-[#1360d2]'}`}
-                  onClick={() => focusField('fromDate')}
-                  onBlur={() => blurField('fromDate')}
-                >
-                  <span style={floatLabel(isFloated('fromDate'))}><span style={{ color: '#e8212e' }}>*</span>From Date (15 days)</span>
-                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['fromDate'] || ''}</span>
-                  <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNjk3NDk4IiBzdHJva2Utd2lkdGg9IjEuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIyIiB5PSI0IiB3aWR0aD0iMTYiIGhlaWdodD0iMTQiIHJ4PSIyIi8+PHBhdGggZD0iTTYgMnY0TTE0IDJ2NE0yIDloMTYiLz48L3N2Zz4=" alt="" className="absolute right-[12px] size-[20px]" />
-                </div>
-              </div>
+              <DateInput
+                label="From Date (15 days)"
+                required
+                value={filterValues['fromDate'] || ''}
+                onChange={v => setFilterValues(prev => ({ ...prev, fromDate: v }))}
+              />
 
               {/* *To Date — calendar */}
-              <div className="relative">
-                <div
-                  tabIndex={0}
-                  className={`h-[56px] border rounded-[4px] flex items-center px-[12px] cursor-pointer transition-colors bg-white focus:outline-none ${filterFocused['toDate'] ? 'border-[#1360d2]' : 'border-[#d5ddfb] hover:border-[#1360d2]'}`}
-                  onClick={() => focusField('toDate')}
-                  onBlur={() => blurField('toDate')}
-                >
-                  <span style={floatLabel(isFloated('toDate'))}><span style={{ color: '#e8212e' }}>*</span>To Date</span>
-                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['toDate'] || ''}</span>
-                  <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNjk3NDk4IiBzdHJva2Utd2lkdGg9IjEuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIyIiB5PSI0IiB3aWR0aD0iMTYiIGhlaWdodD0iMTQiIHJ4PSIyIi8+PHBhdGggZD0iTTYgMnY0TTE0IDJ2NE0yIDloMTYiLz48L3N2Zz4=" alt="" className="absolute right-[12px] size-[20px]" />
-                </div>
-              </div>
+              <DateInput
+                label="To Date"
+                required
+                value={filterValues['toDate'] || ''}
+                onChange={v => setFilterValues(prev => ({ ...prev, toDate: v }))}
+              />
 
               {/* Carrier Registration No. — text input */}
               <div className="relative">

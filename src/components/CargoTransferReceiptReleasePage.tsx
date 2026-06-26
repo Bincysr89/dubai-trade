@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import CargoTransferViewPage from './CargoTransferViewPage';
 import Pagination from './Pagination';
+import { DateInputOutlined } from './DatePicker';
 
 const font = "'Dubai', sans-serif";
 
@@ -169,16 +170,13 @@ function AFMultiSelect({ label, selected, options, onChange }: {
 
 // ── AF Date input ─────────────────────────────────────────────────────────────
 function AFDate({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
-  const [focused, setFocused] = useState(false);
   return (
-    <div className="relative">
-      <input type="date" value={value} onChange={e => onChange(e.target.value)}
-        onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-        className="h-[56px] w-full rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none bg-white"
-        style={{ fontFamily: font, border: `1px solid ${focused ? '#1360d2' : '#d5ddfb'}`, colorScheme: 'light' }}
-      />
-      <span style={flLabel(true, focused)}>{label}</span>
-    </div>
+    <DateInputOutlined
+      label={label}
+      value={value}
+      onChange={onChange}
+      font={font}
+    />
   );
 }
 
@@ -244,16 +242,6 @@ function DateCell({ value, onChange, onApplyAll, locked, disabled }: {
   value: string; locked: boolean; disabled?: boolean;
   onChange: (v: string) => void; onApplyAll: (v: string) => void;
 }) {
-  const [showApply, setShowApply] = useState(false);
-  const [focused, setFocused]     = useState(false);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value;
-    const display = raw ? raw.split('-').reverse().join('-') : '';
-    onChange(display);
-    setShowApply(!!raw);
-  };
-
   const isoVal = value ? value.split('-').reverse().join('-') : '';
 
   // Confirmed row — show as plain read-only text
@@ -265,15 +253,12 @@ function DateCell({ value, onChange, onApplyAll, locked, disabled }: {
   if (disabled) {
     return (
       <div style={{ minWidth: 150 }}>
-        <input type="date" disabled value=""
-          className="h-[36px] px-[8px] text-[16px] rounded-[4px] w-full cursor-not-allowed"
-          style={{
-            fontFamily: font, colorScheme: 'light',
-            border: '1px solid #e5eaf5',
-            background: '#f4f6fb',
-            color: '#b0bcda',
-            opacity: 1,
-          }}
+        <DateInputOutlined
+          label=""
+          value=""
+          onChange={() => {}}
+          font={font}
+          style={{ opacity: 0.5, pointerEvents: 'none' }}
         />
       </div>
     );
@@ -282,11 +267,14 @@ function DateCell({ value, onChange, onApplyAll, locked, disabled }: {
   // Row selected — fully editable
   return (
     <div style={{ minWidth: 150 }}>
-      <input type="date" value={isoVal} onChange={handleChange}
-        onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-        max={new Date().toISOString().split('T')[0]}
-        className="h-[36px] px-[8px] text-[16px] text-[#051937] rounded-[4px] focus:outline-none bg-white w-full"
-        style={{ fontFamily: font, colorScheme: 'light', border: `1px solid ${focused ? '#1360d2' : '#d5ddfb'}` }}
+      <DateInputOutlined
+        label=""
+        value={isoVal}
+        onChange={iso => {
+          const display = iso ? iso.split('-').reverse().join('-') : '';
+          onChange(display);
+        }}
+        font={font}
       />
     </div>
   );
@@ -689,18 +677,14 @@ export default function CargoTransferReceiptReleasePage({ onBack }: Props) {
             </div>
 
             {/* Bulk apply date — right corner */}
-            <div className="bg-white flex items-center gap-[10px] h-[48px] px-[14px] rounded-[6px] flex-shrink-0"
+            <div className="bg-white flex items-center gap-[10px] px-[14px] rounded-[6px] flex-shrink-0"
               style={{ boxShadow: '0px 4px 10px rgba(0,0,0,0.08)', border: '1px solid #e5efff' }}>
-              <span className="text-[16px] font-medium whitespace-nowrap" style={{ fontFamily: font, color: '#0e1b3d' }}>
-                {tab === 'release' ? 'Release Date' : 'Receipt Date'}
-              </span>
-              <input
-                type="date"
+              <DateInputOutlined
+                label={tab === 'release' ? 'Release Date' : 'Receipt Date'}
                 value={bulkDate}
-                onChange={e => setBulkDate(e.target.value)}
-                max={new Date().toISOString().split('T')[0]}
-                className="h-[34px] px-[8px] text-[16px] rounded-[4px] focus:outline-none bg-white"
-                style={{ fontFamily: font, colorScheme: 'light', border: '1px solid #d5ddfb', color: '#051937', minWidth: 140 }}
+                onChange={setBulkDate}
+                font={font}
+                style={{ minWidth: 180 }}
               />
               <button
                 disabled={selected.size === 0}

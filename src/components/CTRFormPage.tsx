@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import Header from './Header';
+import { DateInput } from './DatePicker';
 import '../dc-form.css';
 
 const font = "'Dubai', sans-serif";
@@ -410,20 +411,10 @@ export default function CTRFormPage({ onBack }: { onBack: () => void }) {
               {/* Row 0: From Date + To Date */}
               <div className="dc-form-row">
                 <div className="dc-float-wrapper dc-field--half">
-                  <div className="dc-float-field">
-                    <input type="date" className="dc-float-input" value={fromDate}
-                      onChange={e => setFromDate(e.target.value)}
-                      style={{ paddingTop: 18, paddingBottom: 6 }} />
-                    <label className="dc-float-label" style={activeLabelStyle}>From Date *</label>
-                  </div>
+                  <DateInput label="From Date" required value={fromDate} onChange={setFromDate} />
                 </div>
                 <div className="dc-float-wrapper dc-field--half">
-                  <div className="dc-float-field">
-                    <input type="date" className="dc-float-input" value={toDate}
-                      onChange={e => setToDate(e.target.value)}
-                      style={{ paddingTop: 18, paddingBottom: 6 }} />
-                    <label className="dc-float-label" style={activeLabelStyle}>To Date *</label>
-                  </div>
+                  <DateInput label="To Date" required value={toDate} onChange={setToDate} />
                 </div>
               </div>
 

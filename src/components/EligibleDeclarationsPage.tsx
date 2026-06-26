@@ -6,6 +6,7 @@ import type { ClaimType } from './ClaimTypeSelectionPage';
 import ClaimantBrokerDetail from './ClaimantBrokerDetail';
 import ClaimStepper from './ClaimStepper';
 import Dh from './Dh';
+import { DateInput } from './DatePicker';
 
 export type RefundType = 'full' | 'partial' | 'no';
 
@@ -73,16 +74,11 @@ function OutboundDeclarationModal({
               onChange={(val) => set('outboundDeclNumber', val)}
               searchable
             />
-            <FloatingField
+            <DateInput
               label="Outbound Declaration Date"
               required
-              placeholder="Select Date"
-              type="date"
               value={v.outboundDate}
               onChange={(val) => set('outboundDate', val)}
-              trailingIcon={
-                <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><rect x="3" y="5" width="14" height="13" rx="2" /><path d="M3 8h14M7 3v4M13 3v4" strokeLinecap="round" /></svg>
-              }
             />
             <FloatingField
               label="Port of Discharge"

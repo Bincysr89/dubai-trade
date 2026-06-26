@@ -5,6 +5,7 @@ import ClaimantBrokerDetail from './ClaimantBrokerDetail';
 import ClaimStepper from './ClaimStepper';
 import DTSelect from './DTSelect';
 import Dh, { DhAmount } from './Dh';
+import { DateInput } from './DatePicker';
 
 /* ───────── Shared types ───────── */
 export type RefundType = 'full' | 'partial' | 'no' | 'fullImport' | 'partialImport';
@@ -786,7 +787,7 @@ export function OutboundDeclarationPage({
         <p className="text-[16px] text-[#455174] mb-[20px]">For a full re-export refund, provide the outbound declaration number and supporting details so the claim can be matched to the export shipment.</p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[20px]">
           <FloatingField label="Outbound Declaration Number" required placeholder="Enter Declaration Number" value={v.outboundDeclNumber} onChange={(val) => set('outboundDeclNumber', val)} searchable />
-          <FloatingField label="Outbound Declaration Date" required placeholder="Select Date" type="date" value={v.outboundDate} onChange={(val) => set('outboundDate', val)} trailingIcon={<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><rect x="3" y="5" width="14" height="13" rx="2" /><path d="M3 8h14M7 3v4M13 3v4" strokeLinecap="round" /></svg>} />
+          <DateInput label="Outbound Declaration Date" required value={v.outboundDate} onChange={(val) => set('outboundDate', val)} />
           <FloatingField label="Port of Discharge" placeholder="Choose Port" value={v.portOfDischarge} onChange={(val) => set('portOfDischarge', val)} trailingIcon={<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><path d="M5 8l5 5 5-5" /></svg>} />
           <FloatingField label="Total Quantity" placeholder="Enter Quantity" value={v.totalQuantity} onChange={(val) => set('totalQuantity', val)} />
           <FloatingField label="Weight (Kg)" placeholder="Enter Weight" value={v.weight} onChange={(val) => set('weight', val)} />
