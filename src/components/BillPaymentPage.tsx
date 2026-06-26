@@ -364,7 +364,7 @@ function TransactionModal({ row, onClose }: { row: typeof PAYMENT_ROWS[0]; onClo
             <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: font }}>
               <thead>
                 <tr>
-                  {['Payment Type', 'Invoice / Account No.', 'Amount (AED)', 'Receipt No.', 'Remarks', 'Status'].map((h, i, arr) => (
+                  {['Payment Type', 'Invoice / Account No.', 'Amount', 'Receipt No.', 'Remarks', 'Status'].map((h, i, arr) => (
                     <th key={h} style={{
                       background: '#a6c2e9', padding: '11px 14px', textAlign: 'left', fontWeight: 500,
                       borderTopLeftRadius: i === 0 ? 8 : 0,
@@ -775,13 +775,13 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                       <span className="text-[16px] font-medium text-[#051937]">Invoice No.</span>
                     </th>
                     <th style={{ background: '#a6c2e9', padding: '12px 12px', textAlign: 'right', fontWeight: 500 }}>
-                      <span className="text-[16px] font-medium text-[#051937]">Invoice Amount (AED)</span>
+                      <span className="text-[16px] font-medium text-[#051937]">Invoice Amount</span>
                     </th>
                     <th style={{ background: '#a6c2e9', padding: '12px 12px', textAlign: 'right', fontWeight: 500 }}>
-                      <span className="text-[16px] font-medium text-[#051937]">Settled Amount (AED)</span>
+                      <span className="text-[16px] font-medium text-[#051937]">Settled Amount</span>
                     </th>
                     <th style={{ background: '#a6c2e9', padding: '12px 16px', textAlign: 'right', fontWeight: 500 }}>
-                      <span className="text-[16px] font-medium text-[#051937]">Amount (AED)</span>
+                      <span className="text-[16px] font-medium text-[#051937]">Amount</span>
                     </th>
                   </tr>
                 </thead>
@@ -1035,10 +1035,10 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                       <span className="text-[16px] font-medium text-[#051937]">Account Number</span>
                     </th>
                     <th style={{ background: '#a6c2e9', padding: '12px 12px', textAlign: 'right', fontWeight: 500 }}>
-                      <span className="text-[16px] font-medium text-[#051937]">Amount Due (AED)</span>
+                      <span className="text-[16px] font-medium text-[#051937]">Amount Due</span>
                     </th>
                     <th style={{ background: '#a6c2e9', padding: '12px 16px', textAlign: 'right', fontWeight: 500 }}>
-                      <span className="text-[16px] font-medium text-[#051937]">Pay Amount (AED)</span>
+                      <span className="text-[16px] font-medium text-[#051937]">Pay Amount</span>
                     </th>
                   </tr>
                 </thead>
@@ -1671,8 +1671,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 <input type="checkbox" checked={selectedRows.size === INVOICE_ROWS.length} onChange={toggleAll}
                   className="size-4 accent-[#1360d2] cursor-pointer" />
               </th>
-              {['Invoice Type', 'Invoice Number', 'Invoice Date', 'Amount (AED)', 'Settled Amount (AED)', 'Balance Amount (AED)', 'Source'].map((h) => {
-                const ra = h === 'Amount (AED)' || h === 'Settled Amount (AED)' || h === 'Balance Amount (AED)';
+              {['Invoice Type', 'Invoice Number', 'Invoice Date', 'Amount', 'Settled Amount', 'Balance Amount', 'Source'].map((h) => {
+                const ra = h === 'Amount' || h === 'Settled Amount' || h === 'Balance Amount';
                 const isOpen = invFilterOpen === h;
                 const isActive = invSortCol === h || !!invFilterDates[h];
                 const order = invFilterOrders[h] ?? 'newest';
@@ -2035,7 +2035,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 ['Transaction No.',       'left'  ],
                 ['Transaction Date',      'left'  ],
                 ['Invoice / Account No.', 'left'  ],
-                ['Amount (AED)',          'right' ],
+                ['Amount',                'right' ],
               ].map(([label, align], i) => (
                 <th key={label as string} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: align as 'left' | 'right', fontWeight: 500, borderTopLeftRadius: i === 0 ? 8 : 0, borderBottomLeftRadius: i === 0 ? 8 : 0, paddingLeft: i === 0 ? 16 : 12 }}>
                   <span className="text-[16px] font-medium text-[#051937] whitespace-nowrap">{label}</span>
