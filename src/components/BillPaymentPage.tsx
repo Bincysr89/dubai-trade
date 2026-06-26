@@ -636,6 +636,10 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const PAGE_SIZE = 8;
   const [invSortCol, setInvSortCol] = useState('');
   const [invSortDir, setInvSortDir] = useState<'asc'|'desc'>('asc');
+  const [invFilterOpen, setInvFilterOpen] = useState<string | null>(null);
+  const [invFilterDates, setInvFilterDates] = useState<Record<string, string>>({});
+  const [invFilterOrders, setInvFilterOrders] = useState<Record<string, 'oldest'|'newest'>>({});
+  const invFilterRef = useRef<HTMLDivElement>(null);
 
   /* Account list / pay / success state */
   const [accView, setAccView]           = useState<AccView>('list');
@@ -718,6 +722,15 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
     document.addEventListener('mousedown', h);
     return () => document.removeEventListener('mousedown', h);
   }, [stmtAccOpen]);
+
+  useEffect(() => {
+    if (!invFilterOpen) return;
+    const h = (e: MouseEvent) => {
+      if (invFilterRef.current && !invFilterRef.current.contains(e.target as Node)) setInvFilterOpen(null);
+    };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, [invFilterOpen]);
 
   const selectedList = Array.from(selectedRows).map(i => INVOICE_ROWS[i]).filter(Boolean);
   const totalAmt     = selectedList.reduce((s, r) => s + parseFloat(r.balance.replace(',', '')), 0);
@@ -1660,21 +1673,68 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               </th>
               {['Invoice Type', 'Invoice Number', 'Invoice Date', 'Amount (AED)', 'Settled Amount (AED)', 'Balance Amount (AED)', 'Source'].map((h) => {
                 const ra = h === 'Amount (AED)' || h === 'Settled Amount (AED)' || h === 'Balance Amount (AED)';
-                const isActive = invSortCol === h;
+                const isOpen = invFilterOpen === h;
+                const isActive = invSortCol === h || !!invFilterDates[h];
+                const order = invFilterOrders[h] ?? 'newest';
+                const dateVal = invFilterDates[h] ?? '';
                 return (
-                  <th key={h} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: ra ? 'right' : 'left', fontWeight: 500, whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none' }}
-                    onClick={() => { if (isActive) { setInvSortDir(d => d === 'asc' ? 'desc' : 'asc'); } else { setInvSortCol(h); setInvSortDir('asc'); } }}>
-                    <span className={`inline-flex items-center gap-[5px] text-[16px] font-medium text-[#051937] ${ra ? 'flex-row-reverse' : ''}`}>
+                  <th key={h} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: ra ? 'right' : 'left', fontWeight: 500, whiteSpace: 'nowrap', position: 'relative' }}>
+                    <span className={`inline-flex items-center gap-[6px] text-[16px] font-medium text-[#051937] ${ra ? 'flex-row-reverse' : ''}`}>
                       {h}
-                      <span className="inline-flex flex-col gap-[1px] flex-shrink-0">
-                        <svg viewBox="0 0 8 5" width="8" height="5" fill={isActive && invSortDir === 'asc' ? '#1360d2' : '#97a3bf'}>
-                          <path d="M4 0L8 5H0z"/>
+                      <button
+                        onClick={e => { e.stopPropagation(); setInvFilterOpen(isOpen ? null : h); }}
+                        className="flex-shrink-0 rounded-[3px] transition-colors hover:bg-[#b8d0ee]"
+                        style={{ padding: '1px 2px', background: isActive ? 'rgba(19,96,210,0.15)' : 'transparent' }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                          <path d="M10 18H14V16H10V18ZM3 6V8H21V6H3ZM6 13H18V11H6V13Z" fill={isActive ? '#1360d2' : '#0E1B3D'}/>
                         </svg>
-                        <svg viewBox="0 0 8 5" width="8" height="5" fill={isActive && invSortDir === 'desc' ? '#1360d2' : '#97a3bf'}>
-                          <path d="M4 5L0 0H8z"/>
-                        </svg>
-                      </span>
+                      </button>
                     </span>
+                    {isOpen && (
+                      <div
+                        ref={invFilterRef}
+                        className="absolute z-[500] bg-white rounded-[12px] border border-[#e0e8f5] p-[20px]"
+                        style={{ top: 'calc(100% + 6px)', ...(ra ? { right: 0 } : { left: 0 }), minWidth: 260, boxShadow: '0 8px 32px rgba(14,27,61,0.16)', fontFamily: font }}
+                        onClick={e => e.stopPropagation()}
+                      >
+                        {/* Date input */}
+                        <input
+                          type="date"
+                          value={dateVal}
+                          onChange={e => setInvFilterDates(p => ({ ...p, [h]: e.target.value }))}
+                          className="w-full h-[48px] border border-[#d5ddfb] rounded-[6px] px-[12px] text-[15px] text-[#0e1b3d] focus:outline-none focus:border-[#1360d2] mb-[16px]"
+                          style={{ fontFamily: font }}
+                        />
+                        {/* Sort order */}
+                        {(['oldest', 'newest'] as const).map(opt => (
+                          <label key={opt} className="flex items-center gap-[12px] mb-[12px] cursor-pointer">
+                            <div
+                              className="size-[20px] rounded-full border-[2px] flex items-center justify-center flex-shrink-0"
+                              style={{ borderColor: order === opt ? '#1360d2' : '#c0c8e0' }}
+                            >
+                              {order === opt && <div className="size-[10px] rounded-full bg-[#1360d2]" />}
+                            </div>
+                            <input type="radio" className="sr-only" checked={order === opt}
+                              onChange={() => setInvFilterOrders(p => ({ ...p, [h]: opt }))} />
+                            <span className="text-[15px] text-[#0e1b3d]">{opt === 'oldest' ? 'Oldest First' : 'Newest First'}</span>
+                          </label>
+                        ))}
+                        {/* Actions */}
+                        <div className="flex items-center gap-[10px] mt-[4px]">
+                          <button
+                            onClick={() => { setInvFilterDates(p => { const n = { ...p }; delete n[h]; return n; }); setInvFilterOrders(p => { const n = { ...p }; delete n[h]; return n; }); setInvSortCol(''); }}
+                            className="flex-1 h-[40px] rounded-[6px] border border-[#d5ddfb] text-[15px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] transition-colors"
+                            style={{ fontFamily: font }}
+                          >Reset</button>
+                          <button
+                            onClick={() => { setInvSortCol(h); setInvSortDir(order === 'oldest' ? 'asc' : 'desc'); setInvFilterOpen(null); }}
+                            className="flex-1 h-[40px] rounded-[6px] text-[15px] text-white transition-colors"
+                            style={{ background: '#1360d2', fontFamily: font }}
+                          >Apply</button>
+                        </div>
+                      </div>
+                    )}
                   </th>
                 );
               })}
