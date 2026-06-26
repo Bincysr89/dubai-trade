@@ -263,19 +263,23 @@ export function DateInput({
   const hasVal = !!value;
   const displayVal = hasVal ? (showTime ? fmtDateTime(value) : fmtDate(value)) : '';
 
-  /* floating label style — always floated when value set or open */
+  /* floating label — sits on the border line when active, centred in field when empty */
+  const floated = hasVal || open;
   const labelStyle: React.CSSProperties = {
     position: 'absolute',
-    left: 12,
-    top: hasVal || open ? 8 : '50%',
-    transform: hasVal || open ? 'none' : 'translateY(-50%)',
-    fontSize: hasVal || open ? 11 : 16,
+    left: 10,
+    top: floated ? -9 : '50%',
+    transform: floated ? 'none' : 'translateY(-50%)',
+    fontSize: floated ? 12 : 16,
     color: open ? '#1360d2' : '#0e1b3d',
     pointerEvents: 'none',
     transition: 'all 0.15s',
     fontFamily: FONT,
-    fontWeight: hasVal || open ? 500 : 400,
+    fontWeight: floated ? 500 : 400,
     lineHeight: 1,
+    background: floated ? '#fff' : 'transparent',
+    padding: floated ? '0 4px' : '0',
+    zIndex: 1,
   };
 
   return (
