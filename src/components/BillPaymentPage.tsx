@@ -634,6 +634,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const [invPage, setInvPage]               = useState(1);
   const [payPage, setPayPage]               = useState(1);
   const PAGE_SIZE = 8;
+  const [invSortCol, setInvSortCol] = useState('');
+  const [invSortDir, setInvSortDir] = useState<'asc'|'desc'>('asc');
 
   /* Account list / pay / success state */
   const [accView, setAccView]           = useState<AccView>('list');
@@ -1548,6 +1550,18 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
 
         <div className="flex-1" />
 
+        {/* Download selected invoices */}
+        <button
+          disabled={selectedRows.size === 0}
+          className="h-[48px] px-[16px] rounded-[4px] text-[16px] flex items-center gap-2 flex-shrink-0 border transition-colors"
+          style={{ borderColor: selectedRows.size > 0 ? '#1360d2' : '#d5ddfb', color: selectedRows.size > 0 ? '#1360d2' : '#a6c2e9', background: 'white', fontFamily: font, cursor: selectedRows.size > 0 ? 'pointer' : 'not-allowed' }}
+        >
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <path d="M12 3v12M8 11l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" strokeLinecap="round" />
+          </svg>
+          Download
+        </button>
         {/* Proceed to Pay */}
         <button
           disabled={selectedRows.size === 0}
@@ -1629,7 +1643,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
         {selectedRows.size > 0 && (
           <>
             <span className="text-[#d5ddfb]">|</span>
-            <span className="text-[#697498]">Total Balance Amount of Selected: <span className="font-semibold text-[#0e1b3d] inline-flex items-center gap-[3px]"><DirhamIcon size={13} color="#0e1b3d" />{[...selectedRows].reduce((s, i) => s + parseFloat(INVOICE_ROWS[i]?.balance ?? '0'), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></span>
+            <span className="text-[#697498]">Total Amount Selected: <span className="font-semibold text-[#0e1b3d] inline-flex items-center gap-[3px]"><DirhamIcon size={13} color="#0e1b3d" />{[...selectedRows].reduce((s, i) => s + parseFloat(INVOICE_ROWS[i]?.balance ?? '0'), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></span>
           </>
         )}
       </div>
@@ -1646,9 +1660,21 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               </th>
               {['Invoice Type', 'Invoice Number', 'Invoice Date', 'Amount (AED)', 'Settled Amount (AED)', 'Balance Amount (AED)', 'Source'].map((h) => {
                 const ra = h === 'Amount (AED)' || h === 'Settled Amount (AED)' || h === 'Balance Amount (AED)';
+                const isActive = invSortCol === h;
                 return (
-                  <th key={h} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: ra ? 'right' : 'left', fontWeight: 500, whiteSpace: 'nowrap' }}>
-                    <span className="text-[16px] font-medium text-[#051937]">{h}</span>
+                  <th key={h} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: ra ? 'right' : 'left', fontWeight: 500, whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none' }}
+                    onClick={() => { if (isActive) { setInvSortDir(d => d === 'asc' ? 'desc' : 'asc'); } else { setInvSortCol(h); setInvSortDir('asc'); } }}>
+                    <span className={`inline-flex items-center gap-[5px] text-[16px] font-medium text-[#051937] ${ra ? 'flex-row-reverse' : ''}`}>
+                      {h}
+                      <span className="inline-flex flex-col gap-[1px] flex-shrink-0">
+                        <svg viewBox="0 0 8 5" width="8" height="5" fill={isActive && invSortDir === 'asc' ? '#1360d2' : '#97a3bf'}>
+                          <path d="M4 0L8 5H0z"/>
+                        </svg>
+                        <svg viewBox="0 0 8 5" width="8" height="5" fill={isActive && invSortDir === 'desc' ? '#1360d2' : '#97a3bf'}>
+                          <path d="M4 5L0 0H8z"/>
+                        </svg>
+                      </span>
+                    </span>
                   </th>
                 );
               })}
@@ -1750,6 +1776,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             })}
           </tbody>
         </table>
+      </div>
+      <div className="sticky bottom-0 bg-white z-10 border-t border-[#f0f4ff] pt-[6px]">
         <Pagination
           page={invPage}
           totalPages={Math.max(1, Math.ceil(INVOICE_ROWS.length / PAGE_SIZE))}
@@ -1855,6 +1883,18 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
         </div>
 
         <div className="flex-1" />
+
+        {/* Download payments (Excel) */}
+        <button
+          className="h-[48px] px-[16px] flex items-center gap-2 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] transition-colors flex-shrink-0"
+          style={{ fontFamily: font }}
+        >
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <path d="M12 3v12M8 11l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" strokeLinecap="round" />
+          </svg>
+          Download Excel
+        </button>
       </div>
 
       {/* Advance Filters panel */}
@@ -1915,6 +1955,14 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             </svg>
           </button>
         </div>
+      </div>
+
+      {/* Info banner */}
+      <div className="flex items-center gap-[8px] px-[14px] py-[10px] rounded-[8px] border border-[#b3caff] mb-[10px]" style={{ background: 'linear-gradient(135deg,#eef4ff,#f5f8ff)', fontFamily: font }}>
+        <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#1360d2" strokeWidth="1.6" className="flex-shrink-0">
+          <circle cx="10" cy="10" r="8"/><path d="M10 9v5M10 7v.5" strokeLinecap="round"/>
+        </svg>
+        <span className="text-[14px] text-[#1360d2] font-medium">Only online payments are listed in the table.</span>
       </div>
 
       {/* Payments table */}
@@ -2103,6 +2151,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             })}
           </tbody>
         </table>
+      </div>
+      <div className="sticky bottom-0 bg-white z-10 border-t border-[#f0f4ff] pt-[6px]">
         <Pagination
           page={payPage}
           totalPages={Math.max(1, Math.ceil(filteredPayments.length / PAGE_SIZE))}
