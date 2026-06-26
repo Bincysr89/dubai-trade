@@ -2196,32 +2196,6 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
         </button>
       </div>
 
-      {/* Limit calculation info panel */}
-      <div className="rounded-[8px] border border-[#b3caff] mb-[12px] overflow-hidden" style={{ background: 'linear-gradient(135deg,#eef4ff,#f5f8ff)' }}>
-        <div className="flex items-center gap-[8px] px-[16px] py-[10px] border-b border-[#d5ddfb]">
-          <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#1360d2" strokeWidth="1.6">
-            <circle cx="10" cy="10" r="8" /><path d="M10 9v5M10 7v.5" strokeLinecap="round" />
-          </svg>
-          <span className="text-[15px] font-semibold text-[#1360d2]" style={{ fontFamily: font }}>How are the limits calculated?</span>
-        </div>
-        <div className="px-[16px] py-[10px] flex items-center gap-[32px] flex-wrap">
-          {[
-            { label: 'Total Limit', formula: 'Maximum credit/debit ceiling assigned to the account' },
-            { label: 'Amount Due to Pay', formula: 'Sum of all outstanding invoices pending settlement' },
-            { label: 'Current Limit', formula: 'Total Limit − Amount Due to Pay' },
-            { label: 'Available Limit', formula: 'Current Limit (funds available for new transactions)' },
-          ].map(({ label, formula }) => (
-            <div key={label} className="flex items-start gap-[6px] min-w-[180px]">
-              <div className="w-[8px] h-[8px] rounded-full mt-[6px] flex-shrink-0" style={{ background: '#0e1b3d' }} />
-              <div>
-                <p className="text-[14px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>{label}</p>
-                <p className="text-[13px] text-[#697498]" style={{ fontFamily: font }}>{formula}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Accounts table */}
       <div className="overflow-x-auto">
         <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }}>
@@ -2231,14 +2205,35 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               <th style={{ background: '#a6c2e9', padding: '10px 16px', width: 44, borderTopLeftRadius: 8, borderBottomLeftRadius: 8 }}>
                 <span />
               </th>
-              {(['Account Type', 'Account Number', 'Total Limit (AED)', 'Amount Due to Pay (AED)', 'Current Limit (AED)', 'Available Limit (AED)'] as const).map((h) => {
-                const ra = h === 'Total Limit (AED)' || h === 'Amount Due to Pay (AED)' || h === 'Current Limit (AED)' || h === 'Available Limit (AED)';
-                return (
-                  <th key={h} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: ra ? 'right' : 'left', fontWeight: 500 }}>
-                    <span className="text-[16px] font-medium text-[#051937] whitespace-nowrap">{h}</span>
-                  </th>
-                );
-              })}
+              {(([
+                { label: 'Account Type',        right: false },
+                { label: 'Account Number',      right: false },
+                { label: 'Total Limit',         right: true,  tip: 'Maximum credit/debit ceiling assigned to the account' },
+                { label: 'Amount Due to Pay',   right: true,  tip: 'Sum of all outstanding invoices pending settlement' },
+                { label: 'Current Month Usage', right: true,  tip: 'Total Limit − Amount Due to Pay' },
+                { label: 'Available Balance',   right: true,  tip: 'Funds available for new transactions' },
+              ]) as { label: string; right: boolean; tip?: string }[]).map(({ label, right, tip }) => (
+                <th key={label} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: right ? 'right' : 'left', fontWeight: 500 }}>
+                  <div className={`flex items-center gap-[5px] ${right ? 'justify-end' : 'justify-start'}`}>
+                    <span className="text-[16px] font-medium text-[#051937] whitespace-nowrap">{label}</span>
+                    {tip && (
+                      <div className="group/tip relative cursor-help flex-shrink-0">
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#455174" strokeWidth="1.5">
+                          <circle cx="8" cy="8" r="7"/><path d="M8 7v4M8 5v.5" strokeLinecap="round"/>
+                        </svg>
+                        <div
+                          className="absolute top-[calc(100%+6px)] z-[300] hidden group-hover/tip:block bg-[#0e1b3d] text-white rounded-[6px] px-[10px] py-[8px] shadow-lg pointer-events-none whitespace-nowrap"
+                          style={{ fontSize: 12, fontFamily: font, ...(right ? { right: 0 } : { left: '50%', transform: 'translateX(-50%)' }) }}
+                        >
+                          {tip}
+                          <div className="absolute -top-[5px] w-[10px] h-[10px] bg-[#0e1b3d] rotate-45"
+                            style={right ? { right: 4 } : { left: '50%', transform: 'translateX(-50%) rotate(45deg)' }} />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </th>
+              ))}
               <th style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'center', width: 120, borderTopRightRadius: 8, borderBottomRightRadius: 8 }}>
                 <span className="text-[16px] font-medium text-[#051937]">Actions</span>
               </th>
@@ -2309,6 +2304,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             })}
           </tbody>
         </table>
+      </div>
+      <div className="sticky bottom-0 bg-white z-10 border-t border-[#f0f4ff] pt-[6px]">
         <Pagination
           page={accPage}
           totalPages={Math.max(1, totalAccPages)}
