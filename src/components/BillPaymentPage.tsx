@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from './Header';
 import Pagination from './Pagination';
+import infoIconSrc from '../assets/icon-info.svg';
 
 const font = "'Dubai', sans-serif";
 
@@ -915,9 +916,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
           <span className="text-[16px] font-medium text-[#051937] whitespace-nowrap">{label}</span>
           {tip && (
             <div className="group/tip relative cursor-help flex-shrink-0">
-              <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#455174" strokeWidth="1.5">
-                <circle cx="8" cy="8" r="7"/><path d="M8 7v4M8 5v.5" strokeLinecap="round"/>
-              </svg>
+              <img src={infoIconSrc} alt="info" width="14" height="14" />
               <div className="absolute top-[calc(100%+6px)] z-[300] hidden group-hover/tip:block bg-[#0e1b3d] text-white rounded-[6px] px-[10px] py-[8px] shadow-lg pointer-events-none whitespace-nowrap"
                 style={{ fontSize: 12, fontFamily: font, ...(ra ? { right: 0 } : { left: '50%', transform: 'translateX(-50%)' }) }}>
                 {tip}
@@ -2514,9 +2513,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                   <div className="inline-flex items-center gap-[5px]">
                     <span className="text-[16px] font-medium text-[#051937] whitespace-nowrap">{label}</span>
                     <div className="group/tip relative cursor-help flex-shrink-0">
-                      <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#455174" strokeWidth="1.5">
-                        <circle cx="8" cy="8" r="7"/><path d="M8 7v4M8 5v.5" strokeLinecap="round"/>
-                      </svg>
+                      <img src={infoIconSrc} alt="info" width="14" height="14" />
                       <div className="absolute top-[calc(100%+6px)] z-[300] hidden group-hover/tip:block bg-[#0e1b3d] text-white rounded-[6px] px-[10px] py-[8px] shadow-lg pointer-events-none whitespace-nowrap"
                         style={{ fontSize: 12, fontFamily: font, right: 0 }}>
                         {tip}
