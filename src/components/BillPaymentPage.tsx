@@ -634,12 +634,10 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const [invPage, setInvPage]               = useState(1);
   const [payPage, setPayPage]               = useState(1);
   const PAGE_SIZE = 8;
-  const [invSortCol, setInvSortCol] = useState('');
-  const [invSortDir, setInvSortDir] = useState<'asc'|'desc'>('asc');
-  const [invFilterOpen, setInvFilterOpen] = useState<string | null>(null);
-  const [invFilterDates, setInvFilterDates] = useState<Record<string, string>>({});
-  const [invFilterOrders, setInvFilterOrders] = useState<Record<string, 'oldest'|'newest'>>({});
-  const invFilterRef = useRef<HTMLDivElement>(null);
+  const [filterOpen, setFilterOpen] = useState<string | null>(null);
+  const [filterValues, setFilterValues] = useState<Record<string, string>>({});
+  const [filterOrders, setFilterOrders] = useState<Record<string, 'oldest'|'newest'>>({});
+  const filterRef = useRef<HTMLDivElement>(null);
 
   /* Account list / pay / success state */
   const [accView, setAccView]           = useState<AccView>('list');
@@ -724,13 +722,109 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   }, [stmtAccOpen]);
 
   useEffect(() => {
-    if (!invFilterOpen) return;
+    if (!filterOpen) return;
     const h = (e: MouseEvent) => {
-      if (invFilterRef.current && !invFilterRef.current.contains(e.target as Node)) setInvFilterOpen(null);
+      if (filterRef.current && !filterRef.current.contains(e.target as Node)) setFilterOpen(null);
     };
     document.addEventListener('mousedown', h);
     return () => document.removeEventListener('mousedown', h);
-  }, [invFilterOpen]);
+  }, [filterOpen]);
+
+  const DATE_COLS = new Set(['Invoice Date', 'Transaction Date']);
+
+  const renderFilterHeader = (
+    table: string,
+    label: string,
+    { align = 'left' as 'left' | 'right', tip, sticky, stickyRight, style = {} as React.CSSProperties }: {
+      align?: 'left' | 'right'; tip?: string; sticky?: boolean; stickyRight?: number; style?: React.CSSProperties;
+    } = {}
+  ) => {
+    const key = `${table}:${label}`;
+    const isOpen = filterOpen === key;
+    const isDate = DATE_COLS.has(label);
+    const value = filterValues[key] ?? '';
+    const order = filterOrders[key] ?? 'newest';
+    const isActive = !!value;
+    const ra = align === 'right';
+    return (
+      <th key={label} style={{
+        background: '#a6c2e9', padding: '10px 12px',
+        textAlign: ra ? 'right' : 'left', fontWeight: 500, whiteSpace: 'nowrap',
+        position: sticky ? 'sticky' : 'relative',
+        ...(sticky ? { right: stickyRight ?? 0, zIndex: 2 } : {}),
+        ...style,
+      }}>
+        <div className={`flex items-center gap-[5px] ${ra ? 'justify-end' : 'justify-start'}`}>
+          <span className="text-[16px] font-medium text-[#051937] whitespace-nowrap">{label}</span>
+          {tip && (
+            <div className="group/tip relative cursor-help flex-shrink-0">
+              <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#455174" strokeWidth="1.5">
+                <circle cx="8" cy="8" r="7"/><path d="M8 7v4M8 5v.5" strokeLinecap="round"/>
+              </svg>
+              <div className="absolute top-[calc(100%+6px)] z-[300] hidden group-hover/tip:block bg-[#0e1b3d] text-white rounded-[6px] px-[10px] py-[8px] shadow-lg pointer-events-none whitespace-nowrap"
+                style={{ fontSize: 12, fontFamily: font, ...(ra ? { right: 0 } : { left: '50%', transform: 'translateX(-50%)' }) }}>
+                {tip}
+                <div className="absolute -top-[5px] w-[10px] h-[10px] bg-[#0e1b3d] rotate-45"
+                  style={ra ? { right: 4 } : { left: '50%', transform: 'translateX(-50%) rotate(45deg)' }} />
+              </div>
+            </div>
+          )}
+          <button
+            onClick={e => { e.stopPropagation(); setFilterOpen(isOpen ? null : key); }}
+            className="flex-shrink-0 rounded-[3px] transition-colors hover:bg-[#b8d0ee]"
+            style={{ padding: '1px 2px', background: isActive ? 'rgba(19,96,210,0.15)' : 'transparent' }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M10 18H14V16H10V18ZM3 6V8H21V6H3ZM6 13H18V11H6V13Z" fill={isActive ? '#1360d2' : '#0E1B3D'}/>
+            </svg>
+          </button>
+        </div>
+        {isOpen && (
+          <div ref={filterRef} className="absolute z-[500] bg-white rounded-[12px] border border-[#e0e8f5] p-[20px]"
+            style={{ top: 'calc(100% + 6px)', ...(ra ? { right: 0 } : { left: 0 }), minWidth: 260, boxShadow: '0 8px 32px rgba(14,27,61,0.16)', fontFamily: font }}
+            onClick={e => e.stopPropagation()}>
+            {isDate ? (
+              <>
+                <input type="date" value={value} onChange={e => setFilterValues(p => ({ ...p, [key]: e.target.value }))}
+                  className="w-full h-[48px] border border-[#d5ddfb] rounded-[6px] px-[12px] text-[15px] text-[#0e1b3d] focus:outline-none focus:border-[#1360d2] mb-[16px]"
+                  style={{ fontFamily: font }} />
+                {(['oldest', 'newest'] as const).map(opt => (
+                  <label key={opt} className="flex items-center gap-[12px] mb-[12px] cursor-pointer">
+                    <div className="size-[20px] rounded-full border-[2px] flex items-center justify-center flex-shrink-0"
+                      style={{ borderColor: order === opt ? '#1360d2' : '#c0c8e0' }}>
+                      {order === opt && <div className="size-[10px] rounded-full bg-[#1360d2]" />}
+                    </div>
+                    <input type="radio" className="sr-only" checked={order === opt}
+                      onChange={() => setFilterOrders(p => ({ ...p, [key]: opt }))} />
+                    <span className="text-[15px] text-[#0e1b3d]">{opt === 'oldest' ? 'Oldest First' : 'Newest First'}</span>
+                  </label>
+                ))}
+              </>
+            ) : (
+              <div className="relative mb-[16px]">
+                <svg className="absolute left-[12px] top-1/2 -translate-y-1/2" viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#8f94ae" strokeWidth="1.8">
+                  <circle cx="9" cy="9" r="6"/><path d="M15 15l-3-3" strokeLinecap="round"/>
+                </svg>
+                <input type="text" value={value} onChange={e => setFilterValues(p => ({ ...p, [key]: e.target.value }))}
+                  placeholder={`Search ${label}…`}
+                  className="w-full h-[48px] border border-[#d5ddfb] rounded-[6px] pl-[38px] pr-[12px] text-[15px] text-[#0e1b3d] placeholder-[#8f94ae] focus:outline-none focus:border-[#1360d2]"
+                  style={{ fontFamily: font }} autoFocus />
+              </div>
+            )}
+            <div className="flex items-center gap-[10px]">
+              <button
+                onClick={() => { setFilterValues(p => { const n = { ...p }; delete n[key]; return n; }); setFilterOrders(p => { const n = { ...p }; delete n[key]; return n; }); }}
+                className="flex-1 h-[40px] rounded-[6px] border border-[#d5ddfb] text-[15px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] transition-colors"
+                style={{ fontFamily: font }}>Reset</button>
+              <button onClick={() => setFilterOpen(null)}
+                className="flex-1 h-[40px] rounded-[6px] text-[15px] text-white transition-colors"
+                style={{ background: '#1360d2', fontFamily: font }}>Apply</button>
+            </div>
+          </div>
+        )}
+      </th>
+    );
+  };
 
   const selectedList = Array.from(selectedRows).map(i => INVOICE_ROWS[i]).filter(Boolean);
   const totalAmt     = selectedList.reduce((s, r) => s + parseFloat(r.balance.replace(',', '')), 0);
@@ -1671,76 +1765,10 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 <input type="checkbox" checked={selectedRows.size === INVOICE_ROWS.length} onChange={toggleAll}
                   className="size-4 accent-[#1360d2] cursor-pointer" />
               </th>
-              {['Invoice Type', 'Invoice Number', 'Invoice Date', 'Amount', 'Settled Amount', 'Balance Amount', 'Source'].map((h) => {
-                const ra = h === 'Amount' || h === 'Settled Amount' || h === 'Balance Amount';
-                const isOpen = invFilterOpen === h;
-                const isActive = invSortCol === h || !!invFilterDates[h];
-                const order = invFilterOrders[h] ?? 'newest';
-                const dateVal = invFilterDates[h] ?? '';
-                return (
-                  <th key={h} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: ra ? 'right' : 'left', fontWeight: 500, whiteSpace: 'nowrap', position: 'relative' }}>
-                    <span className={`inline-flex items-center gap-[6px] text-[16px] font-medium text-[#051937] ${ra ? 'flex-row-reverse' : ''}`}>
-                      {h}
-                      <button
-                        onClick={e => { e.stopPropagation(); setInvFilterOpen(isOpen ? null : h); }}
-                        className="flex-shrink-0 rounded-[3px] transition-colors hover:bg-[#b8d0ee]"
-                        style={{ padding: '1px 2px', background: isActive ? 'rgba(19,96,210,0.15)' : 'transparent' }}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                          <path d="M10 18H14V16H10V18ZM3 6V8H21V6H3ZM6 13H18V11H6V13Z" fill={isActive ? '#1360d2' : '#0E1B3D'}/>
-                        </svg>
-                      </button>
-                    </span>
-                    {isOpen && (
-                      <div
-                        ref={invFilterRef}
-                        className="absolute z-[500] bg-white rounded-[12px] border border-[#e0e8f5] p-[20px]"
-                        style={{ top: 'calc(100% + 6px)', ...(ra ? { right: 0 } : { left: 0 }), minWidth: 260, boxShadow: '0 8px 32px rgba(14,27,61,0.16)', fontFamily: font }}
-                        onClick={e => e.stopPropagation()}
-                      >
-                        {/* Date input */}
-                        <input
-                          type="date"
-                          value={dateVal}
-                          onChange={e => setInvFilterDates(p => ({ ...p, [h]: e.target.value }))}
-                          className="w-full h-[48px] border border-[#d5ddfb] rounded-[6px] px-[12px] text-[15px] text-[#0e1b3d] focus:outline-none focus:border-[#1360d2] mb-[16px]"
-                          style={{ fontFamily: font }}
-                        />
-                        {/* Sort order */}
-                        {(['oldest', 'newest'] as const).map(opt => (
-                          <label key={opt} className="flex items-center gap-[12px] mb-[12px] cursor-pointer">
-                            <div
-                              className="size-[20px] rounded-full border-[2px] flex items-center justify-center flex-shrink-0"
-                              style={{ borderColor: order === opt ? '#1360d2' : '#c0c8e0' }}
-                            >
-                              {order === opt && <div className="size-[10px] rounded-full bg-[#1360d2]" />}
-                            </div>
-                            <input type="radio" className="sr-only" checked={order === opt}
-                              onChange={() => setInvFilterOrders(p => ({ ...p, [h]: opt }))} />
-                            <span className="text-[15px] text-[#0e1b3d]">{opt === 'oldest' ? 'Oldest First' : 'Newest First'}</span>
-                          </label>
-                        ))}
-                        {/* Actions */}
-                        <div className="flex items-center gap-[10px] mt-[4px]">
-                          <button
-                            onClick={() => { setInvFilterDates(p => { const n = { ...p }; delete n[h]; return n; }); setInvFilterOrders(p => { const n = { ...p }; delete n[h]; return n; }); setInvSortCol(''); }}
-                            className="flex-1 h-[40px] rounded-[6px] border border-[#d5ddfb] text-[15px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] transition-colors"
-                            style={{ fontFamily: font }}
-                          >Reset</button>
-                          <button
-                            onClick={() => { setInvSortCol(h); setInvSortDir(order === 'oldest' ? 'asc' : 'desc'); setInvFilterOpen(null); }}
-                            className="flex-1 h-[40px] rounded-[6px] text-[15px] text-white transition-colors"
-                            style={{ background: '#1360d2', fontFamily: font }}
-                          >Apply</button>
-                        </div>
-                      </div>
-                    )}
-                  </th>
-                );
-              })}
-              <th style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, minWidth: 160, position: 'sticky', right: 80, zIndex: 2 }}>
-                <span className="text-[16px] font-medium text-[#051937]">Status</span>
-              </th>
+              {(['Invoice Type', 'Invoice Number', 'Invoice Date', 'Amount', 'Settled Amount', 'Balance Amount', 'Source'] as const).map(h =>
+                renderFilterHeader('inv', h, { align: (h === 'Amount' || h === 'Settled Amount' || h === 'Balance Amount') ? 'right' : 'left' })
+              )}
+              {renderFilterHeader('inv', 'Status', { sticky: true, stickyRight: 80, style: { minWidth: 160 } })}
               <th style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'center', width: 80, borderTopRightRadius: 8, borderBottomRightRadius: 8, position: 'sticky', right: 0, zIndex: 2 }}>
                 <span className="text-[16px] font-medium text-[#051937]">Actions</span>
               </th>
@@ -2030,20 +2058,12 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
         <table style={{ width: '100%', minWidth: 1100, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }}>
           <thead>
             <tr>
-              {[
-                ['Payment Type',          'left'  ],
-                ['Transaction No.',       'left'  ],
-                ['Transaction Date',      'left'  ],
-                ['Invoice / Account No.', 'left'  ],
-                ['Amount',                'right' ],
-              ].map(([label, align], i) => (
-                <th key={label as string} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: align as 'left' | 'right', fontWeight: 500, borderTopLeftRadius: i === 0 ? 8 : 0, borderBottomLeftRadius: i === 0 ? 8 : 0, paddingLeft: i === 0 ? 16 : 12 }}>
-                  <span className="text-[16px] font-medium text-[#051937] whitespace-nowrap">{label}</span>
-                </th>
-              ))}
-              <th style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, minWidth: 140, position: 'sticky', right: 100, zIndex: 2 }}>
-                <span className="text-[16px] font-medium text-[#051937] whitespace-nowrap">Status</span>
-              </th>
+              {renderFilterHeader('pay', 'Payment Type', { style: { borderTopLeftRadius: 8, borderBottomLeftRadius: 8, paddingLeft: 16 } })}
+              {renderFilterHeader('pay', 'Transaction No.')}
+              {renderFilterHeader('pay', 'Transaction Date')}
+              {renderFilterHeader('pay', 'Invoice / Account No.')}
+              {renderFilterHeader('pay', 'Amount', { align: 'right' })}
+              {renderFilterHeader('pay', 'Status', { sticky: true, stickyRight: 100, style: { minWidth: 140 } })}
               <th style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'center', width: 100, borderTopRightRadius: 8, borderBottomRightRadius: 8, position: 'sticky', right: 0, zIndex: 2 }}>
                 <span className="text-[16px] font-medium text-[#051937]">Actions</span>
               </th>
@@ -2315,35 +2335,12 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               <th style={{ background: '#a6c2e9', padding: '10px 16px', width: 44, borderTopLeftRadius: 8, borderBottomLeftRadius: 8 }}>
                 <span />
               </th>
-              {(([
-                { label: 'Account Type',        right: false },
-                { label: 'Account Number',      right: false },
-                { label: 'Total Limit',         right: true,  tip: 'Maximum credit/debit ceiling assigned to the account' },
-                { label: 'Amount Due to Pay',   right: true,  tip: 'Sum of all outstanding invoices pending settlement' },
-                { label: 'Current Month Usage', right: true,  tip: 'Total Limit − Amount Due to Pay' },
-                { label: 'Available Balance',   right: true,  tip: 'Funds available for new transactions' },
-              ]) as { label: string; right: boolean; tip?: string }[]).map(({ label, right, tip }) => (
-                <th key={label} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: right ? 'right' : 'left', fontWeight: 500 }}>
-                  <div className={`flex items-center gap-[5px] ${right ? 'justify-end' : 'justify-start'}`}>
-                    <span className="text-[16px] font-medium text-[#051937] whitespace-nowrap">{label}</span>
-                    {tip && (
-                      <div className="group/tip relative cursor-help flex-shrink-0">
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#455174" strokeWidth="1.5">
-                          <circle cx="8" cy="8" r="7"/><path d="M8 7v4M8 5v.5" strokeLinecap="round"/>
-                        </svg>
-                        <div
-                          className="absolute top-[calc(100%+6px)] z-[300] hidden group-hover/tip:block bg-[#0e1b3d] text-white rounded-[6px] px-[10px] py-[8px] shadow-lg pointer-events-none whitespace-nowrap"
-                          style={{ fontSize: 12, fontFamily: font, ...(right ? { right: 0 } : { left: '50%', transform: 'translateX(-50%)' }) }}
-                        >
-                          {tip}
-                          <div className="absolute -top-[5px] w-[10px] h-[10px] bg-[#0e1b3d] rotate-45"
-                            style={right ? { right: 4 } : { left: '50%', transform: 'translateX(-50%) rotate(45deg)' }} />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </th>
-              ))}
+              {renderFilterHeader('acc', 'Account Type')}
+              {renderFilterHeader('acc', 'Account Number')}
+              {renderFilterHeader('acc', 'Total Limit', { align: 'right', tip: 'Maximum credit/debit ceiling assigned to the account' })}
+              {renderFilterHeader('acc', 'Amount Due to Pay', { align: 'right', tip: 'Sum of all outstanding invoices pending settlement' })}
+              {renderFilterHeader('acc', 'Current Month Usage', { align: 'right', tip: 'Total Limit − Amount Due to Pay' })}
+              {renderFilterHeader('acc', 'Available Balance', { align: 'right', tip: 'Funds available for new transactions' })}
               <th style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'center', width: 120, borderTopRightRadius: 8, borderBottomRightRadius: 8 }}>
                 <span className="text-[16px] font-medium text-[#051937]">Actions</span>
               </th>
