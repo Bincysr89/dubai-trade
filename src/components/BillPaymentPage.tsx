@@ -801,15 +801,28 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 ))}
               </>
             ) : (
-              <div className="relative mb-[16px]">
-                <svg className="absolute left-[12px] top-1/2 -translate-y-1/2" viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#8f94ae" strokeWidth="1.8">
-                  <circle cx="9" cy="9" r="6"/><path d="M15 15l-3-3" strokeLinecap="round"/>
-                </svg>
-                <input type="text" value={value} onChange={e => setFilterValues(p => ({ ...p, [key]: e.target.value }))}
-                  placeholder={`Search ${label}…`}
-                  className="w-full h-[48px] border border-[#d5ddfb] rounded-[6px] pl-[38px] pr-[12px] text-[15px] text-[#0e1b3d] placeholder-[#8f94ae] focus:outline-none focus:border-[#1360d2]"
-                  style={{ fontFamily: font }} autoFocus />
-              </div>
+              <>
+                <div className="relative mb-[16px]">
+                  <svg className="absolute left-[12px] top-1/2 -translate-y-1/2" viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#8f94ae" strokeWidth="1.8">
+                    <circle cx="9" cy="9" r="6"/><path d="M15 15l-3-3" strokeLinecap="round"/>
+                  </svg>
+                  <input type="text" value={value} onChange={e => setFilterValues(p => ({ ...p, [key]: e.target.value }))}
+                    placeholder={`Search ${label}…`}
+                    className="w-full h-[48px] border border-[#d5ddfb] rounded-[6px] pl-[38px] pr-[12px] text-[15px] text-[#0e1b3d] placeholder-[#8f94ae] focus:outline-none focus:border-[#1360d2]"
+                    style={{ fontFamily: font }} autoFocus />
+                </div>
+                {(['oldest', 'newest'] as const).map(opt => (
+                  <label key={opt} className="flex items-center gap-[12px] mb-[12px] cursor-pointer">
+                    <div className="size-[20px] rounded-full border-[2px] flex items-center justify-center flex-shrink-0"
+                      style={{ borderColor: order === opt ? '#1360d2' : '#c0c8e0' }}>
+                      {order === opt && <div className="size-[10px] rounded-full bg-[#1360d2]" />}
+                    </div>
+                    <input type="radio" className="sr-only" checked={order === opt}
+                      onChange={() => setFilterOrders(p => ({ ...p, [key]: opt }))} />
+                    <span className="text-[15px] text-[#0e1b3d]">{opt === 'oldest' ? 'Oldest First' : 'Newest First'}</span>
+                  </label>
+                ))}
+              </>
             )}
             <div className="flex items-center gap-[10px]">
               <button
@@ -2337,10 +2350,28 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               </th>
               {renderFilterHeader('acc', 'Account Type')}
               {renderFilterHeader('acc', 'Account Number')}
-              {renderFilterHeader('acc', 'Total Limit', { align: 'right', tip: 'Maximum credit/debit ceiling assigned to the account' })}
-              {renderFilterHeader('acc', 'Amount Due to Pay', { align: 'right', tip: 'Sum of all outstanding invoices pending settlement' })}
-              {renderFilterHeader('acc', 'Current Month Usage', { align: 'right', tip: 'Total Limit − Amount Due to Pay' })}
-              {renderFilterHeader('acc', 'Available Balance', { align: 'right', tip: 'Funds available for new transactions' })}
+              {([
+                { label: 'Total Limit',         tip: 'Maximum credit/debit ceiling assigned to the account' },
+                { label: 'Amount Due to Pay',   tip: 'Sum of all outstanding invoices pending settlement' },
+                { label: 'Current Month Usage', tip: 'Total Limit − Amount Due to Pay' },
+                { label: 'Available Balance',   tip: 'Funds available for new transactions' },
+              ]).map(({ label, tip }) => (
+                <th key={label} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'right', fontWeight: 500 }}>
+                  <div className="inline-flex items-center gap-[5px]">
+                    <span className="text-[16px] font-medium text-[#051937] whitespace-nowrap">{label}</span>
+                    <div className="group/tip relative cursor-help flex-shrink-0">
+                      <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#455174" strokeWidth="1.5">
+                        <circle cx="8" cy="8" r="7"/><path d="M8 7v4M8 5v.5" strokeLinecap="round"/>
+                      </svg>
+                      <div className="absolute top-[calc(100%+6px)] z-[300] hidden group-hover/tip:block bg-[#0e1b3d] text-white rounded-[6px] px-[10px] py-[8px] shadow-lg pointer-events-none whitespace-nowrap"
+                        style={{ fontSize: 12, fontFamily: font, right: 0 }}>
+                        {tip}
+                        <div className="absolute -top-[5px] w-[10px] h-[10px] bg-[#0e1b3d] rotate-45" style={{ right: 4 }} />
+                      </div>
+                    </div>
+                  </div>
+                </th>
+              ))}
               <th style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'center', width: 120, borderTopRightRadius: 8, borderBottomRightRadius: 8 }}>
                 <span className="text-[16px] font-medium text-[#051937]">Actions</span>
               </th>
