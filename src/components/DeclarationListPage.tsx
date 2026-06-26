@@ -1589,18 +1589,18 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                 <span style={floatLabel(isFloated('ctTransferee'))}>Transferee (Owner)</span>
               </div>
 
-              {/* Transferer — text input */}
+              {/* Transferor — text input */}
               <div className="relative">
                 <input
                   type="text"
-                  value={filterValues['ctTransferer'] || ''}
-                  onChange={e => setFilterValues(v => ({ ...v, ctTransferer: e.target.value }))}
-                  onFocus={() => focusField('ctTransferer')}
-                  onBlur={() => blurField('ctTransferer')}
-                  className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['ctTransferer'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
+                  value={filterValues['ctTransferor'] || ''}
+                  onChange={e => setFilterValues(v => ({ ...v, ctTransferor: e.target.value }))}
+                  onFocus={() => focusField('ctTransferor')}
+                  onBlur={() => blurField('ctTransferor')}
+                  className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['ctTransferor'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
                   style={{ fontFamily: "'Dubai', sans-serif" }}
                 />
-                <span style={floatLabel(isFloated('ctTransferer'))}>Transferer</span>
+                <span style={floatLabel(isFloated('ctTransferor'))}>Transferor</span>
               </div>
 
               {/* *From Date — calendar */}

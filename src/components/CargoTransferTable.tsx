@@ -59,16 +59,25 @@ function PrintIcon() {
     </svg>
   );
 }
-type FlyoutItemId = 'view' | 'amend' | 'cancel' | 'history' | 'suspensionResponse' | 'suspensionHistory' | 'print';
+type FlyoutItemId = 'view' | 'amend' | 'cancel' | 'history' | 'suspensionResponse' | 'suspensionHistory' | 'print' | 'proceedToCargoTransfer';
+
+function ArrowRightIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 10h12M11 5l5 5-5 5" />
+    </svg>
+  );
+}
 
 const FLYOUT_ITEMS: { id: FlyoutItemId; label: string; Icon: React.FC }[] = [
-  { id: 'view',               label: 'View Request',              Icon: EyeIcon },
-  { id: 'amend',              label: 'Amend',                     Icon: EditIcon },
-  { id: 'cancel',             label: 'Cancel',                    Icon: CancelIcon },
-  { id: 'history',            label: 'Cargo Transfer History',    Icon: HistoryIcon },
-  { id: 'suspensionResponse', label: 'Suspension Response',       Icon: HistoryIcon },
-  { id: 'suspensionHistory',  label: 'Suspension History',        Icon: HistoryIcon },
-  { id: 'print',              label: 'Print Cargo Transfer',      Icon: PrintIcon },
+  { id: 'view',                   label: 'View Request',              Icon: EyeIcon },
+  { id: 'amend',                  label: 'Amend',                     Icon: EditIcon },
+  { id: 'cancel',                 label: 'Cancel',                    Icon: CancelIcon },
+  { id: 'history',                label: 'Cargo Transfer History',    Icon: HistoryIcon },
+  { id: 'suspensionResponse',     label: 'Suspension Response',       Icon: HistoryIcon },
+  { id: 'suspensionHistory',      label: 'Suspension History',        Icon: HistoryIcon },
+  { id: 'print',                  label: 'Print Cargo Transfer',      Icon: PrintIcon },
+  { id: 'proceedToCargoTransfer', label: 'Proceed to Cargo Transfer', Icon: ArrowRightIcon },
 ];
 
 // ── Row data ──────────────────────────────────────────────────────────────────
@@ -84,7 +93,7 @@ type Row = {
   clientRef: string;
   carrierReg: string;
   mawb: string;
-  transferer: string;
+  transferor: string;
   broker: string;
   createdBy: string;
   statusDate: string;
@@ -95,19 +104,19 @@ type Row = {
 type DraftRow = Omit<Row, 'status'> & { status: DraftStatus };
 
 const ROWS: Row[] = [
-  { reqNo: '34521', cargoTransferNo: 'CT-1029384', cargoTransferType: 'CTO → CH (Same Location)',       submittedDate: '04-May-2026', transferee: 'code + name', cargoChannel: 'Sea', requestType: 'New', clientRef: 'JOB213354578',   carrierReg: 'JOB213354578',   mawb: 'MAWB/MBOL', transferer: 'code + name A', broker: 'code + name. S', createdBy: 'Username', statusDate: '05-May-2026', status: 'Cleared' },
-  { reqNo: '34520', cargoTransferNo: 'CT-1029383', cargoTransferType: 'CTO → CH (Different Location)',  submittedDate: '03-May-2026', transferee: 'code + name', cargoChannel: 'Sea', requestType: 'New', clientRef: 'PGH658916794',   carrierReg: 'PGH658916794',   mawb: 'MAWB/MBOL', transferer: 'code + name B', broker: 'code + name. S', createdBy: 'Username', statusDate: '04-May-2026', status: 'Submitted' },
-  { reqNo: '34519', cargoTransferNo: 'CT-1029382', cargoTransferType: 'CH → CH (Same Location)',        submittedDate: '03-May-2026', transferee: 'code + name', cargoChannel: 'Sea', requestType: 'New', clientRef: 'GJF4589789487',  carrierReg: 'GJF4589789487',  mawb: 'MAWB/MBOL', transferer: 'code + name C', broker: 'code + name. S', createdBy: 'Username', statusDate: '03-May-2026', status: 'Submitted' },
-  { reqNo: '34518', cargoTransferNo: 'CT-1029381', cargoTransferType: 'CTO → CTO (Different Location)', submittedDate: '02-May-2026', transferee: 'code + name', cargoChannel: 'Air', requestType: 'New', clientRef: 'VNF215648748',   carrierReg: 'VNF215648748',   mawb: 'MAWB/MBOL', transferer: 'code + name D', broker: 'code + name. S', createdBy: 'Username', statusDate: '02-May-2026', status: 'Payment Pending' },
-  { reqNo: '34517', cargoTransferNo: 'CT-1029380', cargoTransferType: 'CH → CH (Different Location)',   submittedDate: '02-May-2026', transferee: 'code + name', cargoChannel: 'Sea', requestType: 'New', clientRef: 'TYT4897879487',  carrierReg: 'TYT4897879487',  mawb: 'MAWB/MBOL', transferer: 'code + name E', broker: 'code + name. S', createdBy: 'Username', statusDate: '02-May-2026', status: 'Payment Pending' },
-  { reqNo: '34516', cargoTransferNo: 'CT-1029379', cargoTransferType: 'CTO → CH (Same Location)',       submittedDate: '01-May-2026', transferee: 'code + name', cargoChannel: 'Sea', requestType: 'New', clientRef: 'TYT4897879487',  carrierReg: 'TYT4897879487',  mawb: 'MAWB/MBOL', transferer: 'code + name F', broker: 'code + name. S', createdBy: 'Username', statusDate: '01-May-2026', status: 'Declined', showInfo: true },
-  { reqNo: '34515', cargoTransferNo: 'CT-1029378', cargoTransferType: 'CH → CH (Same Location)',        submittedDate: '01-May-2026', transferee: 'code + name', cargoChannel: 'Sea', requestType: 'New', clientRef: '24/02/24, 09:30', carrierReg: '24/02/24, 09:30', mawb: 'MAWB/MBOL', transferer: 'code + name G', broker: 'code + name. S', createdBy: 'Username', statusDate: '01-May-2026', status: 'Cancelled' },
-  { reqNo: '34514', cargoTransferNo: 'CT-1029377', cargoTransferType: 'CTO → CH (Different Location)',  submittedDate: '30-Apr-2026', transferee: 'code + name', cargoChannel: 'Sea', requestType: 'New', clientRef: '24/02/24, 09:30', carrierReg: '24/02/24, 09:30', mawb: 'MAWB/MBOL', transferer: 'code + name H', broker: 'code + name. S', createdBy: 'Username', statusDate: '30-Apr-2026', status: 'Clearance Inspection' },
+  { reqNo: '34521', cargoTransferNo: 'CT-1029384', cargoTransferType: 'CTO → CH (Same Location)',       submittedDate: '04-May-2026', transferee: 'code + name', cargoChannel: 'Sea', requestType: 'New', clientRef: 'JOB213354578',   carrierReg: 'JOB213354578',   mawb: 'MAWB/MBOL', transferor: 'code + name A', broker: 'code + name. S', createdBy: 'Username', statusDate: '05-May-2026', status: 'Cleared' },
+  { reqNo: '34520', cargoTransferNo: 'CT-1029383', cargoTransferType: 'CTO → CH (Different Location)',  submittedDate: '03-May-2026', transferee: 'code + name', cargoChannel: 'Sea', requestType: 'New', clientRef: 'PGH658916794',   carrierReg: 'PGH658916794',   mawb: 'MAWB/MBOL', transferor: 'code + name B', broker: 'code + name. S', createdBy: 'Username', statusDate: '04-May-2026', status: 'Submitted' },
+  { reqNo: '34519', cargoTransferNo: 'CT-1029382', cargoTransferType: 'CH → CH (Same Location)',        submittedDate: '03-May-2026', transferee: 'code + name', cargoChannel: 'Sea', requestType: 'New', clientRef: 'GJF4589789487',  carrierReg: 'GJF4589789487',  mawb: 'MAWB/MBOL', transferor: 'code + name C', broker: 'code + name. S', createdBy: 'Username', statusDate: '03-May-2026', status: 'Submitted' },
+  { reqNo: '34518', cargoTransferNo: 'CT-1029381', cargoTransferType: 'CTO → CTO (Different Location)', submittedDate: '02-May-2026', transferee: 'code + name', cargoChannel: 'Air', requestType: 'New', clientRef: 'VNF215648748',   carrierReg: 'VNF215648748',   mawb: 'MAWB/MBOL', transferor: 'code + name D', broker: 'code + name. S', createdBy: 'Username', statusDate: '02-May-2026', status: 'Payment Pending' },
+  { reqNo: '34517', cargoTransferNo: 'CT-1029380', cargoTransferType: 'CH → CH (Different Location)',   submittedDate: '02-May-2026', transferee: 'code + name', cargoChannel: 'Sea', requestType: 'New', clientRef: 'TYT4897879487',  carrierReg: 'TYT4897879487',  mawb: 'MAWB/MBOL', transferor: 'code + name E', broker: 'code + name. S', createdBy: 'Username', statusDate: '02-May-2026', status: 'Payment Pending' },
+  { reqNo: '34516', cargoTransferNo: 'CT-1029379', cargoTransferType: 'CTO → CH (Same Location)',       submittedDate: '01-May-2026', transferee: 'code + name', cargoChannel: 'Sea', requestType: 'New', clientRef: 'TYT4897879487',  carrierReg: 'TYT4897879487',  mawb: 'MAWB/MBOL', transferor: 'code + name F', broker: 'code + name. S', createdBy: 'Username', statusDate: '01-May-2026', status: 'Declined', showInfo: true },
+  { reqNo: '34515', cargoTransferNo: 'CT-1029378', cargoTransferType: 'CH → CH (Same Location)',        submittedDate: '01-May-2026', transferee: 'code + name', cargoChannel: 'Sea', requestType: 'New', clientRef: '24/02/24, 09:30', carrierReg: '24/02/24, 09:30', mawb: 'MAWB/MBOL', transferor: 'code + name G', broker: 'code + name. S', createdBy: 'Username', statusDate: '01-May-2026', status: 'Cancelled' },
+  { reqNo: '34514', cargoTransferNo: 'CT-1029377', cargoTransferType: 'CTO → CH (Different Location)',  submittedDate: '30-Apr-2026', transferee: 'code + name', cargoChannel: 'Sea', requestType: 'New', clientRef: '24/02/24, 09:30', carrierReg: '24/02/24, 09:30', mawb: 'MAWB/MBOL', transferor: 'code + name H', broker: 'code + name. S', createdBy: 'Username', statusDate: '30-Apr-2026', status: 'Clearance Inspection' },
 ];
 
 const DRAFT_ROWS: DraftRow[] = [
-  { reqNo: '-', cargoTransferNo: '-', cargoTransferType: 'CTO → CH (Same Location)',       submittedDate: '28-Apr-2026', transferee: 'code + name', cargoChannel: 'Sea', requestType: 'New', clientRef: 'DFT001', carrierReg: 'DFT001', mawb: 'MAWB/MBOL', transferer: 'code + name X', broker: 'code + name. S', createdBy: 'Username', statusDate: '28-Apr-2026', status: 'Draft' },
-  { reqNo: '-', cargoTransferNo: '-', cargoTransferType: 'CH → CH (Different Location)',   submittedDate: '27-Apr-2026', transferee: 'code + name', cargoChannel: 'Air', requestType: 'New', clientRef: 'DFT002', carrierReg: 'DFT002', mawb: 'MAWB/MBOL', transferer: 'code + name Y', broker: 'code + name. S', createdBy: 'Username', statusDate: '27-Apr-2026', status: 'Draft' },
+  { reqNo: '-', cargoTransferNo: '-', cargoTransferType: 'CTO → CH (Same Location)',       submittedDate: '28-Apr-2026', transferee: 'code + name', cargoChannel: 'Sea', requestType: 'New', clientRef: 'DFT001', carrierReg: 'DFT001', mawb: 'MAWB/MBOL', transferor: 'code + name X', broker: 'code + name. S', createdBy: 'Username', statusDate: '28-Apr-2026', status: 'Draft' },
+  { reqNo: '-', cargoTransferNo: '-', cargoTransferType: 'CH → CH (Different Location)',   submittedDate: '27-Apr-2026', transferee: 'code + name', cargoChannel: 'Air', requestType: 'New', clientRef: 'DFT002', carrierReg: 'DFT002', mawb: 'MAWB/MBOL', transferor: 'code + name Y', broker: 'code + name. S', createdBy: 'Username', statusDate: '27-Apr-2026', status: 'Draft' },
 ];
 
 // ── Props ─────────────────────────────────────────────────────────────────────
@@ -153,7 +162,7 @@ export default function CargoTransferTable({ showDrafts = false, onViewRequest, 
     { label: 'Cargo Transfer Type', w: 240 },
     { label: 'Submitted Date',      w: 120 },
     { label: 'Transferee (Owner)',   w: 140 },
-    { label: 'Transferer',          w: 140 },
+    { label: 'Transferor',          w: 140 },
     { label: 'Cargo Channel (inbound)',       w: 150 },
     { label: 'Request No.',         w: 110 },
     { label: 'Request Type',        w: 105 },
@@ -172,7 +181,7 @@ export default function CargoTransferTable({ showDrafts = false, onViewRequest, 
       <table style={{ minWidth: 2100, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }} className="w-full">
         <thead>
           <tr>
-            {headers.map((col, idx) => (
+            {headers.filter((_, idx) => !(showDrafts && idx === 0)).map((col, idx) => (
               <th key={col.label} style={{ width: col.w, minWidth: col.w, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, borderRadius: idx === 0 ? '8px 0 0 0' : undefined, paddingLeft: idx === 0 ? 16 : 8 }}>
                 <ColumnFilter label={col.label} labelClass="text-[16px] font-medium text-[#051937]" />
               </th>
@@ -215,11 +224,11 @@ export default function CargoTransferTable({ showDrafts = false, onViewRequest, 
 
             return (
               <tr key={i}>
-                <td style={{ background: '#fff', padding: '0 8px 0 16px', height: 46, verticalAlign: 'middle', width: 150, borderBottom: '1px solid #f8f8f8' }}><span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: font }}>{row.cargoTransferNo}</span></td>
-                {cell(txt(row.cargoTransferType), 240)}
+                {!showDrafts && <td style={{ background: '#fff', padding: '0 8px 0 16px', height: 46, verticalAlign: 'middle', width: 150, borderBottom: '1px solid #f8f8f8' }}><span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: font }}>{row.cargoTransferNo}</span></td>}
+                <td style={{ background: '#fff', padding: showDrafts ? '0 8px 0 16px' : '0 8px', height: 46, verticalAlign: 'middle', width: 240, borderBottom: '1px solid #f8f8f8' }}>{txt(row.cargoTransferType)}</td>
                 {cell(txt(row.submittedDate), 120)}
                 {cell(txt(row.transferee), 140)}
-                {cell(txt(row.transferer), 140)}
+                {cell(txt(row.transferor), 140)}
                 {cell(txt(row.cargoChannel), 110)}
                 {cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: font }}>{row.reqNo}</span>, 110)}
                 {cell(txt(row.requestType), 105)}
@@ -263,7 +272,7 @@ export default function CargoTransferTable({ showDrafts = false, onViewRequest, 
                         className="absolute z-[100] bg-white rounded-[8px] py-[4px] overflow-hidden"
                         style={{ right: '100%', top: 0, marginRight: 6, width: 210, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}
                       >
-                        {FLYOUT_ITEMS.map((item) => (
+                        {FLYOUT_ITEMS.filter(item => isDraft ? item.id === 'proceedToCargoTransfer' : item.id !== 'proceedToCargoTransfer').map((item) => (
                           <button
                             key={item.id}
                             className="group flex items-center gap-[10px] w-full px-[14px] h-[42px] text-left hover:bg-[#1360d2] transition-colors"
