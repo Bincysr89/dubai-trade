@@ -41,6 +41,8 @@ import SuspensionHistoryViewPage from './SuspensionHistoryViewPage';
 import SuspensionResponsePage from './SuspensionResponsePage';
 import SuspensionSuccessModal from './SuspensionSuccessModal';
 import ClaimSubmittedSuccessPage from './ClaimSubmittedSuccessPage';
+import NonRemittanceDocumentsPage from './NonRemittanceDocumentsPage';
+import type { Row } from './EligibleDeclarationsPage';
 import { ColumnFilter } from './ColumnFilter';
 import { DateInput } from './DatePicker';
 // @ts-ignore
@@ -177,10 +179,11 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
   const [stepperReturnStep, setStepperReturnStep] = useState(0);
   const [cargoPreValues, setCargoPreValues] = useState<{ cargoChannel: string; clientRef: string; carrierReg: string; transferType: string }>({ cargoChannel: 'Sea', clientRef: '', carrierReg: '', transferType: '' });
   const [cargoFormValues, setCargoFormValues] = useState<{ clientRef: string; carrierReg: string; mawb: string; transferorBizCode: string; transferorPremCode: string; transfereeBizCode: string; transfereePremCode: string }>({ clientRef: '', carrierReg: '', mawb: '', transferorBizCode: '', transferorPremCode: '', transfereeBizCode: '', transfereePremCode: '' });
-  type ClaimSubStep = 'list' | 'eligible' | 'refundType' | 'outbound' | 'missingDoc' | 'documents' | 'payment' | 'success';
+  type ClaimSubStep = 'list' | 'eligible' | 'refundType' | 'outbound' | 'missingDoc' | 'documents' | 'payment' | 'success' | 'nonRemittanceDocs';
   const [claimDeclViewOpen, setClaimDeclViewOpen] = useState(false);
   const [claimStep, setClaimStep] = useState<ClaimSubStep>('list');
   const [claimContext, setClaimContext] = useState<{ claimType: ClaimType; declarationNo: string; depositType: string; declarationCategory: string | null; refundType?: RefundType; allowedRefundTypes?: RefundType[] } | null>(null);
+  const [nonRemittanceRows, setNonRemittanceRows] = useState<Row[]>([]);
   const [ackStep, setAckStep] = useState<'list' | 'acceptSuccess' | 'declineSuccess'>('list');
   const [ackSelected, setAckSelected] = useState<Set<number>>(new Set());
   const [ackAcceptOpen, setAckAcceptOpen] = useState(false);
@@ -273,6 +276,19 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             <EligibleDeclarationsPage
               onBack={() => setClaimStep('list')}
               onProceed={(rows, selectedClaimType) => {
+                // Non Remittance goes to its own per-declaration docs page
+                if (selectedClaimType === 'nonRemittance') {
+                  setNonRemittanceRows(rows);
+                  setClaimContext({
+                    claimType: selectedClaimType,
+                    declarationNo: rows.map((r) => r.declarationNo).join(', '),
+                    depositType: 'Non Remittance Claim',
+                    declarationCategory: 'Freezone Export',
+                  });
+                  setClaimStep('nonRemittanceDocs');
+                  return;
+                }
+
                 // Use the first selected row to determine routing
                 const row = rows[0];
                 const cat = row.declarationCategory;
@@ -368,10 +384,18 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               onContinue={() => setClaimStep('documents')}
             />
           )}
+          {claimStep === 'nonRemittanceDocs' && nonRemittanceRows.length > 0 && (
+            <NonRemittanceDocumentsPage
+              rows={nonRemittanceRows}
+              onBack={() => setClaimStep('eligible')}
+              onBackToListing={() => { setClaimStep('list'); setClaimContext(null); setNonRemittanceRows([]); }}
+              onContinue={() => setClaimStep('success')}
+            />
+          )}
           {claimStep === 'success' && (
             <ClaimSubmittedSuccessPage
-              onBack={() => { setClaimStep('list'); setClaimContext(null); }}
-              onCreateAnother={() => { setClaimStep('eligible'); }}
+              onBack={() => { setClaimStep('list'); setClaimContext(null); setNonRemittanceRows([]); }}
+              onCreateAnother={() => { setClaimStep('eligible'); setNonRemittanceRows([]); }}
             />
           )}
         </div>

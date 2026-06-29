@@ -497,7 +497,7 @@ function RefundTypeModal({ open, onClose, onContinue }: { open: boolean; onClose
 
 type RowKind = 'request' | 'requestExt' | 'expired';
 
-type Row = {
+export type Row = {
   declarationNo: string;
   declarationDate: string;
   depositType: string;
@@ -508,6 +508,7 @@ type Row = {
   exportExpiry: string;
   remarks: string;
   kind: RowKind;
+  importerCode?: string;     // for Non Remittance filtering
 };
 
 const ROWS: Row[] = [
@@ -542,8 +543,14 @@ const ROWS: Row[] = [
   { declarationNo: '512-05501201-24', declarationDate: '10/10/2024', depositType: 'Declaration Cancellation Refund - Duty / Charges', declarationCategory: 'Import For Re-Export', depositAmount: 'Dh 3,000', depositMethod: 'Cash', claimExpiry: '05/15/2025', exportExpiry: 'N/A', remarks: '—', kind: 'request' },
 
   // ── Non Remittance ─────────────────────────────────────────────────────────
-  { declarationNo: '303-02655456-24', declarationDate: '10/21/2024', depositType: 'Non Remittance Claim', declarationCategory: 'Freezone Export', depositAmount: 'N/A', depositMethod: 'N/A', claimExpiry: '12/19/2024', exportExpiry: '11/19/2024', remarks: '—', kind: 'expired' },
-  { declarationNo: '305-08812345-24', declarationDate: '11/12/2024', depositType: 'Non Remittance Claim', declarationCategory: 'Freezone Export', depositAmount: 'N/A', depositMethod: 'N/A', claimExpiry: '07/12/2025', exportExpiry: '06/12/2025', remarks: '—', kind: 'request' },
+  { declarationNo: '303-02655456-24', declarationDate: '10/21/2024', depositType: 'Non Remittance Claim', declarationCategory: 'Freezone Export', depositAmount: 'N/A', depositMethod: 'N/A', claimExpiry: '12/19/2024', exportExpiry: '11/19/2024', remarks: '—', kind: 'expired',  importerCode: 'A180' },
+  { declarationNo: '305-08812345-24', declarationDate: '11/12/2024', depositType: 'Non Remittance Claim', declarationCategory: 'Freezone Export', depositAmount: 'N/A', depositMethod: 'N/A', claimExpiry: '07/12/2025', exportExpiry: '06/12/2025', remarks: '—', kind: 'request', importerCode: 'A180' },
+  { declarationNo: '306-09923411-24', declarationDate: '11/25/2024', depositType: 'Non Remittance Claim', declarationCategory: 'Freezone Export', depositAmount: 'N/A', depositMethod: 'N/A', claimExpiry: '08/01/2025', exportExpiry: '07/01/2025', remarks: '—', kind: 'request', importerCode: 'A180' },
+  { declarationNo: '307-01134522-25', declarationDate: '01/08/2025', depositType: 'Non Remittance Claim', declarationCategory: 'Freezone Export', depositAmount: 'N/A', depositMethod: 'N/A', claimExpiry: '09/15/2025', exportExpiry: '08/15/2025', remarks: '—', kind: 'request', importerCode: 'A180' },
+  { declarationNo: '308-02245633-25', declarationDate: '02/14/2025', depositType: 'Non Remittance Claim', declarationCategory: 'Freezone Export', depositAmount: 'N/A', depositMethod: 'N/A', claimExpiry: '10/20/2025', exportExpiry: '09/20/2025', remarks: '—', kind: 'request', importerCode: 'A180' },
+  { declarationNo: '401-05567890-24', declarationDate: '09/30/2024', depositType: 'Non Remittance Claim', declarationCategory: 'Freezone Export', depositAmount: 'N/A', depositMethod: 'N/A', claimExpiry: '07/30/2025', exportExpiry: '06/30/2025', remarks: '—', kind: 'request', importerCode: 'A220' },
+  { declarationNo: '402-06678901-24', declarationDate: '10/15/2024', depositType: 'Non Remittance Claim', declarationCategory: 'Freezone Export', depositAmount: 'N/A', depositMethod: 'N/A', claimExpiry: '08/10/2025', exportExpiry: '07/10/2025', remarks: '—', kind: 'request', importerCode: 'A220' },
+  { declarationNo: '403-07789012-24', declarationDate: '11/03/2024', depositType: 'Non Remittance Claim', declarationCategory: 'Freezone Export', depositAmount: 'N/A', depositMethod: 'N/A', claimExpiry: '09/01/2025', exportExpiry: '08/01/2025', remarks: '—', kind: 'request', importerCode: 'A350' },
 ];
 
 type Props = {
@@ -629,24 +636,43 @@ const CLAIM_TYPE_DEPOSITS: Record<ClaimType, string[]> = {
 export default function EligibleDeclarationsPage({ onBack, initialClaimType, onProceed }: Props) {
   const [claimType, setClaimType] = useState<ClaimType | null>(initialClaimType ?? null);
   const [query, setQuery] = useState('');
+  const [importerCodeFilter, setImporterCodeFilter] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
   const [selectedDecls, setSelectedDecls] = useState<Set<string>>(new Set());
 
-  // First filter by claim type, then by search query
+  // First filter by claim type, then by search query, then by importer code
   const claimTypeFiltered = useMemo(() => {
     if (!claimType) return ROWS;
     const allowed = new Set(CLAIM_TYPE_DEPOSITS[claimType]);
     return ROWS.filter((r) => allowed.has(r.depositType));
   }, [claimType]);
 
+  // Distinct importer codes for the dropdown (Non Remittance only)
+  const importerCodes = useMemo(() => {
+    const codes = new Set<string>();
+    claimTypeFiltered.forEach((r) => { if (r.importerCode) codes.add(r.importerCode); });
+    return Array.from(codes).sort();
+  }, [claimTypeFiltered]);
+
   const filtered = useMemo(() => {
+    let rows = claimTypeFiltered;
     const q = query.trim().toLowerCase();
-    if (!q) return claimTypeFiltered;
-    return claimTypeFiltered.filter((r) => r.declarationNo.toLowerCase().includes(q));
-  }, [query, claimTypeFiltered]);
+    if (q) rows = rows.filter((r) => r.declarationNo.toLowerCase().includes(q));
+    if (importerCodeFilter) rows = rows.filter((r) => r.importerCode === importerCodeFilter);
+    return rows;
+  }, [query, importerCodeFilter, claimTypeFiltered]);
 
   const isNonRemittance = claimType === 'nonRemittance';
+
+  // Returns true if adding this row would exceed 10 selections for its importer code
+  const wouldExceedLimit = (row: Row, currentSelected: Set<string>) => {
+    if (!isNonRemittance || !row.importerCode) return false;
+    const countForCode = Array.from(currentSelected).filter(
+      (no) => ROWS.find((r) => r.declarationNo === no)?.importerCode === row.importerCode
+    ).length;
+    return countForCode >= 10;
+  };
   const headers: { label: string; w: number }[] = isNonRemittance
     ? [
         { label: 'Declaration No.',      w: 170 },
@@ -708,7 +734,7 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
               return (
                 <button
                   key={opt.id}
-                  onClick={() => { setClaimType(opt.id); setQuery(''); setPage(1); setSelectedDecls(new Set()); }}
+                  onClick={() => { setClaimType(opt.id); setQuery(''); setImporterCodeFilter(''); setPage(1); setSelectedDecls(new Set()); }}
                   className="flex items-start gap-[14px] px-[16px] py-[16px] rounded-[10px] text-left transition-colors h-full"
                   style={{ background: active ? '#f6f9fe' : '#fff', border: `1.5px solid ${active ? '#1360d2' : '#e0e6ef'}` }}
                 >
@@ -754,21 +780,54 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
             </div>
           )}
 
-          {/* Search — only shown after claim type is selected */}
+          {/* Search + filters — only shown after claim type is selected */}
           {claimType && (
-            <div className="px-[24px] pt-[20px] pb-[8px]">
-              <div className="relative max-w-[420px]">
-                <span className="absolute left-[14px] top-1/2 -translate-y-1/2 text-[#8f94ae]">
-                  <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="9" r="6" /><path d="M14 14l4 4" strokeLinecap="round" /></svg>
-                </span>
-                <input
-                  value={query}
-                  onChange={(e) => { setQuery(e.target.value); setPage(1); }}
-                  placeholder="Search Declaration Number"
-                  className="w-full h-[48px] pl-[42px] pr-[14px] rounded-[4px] border border-[#d5ddfb] bg-white text-[16px] text-[#0e1b3d] placeholder:text-[#697498] focus:outline-none focus:border-[#1360d2]"
-                  style={{ fontFamily: "'Dubai', sans-serif" }}
-                />
+            <div className="px-[24px] pt-[20px] pb-[8px] flex flex-col gap-[12px]">
+              <div className="flex flex-wrap gap-[12px] items-start">
+                {/* Declaration number search */}
+                <div className="relative" style={{ minWidth: 280, flex: '1 1 280px', maxWidth: 420 }}>
+                  <span className="absolute left-[14px] top-1/2 -translate-y-1/2 text-[#8f94ae]">
+                    <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="9" r="6" /><path d="M14 14l4 4" strokeLinecap="round" /></svg>
+                  </span>
+                  <input
+                    value={query}
+                    onChange={(e) => { setQuery(e.target.value); setPage(1); }}
+                    placeholder="Search Declaration Number"
+                    className="w-full h-[48px] pl-[42px] pr-[14px] rounded-[4px] border border-[#d5ddfb] bg-white text-[16px] text-[#0e1b3d] placeholder:text-[#697498] focus:outline-none focus:border-[#1360d2]"
+                    style={{ fontFamily: "'Dubai', sans-serif" }}
+                  />
+                </div>
+
+                {/* Importer code filter — Non Remittance only */}
+                {isNonRemittance && (
+                  <div className="relative" style={{ minWidth: 220, flex: '0 0 220px' }}>
+                    <select
+                      value={importerCodeFilter}
+                      onChange={(e) => { setImporterCodeFilter(e.target.value); setPage(1); setSelectedDecls(new Set()); }}
+                      className="w-full h-[48px] pl-[14px] pr-[36px] rounded-[4px] border border-[#d5ddfb] bg-white text-[16px] text-[#0e1b3d] focus:outline-none focus:border-[#1360d2] appearance-none"
+                      style={{ fontFamily: "'Dubai', sans-serif" }}
+                    >
+                      <option value="">All Importer Codes</option>
+                      {importerCodes.map((code) => (
+                        <option key={code} value={code}>{code}</option>
+                      ))}
+                    </select>
+                    <span className="pointer-events-none absolute right-[12px] top-1/2 -translate-y-1/2 text-[#697498]">
+                      <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 8l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    </span>
+                  </div>
+                )}
               </div>
+
+              {/* Info bar — Non Remittance only */}
+              {isNonRemittance && (
+                <div className="flex items-start gap-[10px] rounded-[6px] px-[14px] py-[10px]" style={{ background: '#e2ebf9', border: '1px solid #d5ddfb' }}>
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#1360d2" strokeWidth="2" className="flex-shrink-0 mt-[1px]"><circle cx="12" cy="12" r="9" /><path d="M12 8h.01M11 12h1v4h1" strokeLinecap="round" /></svg>
+                  <p className="text-[16px] text-[#0e1b3d]" style={{ lineHeight: '20px' }}>
+                    Only up to <span style={{ fontWeight: 600 }}>10 records</span> of one importer code can be selected.
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -791,7 +850,20 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
                             if (allSelected) {
                               setSelectedDecls(new Set());
                             } else {
-                              setSelectedDecls(new Set(selectableRows.map((r) => r.declarationNo)));
+                              // For Non Remittance: respect 10-per-importer-code limit
+                              if (isNonRemittance) {
+                                const byCode: Record<string, string[]> = {};
+                                selectableRows.forEach((r) => {
+                                  const code = r.importerCode ?? '__none__';
+                                  byCode[code] = byCode[code] ?? [];
+                                  byCode[code].push(r.declarationNo);
+                                });
+                                const next = new Set<string>();
+                                Object.values(byCode).forEach((nos) => nos.slice(0, 10).forEach((no) => next.add(no)));
+                                setSelectedDecls(next);
+                              } else {
+                                setSelectedDecls(new Set(selectableRows.map((r) => r.declarationNo)));
+                              }
                             }
                           }}
                           className="size-[20px] rounded-[4px] inline-flex items-center justify-center"
@@ -839,7 +911,11 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
                       if (expired) return;
                       setSelectedDecls((prev) => {
                         const next = new Set(prev);
-                        if (next.has(row.declarationNo)) next.delete(row.declarationNo); else next.add(row.declarationNo);
+                        if (next.has(row.declarationNo)) {
+                          next.delete(row.declarationNo);
+                        } else {
+                          if (!wouldExceedLimit(row, next)) next.add(row.declarationNo);
+                        }
                         return next;
                       });
                     };
