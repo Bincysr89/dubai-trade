@@ -161,14 +161,22 @@ export default function NonRemittanceChargesPage({ onBack, onContinue }: Props) 
                             <Dh style={{ fontSize: 15 }} /> {charge.total}
                           </span>
                         </td>
-                        {/* Payment Mode */}
+                        {/* Payment Mode — selecting any mode syncs all rows */}
                         <td style={{ padding: '10px 16px', verticalAlign: 'middle' }}>
                           <FlyoutDropdown
                             value={cs.mode}
                             options={PAYMENT_MODES}
                             open={cs.modeOpen}
                             onToggle={() => closeAll(charge.key, 'modeOpen')}
-                            onSelect={(v) => { update(charge.key, { mode: v, account: v === 'Credit/Debit Account' ? ACCOUNT_OPTIONS[0] : '', modeOpen: false }); }}
+                            onSelect={(v) => {
+                              setCharges(prev => {
+                                const next = { ...prev };
+                                CHARGES.forEach(c => {
+                                  next[c.key] = { ...next[c.key], mode: v, account: v === 'Credit/Debit Account' ? ACCOUNT_OPTIONS[0] : '', modeOpen: false, accountOpen: false };
+                                });
+                                return next;
+                              });
+                            }}
                             placeholder="Select Payment Mode"
                           />
                         </td>

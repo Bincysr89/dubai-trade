@@ -40,7 +40,7 @@ export default function ClaimantBrokerDetail({
         <div className="flex flex-col gap-[12px]">
           <p className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Claimant Details</p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-[24px] gap-y-[12px]">
-            <Field k="Claimant Code" v={`${claimantCode} - ${claimantName}`} />
+            <Field k="Claimant code & name" v={`${claimantCode} - ${claimantName}`} />
             <Field k="Type" v={claimantType} />
           </div>
         </div>
@@ -48,7 +48,7 @@ export default function ClaimantBrokerDetail({
         <div className="flex flex-col gap-[12px]">
           <p className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Broker Details</p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-[24px] gap-y-[12px]">
-            <Field k="Broker Code" v={`${brokerCode} - ${brokerName}`} />
+            <Field k="Broker code & name" v={`${brokerCode} - ${brokerName}`} />
             <Field k="Type" v={brokerType} />
           </div>
         </div>

@@ -72,13 +72,13 @@ const ROWS: EPayRow[] = [
 ];
 
 const SCROLL_COLUMNS: (ColDef & { w: number })[] = [
-  { key: 'reqDate',       label: 'Request Date',       w: 130 },
-  { key: 'declNo',        label: 'Declaration No',     w: 160 },
-  { key: 'approvalDate',  label: 'Dec. Approval Date', w: 200 },
-  { key: 'reqNo',         label: 'Request No',         w: 130 },
-  { key: 'reqType',       label: 'Request Type',       w: 170 },
-  { key: 'clientDecRef',  label: 'Client Dec. Ref No', w: 160 },
-  { key: 'amount',        label: 'Amount (AED)',        w: 120 },
+  { key: 'reqNo',         label: 'Request No.',                      w: 130 },
+  { key: 'reqDate',       label: 'Request Date',                     w: 130 },
+  { key: 'reqType',       label: 'Request Type',                     w: 170 },
+  { key: 'declNo',        label: 'Declaration No.',                  w: 160 },
+  { key: 'clientDecRef',  label: 'Client Declaration Reference No.', w: 220 },
+  { key: 'approvalDate',  label: 'Declaration Approval Date',        w: 210 },
+  { key: 'amount',        label: 'Amount (AED)',                     w: 120 },
 ];
 
 export default function EPaymentsTable({

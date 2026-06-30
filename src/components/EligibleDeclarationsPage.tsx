@@ -643,11 +643,14 @@ const codeWithName = (code: string) =>
 
 export default function EligibleDeclarationsPage({ onBack, initialClaimType, onProceed }: Props) {
   const [claimType, setClaimType] = useState<ClaimType | null>(initialClaimType ?? null);
-  const [query, setQuery] = useState('');
+  const [searchType, setSearchType] = useState<'Declaration Number' | 'Owner Code'>('Declaration Number');
+  const [searchTypeOpen, setSearchTypeOpen] = useState(false);
+  const [searchText, setSearchText] = useState('');
   const [ownerCodeFilter, setOwnerCodeFilter] = useState('');
   const [ownerCodeSearchOpen, setOwnerCodeSearchOpen] = useState(false);
-  const [ownerSearchText, setOwnerSearchText] = useState('');
   const ownerSearchRef = useRef<HTMLDivElement>(null);
+  // derive legacy query from combined field
+  const query = searchType === 'Declaration Number' ? searchText : '';
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
   const [selectedDecls, setSelectedDecls] = useState<Set<string>>(new Set());
@@ -669,8 +672,8 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
   }, [claimTypeFiltered]);
 
   const filteredOwnerCodes = useMemo(
-    () => importerCodes.filter((c) => !ownerSearchText || codeWithName(c).toLowerCase().includes(ownerSearchText.toLowerCase())),
-    [importerCodes, ownerSearchText]
+    () => importerCodes.filter((c) => !searchText || codeWithName(c).toLowerCase().includes(searchText.toLowerCase())),
+    [importerCodes, searchText]
   );
 
   const filtered = useMemo(() => {
@@ -683,15 +686,18 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
 
   const isNonRemittance = claimType === 'nonRemittance';
 
-  // Close owner code search dropdown when clicking outside
+  // Close search dropdowns when clicking outside
   useEffect(() => {
-    if (!ownerCodeSearchOpen) return;
+    if (!ownerCodeSearchOpen && !searchTypeOpen) return;
     const handler = (e: MouseEvent) => {
-      if (ownerSearchRef.current && !ownerSearchRef.current.contains(e.target as Node)) setOwnerCodeSearchOpen(false);
+      if (ownerSearchRef.current && !ownerSearchRef.current.contains(e.target as Node)) {
+        setOwnerCodeSearchOpen(false);
+        setSearchTypeOpen(false);
+      }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [ownerCodeSearchOpen]);
+  }, [ownerCodeSearchOpen, searchTypeOpen]);
 
   // Returns true if adding this row would exceed 10 selections for its importer code
   const wouldExceedLimit = (row: Row, currentSelected: Set<string>) => {
@@ -816,85 +822,90 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
           {claimType && (
             <div className="px-[24px] pt-[20px] pb-[8px] flex flex-col gap-[12px]">
               <div className="flex flex-wrap gap-[12px] items-start">
-                {/* Declaration number search */}
-                <div className="relative" style={{ minWidth: 280, flex: '1 1 280px', maxWidth: 420 }}>
-                  <span className="absolute left-[14px] top-1/2 -translate-y-1/2 text-[#8f94ae]">
-                    <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="9" r="6" /><path d="M14 14l4 4" strokeLinecap="round" /></svg>
-                  </span>
-                  <input
-                    value={query}
-                    onChange={(e) => { setQuery(e.target.value); setPage(1); }}
-                    placeholder="Search Declaration Number"
-                    className="w-full h-[48px] pl-[42px] pr-[14px] rounded-[4px] border border-[#d5ddfb] bg-white text-[16px] text-[#0e1b3d] placeholder:text-[#697498] focus:outline-none focus:border-[#1360d2]"
-                    style={{ fontFamily: "'Dubai', sans-serif" }}
-                  />
-                </div>
-
-                {/* Owner code smart search — Non Remittance only */}
-                {isNonRemittance && (
-                  <div ref={ownerSearchRef} style={{ position: 'relative', minWidth: 360, flex: '0 0 360px' }}>
-                    <div className="relative">
-                      {/* Search icon left */}
-                      <span className="absolute left-[14px] top-1/2 -translate-y-1/2 text-[#8f94ae] pointer-events-none" style={{ zIndex: 1 }}>
-                        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="9" r="6" /><path d="M14 14l4 4" strokeLinecap="round" /></svg>
-                      </span>
-                      <input
-                        value={ownerCodeFilter ? codeWithName(ownerCodeFilter) : ownerSearchText}
-                        onChange={(e) => { setOwnerSearchText(e.target.value); setOwnerCodeFilter(''); setOwnerCodeSearchOpen(true); setPage(1); }}
-                        onFocus={() => setOwnerCodeSearchOpen(true)}
-                        placeholder="Search Owner Code"
-                        className="w-full h-[48px] pl-[42px] pr-[36px] rounded-[4px] border bg-white text-[16px] text-[#0e1b3d] placeholder:text-[#697498] focus:outline-none"
-                        style={{ border: `1px solid ${ownerCodeSearchOpen ? '#1360d2' : '#d5ddfb'}`, fontFamily: "'Dubai', sans-serif" }}
-                      />
-                      {/* Clear button when a code is selected */}
-                      {ownerCodeFilter && (
-                        <button
-                          type="button"
-                          onClick={() => { setOwnerCodeFilter(''); setOwnerSearchText(''); setPage(1); setSelectedDecls(new Set()); }}
-                          className="absolute right-[32px] top-1/2 -translate-y-1/2 inline-flex items-center justify-center size-[18px] rounded-full hover:bg-[#f0f0f0]"
-                          style={{ color: '#697498' }}
-                        >
-                          <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4l8 8M12 4l-8 8" strokeLinecap="round" /></svg>
-                        </button>
-                      )}
-                    </div>
-                    {ownerCodeSearchOpen && (
-                      <div
-                        className="absolute z-50 bg-white rounded-[8px] overflow-hidden overflow-y-auto"
-                        style={{ top: '100%', left: 0, right: 0, marginTop: 4, boxShadow: '0px 8px 24px rgba(0,0,0,0.14)', border: '1px solid #e0e6ef', maxHeight: 240 }}
+                {/* Combined search field — type dropdown + input */}
+                <div ref={ownerSearchRef} className="relative" style={{ minWidth: 320, flex: '1 1 320px', maxWidth: 520 }}>
+                  <div
+                    className="flex items-center bg-white rounded-[4px] h-[48px]"
+                    style={{ border: `1px solid ${ownerCodeSearchOpen || searchTypeOpen ? '#1360d2' : '#d5ddfb'}` }}
+                  >
+                    {/* Type dropdown button */}
+                    <button
+                      type="button"
+                      onClick={() => { setSearchTypeOpen(o => !o); setOwnerCodeSearchOpen(false); }}
+                      className="flex items-center gap-[6px] border-r border-[#d5ddfb] px-[12px] h-full flex-shrink-0 hover:bg-[#f7faff] transition-colors rounded-l-[4px]"
+                    >
+                      <span className="text-[16px] text-[#1360d2] font-medium whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>{searchType}</span>
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#1360d2" strokeWidth="2.5" style={{ flexShrink: 0, transform: searchTypeOpen ? 'rotate(180deg)' : undefined, transition: 'transform 0.15s' }}>
+                        <path d="M6 9l6 6 6-6" />
+                      </svg>
+                    </button>
+                    {/* Search icon */}
+                    <span className="pl-[12px] text-[#8f94ae] flex-shrink-0 pointer-events-none">
+                      <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="9" r="6" /><path d="M14 14l4 4" strokeLinecap="round" /></svg>
+                    </span>
+                    {/* Input */}
+                    <input
+                      value={searchType === 'Owner Code' && ownerCodeFilter ? codeWithName(ownerCodeFilter) : searchText}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setSearchText(val);
+                        setOwnerCodeFilter('');
+                        setPage(1);
+                        if (searchType === 'Owner Code') setOwnerCodeSearchOpen(true);
+                      }}
+                      onFocus={() => { if (searchType === 'Owner Code') setOwnerCodeSearchOpen(true); }}
+                      placeholder={searchType === 'Declaration Number' ? 'Search Declaration Number' : 'Search Owner Code'}
+                      className="flex-1 px-[10px] text-[16px] text-[#0e1b3d] placeholder:text-[#697498] focus:outline-none bg-transparent"
+                      style={{ fontFamily: "'Dubai', sans-serif" }}
+                    />
+                    {/* Clear */}
+                    {(searchText || ownerCodeFilter) && (
+                      <button
+                        type="button"
+                        onClick={() => { setSearchText(''); setOwnerCodeFilter(''); setPage(1); setSelectedDecls(new Set()); }}
+                        className="mr-[8px] size-[22px] inline-flex items-center justify-center rounded-full text-[#697498] hover:bg-[#f0f4ff] flex-shrink-0"
                       >
-                        {filteredOwnerCodes.length === 0 ? (
-                          <div className="px-[14px] py-[11px]">
-                            <span className="text-[16px] text-[#697498]" style={{ fontFamily: "'Dubai', sans-serif" }}>No matching codes</span>
-                          </div>
-                        ) : (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => { setOwnerCodeFilter(''); setOwnerSearchText(''); setPage(1); setSelectedDecls(new Set()); setOwnerCodeSearchOpen(false); }}
-                              className="group w-full flex items-center gap-[10px] px-[14px] py-[11px] text-left hover:bg-[#1360d2] transition-colors"
-                            >
-                              <span className="text-[16px] text-[#697498] group-hover:text-white" style={{ fontFamily: "'Dubai', sans-serif" }}>All Owner Codes</span>
-                            </button>
-                            {filteredOwnerCodes.map((code) => (
-                              <button
-                                key={code}
-                                type="button"
-                                onClick={() => { setOwnerCodeFilter(code); setOwnerSearchText(codeWithName(code)); setOwnerCodeSearchOpen(false); setPage(1); setSelectedDecls(new Set()); }}
-                                className="group w-full flex items-center gap-[10px] px-[14px] py-[11px] text-left hover:bg-[#1360d2] transition-colors"
-                              >
-                                <span className="text-[16px] text-[#111838] group-hover:text-white" style={{ fontFamily: "'Dubai', sans-serif" }}>{codeWithName(code)}</span>
-                                {ownerCodeFilter === code && (
-                                  <svg className="ml-auto group-hover:stroke-white" viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#1360d2" strokeWidth="2.5"><path d="M4 10l4 4 8-8" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                                )}
-                              </button>
-                            ))}
-                          </>
-                        )}
-                      </div>
+                        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4l8 8M12 4l-8 8" strokeLinecap="round" /></svg>
+                      </button>
                     )}
                   </div>
-                )}
+
+                  {/* Search type options */}
+                  {searchTypeOpen && (
+                    <div className="absolute z-[80] top-[52px] left-0 bg-white rounded-[8px] py-[4px] overflow-hidden" style={{ minWidth: 200, boxShadow: '0px 2px 16px 0px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
+                      {(['Declaration Number', ...(isNonRemittance ? ['Owner Code'] : [])] as ('Declaration Number' | 'Owner Code')[]).map(opt => (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => { setSearchType(opt); setSearchTypeOpen(false); setSearchText(''); setOwnerCodeFilter(''); setOwnerCodeSearchOpen(false); setPage(1); }}
+                          className="block w-full text-left px-[14px] py-[8px] text-[16px] hover:bg-[#e2ebf9] transition-colors"
+                          style={{ color: opt === searchType ? '#1360d2' : '#0e1b3d', fontFamily: "'Dubai', sans-serif", fontWeight: opt === searchType ? 500 : 400 }}
+                        >{opt}</button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Owner code suggestions */}
+                  {searchType === 'Owner Code' && ownerCodeSearchOpen && (
+                    <div className="absolute z-50 bg-white rounded-[8px] overflow-y-auto" style={{ top: '100%', left: 0, right: 0, marginTop: 4, boxShadow: '0px 8px 24px rgba(0,0,0,0.14)', border: '1px solid #e0e6ef', maxHeight: 240 }}>
+                      {filteredOwnerCodes.length === 0 ? (
+                        <div className="px-[14px] py-[11px]"><span className="text-[16px] text-[#697498]" style={{ fontFamily: "'Dubai', sans-serif" }}>No matching codes</span></div>
+                      ) : (
+                        <>
+                          <button type="button" onClick={() => { setOwnerCodeFilter(''); setSearchText(''); setPage(1); setSelectedDecls(new Set()); setOwnerCodeSearchOpen(false); }} className="group w-full flex items-center gap-[10px] px-[14px] py-[11px] text-left hover:bg-[#1360d2] transition-colors">
+                            <span className="text-[16px] text-[#697498] group-hover:text-white" style={{ fontFamily: "'Dubai', sans-serif" }}>All Owner Codes</span>
+                          </button>
+                          {filteredOwnerCodes.map((code) => (
+                            <button key={code} type="button" onClick={() => { setOwnerCodeFilter(code); setSearchText(codeWithName(code)); setOwnerCodeSearchOpen(false); setPage(1); setSelectedDecls(new Set()); }} className="group w-full flex items-center gap-[10px] px-[14px] py-[11px] text-left hover:bg-[#1360d2] transition-colors">
+                              <span className="text-[16px] text-[#111838] group-hover:text-white" style={{ fontFamily: "'Dubai', sans-serif" }}>{codeWithName(code)}</span>
+                              {ownerCodeFilter === code && <svg className="ml-auto group-hover:stroke-white" viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#1360d2" strokeWidth="2.5"><path d="M4 10l4 4 8-8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+                            </button>
+                          ))}
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Info bar */}
