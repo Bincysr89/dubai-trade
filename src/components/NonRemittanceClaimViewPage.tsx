@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import type { Row } from './EligibleDeclarationsPage';
+import Dh from './Dh';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
 
 function FieldItem({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-[4px] py-[12px] px-[16px]" style={{ flex: '1 0 200px', minWidth: 180 }}>
-      <span className="text-[14px]" style={{ color: '#455174', fontFamily: font }}>{label}</span>
+      <span className="text-[16px]" style={{ color: '#455174', fontFamily: font }}>{label}</span>
       <span className="text-[16px]" style={{ color: '#051937', fontFamily: font, fontWeight: 500 }}>{value || '—'}</span>
     </div>
   );
@@ -34,30 +35,9 @@ const versionRows = [
 type Props = { onBack: () => void; selectedRows: Row[] };
 
 export default function NonRemittanceClaimViewPage({ onBack, selectedRows }: Props) {
-  const [expandedDecls, setExpandedDecls] = useState<Set<string>>(new Set());
-
   const displayRows = selectedRows.length > 0 ? selectedRows : [
     { declarationNo: '3030004738426', declarationDate: '01/01/2026', depositType: 'Non Remittance Claim', declarationCategory: null, depositAmount: 'N/A', depositMethod: 'N/A', claimExpiry: '', exportExpiry: '', remarks: 'Sample remark', kind: 'request' as const },
   ];
-
-  const allExpanded = expandedDecls.size === displayRows.length;
-
-  function toggleAll() {
-    if (allExpanded) {
-      setExpandedDecls(new Set());
-    } else {
-      setExpandedDecls(new Set(displayRows.map((r) => r.declarationNo)));
-    }
-  }
-
-  function toggleDecl(no: string) {
-    setExpandedDecls((prev) => {
-      const next = new Set(prev);
-      if (next.has(no)) next.delete(no);
-      else next.add(no);
-      return next;
-    });
-  }
 
   return (
     <div className="flex flex-col h-full bg-[#f8fafd]">
@@ -82,21 +62,18 @@ export default function NonRemittanceClaimViewPage({ onBack, selectedRows }: Pro
         </h1>
 
         <div className="flex flex-col gap-[24px]">
-          {/* Claim Header Details */}
+          {/* Claim Header Details — 4 attrs in one row */}
           <Section title="Claim Header Details">
             <div className="flex flex-wrap">
-              <FieldItem label="Claim No. & Version" value="2420390-1 (Under Processing)" />
+              <FieldItem label="Claim No. & Version" value="2420390-1" />
               <FieldItem label="Claim Type" value="Non Remittance Claim" />
+              <FieldItem label="Claim Registration Date" value="29/06/2026" />
+              <FieldItem label="Claim Status" value="Under Processing" />
             </div>
             <Divider />
             <div className="flex flex-wrap">
               <FieldItem label="Claimant" value="SW Logistics LLC (Business - AE-9106286)" />
               <FieldItem label="Beneficiary" value="SW Logistics LLC (Business - AE-9106286)" />
-            </div>
-            <Divider />
-            <div className="flex flex-wrap">
-              <FieldItem label="Claim Registration Date" value="29/06/2026" />
-              <FieldItem label="Claim Status" value="Under Processing" />
             </div>
           </Section>
 
@@ -120,7 +97,7 @@ export default function NonRemittanceClaimViewPage({ onBack, selectedRows }: Pro
                   ].map((row) => (
                     <tr key={row.type} style={{ borderBottom: '1px solid #f0f3fa' }}>
                       <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.type}</span></td>
-                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.amt}</span></td>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px] inline-flex items-baseline gap-[3px]" style={{ color: '#051937', fontFamily: font }}><Dh style={{ fontSize: 15 }} />{row.amt}</span></td>
                       <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>Credit/Debit Account</span></td>
                       <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.receipt}</span></td>
                       <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>1223193 SW LOGISTICS LLC</span></td>
@@ -128,7 +105,7 @@ export default function NonRemittanceClaimViewPage({ onBack, selectedRows }: Pro
                   ))}
                   <tr style={{ background: '#dce8f7' }}>
                     <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font, fontWeight: 700 }}>Total</span></td>
-                    <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font, fontWeight: 700 }}>70.00</span></td>
+                    <td style={{ padding: '10px 14px' }}><span className="text-[16px] inline-flex items-baseline gap-[3px]" style={{ color: '#051937', fontFamily: font, fontWeight: 700 }}><Dh style={{ fontSize: 15 }} />70.00</span></td>
                     <td colSpan={3} />
                   </tr>
                 </tbody>
@@ -136,62 +113,33 @@ export default function NonRemittanceClaimViewPage({ onBack, selectedRows }: Pro
             </div>
           </Section>
 
-          {/* Declaration Details */}
+          {/* Declaration Details — table */}
           <Section title="Declaration Details">
-            <div className="px-[16px] py-[12px]">
-              <div className="flex justify-end mb-[12px]">
-                <button
-                  onClick={toggleAll}
-                  className="text-[14px] underline"
-                  style={{ color: '#1360d2', fontFamily: font, background: 'none' }}
-                >
-                  {allExpanded ? 'Collapse All' : 'Expand All'}
-                </button>
-              </div>
-              <div className="flex flex-col gap-[10px]">
-                {displayRows.map((row) => {
-                  const isExpanded = expandedDecls.has(row.declarationNo);
-                  return (
-                    <div key={row.declarationNo} className="rounded-[6px] overflow-hidden" style={{ border: '1px solid #e0e6ef' }}>
-                      <button
-                        onClick={() => toggleDecl(row.declarationNo)}
-                        className="w-full flex items-center justify-between px-[16px] py-[12px] text-left"
-                        style={{ background: isExpanded ? '#f0f6ff' : '#f8fafd', fontFamily: font }}
-                      >
-                        <span className="text-[16px]" style={{ color: '#0e1b3d', fontWeight: 500 }}>{row.declarationNo}</span>
-                        <svg
-                          viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#455174" strokeWidth="2"
-                          style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
-                        >
-                          <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </button>
-                      {isExpanded && (
-                        <div className="px-[16px] py-[16px] border-t border-[#e0e6ef]" style={{ background: '#fff' }}>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-[24px] gap-y-[16px]">
-                            {[
-                              { label: 'Declaration No.', value: row.declarationNo },
-                              { label: 'Claim Type', value: 'Non Remittance Claim' },
-                              { label: 'Remarks', value: row.remarks || '—' },
-                            ].map((f) => (
-                              <div key={f.label} className="flex flex-col gap-[4px]">
-                                <span className="text-[13px]" style={{ color: '#697498', fontFamily: font }}>{f.label}</span>
-                                <span className="text-[15px]" style={{ color: '#051937', fontFamily: font, fontWeight: 500 }}>{f.value}</span>
-                              </div>
-                            ))}
-                          </div>
-                          <div className="mt-[12px] pt-[12px]" style={{ borderTop: '1px solid #f0f3fa' }}>
-                            <span className="text-[13px]" style={{ color: '#697498', fontFamily: font }}>Attached Document</span>
-                            <p className="text-[15px] text-[#455174] mt-[2px]" style={{ fontFamily: font }}>
-                              No document uploaded
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+            <div className="px-[16px] py-[12px] overflow-x-auto">
+              <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontFamily: font }}>
+                <thead>
+                  <tr>
+                    {['S.No', 'Declaration No.', 'Declaration Date', 'Declaration Category', 'Claim Type', 'Remarks', 'Attached Document'].map((h) => (
+                      <th key={h} style={{ background: '#a6c2e9', padding: '10px 14px', textAlign: 'left', borderBottom: '1px solid #e8edf5', whiteSpace: 'nowrap' }}>
+                        <span className="text-[16px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>{h}</span>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {displayRows.map((row, i) => (
+                    <tr key={row.declarationNo} style={{ borderBottom: '1px solid #f0f3fa' }}>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{i + 1}</span></td>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font, fontWeight: 500 }}>{row.declarationNo}</span></td>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.declarationDate || '—'}</span></td>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.declarationCategory ?? 'Freezone Export'}</span></td>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>Non Remittance Claim</span></td>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#697498', fontFamily: font }}>{row.remarks || '—'}</span></td>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#697498', fontFamily: font }}>—</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </Section>
 
@@ -212,18 +160,18 @@ export default function NonRemittanceClaimViewPage({ onBack, selectedRows }: Pro
                   {versionRows.map((row) => (
                     <tr key={row.version} style={{ borderBottom: '1px solid #f0f3fa' }}>
                       <td style={{ padding: '10px 14px' }}>
-                        <span className="text-[15px] underline" style={{ color: '#1360d2', cursor: 'pointer', fontFamily: font }}>{row.version}</span>
+                        <span className="text-[16px] underline" style={{ color: '#1360d2', cursor: 'pointer', fontFamily: font }}>{row.version}</span>
                       </td>
-                      <td style={{ padding: '10px 14px' }}><span className="text-[15px]" style={{ color: '#051937', fontFamily: font }}>{row.submittedDate}</span></td>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.submittedDate}</span></td>
                       <td style={{ padding: '10px 14px' }}>
-                        <span className="inline-flex items-center px-[10px] py-[3px] rounded-[20px] text-[13px]" style={{ background: '#e2ebf9', color: '#1360d2', fontWeight: 500, fontFamily: font }}>
+                        <span className="inline-flex items-center px-[10px] py-[3px] rounded-[20px] text-[16px]" style={{ background: '#e2ebf9', color: '#1360d2', fontWeight: 500, fontFamily: font }}>
                           {row.status}
                         </span>
                       </td>
                       <td style={{ padding: '10px 14px' }}>
                         {row.isCurrentlyViewing
-                          ? <span className="text-[14px]" style={{ color: '#28a745', fontFamily: font, fontWeight: 500 }}>✓ Currently Viewing</span>
-                          : <span className="text-[14px]" style={{ color: '#697498', fontFamily: font }}>—</span>}
+                          ? <span className="text-[16px]" style={{ color: '#28a745', fontFamily: font, fontWeight: 500 }}>✓ Currently Viewing</span>
+                          : <span className="text-[16px]" style={{ color: '#697498', fontFamily: font }}>—</span>}
                       </td>
                     </tr>
                   ))}
@@ -235,19 +183,13 @@ export default function NonRemittanceClaimViewPage({ onBack, selectedRows }: Pro
       </div>
 
       {/* Bottom bar */}
-      <div className="flex-shrink-0 bg-white px-4 sm:px-10 py-[20px] flex items-center justify-between gap-[12px]" style={{ boxShadow: '0px -1px 20px rgba(0,0,0,0.08)' }}>
+      <div className="flex-shrink-0 bg-white px-4 sm:px-10 py-[20px] flex items-center gap-[12px]" style={{ boxShadow: '0px -1px 20px rgba(0,0,0,0.08)' }}>
         <button
           onClick={onBack}
           className="h-[48px] px-[24px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
           style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
         >
           Close
-        </button>
-        <button
-          className="h-[48px] px-[24px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
-          style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
-        >
-          View Doc. Submission Status
         </button>
       </div>
     </div>

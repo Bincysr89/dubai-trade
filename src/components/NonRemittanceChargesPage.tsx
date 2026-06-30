@@ -1,15 +1,95 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import ClaimStepper, { NR_CLAIM_STEPS } from './ClaimStepper';
 import type { Row } from './EligibleDeclarationsPage';
+import Dh from './Dh';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
 
+const PAYMENT_MODES = ['Credit/Debit Account', 'E-Payment'];
+const ACCOUNT_OPTIONS = ['1223193-SW LOGISTICS LLC', '1060423-SONY GULF UAE'];
+
+type ChargeState = { mode: string; account: string; modeOpen: boolean; accountOpen: boolean };
+
+function FlyoutDropdown({
+  value, options, open, onToggle, onSelect, placeholder,
+}: {
+  value: string; options: string[]; open: boolean;
+  onToggle: () => void; onSelect: (v: string) => void; placeholder: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  return (
+    <div ref={ref} style={{ position: 'relative', minWidth: 200, flex: '1 1 200px' }}>
+      <button
+        type="button"
+        onClick={onToggle}
+        className="w-full flex items-center justify-between px-[12px] h-[48px] rounded-[4px] bg-white transition-colors text-left"
+        style={{ border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}`, fontFamily: font }}
+      >
+        <span className="text-[16px] flex-1 truncate" style={{ color: value ? '#051937' : '#697498' }}>
+          {value || placeholder}
+        </span>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#455174" strokeWidth="2" style={{ flexShrink: 0, marginLeft: 6, transform: open ? 'rotate(180deg)' : undefined, transition: 'transform 0.15s' }}>
+          <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+      {open && (
+        <div
+          className="absolute z-50 bg-white rounded-[8px] overflow-hidden"
+          style={{ top: '100%', left: 0, right: 0, marginTop: 4, boxShadow: '0px 8px 24px rgba(0,0,0,0.14)', border: '1px solid #e0e6ef' }}
+        >
+          {options.map((opt) => (
+            <button
+              key={opt}
+              type="button"
+              onClick={() => onSelect(opt)}
+              className="group w-full flex items-center gap-[10px] px-[14px] py-[11px] text-left hover:bg-[#1360d2] transition-colors"
+            >
+              <span className="text-[16px] text-[#111838] group-hover:text-white" style={{ fontFamily: font }}>{opt}</span>
+              {value === opt && (
+                <svg className="ml-auto group-hover:stroke-white" viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#1360d2" strokeWidth="2.5"><path d="M4 10l4 4 8-8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 type Props = { onBack: () => void; onContinue: (paymentMode: string, accountNo: string) => void; selectedRows: Row[] };
 
-export default function NonRemittanceChargesPage({ onBack, onContinue, selectedRows }: Props) {
-  const [paymentMode, setPaymentMode] = useState('');
-  const [accountNo, setAccountNo]   = useState('1223193-SW LOGISTICS LLC');
-  const canProceed = paymentMode !== '' && paymentMode !== 'Please Select';
+const CHARGES = [
+  { key: 'reg',  label: 'Claim Registration Charge',  sub: 'Registration Fee',        amount: '100.00', total: '100.00' },
+  { key: 'ki',   label: 'Knowledge-Innovation Dirham', sub: 'Knowledge & Innovation Fee', amount: '20.00', total: '20.00' },
+];
+
+export default function NonRemittanceChargesPage({ onBack, onContinue }: Props) {
+  const [charges, setCharges] = useState<Record<string, ChargeState>>(
+    Object.fromEntries(CHARGES.map((c) => [c.key, { mode: '', account: '', modeOpen: false, accountOpen: false }]))
+  );
+
+  const update = (key: string, patch: Partial<ChargeState>) =>
+    setCharges((prev) => ({ ...prev, [key]: { ...prev[key], ...patch } }));
+
+  const closeAll = (except?: string, field?: 'modeOpen' | 'accountOpen') =>
+    setCharges((prev) => {
+      const next = { ...prev };
+      CHARGES.forEach((c) => {
+        if (c.key !== except) {
+          next[c.key] = { ...next[c.key], modeOpen: false, accountOpen: false };
+        } else if (field) {
+          next[c.key] = { ...next[c.key], modeOpen: field === 'modeOpen' ? !prev[c.key].modeOpen : false, accountOpen: field === 'accountOpen' ? !prev[c.key].accountOpen : false };
+        }
+      });
+      return next;
+    });
+
+  const canProceed = CHARGES.every((c) => charges[c.key].mode !== '');
+  const firstMode = charges[CHARGES[0].key].mode;
+  const firstAccount = charges[CHARGES[0].key].account;
+
+  // Declaration checkbox
+  const [declared, setDeclared] = useState(false);
 
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full" style={{ fontFamily: font }}>
@@ -50,113 +130,89 @@ export default function NonRemittanceChargesPage({ onBack, onContinue, selectedR
             </p>
           </div>
 
-          {/* Charge Details */}
-          <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+          {/* Payment Details card */}
+          <div className="bg-white rounded-[8px] overflow-visible" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
             <div className="px-[24px] py-[16px] border-b border-[#eef1f6]">
-              <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Charge Details</p>
+              <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Payment Details</p>
             </div>
-            <div className="px-[24px] py-[16px] overflow-x-auto">
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: font, border: '1px solid #d5ddfb', borderRadius: 6 }}>
+            <div className="px-[16px] py-[16px] overflow-visible">
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: font }}>
                 <thead>
-                  <tr style={{ background: '#a6c2e9' }}>
-                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#0e1b3d' }}>Charges</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: 16, fontWeight: 600, color: '#0e1b3d', whiteSpace: 'nowrap' }}>Amount (AED)</th>
+                  <tr>
+                    <th style={{ background: '#a6c2e9', padding: '12px 16px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#000', width: '34%' }}>Charges</th>
+                    <th style={{ background: '#a6c2e9', padding: '12px 16px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#000', width: '12%' }}>{/* Amount — no heading */}</th>
+                    <th style={{ background: '#a6c2e9', padding: '12px 16px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#000', width: '27%' }}>Payment Mode</th>
+                    <th style={{ background: '#a6c2e9', padding: '12px 16px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#000', width: '27%' }}>Payment Reference</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr style={{ borderBottom: '1px solid #e8edf5' }}>
-                    <td style={{ padding: '14px 16px', fontSize: 16, color: '#0e1b3d' }}>Claim Registration Charge</td>
-                    <td style={{ padding: '14px 16px', fontSize: 16, color: '#0e1b3d', textAlign: 'right' }}>50.00</td>
-                  </tr>
-                  <tr style={{ borderBottom: '1px solid #e8edf5' }}>
-                    <td style={{ padding: '14px 16px', fontSize: 16, color: '#0e1b3d' }}>Knowledge-Innovation Dirham</td>
-                    <td style={{ padding: '14px 16px', fontSize: 16, color: '#0e1b3d', textAlign: 'right' }}>20.00</td>
-                  </tr>
-                  <tr style={{ background: '#dce8f7' }}>
-                    <td style={{ padding: '14px 16px', fontSize: 16, color: '#051937', fontWeight: 600 }}>Total</td>
-                    <td style={{ padding: '14px 16px', fontSize: 16, color: '#051937', fontWeight: 600, textAlign: 'right' }}>70.00</td>
-                  </tr>
+                  {CHARGES.map((charge, idx) => {
+                    const cs = charges[charge.key];
+                    const isEPayment = cs.mode === 'E-Payment';
+                    return (
+                      <tr key={charge.key} style={{ borderBottom: idx < CHARGES.length - 1 ? '1px solid #f0f3fa' : 'none', background: '#fff' }}>
+                        {/* Charge label */}
+                        <td style={{ padding: '14px 16px', verticalAlign: 'middle' }}>
+                          <span className="text-[16px]" style={{ color: '#0e1b3d', fontWeight: 500 }}>{charge.label}</span>
+                        </td>
+                        {/* Amount — separate column, no heading */}
+                        <td style={{ padding: '14px 16px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                          <span className="text-[16px] inline-flex items-baseline gap-[3px]" style={{ color: '#0e1b3d', fontWeight: 700 }}>
+                            <Dh style={{ fontSize: 15 }} /> {charge.total}
+                          </span>
+                        </td>
+                        {/* Payment Mode */}
+                        <td style={{ padding: '10px 16px', verticalAlign: 'middle' }}>
+                          <FlyoutDropdown
+                            value={cs.mode}
+                            options={PAYMENT_MODES}
+                            open={cs.modeOpen}
+                            onToggle={() => closeAll(charge.key, 'modeOpen')}
+                            onSelect={(v) => { update(charge.key, { mode: v, account: v === 'Credit/Debit Account' ? ACCOUNT_OPTIONS[0] : '', modeOpen: false }); }}
+                            placeholder="Select Payment Mode"
+                          />
+                        </td>
+                        {/* Payment Reference — greyed out for E-Payment */}
+                        <td style={{ padding: '10px 16px', verticalAlign: 'middle' }}>
+                          <div style={{ opacity: isEPayment ? 0.45 : 1, pointerEvents: isEPayment ? 'none' : 'auto' }}>
+                            <FlyoutDropdown
+                              value={cs.account}
+                              options={ACCOUNT_OPTIONS}
+                              open={cs.accountOpen}
+                              onToggle={() => closeAll(charge.key, 'accountOpen')}
+                              onSelect={(v) => update(charge.key, { account: v, accountOpen: false })}
+                              placeholder="Account Number"
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
-          </div>
 
-          {/* Payment Mode Details */}
-          <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-            <div className="px-[24px] py-[16px] border-b border-[#eef1f6]">
-              <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Payment Mode Details</p>
-            </div>
-            <div className="px-[24px] py-[20px]">
-              <div className="flex flex-wrap gap-[20px] items-start">
-                {/* Payment Mode */}
-                <div className="flex flex-col gap-[6px]" style={{ minWidth: 240, flex: '1 1 240px', maxWidth: 320 }}>
-                  <label className="text-[14px] text-[#455174]" style={{ fontWeight: 500 }}>
-                    <span style={{ color: '#dc3545' }}>*</span> Payment Mode
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={paymentMode}
-                      onChange={(e) => setPaymentMode(e.target.value)}
-                      className="appearance-none w-full h-[48px] pl-[12px] pr-[36px] rounded-[4px] text-[16px] bg-white focus:outline-none focus:border-[#1360d2]"
-                      style={{ border: '1px solid #d5ddfb', color: paymentMode ? '#051937' : '#697498', fontFamily: font }}
-                    >
-                      <option value="">Please Select</option>
-                      <option value="Credit/Debit Account">Credit/Debit Account</option>
-                      <option value="E-Payment">E-Payment</option>
-                    </select>
-                    <svg className="pointer-events-none absolute right-[10px] top-1/2 -translate-y-1/2" width="16" height="16" viewBox="0 0 24 24" fill="none">
-                      <path d="M6 9l6 6 6-6" stroke="#455174" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </div>
-                </div>
-
-                {/* Credit/Debit Account No. — only when Credit/Debit selected */}
-                {paymentMode === 'Credit/Debit Account' && (
-                  <div className="flex flex-col gap-[6px]" style={{ minWidth: 240, flex: '1 1 240px', maxWidth: 340 }}>
-                    <label className="text-[14px] text-[#455174]" style={{ fontWeight: 500 }}>
-                      <span style={{ color: '#dc3545' }}>*</span> Credit/Debit Account No.
-                    </label>
-                    <div className="relative">
-                      <select
-                        value={accountNo}
-                        onChange={(e) => setAccountNo(e.target.value)}
-                        className="appearance-none w-full h-[48px] pl-[12px] pr-[36px] rounded-[4px] text-[16px] text-[#051937] bg-white focus:outline-none focus:border-[#1360d2]"
-                        style={{ border: '1px solid #d5ddfb', fontFamily: font }}
-                      >
-                        <option value="1223193-SW LOGISTICS LLC">1223193-SW LOGISTICS LLC</option>
-                        <option value="1060423-SONY GULF UAE">1060423-SONY GULF UAE</option>
-                      </select>
-                      <svg className="pointer-events-none absolute right-[10px] top-1/2 -translate-y-1/2" width="16" height="16" viewBox="0 0 24 24" fill="none">
-                        <path d="M6 9l6 6 6-6" stroke="#455174" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </div>
-                  </div>
-                )}
-
-                {/* E-Payment note */}
-                {paymentMode === 'E-Payment' && (
-                  <div className="flex items-start gap-[10px] rounded-[6px] px-[14px] py-[12px] self-end" style={{ background: '#e2ebf9', border: '1px solid #d5ddfb', flex: '1 1 240px' }}>
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#1360d2" strokeWidth="2" className="flex-shrink-0 mt-[1px]"><circle cx="12" cy="12" r="9" /><path d="M12 8h.01M11 12h1v4h1" strokeLinecap="round" /></svg>
-                    <p className="text-[15px] text-[#0e1b3d]">You will be redirected to the e-Payment portal to complete payment.</p>
-                  </div>
-                )}
+            {/* Declaration checkbox */}
+            <div className="px-[24px] pb-[20px]">
+              <div
+                className="flex items-start gap-[14px] rounded-[8px] px-[20px] py-[16px] cursor-pointer"
+                style={{ background: '#fff', border: `1.5px solid ${declared ? '#1360d2' : '#d5ddfb'}` }}
+                onClick={() => setDeclared((v) => !v)}
+              >
+                <button
+                  type="button"
+                  role="checkbox"
+                  aria-checked={declared}
+                  onClick={(e) => { e.stopPropagation(); setDeclared((v) => !v); }}
+                  className="size-[20px] rounded-[4px] flex-shrink-0 inline-flex items-center justify-center mt-[2px]"
+                  style={{ border: `2px solid ${declared ? '#1360d2' : '#a7abb2'}`, background: declared ? '#1360d2' : '#fff' }}
+                >
+                  {declared && <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8l3 3 7-7" /></svg>}
+                </button>
+                <p className="text-[16px] text-[#0e1b3d]" style={{ lineHeight: 1.5 }}>
+                  We, the undersigned hereby declare that the particulars given on this request are true and complete and that all the particulars have been provided and agree with the original documents. We accept full responsibility for any errors or omissions. We further undertake to comply with all regulations and laws that are in force in the country. Any misrepresentation may lead to legal action being taken against us.
+                </p>
               </div>
-
-              {/* Selected declarations summary */}
-              {selectedRows.length > 0 && (
-                <div className="mt-[20px] pt-[20px] border-t border-[#eef1f6]">
-                  <p className="text-[14px] text-[#697498] mb-[8px]">
-                    {selectedRows.length} declaration{selectedRows.length !== 1 ? 's' : ''} included in this claim
-                  </p>
-                  <div className="flex flex-wrap gap-[8px]">
-                    {selectedRows.map((r) => (
-                      <span key={r.declarationNo} className="inline-flex items-center px-[10px] py-[4px] rounded-[4px] text-[14px]" style={{ background: '#e8f0ff', color: '#1360d2', fontWeight: 500 }}>
-                        {r.declarationNo}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -173,7 +229,7 @@ export default function NonRemittanceChargesPage({ onBack, onContinue, selectedR
         </button>
         <button
           disabled={!canProceed}
-          onClick={() => { if (canProceed) onContinue(paymentMode, accountNo); }}
+          onClick={() => { if (canProceed) onContinue(firstMode, firstAccount); }}
           className="h-[48px] px-[40px] rounded-[4px] text-[16px] text-white transition-colors"
           style={{
             background: canProceed ? '#1360d2' : '#a7c3eb',

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import ClaimStepper, { NR_CLAIM_STEPS } from './ClaimStepper';
+import Dh from './Dh';
 import type { Row } from './EligibleDeclarationsPage';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
@@ -7,12 +8,13 @@ const font = "'Dubai', 'Segoe UI', sans-serif";
 type Props = {
   onBack: () => void;
   onSubmit: () => void;
+  onSaveAndPreview?: () => void;
   selectedRows: Row[];
   paymentMode?: string;
   accountNo?: string;
 };
 
-export default function NonRemittanceReviewPage({ onBack, onSubmit, selectedRows, paymentMode = 'Credit/Debit Account', accountNo = '1223193-SW LOGISTICS LLC' }: Props) {
+export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPreview, selectedRows, paymentMode = 'Credit/Debit Account', accountNo = '1223193-SW LOGISTICS LLC' }: Props) {
   const [declared, setDeclared] = useState(false);
 
   return (
@@ -68,7 +70,7 @@ export default function NonRemittanceReviewPage({ onBack, onSubmit, selectedRows
                 { label: 'Claimant Name',  value: 'SW Logistics LLC' },
               ].map((f) => (
                 <div key={f.label} className="flex flex-col gap-[4px]">
-                  <span className="text-[14px] text-[#697498]">{f.label}</span>
+                  <span className="text-[16px] text-[#697498]">{f.label}</span>
                   <span className="text-[16px] text-[#051937]" style={{ fontWeight: 500 }}>{f.value}</span>
                 </div>
               ))}
@@ -87,7 +89,7 @@ export default function NonRemittanceReviewPage({ onBack, onSubmit, selectedRows
                 { label: 'Total No. of Sub Claims in the Claim', value: String(selectedRows.length || 1) },
               ].map((f) => (
                 <div key={f.label} className="flex flex-col gap-[4px]">
-                  <span className="text-[14px] text-[#697498]">{f.label}</span>
+                  <span className="text-[16px] text-[#697498]">{f.label}</span>
                   <span className="text-[16px] text-[#051937]" style={{ fontWeight: 500 }}>{f.value}</span>
                 </div>
               ))}
@@ -104,7 +106,7 @@ export default function NonRemittanceReviewPage({ onBack, onSubmit, selectedRows
                 <thead>
                   <tr style={{ background: '#a6c2e9' }}>
                     {['Charge Type', 'Amount (AED)', 'Payment Mode', 'Payment Reference'].map((h) => (
-                      <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 15, fontWeight: 600, color: '#051937', whiteSpace: 'nowrap' }}>{h}</th>
+                      <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#051937', whiteSpace: 'nowrap' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -114,15 +116,15 @@ export default function NonRemittanceReviewPage({ onBack, onSubmit, selectedRows
                     { type: 'Knowledge-Innovation Dirham', amt: '20.00' },
                   ].map((row) => (
                     <tr key={row.type} style={{ borderBottom: '1px solid #eef1f6' }}>
-                      <td style={{ padding: '12px 14px', fontSize: 15, color: '#0e1b3d' }}>{row.type}</td>
-                      <td style={{ padding: '12px 14px', fontSize: 15, color: '#0e1b3d' }}>{row.amt}</td>
-                      <td style={{ padding: '12px 14px', fontSize: 15, color: '#0e1b3d' }}>{paymentMode}</td>
-                      <td style={{ padding: '12px 14px', fontSize: 15, color: '#0e1b3d' }}>{paymentMode === 'Credit/Debit Account' ? accountNo : '—'}</td>
+                      <td style={{ padding: '12px 14px', fontSize: 16, color: '#0e1b3d' }}>{row.type}</td>
+                      <td style={{ padding: '12px 14px', fontSize: 16, color: '#0e1b3d' }}><span className="inline-flex items-baseline gap-[3px]"><Dh style={{ fontSize: 15 }} />{row.amt}</span></td>
+                      <td style={{ padding: '12px 14px', fontSize: 16, color: '#0e1b3d' }}>{paymentMode}</td>
+                      <td style={{ padding: '12px 14px', fontSize: 16, color: '#0e1b3d' }}>{paymentMode === 'Credit/Debit Account' ? accountNo : '—'}</td>
                     </tr>
                   ))}
                   <tr style={{ background: '#dce8f7' }}>
-                    <td style={{ padding: '12px 14px', fontSize: 15, color: '#051937', fontWeight: 700 }}>Total</td>
-                    <td style={{ padding: '12px 14px', fontSize: 15, color: '#051937', fontWeight: 700 }}>70.00</td>
+                    <td style={{ padding: '12px 14px', fontSize: 16, color: '#051937', fontWeight: 700 }}>Total</td>
+                    <td style={{ padding: '12px 14px', fontSize: 16, color: '#051937', fontWeight: 700 }}><span className="inline-flex items-baseline gap-[3px]"><Dh style={{ fontSize: 15 }} />70.00</span></td>
                     <td colSpan={2} />
                   </tr>
                 </tbody>
@@ -164,6 +166,7 @@ export default function NonRemittanceReviewPage({ onBack, onSubmit, selectedRows
         </button>
         <div className="flex items-center gap-[12px]">
           <button
+            onClick={() => onSaveAndPreview?.()}
             className="h-[48px] px-[28px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
             style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
           >
