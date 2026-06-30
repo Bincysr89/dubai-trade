@@ -221,7 +221,7 @@ export function ScrollArrows({
       {!atStart && (
         <div style={{
           position: 'absolute', left: 0, top: 0, bottom: 0, width: 80, zIndex: 20,
-          background: 'linear-gradient(to right, #fff 30%, transparent 100%)',
+          background: 'linear-gradient(to right, rgba(255,255,255,0.85) 0%, transparent 100%)',
           display: 'flex', alignItems: 'center', paddingLeft: 12,
           pointerEvents: 'none',
         }}>
@@ -235,7 +235,7 @@ export function ScrollArrows({
       {!atEnd && (
         <div style={{
           position: 'absolute', right: stickyWidth, top: 0, bottom: 0, width: 80, zIndex: 20,
-          background: 'linear-gradient(to left, #fff 30%, transparent 100%)',
+          background: 'linear-gradient(to left, rgba(255,255,255,0.85) 0%, transparent 100%)',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: 12,
           pointerEvents: 'none',
         }}>
