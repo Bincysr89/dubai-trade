@@ -4,11 +4,15 @@ const font = "'Dubai', 'Segoe UI', sans-serif";
 
 type Props = {
   onBackToListing: () => void;
+  onDownloadAck?: () => void;
+  onViewClaim?: () => void;
   requestNumber?: string;
 };
 
 export default function NRPaymentSuccessPage({
   onBackToListing,
+  onDownloadAck,
+  onViewClaim,
   requestNumber = '2588017',
 }: Props) {
   return (
@@ -59,14 +63,32 @@ export default function NRPaymentSuccessPage({
             </span>
           </div>
 
-          <div className="flex flex-wrap gap-[16px] justify-center pt-[8px]">
+          <div className="flex flex-wrap gap-[14px] justify-center pt-[8px]">
             <button
               onClick={onBackToListing}
-              className="h-[48px] px-[28px] rounded-[4px] bg-[#1360d2] text-white hover:bg-[#0E4DB8] transition-colors"
-              style={{ fontFamily: font, fontWeight: 500, fontSize: 16, minWidth: 180 }}
+              className="h-[52px] px-[28px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
+              style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
             >
               Back to Listing
             </button>
+            {onDownloadAck && (
+              <button
+                onClick={onDownloadAck}
+                className="h-[52px] px-[28px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
+                style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
+              >
+                Download Acknowledgment Receipt
+              </button>
+            )}
+            {onViewClaim && (
+              <button
+                onClick={onViewClaim}
+                className="h-[52px] px-[32px] rounded-[4px] text-[16px] text-white hover:bg-[#0f4fb5] transition-colors"
+                style={{ background: '#1360d2', fontFamily: font, fontWeight: 500 }}
+              >
+                View Claim
+              </button>
+            )}
           </div>
         </div>
       </div>

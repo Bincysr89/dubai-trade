@@ -476,6 +476,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           {claimStep === 'nrPaymentSuccess' && (
             <NRPaymentSuccessPage
               onBackToListing={() => { setClaimStep('list'); resetNRClaim(); }}
+              onDownloadAck={() => setClaimStep('nonRemittanceAck')}
+              onViewClaim={() => { setClaimViewReturnStep('nrPaymentSuccess'); setClaimStep('nonRemittanceClaimView'); }}
             />
           )}
           {claimStep === 'nrPaymentRejected' && (

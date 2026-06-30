@@ -85,7 +85,7 @@ export default function NonRemittanceSuccessPage({ onBack, onViewAck, onViewClai
               className="h-[52px] px-[28px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
               style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
             >
-              View Acknowledgement Receipt
+              Download Acknowledgment Receipt
             </button>
             <button
               onClick={onViewClaim}
