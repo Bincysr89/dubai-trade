@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Pagination from './Pagination';
 import StatusFilterHeader from './StatusFilterHeader';
 import { ColumnFilter } from './ColumnFilter';
+import ManageColumnsModal, { ColDef } from './ManageColumnsModal';
 
 // Inline data URIs — no external dependency
 const wlpLogoSrc = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAICAYAAAD9aA/QAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAAAg5JREFUeAF9kUFoE0EUht+bnd2ERjezAUniKkStFcVDqKAgovWgN6GQiooXrVBQUYp4yMWzIkhPggc9SEGsKXpViojiwSBiUUqUiklBhdCSrNX0sJuZ8U1qKwHpW5Zl3r753vv/h+B5yR25q1Xbjnknjg8E924PbanVagFQ5PMgnj3AGWTxnsOFdTubTXtRSon1en0pl8snz128W50ovRCUA8uyQEqttYp+fJq7tYvBGjE9DcG2ven80bPX8OSZpxXPH/0mspc/C5FL/qvSwBhThcGDDWIDIPZAQyDvRiG9iXgq1eu6bpu1Wom4559+F7YdlyE9jAGzLOy+wkBGYTB248h2v684ixTgNWF1YhIB3OLu8IX7Fb93ZG74fKk6WhyvcM6zCBKVUp0a0KqLqylPNogrxalZbjleJuOjB95fMBoFAFEUscnHL0UYKTH55JVQUgtEjYb339DmHpoPe13+mkqnfTrqJUSm+TKXZpIKJkrPQdIEts0hDEN4+GiKzqSEW6tGmTCbZYu/lYFms5tAKWma0PBR/WP55p5G48uvruW1CR6LOXqoMBA4jqMNlIwFkmcWBBmCZDduhg12Is7W24mVVhaz4NCBvp8f3lzvn5+fqRstHJr0e+tygYEOHtv//c7Yqf6RS+Pvy29rftSWHbkrE1MDd/e+YsViaPJJ47mmBVJfECJqLSxAx7g/Hi/Gz6+U/BcAAAAASUVORK5CYII=';
@@ -123,14 +124,18 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
     return () => document.removeEventListener('mousedown', onDoc);
   }, [openFlyout]);
 
-  const headers: { label: string; w: number }[] = [
-    { label: 'Request No.',       w: 110 },
-    { label: 'No. of Vehicles',   w: 130 },
-    { label: 'Declaration No.',   w: 170 },
-    { label: 'Request Date',      w: 130 },
-    { label: 'Requested For',     w: 280 },
-    { label: 'Remarks',           w: 320 },
+  const VCC_COL_DEFS: (ColDef & { w: number })[] = [
+    { key: 'reqNo',        label: 'Request No.',     w: 110 },
+    { key: 'vccCount',     label: 'No. of Vehicles', w: 130 },
+    { key: 'declNo',       label: 'Declaration No.', w: 170 },
+    { key: 'reqDate',      label: 'Request Date',    w: 130 },
+    { key: 'requestedFor', label: 'Requested For',   w: 280 },
+    { key: 'remarks',      label: 'Remarks',         w: 320 },
   ];
+  const [visibleCols, setVisibleCols] = useState<string[]>(VCC_COL_DEFS.map((c) => c.key));
+  const [showColModal, setShowColModal] = useState(false);
+  const vis = (key: string) => visibleCols.includes(key);
+  const visibleHeaders = visibleCols.map((k) => VCC_COL_DEFS.find((c) => c.key === k)!).filter(Boolean);
 
   /** Status-driven default remark — overrides the row's stored remarks. */
   const remarkFor = (status: VccStatus): string => {
@@ -140,11 +145,36 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
     return 'Request submitted. Awaiting processing.';
   };
 
+  const tableMinWidth = visibleHeaders.reduce((s, c) => s + c.w, 0) + 242;
+
   return (
+    <>
+    {showColModal && (
+      <ManageColumnsModal
+        columns={VCC_COL_DEFS}
+        visible={visibleCols}
+        onSave={setVisibleCols}
+        onClose={() => setShowColModal(false)}
+      />
+    )}
+    <div>
+      {/* Toolbar */}
+      <div className="flex justify-end pb-[10px]">
+        <button
+          onClick={() => setShowColModal(true)}
+          className="inline-flex items-center gap-[6px] h-[36px] px-[14px] rounded-[4px] border hover:bg-[#f0f4ff] transition-colors"
+          style={{ border: '1px solid #d1ddf5', background: '#fff', color: '#1360d2', fontFamily: "'Dubai','Segoe UI',sans-serif", fontSize: 14, fontWeight: 500, cursor: 'pointer' }}
+        >
+          <svg viewBox="0 0 20 20" width="16" height="16" fill="none">
+            <path d="M2 5h16M5 10h10M8 15h4" stroke="#1360d2" strokeWidth="1.8" strokeLinecap="round"/>
+          </svg>
+          Columns
+        </button>
+      </div>
     <div className="overflow-x-auto pb-[20px]">
       <table
         style={{
-          minWidth: 1500,
+          minWidth: tableMinWidth,
           borderCollapse: 'separate',
           borderSpacing: '0 8px',
           fontFamily: "'Dubai', sans-serif",
@@ -153,7 +183,7 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
       >
         <thead>
           <tr>
-            {headers.map((col, idx) => (
+            {visibleHeaders.map((col, idx) => (
               <th
                 key={col.label}
                 style={{ width: col.w, minWidth: col.w, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, borderRadius: idx === 0 ? '8px 0 0 0' : undefined, paddingLeft: idx === 0 ? 16 : 8 }}
@@ -195,8 +225,9 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
             );
             return (
               <tr key={i}>
-                {cell(txt(row.reqNo), 110, { paddingLeft: 16 })}
+                {vis('reqNo') && cell(txt(row.reqNo), 110, { paddingLeft: 16 })}
                 {/* No. of Vehicles — clickable */}
+                {vis('vccCount') && (
                 <td style={{ background: '#fff', padding: '0 8px', height: 54, verticalAlign: 'middle', width: 130, textAlign: 'center' }}>
                   {(
                     <button
@@ -209,7 +240,9 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
                     </button>
                   )}
                 </td>
+                )}
                 {/* Declaration No. — hyperlink to Customs Declaration page */}
+                {vis('declNo') && (
                 <td style={{ background: '#fff', padding: '0 8px', height: 54, verticalAlign: 'middle', width: 170 }}>
                   <div className="flex items-center gap-[10px]">
                     <div className="flex items-center gap-[6px] flex-shrink-0" style={{ minWidth: 58 }}>
@@ -229,9 +262,10 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
                     </button>
                   </div>
                 </td>
-                {cell(txt(row.reqDate),      130)}
-                {cell(txt(row.requestedFor), 280)}
-                {cell(
+                )}
+                {vis('reqDate') && cell(txt(row.reqDate),      130)}
+                {vis('requestedFor') && cell(txt(row.requestedFor), 280)}
+                {vis('remarks') && cell(
                   <span
                     className="text-[16px] text-[#0e1b3d]"
                     style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3 }}
@@ -442,5 +476,7 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
         />
       </div>
     </div>
+    </div>
+    </>
   );
 }

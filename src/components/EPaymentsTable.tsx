@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import Pagination from './Pagination';
+import ManageColumnsModal, { ColDef } from './ManageColumnsModal';
 
 const font = "'Dubai', sans-serif";
 
@@ -69,14 +70,14 @@ const ROWS: EPayRow[] = [
   { module: 'Acknowledgement', reqDate: '06-Feb-26', declNo: '1080000003690', approvalDate: '2026-02-06T10:30:00', reqNo: '1401800039', reqType: 'Ack. Fee',           clientDecRef: 'ACK-2024-0088', amount: '50.00',  status: 'Completed' },
 ];
 
-const SCROLL_COLUMNS = [
-  { label: 'Request Date',       w: 130 },
-  { label: 'Declaration No',     w: 160 },
-  { label: 'Dec. Approval Date', w: 200 },
-  { label: 'Request No',         w: 130 },
-  { label: 'Request Type',       w: 170 },
-  { label: 'Client Dec. Ref No', w: 160 },
-  { label: 'Amount (AED)',       w: 120 },
+const SCROLL_COLUMNS: (ColDef & { w: number })[] = [
+  { key: 'reqDate',       label: 'Request Date',       w: 130 },
+  { key: 'declNo',        label: 'Declaration No',     w: 160 },
+  { key: 'approvalDate',  label: 'Dec. Approval Date', w: 200 },
+  { key: 'reqNo',         label: 'Request No',         w: 130 },
+  { key: 'reqType',       label: 'Request Type',       w: 170 },
+  { key: 'clientDecRef',  label: 'Client Dec. Ref No', w: 160 },
+  { key: 'amount',        label: 'Amount (AED)',        w: 120 },
 ];
 
 export default function EPaymentsTable({
@@ -96,6 +97,10 @@ export default function EPaymentsTable({
   const [pageSize, setPageSize]   = useState(8);
   const [openFlyout, setOpenFlyout] = useState<number | null>(null);
   const flyoutRef = useRef<HTMLDivElement>(null);
+  const [visibleCols, setVisibleCols] = useState<string[]>(SCROLL_COLUMNS.map((c) => c.key));
+  const [showColModal, setShowColModal] = useState(false);
+  const vis = (key: string) => visibleCols.includes(key);
+  const visibleHeaders = visibleCols.map((k) => SCROLL_COLUMNS.find((c) => c.key === k)!).filter(Boolean);
 
   const visibleRows = ROWS.filter(r =>
     (!module || r.module === module) &&
@@ -106,8 +111,31 @@ export default function EPaymentsTable({
   );
   const paginated = visibleRows.slice((page - 1) * pageSize, page * pageSize);
 
+  const tableMinWidth = visibleHeaders.reduce((s, c) => s + c.w, 0) + 200;
+
   return (
     <>
+    {showColModal && (
+      <ManageColumnsModal
+        columns={SCROLL_COLUMNS}
+        visible={visibleCols}
+        onSave={setVisibleCols}
+        onClose={() => setShowColModal(false)}
+      />
+    )}
+    <div>
+      <div className="flex justify-end pb-[10px]">
+        <button
+          onClick={() => setShowColModal(true)}
+          className="inline-flex items-center gap-[6px] h-[36px] px-[14px] rounded-[4px] hover:bg-[#f0f4ff] transition-colors"
+          style={{ border: '1px solid #d1ddf5', background: '#fff', color: '#1360d2', fontFamily: font, fontSize: 14, fontWeight: 500, cursor: 'pointer' }}
+        >
+          <svg viewBox="0 0 20 20" width="16" height="16" fill="none">
+            <path d="M2 5h16M5 10h10M8 15h4" stroke="#1360d2" strokeWidth="1.8" strokeLinecap="round"/>
+          </svg>
+          Columns
+        </button>
+      </div>
     <div className="overflow-x-auto pb-[20px]">
       <table
         style={{
@@ -115,13 +143,13 @@ export default function EPaymentsTable({
           borderCollapse: 'separate',
           borderSpacing: '0 8px',
           fontFamily: font,
-          minWidth: 1180,
+          minWidth: tableMinWidth,
         }}
       >
         {/* ── HEADER ── */}
         <thead>
           <tr>
-            {SCROLL_COLUMNS.map((col, i) => (
+            {visibleHeaders.map((col, i) => (
               <th
                 key={col.label}
                 style={{
@@ -165,13 +193,13 @@ export default function EPaymentsTable({
 
             return (
               <tr key={i}>
-                {cell(txt(row.reqDate),      130, { paddingLeft: 16 })}
-                {cell(txt(row.declNo),       160)}
-                {cell(txt(row.approvalDate), 200)}
-                {cell(txt(row.reqNo),        130)}
-                {cell(txt(row.reqType),      170)}
-                {cell(txt(row.clientDecRef), 160)}
-                {cell(<span className="flex items-center gap-[4px] text-[16px] text-[#0e1b3d] whitespace-nowrap"><DirhamIcon size={14} color="#0e1b3d" />{row.amount}</span>, 120)}
+                {vis('reqDate')      && cell(txt(row.reqDate),      130, { paddingLeft: 16 })}
+                {vis('declNo')       && cell(txt(row.declNo),       160)}
+                {vis('approvalDate') && cell(txt(row.approvalDate), 200)}
+                {vis('reqNo')        && cell(txt(row.reqNo),        130)}
+                {vis('reqType')      && cell(txt(row.reqType),      170)}
+                {vis('clientDecRef') && cell(txt(row.clientDecRef), 160)}
+                {vis('amount')       && cell(<span className="flex items-center gap-[4px] text-[16px] text-[#0e1b3d] whitespace-nowrap"><DirhamIcon size={14} color="#0e1b3d" />{row.amount}</span>, 120)}
                 {/* Sticky: Status */}
                 <td style={{ position: 'sticky', right: 80, background: '#fff', padding: '0 12px', height: 54, verticalAlign: 'middle', width: 120, borderBottom: '1px solid #f0f4ff', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: openFlyout === i ? 49 : 1 }}>
                   <span
@@ -230,6 +258,7 @@ export default function EPaymentsTable({
         </tbody>
       </table>
 
+    </div>
     </div>
 
     <Pagination

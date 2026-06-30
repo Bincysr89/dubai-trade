@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Pagination from './Pagination';
 import StatusFilterHeader from './StatusFilterHeader';
 import { ColumnFilter } from './ColumnFilter';
+import ManageColumnsModal, { ColDef } from './ManageColumnsModal';
 
 type Status = 'Accepted' | 'Pending' | 'Declined';
 
@@ -123,17 +124,21 @@ export default function AcknowledgementTable({ onView, onAccept, onDecline, onHi
     setSelected(next);
   };
 
-  const headers: { label: string; w: number }[] = [
-    { label: 'Declaration',     w: 140 },
-    { label: 'Req. Type',       w: 110 },
-    { label: 'Clearance Date',  w: 130 },
-    { label: 'Importer',        w: 220 },
-    { label: 'Exporter',        w: 200 },
-    { label: 'Broker',          w: 200 },
-    { label: 'Value (Dh)',     w: 120 },
-    { label: 'Dec. Reason',     w: 150 },
-    { label: 'Ack. Date',       w: 110 },
+  const ACK_COL_DEFS: (ColDef & { w: number })[] = [
+    { key: 'declaration',   label: 'Declaration',    w: 140 },
+    { key: 'reqType',       label: 'Req. Type',      w: 110 },
+    { key: 'clearanceDate', label: 'Clearance Date', w: 130 },
+    { key: 'importer',      label: 'Importer',       w: 220 },
+    { key: 'exporter',      label: 'Exporter',       w: 200 },
+    { key: 'broker',        label: 'Broker',         w: 200 },
+    { key: 'value',         label: 'Value (Dh)',     w: 120 },
+    { key: 'decReason',     label: 'Dec. Reason',    w: 150 },
+    { key: 'ackDate',       label: 'Ack. Date',      w: 110 },
   ];
+  const [visibleCols, setVisibleCols] = useState<string[]>(ACK_COL_DEFS.map((c) => c.key));
+  const [showColModal, setShowColModal] = useState(false);
+  const vis = (key: string) => visibleCols.includes(key);
+  const visibleHeaders = visibleCols.map((k) => ACK_COL_DEFS.find((c) => c.key === k)!).filter(Boolean);
 
   const Checkbox = ({ checked, onChange }: { checked: boolean; onChange: () => void }) => (
     <button onClick={onChange} role="checkbox" aria-checked={checked} className="size-[18px] rounded-[3px] flex-shrink-0 inline-flex items-center justify-center" style={{ border: `1.5px solid ${checked ? '#1360d2' : '#a7abb2'}`, background: checked ? '#1360d2' : '#fff' }}>
@@ -141,15 +146,39 @@ export default function AcknowledgementTable({ onView, onAccept, onDecline, onHi
     </button>
   );
 
+  const tableMinWidth = visibleHeaders.reduce((s, c) => s + c.w, 0) + 267;
+
   return (
+    <>
+    {showColModal && (
+      <ManageColumnsModal
+        columns={ACK_COL_DEFS}
+        visible={visibleCols}
+        onSave={setVisibleCols}
+        onClose={() => setShowColModal(false)}
+      />
+    )}
+    <div>
+      <div className="flex justify-end pb-[10px]">
+        <button
+          onClick={() => setShowColModal(true)}
+          className="inline-flex items-center gap-[6px] h-[36px] px-[14px] rounded-[4px] hover:bg-[#f0f4ff] transition-colors"
+          style={{ border: '1px solid #d1ddf5', background: '#fff', color: '#1360d2', fontFamily: "'Dubai','Segoe UI',sans-serif", fontSize: 14, fontWeight: 500, cursor: 'pointer' }}
+        >
+          <svg viewBox="0 0 20 20" width="16" height="16" fill="none">
+            <path d="M2 5h16M5 10h10M8 15h4" stroke="#1360d2" strokeWidth="1.8" strokeLinecap="round"/>
+          </svg>
+          Columns
+        </button>
+      </div>
     <div className="overflow-x-auto pb-[20px]">
-      <table style={{ minWidth: 1700, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: "'Dubai', sans-serif" }} className="w-full">
+      <table style={{ minWidth: tableMinWidth, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: "'Dubai', sans-serif" }} className="w-full">
         <thead>
           <tr>
             <th style={{ width: 48, minWidth: 48, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, borderTopLeftRadius: 8, borderBottomLeftRadius: 8, paddingLeft: 16 }}>
               <Checkbox checked={allChecked} onChange={toggleAll} />
             </th>
-            {headers.map((col) => (
+            {visibleHeaders.map((col) => (
               <th key={col.label} style={{ width: col.w, minWidth: col.w, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500 }}>
                 <ColumnFilter label={col.label} labelClass="text-[16px] font-medium text-[#051937]" />
               </th>
@@ -180,10 +209,10 @@ export default function AcknowledgementTable({ onView, onAccept, onDecline, onHi
                 <td style={{ background: '#fff', padding: '0 12px 0 16px', height: 60, verticalAlign: 'middle', width: 48, borderTopLeftRadius: 8, borderBottomLeftRadius: 8 }}>
                   <Checkbox checked={selected.has(i)} onChange={() => toggleOne(i)} />
                 </td>
-                {cell(<a href="#" className="text-[16px] text-[#1360d2] hover:underline whitespace-nowrap" style={{ fontWeight: 500 }}>{row.declaration}</a>, 140)}
-                {cell(txt(row.reqType), 110)}
-                {cell(txt(row.clearanceDate), 130)}
-                {cell(
+                {vis('declaration') && cell(<a href="#" className="text-[16px] text-[#1360d2] hover:underline whitespace-nowrap" style={{ fontWeight: 500 }}>{row.declaration}</a>, 140)}
+                {vis('reqType') && cell(txt(row.reqType), 110)}
+                {vis('clearanceDate') && cell(txt(row.clearanceDate), 130)}
+                {vis('importer') && cell(
                   <div className="flex flex-col gap-[4px]">
                     <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 200, display: 'inline-block' }}>{row.importer}</span>
                     {row.importerTags && row.importerTags.length > 0 && (
@@ -193,11 +222,11 @@ export default function AcknowledgementTable({ onView, onAccept, onDecline, onHi
                     )}
                   </div>, 220
                 )}
-                {cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180, display: 'inline-block' }}>{row.exporter}</span>, 200)}
-                {cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180, display: 'inline-block' }}>{row.broker}</span>, 200)}
-                {cell(txt(row.value), 120)}
-                {cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 140, display: 'inline-block' }}>{row.decReason}</span>, 150)}
-                {cell(txt(row.ackDate), 110)}
+                {vis('exporter') && cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180, display: 'inline-block' }}>{row.exporter}</span>, 200)}
+                {vis('broker') && cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180, display: 'inline-block' }}>{row.broker}</span>, 200)}
+                {vis('value') && cell(txt(row.value), 120)}
+                {vis('decReason') && cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 140, display: 'inline-block' }}>{row.decReason}</span>, 150)}
+                {vis('ackDate') && cell(txt(row.ackDate), 110)}
                 <td style={{ position: 'sticky', right: 79, background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 140, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', borderBottom: '1px solid #f8f8f8', zIndex: openFlyout === i ? 49 : 1 }}>
                   <span className="text-[16px] font-medium whitespace-nowrap inline-flex items-center justify-center" style={{ background: st.bg, color: st.color, padding: '4px 12px', borderRadius: 4, lineHeight: '20px' }}>
                     {row.ackStatus}
@@ -248,5 +277,7 @@ export default function AcknowledgementTable({ onView, onAccept, onDecline, onHi
         <Pagination page={page} totalPages={7} pageSize={pageSize} totalItems={7 * pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} />
       </div>
     </div>
+    </div>
+    </>
   );
 }

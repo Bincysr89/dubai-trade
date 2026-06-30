@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Pagination from './Pagination';
 import StatusFilterHeader from './StatusFilterHeader';
 import { ColumnFilter } from './ColumnFilter';
+import ManageColumnsModal, { ColDef } from './ManageColumnsModal';
 
 type Status = 'Cleared' | 'Submitted' | 'Payment Pending' | 'Declined' | 'Cancelled' | 'Clearance Inspection';
 type DraftStatus = 'Draft';
@@ -157,31 +158,59 @@ export default function CargoTransferTable({ showDrafts = false, onViewRequest, 
     return () => document.removeEventListener('mousedown', onDoc);
   }, [openFlyout]);
 
-  const headers: { label: string; w: number }[] = [
-    { label: 'Cargo Transfer No.', w: 150 },
-    { label: 'Cargo Transfer Type', w: 240 },
-    { label: 'Submitted Date',      w: 120 },
-    { label: 'Transferee (Owner)',   w: 140 },
-    { label: 'Transferor',          w: 140 },
-    { label: 'Cargo Channel (inbound)',       w: 150 },
-    { label: 'Request No.',         w: 110 },
-    { label: 'Request Type',        w: 105 },
-    { label: 'Client Ref. No.',     w: 140 },
-    { label: 'Carrier Reg No.(inbound)',     w: 160 },
-    { label: 'MAWB/MBOL',          w: 110 },
-    { label: 'Broker',              w: 120 },
-    { label: 'Created By',          w: 110 },
-    { label: 'Status Date',         w: 110 },
+  const CARGO_COL_DEFS: (ColDef & { w: number })[] = [
+    { key: 'cargoTransferNo',   label: 'Cargo Transfer No.',      w: 150 },
+    { key: 'cargoTransferType', label: 'Cargo Transfer Type',     w: 240 },
+    { key: 'submittedDate',     label: 'Submitted Date',          w: 120 },
+    { key: 'transferee',        label: 'Transferee (Owner)',       w: 140 },
+    { key: 'transferor',        label: 'Transferor',              w: 140 },
+    { key: 'cargoChannel',      label: 'Cargo Channel (inbound)', w: 150 },
+    { key: 'reqNo',             label: 'Request No.',             w: 110 },
+    { key: 'requestType',       label: 'Request Type',            w: 105 },
+    { key: 'clientRef',         label: 'Client Ref. No.',         w: 140 },
+    { key: 'carrierReg',        label: 'Carrier Reg No.(inbound)',w: 160 },
+    { key: 'mawb',              label: 'MAWB/MBOL',              w: 110 },
+    { key: 'broker',            label: 'Broker',                  w: 120 },
+    { key: 'createdBy',         label: 'Created By',              w: 110 },
+    { key: 'statusDate',        label: 'Status Date',             w: 110 },
   ];
+  const [visibleCols, setVisibleCols] = useState<string[]>(CARGO_COL_DEFS.map((c) => c.key));
+  const [showColModal, setShowColModal] = useState(false);
+  const vis = (key: string) => visibleCols.includes(key);
+  const visibleHeaders = visibleCols.map((k) => CARGO_COL_DEFS.find((c) => c.key === k)!).filter(Boolean);
 
   const font = "'Dubai', sans-serif";
 
+  const tableMinWidth = visibleHeaders.reduce((s, c) => s + c.w, 0) + 266;
+
   return (
+    <>
+    {showColModal && (
+      <ManageColumnsModal
+        columns={CARGO_COL_DEFS}
+        visible={visibleCols}
+        onSave={setVisibleCols}
+        onClose={() => setShowColModal(false)}
+      />
+    )}
+    <div>
+      <div className="flex justify-end pb-[10px]">
+        <button
+          onClick={() => setShowColModal(true)}
+          className="inline-flex items-center gap-[6px] h-[36px] px-[14px] rounded-[4px] hover:bg-[#f0f4ff] transition-colors"
+          style={{ border: '1px solid #d1ddf5', background: '#fff', color: '#1360d2', fontFamily: font, fontSize: 14, fontWeight: 500, cursor: 'pointer' }}
+        >
+          <svg viewBox="0 0 20 20" width="16" height="16" fill="none">
+            <path d="M2 5h16M5 10h10M8 15h4" stroke="#1360d2" strokeWidth="1.8" strokeLinecap="round"/>
+          </svg>
+          Columns
+        </button>
+      </div>
     <div className="overflow-x-auto pb-[20px]">
-      <table style={{ minWidth: 2100, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }} className="w-full">
+      <table style={{ minWidth: tableMinWidth, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }} className="w-full">
         <thead>
           <tr>
-            {headers.filter((_, idx) => !(showDrafts && idx === 0)).map((col, idx) => (
+            {visibleHeaders.filter((_, idx) => !(showDrafts && idx === 0)).map((col, idx) => (
               <th key={col.label} style={{ width: col.w, minWidth: col.w, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, borderRadius: idx === 0 ? '8px 0 0 0' : undefined, paddingLeft: idx === 0 ? 16 : 8 }}>
                 <ColumnFilter label={col.label} labelClass="text-[16px] font-medium text-[#051937]" />
               </th>
@@ -224,20 +253,20 @@ export default function CargoTransferTable({ showDrafts = false, onViewRequest, 
 
             return (
               <tr key={i}>
-                {!showDrafts && <td style={{ background: '#fff', padding: '0 8px 0 16px', height: 46, verticalAlign: 'middle', width: 150, borderBottom: '1px solid #f8f8f8' }}><span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: font }}>{row.cargoTransferNo}</span></td>}
-                <td style={{ background: '#fff', padding: showDrafts ? '0 8px 0 16px' : '0 8px', height: 46, verticalAlign: 'middle', width: 240, borderBottom: '1px solid #f8f8f8' }}>{txt(row.cargoTransferType)}</td>
-                {cell(txt(row.submittedDate), 120)}
-                {cell(txt(row.transferee), 140)}
-                {cell(txt(row.transferor), 140)}
-                {cell(txt(row.cargoChannel), 110)}
-                {cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: font }}>{row.reqNo}</span>, 110)}
-                {cell(txt(row.requestType), 105)}
-                {cell(txt(row.clientRef), 140)}
-                {cell(txt(row.carrierReg), 140)}
-                {cell(txt(row.mawb), 110)}
-                {cell(txt(row.broker), 120)}
-                {cell(txt(row.createdBy), 110)}
-                {cell(txt(row.statusDate), 110)}
+                {!showDrafts && vis('cargoTransferNo') && <td style={{ background: '#fff', padding: '0 8px 0 16px', height: 46, verticalAlign: 'middle', width: 150, borderBottom: '1px solid #f8f8f8' }}><span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: font }}>{row.cargoTransferNo}</span></td>}
+                {vis('cargoTransferType') && <td style={{ background: '#fff', padding: showDrafts ? '0 8px 0 16px' : '0 8px', height: 46, verticalAlign: 'middle', width: 240, borderBottom: '1px solid #f8f8f8' }}>{txt(row.cargoTransferType)}</td>}
+                {vis('submittedDate') && cell(txt(row.submittedDate), 120)}
+                {vis('transferee') && cell(txt(row.transferee), 140)}
+                {vis('transferor') && cell(txt(row.transferor), 140)}
+                {vis('cargoChannel') && cell(txt(row.cargoChannel), 110)}
+                {vis('reqNo') && cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: font }}>{row.reqNo}</span>, 110)}
+                {vis('requestType') && cell(txt(row.requestType), 105)}
+                {vis('clientRef') && cell(txt(row.clientRef), 140)}
+                {vis('carrierReg') && cell(txt(row.carrierReg), 140)}
+                {vis('mawb') && cell(txt(row.mawb), 110)}
+                {vis('broker') && cell(txt(row.broker), 120)}
+                {vis('createdBy') && cell(txt(row.createdBy), 110)}
+                {vis('statusDate') && cell(txt(row.statusDate), 110)}
 
                 {/* Sticky: Status badge */}
                 <td style={{ position: 'sticky', right: 76, background: '#fff', padding: '0 8px', height: 46, verticalAlign: 'middle', width: 190, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', borderBottom: '1px solid #f8f8f8', zIndex: openFlyout === i ? 49 : 1 }}>
@@ -307,5 +336,7 @@ export default function CargoTransferTable({ showDrafts = false, onViewRequest, 
         <Pagination page={page} totalPages={4} pageSize={pageSize} totalItems={4 * pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} />
       </div>
     </div>
+    </div>
+    </>
   );
 }

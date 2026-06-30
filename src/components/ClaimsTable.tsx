@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Pagination from './Pagination';
 import StatusFilterHeader from './StatusFilterHeader';
 import { ColumnFilter } from './ColumnFilter';
+import ManageColumnsModal, { ColDef } from './ManageColumnsModal';
 
 const font = "'Dubai', sans-serif";
 
@@ -227,32 +228,25 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
     return statusFilter ? base.filter((r) => r.status === statusFilter) : base;
   }, [showDrafts, statusFilter]);
 
-  // Claims headers (with Claim No.)
-  const claimsHeaders: { label: string; w: number }[] = [
-    { label: 'Claim Request No.',     w: 150 },
-    { label: 'Claim No.',             w: 120 },
-    { label: 'Ver.',                  w: 70  },
-    { label: 'Claim Type',            w: 160 },
-    { label: 'No. of Declarations',   w: 150 },
-    { label: 'Deposit Type',          w: 220 },
-    { label: 'Claimant',              w: 280 },
-    { label: 'Claim Submission Date', w: 170 },
-    { label: 'Remark',                w: 200 },
+  const CLAIMS_COL_DEFS: (ColDef & { w: number; draftsOnly?: boolean; claimsOnly?: boolean })[] = [
+    { key: 'reqNo',           label: 'Claim Request No.',     w: 150 },
+    { key: 'claimNo',         label: 'Claim No.',             w: 120, claimsOnly: true },
+    { key: 'ver',             label: 'Ver.',                  w: 70  },
+    { key: 'claimType',       label: 'Claim Type',            w: 160 },
+    { key: 'declarations',    label: 'No. of Declarations',   w: 150 },
+    { key: 'depositType',     label: 'Deposit Type',          w: 220 },
+    { key: 'claimant',        label: 'Claimant',              w: 280 },
+    { key: 'submissionDate',  label: 'Claim Submission Date', w: 170 },
+    { key: 'remark',          label: 'Remark',                w: 200 },
   ];
 
-  // Drafts headers (no Claim No.)
-  const draftsHeaders: { label: string; w: number }[] = [
-    { label: 'Claim Request No.',     w: 150 },
-    { label: 'Ver.',                  w: 70  },
-    { label: 'Claim Type',            w: 160 },
-    { label: 'No. of Declarations',   w: 150 },
-    { label: 'Deposit Type',          w: 220 },
-    { label: 'Claimant',              w: 280 },
-    { label: 'Claim Submission Date', w: 170 },
-    { label: 'Remark',                w: 200 },
-  ];
-
-  const headers = showDrafts ? draftsHeaders : claimsHeaders;
+  const applicableDefs = CLAIMS_COL_DEFS.filter((c) => showDrafts ? !c.claimsOnly : !c.draftsOnly);
+  const [visibleCols, setVisibleCols] = useState<string[]>(CLAIMS_COL_DEFS.map((c) => c.key));
+  const [showColModal, setShowColModal] = useState(false);
+  const vis = (key: string) => visibleCols.includes(key);
+  const visibleHeaders = visibleCols
+    .map((k) => applicableDefs.find((c) => c.key === k)!)
+    .filter(Boolean);
 
   const cell = (content: React.ReactNode, w: number, extra?: React.CSSProperties) => (
     <td style={{ background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: w, ...extra }}>{content}</td>
@@ -326,15 +320,37 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
     </td>
   );
 
-  const tableMinWidth = showDrafts ? 1650 : 1760;
+  const tableMinWidth = visibleHeaders.reduce((s, c) => s + c.w, 0) + 239;
 
   return (
     <>
+    {showColModal && (
+      <ManageColumnsModal
+        columns={applicableDefs}
+        visible={visibleCols.filter((k) => applicableDefs.some((c) => c.key === k))}
+        onSave={setVisibleCols}
+        onClose={() => setShowColModal(false)}
+      />
+    )}
+    <div>
+      {/* Toolbar */}
+      <div className="flex justify-end pb-[10px]">
+        <button
+          onClick={() => setShowColModal(true)}
+          className="inline-flex items-center gap-[6px] h-[36px] px-[14px] rounded-[4px] hover:bg-[#f0f4ff] transition-colors"
+          style={{ border: '1px solid #d1ddf5', background: '#fff', color: '#1360d2', fontFamily: font, fontSize: 14, fontWeight: 500, cursor: 'pointer' }}
+        >
+          <svg viewBox="0 0 20 20" width="16" height="16" fill="none">
+            <path d="M2 5h16M5 10h10M8 15h4" stroke="#1360d2" strokeWidth="1.8" strokeLinecap="round"/>
+          </svg>
+          Columns
+        </button>
+      </div>
       <div className="overflow-x-auto pb-[20px]">
         <table style={{ minWidth: tableMinWidth, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }} className="w-full">
           <thead>
             <tr>
-              {headers.map((col, idx) => (
+              {visibleHeaders.map((col, idx) => (
                 <th
                   key={col.label}
                   style={{ width: col.w, minWidth: col.w, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, borderRadius: idx === 0 ? '8px 0 0 0' : undefined, paddingLeft: idx === 0 ? 16 : 12 }}
@@ -359,21 +375,21 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
           <tbody>
             {rows.map((row, i) => (
               <tr key={i}>
-                {cell(txt(row.reqNo), 150, { paddingLeft: 16 })}
-                {!showDrafts && cell(txt(row.claimNo), 120)}
-                {cell(txt(row.ver), 70)}
-                {cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3, fontFamily: font }}>{row.claimType}</span>, 160)}
-                {cell(declLink(row.declarations), 150)}
-                {cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3, fontFamily: font }}>{row.depositType}</span>, 220)}
-                {cell(
+                {vis('reqNo') && cell(txt(row.reqNo), 150, { paddingLeft: 16 })}
+                {!showDrafts && vis('claimNo') && cell(txt(row.claimNo), 120)}
+                {vis('ver') && cell(txt(row.ver), 70)}
+                {vis('claimType') && cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3, fontFamily: font }}>{row.claimType}</span>, 160)}
+                {vis('declarations') && cell(declLink(row.declarations), 150)}
+                {vis('depositType') && cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3, fontFamily: font }}>{row.depositType}</span>, 220)}
+                {vis('claimant') && cell(
                   <div className="flex flex-col" style={{ lineHeight: 1.3 }}>
                     <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500, fontFamily: font }}>{row.claimantName}</span>
                     <span className="text-[12px] text-[#697498]" style={{ fontFamily: font }}>{row.claimantCode}</span>
                   </div>,
                   280,
                 )}
-                {cell(txt(row.submissionDate), 170)}
-                {cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3, fontFamily: font }}>{row.remark}</span>, 200)}
+                {vis('submissionDate') && cell(txt(row.submissionDate), 170)}
+                {vis('remark') && cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3, fontFamily: font }}>{row.remark}</span>, 200)}
                 {renderStatusCell(row.status, i)}
                 {renderActionCell(i, row.status)}
               </tr>
@@ -384,6 +400,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
           <Pagination page={page} totalPages={Math.max(1, Math.ceil(rows.length / pageSize))} pageSize={pageSize} totalItems={rows.length} onPageChange={setPage} onPageSizeChange={setPageSize} />
         </div>
       </div>
+    </div>
 
       {declModal && <DeclarationsModal declarations={declModal} onClose={() => setDeclModal(null)} />}
     </>
