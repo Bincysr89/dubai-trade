@@ -54,12 +54,6 @@ export default function NonRemittanceAckPage({ onBack, selectedRows }: Props) {
           <h1 className="text-[28px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>
             Claim Submission Acknowledgement Receipt
           </h1>
-          <div className="flex items-center gap-[10px]">
-            <div className="text-right">
-              <p className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 600 }}>جمارك دبي</p>
-              <p className="text-[13px] text-[#697498]" style={{ fontFamily: font }}>Dubai Customs</p>
-            </div>
-          </div>
         </div>
 
         <div className="flex flex-col gap-[24px]">
