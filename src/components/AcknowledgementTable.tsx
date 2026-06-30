@@ -85,9 +85,11 @@ type Props = {
   onRegenerate?: () => void;
   selected?: Set<number>;
   onSelectedChange?: (s: Set<number>) => void;
+  showColModal?: boolean;
+  onCloseColModal?: () => void;
 };
 
-export default function AcknowledgementTable({ onView, onAccept, onDecline, onHistory, onRegenerate, selected: selectedProp, onSelectedChange }: Props = {}) {
+export default function AcknowledgementTable({ onView, onAccept, onDecline, onHistory, onRegenerate, selected: selectedProp, onSelectedChange, showColModal, onCloseColModal }: Props = {}) {
   const [openFlyout, setOpenFlyout] = useState<number | null>(null);
   const flyoutRef = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState(1);
@@ -136,9 +138,20 @@ export default function AcknowledgementTable({ onView, onAccept, onDecline, onHi
     { key: 'ackDate',       label: 'Ack. Date',      w: 110 },
   ];
   const [visibleCols, setVisibleCols] = useState<string[]>(ACK_COL_DEFS.map((c) => c.key));
-  const [showColModal, setShowColModal] = useState(false);
+  const [colWidths, setColWidths] = useState<Record<string, number>>({});
   const vis = (key: string) => visibleCols.includes(key);
+  const getW = (key: string, def: number) => colWidths[key] ?? def;
   const visibleHeaders = visibleCols.map((k) => ACK_COL_DEFS.find((c) => c.key === k)!).filter(Boolean);
+
+  const startResize = (key: string, def: number) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startW = colWidths[key] ?? def;
+    const onMove = (ev: MouseEvent) => setColWidths((p) => ({ ...p, [key]: Math.max(60, startW + ev.clientX - startX) }));
+    const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  };
 
   const Checkbox = ({ checked, onChange }: { checked: boolean; onChange: () => void }) => (
     <button onClick={onChange} role="checkbox" aria-checked={checked} className="size-[18px] rounded-[3px] flex-shrink-0 inline-flex items-center justify-center" style={{ border: `1.5px solid ${checked ? '#1360d2' : '#a7abb2'}`, background: checked ? '#1360d2' : '#fff' }}>
@@ -146,7 +159,7 @@ export default function AcknowledgementTable({ onView, onAccept, onDecline, onHi
     </button>
   );
 
-  const tableMinWidth = visibleHeaders.reduce((s, c) => s + c.w, 0) + 267;
+  const tableMinWidth = visibleHeaders.reduce((s, c) => s + getW(c.key, c.w), 0) + 267;
 
   return (
     <>
@@ -155,22 +168,9 @@ export default function AcknowledgementTable({ onView, onAccept, onDecline, onHi
         columns={ACK_COL_DEFS}
         visible={visibleCols}
         onSave={setVisibleCols}
-        onClose={() => setShowColModal(false)}
+        onClose={() => onCloseColModal?.()}
       />
     )}
-    <div>
-      <div className="flex justify-end pb-[10px]">
-        <button
-          onClick={() => setShowColModal(true)}
-          className="inline-flex items-center gap-[6px] h-[36px] px-[14px] rounded-[4px] hover:bg-[#f0f4ff] transition-colors"
-          style={{ border: '1px solid #d1ddf5', background: '#fff', color: '#1360d2', fontFamily: "'Dubai','Segoe UI',sans-serif", fontSize: 14, fontWeight: 500, cursor: 'pointer' }}
-        >
-          <svg viewBox="0 0 20 20" width="16" height="16" fill="none">
-            <path d="M2 5h16M5 10h10M8 15h4" stroke="#1360d2" strokeWidth="1.8" strokeLinecap="round"/>
-          </svg>
-          Columns
-        </button>
-      </div>
     <div className="overflow-x-auto pb-[20px]">
       <table style={{ minWidth: tableMinWidth, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: "'Dubai', sans-serif" }} className="w-full">
         <thead>
@@ -179,8 +179,9 @@ export default function AcknowledgementTable({ onView, onAccept, onDecline, onHi
               <Checkbox checked={allChecked} onChange={toggleAll} />
             </th>
             {visibleHeaders.map((col) => (
-              <th key={col.label} style={{ width: col.w, minWidth: col.w, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500 }}>
+              <th key={col.label} style={{ position: 'relative', width: getW(col.key, col.w), minWidth: getW(col.key, col.w), background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500 }}>
                 <ColumnFilter label={col.label} labelClass="text-[16px] font-medium text-[#051937]" />
+                <div onMouseDown={startResize(col.key, col.w)} style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 5, cursor: 'col-resize', userSelect: 'none' }} />
               </th>
             ))}
             <th style={{ position: 'sticky', right: 79, width: 140, minWidth: 140, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
@@ -276,7 +277,6 @@ export default function AcknowledgementTable({ onView, onAccept, onDecline, onHi
       <div className="pt-[16px]">
         <Pagination page={page} totalPages={7} pageSize={pageSize} totalItems={7 * pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} />
       </div>
-    </div>
     </div>
     </>
   );

@@ -86,21 +86,36 @@ export default function EPaymentsTable({
   searchDeclNo,
   searchReqNo,
   searchReqType,
+  showColModal,
+  onCloseColModal,
 }: {
   filterReqNo?: string;
   module?: string;
   searchDeclNo?: string;
   searchReqNo?: string;
   searchReqType?: string;
+  showColModal?: boolean;
+  onCloseColModal?: () => void;
 }) {
   const [page, setPage]           = useState(1);
   const [pageSize, setPageSize]   = useState(8);
   const [openFlyout, setOpenFlyout] = useState<number | null>(null);
   const flyoutRef = useRef<HTMLDivElement>(null);
   const [visibleCols, setVisibleCols] = useState<string[]>(SCROLL_COLUMNS.map((c) => c.key));
-  const [showColModal, setShowColModal] = useState(false);
+  const [colWidths, setColWidths] = useState<Record<string, number>>({});
   const vis = (key: string) => visibleCols.includes(key);
+  const getW = (key: string, def: number) => colWidths[key] ?? def;
   const visibleHeaders = visibleCols.map((k) => SCROLL_COLUMNS.find((c) => c.key === k)!).filter(Boolean);
+
+  const startResize = (key: string, def: number) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startW = colWidths[key] ?? def;
+    const onMove = (ev: MouseEvent) => setColWidths((p) => ({ ...p, [key]: Math.max(60, startW + ev.clientX - startX) }));
+    const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  };
 
   const visibleRows = ROWS.filter(r =>
     (!module || r.module === module) &&
@@ -111,7 +126,7 @@ export default function EPaymentsTable({
   );
   const paginated = visibleRows.slice((page - 1) * pageSize, page * pageSize);
 
-  const tableMinWidth = visibleHeaders.reduce((s, c) => s + c.w, 0) + 200;
+  const tableMinWidth = visibleHeaders.reduce((s, c) => s + getW(c.key, c.w), 0) + 200;
 
   return (
     <>
@@ -120,22 +135,9 @@ export default function EPaymentsTable({
         columns={SCROLL_COLUMNS}
         visible={visibleCols}
         onSave={setVisibleCols}
-        onClose={() => setShowColModal(false)}
+        onClose={() => onCloseColModal?.()}
       />
     )}
-    <div>
-      <div className="flex justify-end pb-[10px]">
-        <button
-          onClick={() => setShowColModal(true)}
-          className="inline-flex items-center gap-[6px] h-[36px] px-[14px] rounded-[4px] hover:bg-[#f0f4ff] transition-colors"
-          style={{ border: '1px solid #d1ddf5', background: '#fff', color: '#1360d2', fontFamily: font, fontSize: 14, fontWeight: 500, cursor: 'pointer' }}
-        >
-          <svg viewBox="0 0 20 20" width="16" height="16" fill="none">
-            <path d="M2 5h16M5 10h10M8 15h4" stroke="#1360d2" strokeWidth="1.8" strokeLinecap="round"/>
-          </svg>
-          Columns
-        </button>
-      </div>
     <div className="overflow-x-auto pb-[20px]">
       <table
         style={{
@@ -153,18 +155,20 @@ export default function EPaymentsTable({
               <th
                 key={col.label}
                 style={{
+                  position: 'relative',
                   background: '#a6c2e9',
                   padding: '10px 12px',
                   textAlign: 'left',
                   fontWeight: 500,
-                  width: col.w,
-                  minWidth: col.w,
+                  width: getW(col.key, col.w),
+                  minWidth: getW(col.key, col.w),
                   borderTopLeftRadius:    i === 0 ? 8 : 0,
                   borderBottomLeftRadius: i === 0 ? 8 : 0,
                   paddingLeft: i === 0 ? 16 : 12,
                 }}
               >
                 <span className="text-[16px] font-medium text-[#051937]">{col.label}</span>
+                <div onMouseDown={startResize(col.key, col.w)} style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 5, cursor: 'col-resize', userSelect: 'none' }} />
               </th>
             ))}
             {/* Sticky: Status */}
@@ -258,7 +262,6 @@ export default function EPaymentsTable({
         </tbody>
       </table>
 
-    </div>
     </div>
 
     <Pagination

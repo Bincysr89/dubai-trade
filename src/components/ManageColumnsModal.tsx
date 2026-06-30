@@ -23,6 +23,8 @@ export default function ManageColumnsModal({ columns, visible, onSave, onClose }
   const [chooseSearch, setChooseSearch] = useState('');
   const [arrangeSearch, setArrangeSearch] = useState('');
   const dragKey = useRef<string | null>(null);
+  const [dragOverKey, setDragOverKey] = useState<string | null>(null);
+  const [draggingKey, setDraggingKey] = useState<string | null>(null);
 
   const toggleKey = (key: string, checked: boolean) => {
     setCheckedKeys((prev) => {
@@ -59,10 +61,12 @@ export default function ManageColumnsModal({ columns, visible, onSave, onClose }
 
   const onDragStart = (key: string) => {
     dragKey.current = key;
+    setDraggingKey(key);
   };
 
   const onDragOver = (e: React.DragEvent, targetKey: string) => {
     e.preventDefault();
+    setDragOverKey(targetKey);
     if (!dragKey.current || dragKey.current === targetKey) return;
     setOrderedKeys((prev) => {
       const next = [...prev];
@@ -73,6 +77,16 @@ export default function ManageColumnsModal({ columns, visible, onSave, onClose }
       next.splice(toIdx, 0, dragKey.current!);
       return next;
     });
+  };
+
+  const onDragEnd = () => {
+    dragKey.current = null;
+    setDraggingKey(null);
+    setDragOverKey(null);
+  };
+
+  const removeFromArrange = (key: string) => {
+    toggleKey(key, false);
   };
 
   const SearchBox = ({
@@ -206,38 +220,57 @@ export default function ManageColumnsModal({ columns, visible, onSave, onClose }
             </span>
             <SearchBox value={arrangeSearch} onChange={setArrangeSearch} />
             <div className="flex-1 overflow-y-auto flex flex-col gap-[6px]">
-              {filteredArrange.map((col) => (
-                <div
-                  key={col.key}
-                  draggable
-                  onDragStart={() => onDragStart(col.key)}
-                  onDragOver={(e) => onDragOver(e, col.key)}
-                  onDragEnd={() => { dragKey.current = null; }}
-                  className="flex items-center gap-[10px] px-[12px] flex-shrink-0 rounded-[4px] select-none"
-                  style={{
-                    height: 44,
-                    background: '#fff',
-                    border: '1px solid #EAECF0',
-                    cursor: 'grab',
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.borderColor = '#1360D2';
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.borderColor = '#EAECF0';
-                  }}
-                >
-                  <svg viewBox="0 0 16 16" width="16" height="16" fill="none" style={{ flexShrink: 0 }}>
-                    <circle cx="5" cy="3.5" r="1.3" fill="#9CA3AF" />
-                    <circle cx="5" cy="8"   r="1.3" fill="#9CA3AF" />
-                    <circle cx="5" cy="12.5" r="1.3" fill="#9CA3AF" />
-                    <circle cx="11" cy="3.5" r="1.3" fill="#9CA3AF" />
-                    <circle cx="11" cy="8"   r="1.3" fill="#9CA3AF" />
-                    <circle cx="11" cy="12.5" r="1.3" fill="#9CA3AF" />
-                  </svg>
-                  <span style={{ fontSize: 16, color: '#111838', fontFamily: font }}>{col.label}</span>
-                </div>
-              ))}
+              {filteredArrange.map((col) => {
+                const isDragging = draggingKey === col.key;
+                const isOver = dragOverKey === col.key && draggingKey !== col.key;
+                return (
+                  <div
+                    key={col.key}
+                    draggable
+                    onDragStart={() => onDragStart(col.key)}
+                    onDragOver={(e) => onDragOver(e, col.key)}
+                    onDragLeave={() => setDragOverKey(null)}
+                    onDragEnd={onDragEnd}
+                    className="flex items-center justify-between px-[12px] flex-shrink-0 rounded-[4px] select-none transition-colors"
+                    style={{
+                      height: 44,
+                      background: isOver ? '#a7c2e8' : '#fff',
+                      border: isOver ? '1.5px dashed #1360D2' : '1px solid #EAECF0',
+                      cursor: 'grab',
+                      opacity: isDragging ? 0.45 : 1,
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isDragging) (e.currentTarget as HTMLElement).style.borderColor = '#1360D2';
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isOver) (e.currentTarget as HTMLElement).style.borderColor = '#EAECF0';
+                    }}
+                  >
+                    <div className="flex items-center gap-[10px]">
+                      <svg viewBox="0 0 16 16" width="16" height="16" fill="none" style={{ flexShrink: 0 }}>
+                        <circle cx="5" cy="3.5"  r="1.3" fill="#9CA3AF" />
+                        <circle cx="5" cy="8"    r="1.3" fill="#9CA3AF" />
+                        <circle cx="5" cy="12.5" r="1.3" fill="#9CA3AF" />
+                        <circle cx="11" cy="3.5"  r="1.3" fill="#9CA3AF" />
+                        <circle cx="11" cy="8"    r="1.3" fill="#9CA3AF" />
+                        <circle cx="11" cy="12.5" r="1.3" fill="#9CA3AF" />
+                      </svg>
+                      <span style={{ fontSize: 16, color: '#111838', fontFamily: font }}>{col.label}</span>
+                    </div>
+                    <button
+                      onClick={() => removeFromArrange(col.key)}
+                      title="Remove column"
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: '#9CA3AF', display: 'flex', alignItems: 'center' }}
+                      onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = '#dc3545')}
+                      onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = '#9CA3AF')}
+                    >
+                      <svg viewBox="0 0 16 16" width="14" height="14" fill="none">
+                        <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                      </svg>
+                    </button>
+                  </div>
+                );
+              })}
               {filteredArrange.length === 0 && (
                 <p style={{ fontSize: 14, color: '#697498', fontFamily: font, padding: '8px 4px' }}>
                   {checkedKeys.size === 0 ? 'Select columns from the left panel.' : 'No columns match your search.'}

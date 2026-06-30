@@ -151,6 +151,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
   // so the Customer Type / Code filters are visible.
   const isBroker = true;
   const [showDrafts, setShowDrafts] = useState(false);
+  const [showColModal, setShowColModal] = useState(false);
   const [searchType, setSearchType] = useState('Declaration');
   const [searchTypeOpen, setSearchTypeOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
@@ -1931,6 +1932,20 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             </div>
           </div>
 
+          {/* Columns button */}
+          <button
+            onClick={() => setShowColModal(true)}
+            className="flex items-center gap-[6px] h-[40px] px-[14px] rounded-[6px] bg-white border border-[#d5ddfb] text-[#1360d2] text-[16px] font-medium flex-shrink-0"
+            style={{ fontFamily: "'Dubai', sans-serif", boxShadow: '0px 4px 10px rgba(0,0,0,0.08)' }}
+          >
+            <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#1360d2" strokeWidth="1.6">
+              <rect x="2" y="3" width="4" height="14" rx="1" />
+              <rect x="8" y="3" width="4" height="14" rx="1" />
+              <rect x="14" y="3" width="4" height="14" rx="1" />
+            </svg>
+            Columns
+          </button>
+
           {/* Drafts toggle — all tabs except VCC, ePayments sidebar, and epay sub-tabs */}
           {activeMenu !== 'VCC' && activeMenu !== 'E-Payment' && activeTab !== 'epay' && (
             <div className="flex items-center gap-[8px] flex-shrink-0">
@@ -1953,9 +1968,11 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             searchDeclNo={searchType === 'Declaration Number' ? searchQuery : undefined}
             searchReqNo={searchType === 'Request Number' ? searchQuery : undefined}
             searchReqType={searchType === 'Request Number' ? ePayReqType : undefined}
+            showColModal={showColModal}
+            onCloseColModal={() => setShowColModal(false)}
           />
         ) : activeTab === 'epay' ? (
-          <EPaymentsTable filterReqNo={ePayVccFilter || undefined} module={activeMenu} />
+          <EPaymentsTable filterReqNo={ePayVccFilter || undefined} module={activeMenu} showColModal={showColModal} onCloseColModal={() => setShowColModal(false)} />
         ) : activeMenu === 'VCC' ? (
           (searchType === 'VCC Number' || searchType === 'Chasis Number') && searchQuery !== '' ? (
             <VccVehicleSearchTable
@@ -1978,6 +1995,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               onRetry={(reqNo) => { setVccRetryReqNo(reqNo); setVccStep('retryPayment'); }}
               onMakePaymentReview={(reqNo) => { setVccRetryReqNo(reqNo); setVccStep('retryPayment'); }}
               onRecheckStatus={() => setRecheckModalOpen(true)}
+              showColModal={showColModal}
+              onCloseColModal={() => setShowColModal(false)}
             />
           )
         ) : activeMenu === 'Cargo Transfer' ? (
@@ -1988,6 +2007,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             onCargoHistory={() => setCargoStep('cargoHistory')}
             onSuspensionHistory={() => { setSuspensionHistoryFrom('list'); setCargoStep('suspensionHistory'); }}
             onSuspensionResponse={() => setCargoStep('suspensionResponse')}
+            showColModal={showColModal}
+            onCloseColModal={() => setShowColModal(false)}
             onAmend={() => {
               setCargoPreValues({ transferType: 'From CTO to CH - Same Location', cargoChannel: 'Sea', clientRef: 'CT-2024-00112', carrierReg: 'AE-9876543' });
               setCargoFormValues({ clientRef: 'CT-2024-00112', carrierReg: 'AE-9876543', mawb: 'AWB-987654321', transferorBizCode: 'AE-1019056', transferorPremCode: 'PRE-001', transfereeBizCode: 'AE-1019057', transfereePremCode: 'PRE-002' });
@@ -2002,12 +2023,16 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             showDrafts={showDrafts}
             onView={() => setClaimStep('claimListView')}
             onHistory={() => setClaimStep('claimHistory')}
+            showColModal={showColModal}
+            onCloseColModal={() => setShowColModal(false)}
           />
         ) : activeMenu === 'Acknowledgement' ? (
           <AcknowledgementTable
             selected={ackSelected}
             onSelectedChange={setAckSelected}
             onDecline={(rowIndex) => { setAckDeclineRowIndex(rowIndex); setAckDeclineReasonOpen(true); }}
+            showColModal={showColModal}
+            onCloseColModal={() => setShowColModal(false)}
           />
         ) : (
           <div className="overflow-x-auto pb-[20px]">

@@ -194,9 +194,11 @@ type Props = {
   onViewDocs?: () => void;
   onHistory?: () => void;
   showDrafts?: boolean;
+  showColModal?: boolean;
+  onCloseColModal?: () => void;
 };
 
-export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onViewDocs, onHistory, showDrafts = false }: Props = {}) {
+export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onViewDocs, onHistory, showDrafts = false, showColModal, onCloseColModal }: Props = {}) {
   const [openFlyout, setOpenFlyout] = useState<number | null>(null);
   const flyoutRef = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState(1);
@@ -242,11 +244,22 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
 
   const applicableDefs = CLAIMS_COL_DEFS.filter((c) => showDrafts ? !c.claimsOnly : !c.draftsOnly);
   const [visibleCols, setVisibleCols] = useState<string[]>(CLAIMS_COL_DEFS.map((c) => c.key));
-  const [showColModal, setShowColModal] = useState(false);
+  const [colWidths, setColWidths] = useState<Record<string, number>>({});
   const vis = (key: string) => visibleCols.includes(key);
+  const getW = (key: string, def: number) => colWidths[key] ?? def;
   const visibleHeaders = visibleCols
     .map((k) => applicableDefs.find((c) => c.key === k)!)
     .filter(Boolean);
+
+  const startResize = (key: string, def: number) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startW = colWidths[key] ?? def;
+    const onMove = (ev: MouseEvent) => setColWidths((p) => ({ ...p, [key]: Math.max(60, startW + ev.clientX - startX) }));
+    const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  };
 
   const cell = (content: React.ReactNode, w: number, extra?: React.CSSProperties) => (
     <td style={{ background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: w, ...extra }}>{content}</td>
@@ -320,7 +333,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
     </td>
   );
 
-  const tableMinWidth = visibleHeaders.reduce((s, c) => s + c.w, 0) + 239;
+  const tableMinWidth = visibleHeaders.reduce((s, c) => s + getW(c.key, c.w), 0) + 239;
 
   return (
     <>
@@ -329,23 +342,10 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
         columns={applicableDefs}
         visible={visibleCols.filter((k) => applicableDefs.some((c) => c.key === k))}
         onSave={setVisibleCols}
-        onClose={() => setShowColModal(false)}
+        onClose={() => onCloseColModal?.()}
       />
     )}
     <div>
-      {/* Toolbar */}
-      <div className="flex justify-end pb-[10px]">
-        <button
-          onClick={() => setShowColModal(true)}
-          className="inline-flex items-center gap-[6px] h-[36px] px-[14px] rounded-[4px] hover:bg-[#f0f4ff] transition-colors"
-          style={{ border: '1px solid #d1ddf5', background: '#fff', color: '#1360d2', fontFamily: font, fontSize: 14, fontWeight: 500, cursor: 'pointer' }}
-        >
-          <svg viewBox="0 0 20 20" width="16" height="16" fill="none">
-            <path d="M2 5h16M5 10h10M8 15h4" stroke="#1360d2" strokeWidth="1.8" strokeLinecap="round"/>
-          </svg>
-          Columns
-        </button>
-      </div>
       <div className="overflow-x-auto pb-[20px]">
         <table style={{ minWidth: tableMinWidth, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }} className="w-full">
           <thead>
@@ -353,9 +353,10 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
               {visibleHeaders.map((col, idx) => (
                 <th
                   key={col.label}
-                  style={{ width: col.w, minWidth: col.w, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, borderRadius: idx === 0 ? '8px 0 0 0' : undefined, paddingLeft: idx === 0 ? 16 : 12 }}
+                  style={{ position: 'relative', width: getW(col.key, col.w), minWidth: getW(col.key, col.w), background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, borderRadius: idx === 0 ? '8px 0 0 0' : undefined, paddingLeft: idx === 0 ? 16 : 12 }}
                 >
                   <ColumnFilter label={col.label} labelClass="text-[16px] font-medium text-[#051937]" />
+                  <div onMouseDown={startResize(col.key, col.w)} style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 5, cursor: 'col-resize', userSelect: 'none' }} />
                 </th>
               ))}
               <th style={{ position: 'sticky', right: 79, width: 160, minWidth: 160, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
@@ -401,8 +402,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
         </div>
       </div>
     </div>
-
-      {declModal && <DeclarationsModal declarations={declModal} onClose={() => setDeclModal(null)} />}
+    {declModal && <DeclarationsModal declarations={declModal} onClose={() => setDeclModal(null)} />}
     </>
   );
 }
