@@ -4,7 +4,7 @@ import BackToListingBar from './BackToListingBar';
 import FloatingField from './FloatingField';
 import type { ClaimType } from './ClaimTypeSelectionPage';
 import ClaimantBrokerDetail from './ClaimantBrokerDetail';
-import ClaimStepper from './ClaimStepper';
+import ClaimStepper, { NR_CLAIM_STEPS } from './ClaimStepper';
 import Dh from './Dh';
 import { DateInput } from './DatePicker';
 
@@ -721,7 +721,7 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
         </h1>
 
         <div>
-          <ClaimStepper activeIndex={0} />
+          <ClaimStepper activeIndex={0} steps={claimType === 'nonRemittance' ? NR_CLAIM_STEPS : undefined} />
         </div>
         {/* Claim Type selection card */}
         <div className="bg-white rounded-[8px] flex flex-col gap-[18px] px-[24px] py-[22px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>

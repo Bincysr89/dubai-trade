@@ -1,17 +1,20 @@
 import React from 'react';
 
-export const CLAIM_STEPS: { id: 'claim' | 'invoice' | 'documents' | 'payment'; label: string }[] = [
+export const CLAIM_STEPS: { id: string; label: string }[] = [
   { id: 'claim',     label: 'Claim Details' },
   { id: 'invoice',   label: 'Invoice & HS Code Details' },
   { id: 'documents', label: 'Document Details' },
   { id: 'payment',   label: 'Claim Payment Details' },
 ];
 
-/**
- * DT-style 3-step stepper used across the Raise New Claim flow.
- * Matches the Cargo Transfer stepper styling.
- */
-export default function ClaimStepper({ activeIndex }: { activeIndex: number }) {
+export const NR_CLAIM_STEPS: { id: string; label: string }[] = [
+  { id: 'claim',     label: 'Claim Details' },
+  { id: 'documents', label: 'Document Details' },
+  { id: 'payment',   label: 'Claim Payment Details' },
+];
+
+export default function ClaimStepper({ activeIndex, steps }: { activeIndex: number; steps?: { id: string; label: string }[] }) {
+  const list = steps ?? CLAIM_STEPS;
   const trailColor = (i: number) => {
     if (i < activeIndex) return '#28a745';
     if (i === activeIndex) return '#0162dd';
@@ -20,7 +23,7 @@ export default function ClaimStepper({ activeIndex }: { activeIndex: number }) {
   return (
     <div className="bg-white flex items-center justify-center px-[20px] py-[16px] rounded-[8px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
       <div className="flex items-center gap-[8px] flex-wrap">
-        {CLAIM_STEPS.map((s, i) => {
+        {list.map((s, i) => {
           const done = i < activeIndex;
           const active = i === activeIndex;
           const labelColor = done ? '#219653' : active ? '#1360d2' : '#697498';
@@ -43,7 +46,7 @@ export default function ClaimStepper({ activeIndex }: { activeIndex: number }) {
                 )}
                 <span className="text-[16px] whitespace-nowrap" style={{ color: labelColor, fontFamily: "'Dubai', sans-serif", fontWeight: 700 }}>{s.label}</span>
               </div>
-              {i < CLAIM_STEPS.length - 1 && (
+              {i < list.length - 1 && (
                 <div className="h-[2px] w-[80px]" style={{ background: trailColor(i) }} />
               )}
             </React.Fragment>

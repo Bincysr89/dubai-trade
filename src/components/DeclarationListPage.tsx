@@ -42,6 +42,12 @@ import SuspensionResponsePage from './SuspensionResponsePage';
 import SuspensionSuccessModal from './SuspensionSuccessModal';
 import ClaimSubmittedSuccessPage from './ClaimSubmittedSuccessPage';
 import NonRemittanceDocumentsPage from './NonRemittanceDocumentsPage';
+import ClaimTypeEntryPage from './ClaimTypeEntryPage';
+import NonRemittanceChargesPage from './NonRemittanceChargesPage';
+import NonRemittanceReviewPage from './NonRemittanceReviewPage';
+import NonRemittanceSuccessPage from './NonRemittanceSuccessPage';
+import NonRemittanceAckPage from './NonRemittanceAckPage';
+import NonRemittanceClaimViewPage from './NonRemittanceClaimViewPage';
 import type { Row } from './EligibleDeclarationsPage';
 import { ColumnFilter } from './ColumnFilter';
 import { DateInput } from './DatePicker';
@@ -179,11 +185,13 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
   const [stepperReturnStep, setStepperReturnStep] = useState(0);
   const [cargoPreValues, setCargoPreValues] = useState<{ cargoChannel: string; clientRef: string; carrierReg: string; transferType: string }>({ cargoChannel: 'Sea', clientRef: '', carrierReg: '', transferType: '' });
   const [cargoFormValues, setCargoFormValues] = useState<{ clientRef: string; carrierReg: string; mawb: string; transferorBizCode: string; transferorPremCode: string; transfereeBizCode: string; transfereePremCode: string }>({ clientRef: '', carrierReg: '', mawb: '', transferorBizCode: '', transferorPremCode: '', transfereeBizCode: '', transfereePremCode: '' });
-  type ClaimSubStep = 'list' | 'eligible' | 'refundType' | 'outbound' | 'missingDoc' | 'documents' | 'payment' | 'success' | 'nonRemittanceDocs';
+  type ClaimSubStep = 'list' | 'claimTypeEntry' | 'eligible' | 'refundType' | 'outbound' | 'missingDoc' | 'documents' | 'payment' | 'success' | 'nonRemittanceDocs' | 'nonRemittanceCharges' | 'nonRemittanceReview' | 'nonRemittanceSuccess' | 'nonRemittanceAck' | 'nonRemittanceClaimView';
   const [claimDeclViewOpen, setClaimDeclViewOpen] = useState(false);
   const [claimStep, setClaimStep] = useState<ClaimSubStep>('list');
   const [claimContext, setClaimContext] = useState<{ claimType: ClaimType; declarationNo: string; depositType: string; declarationCategory: string | null; refundType?: RefundType; allowedRefundTypes?: RefundType[] } | null>(null);
   const [nonRemittanceRows, setNonRemittanceRows] = useState<Row[]>([]);
+  const [nonRemittancePaymentMode, setNonRemittancePaymentMode] = useState('');
+  const [nonRemittanceAccountNo, setNonRemittanceAccountNo] = useState('');
   const [ackStep, setAckStep] = useState<'list' | 'acceptSuccess' | 'declineSuccess'>('list');
   const [ackSelected, setAckSelected] = useState<Set<number>>(new Set());
   const [ackAcceptOpen, setAckAcceptOpen] = useState(false);
@@ -265,6 +273,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [openFlyout]);
 
+  const resetNRClaim = () => { setNonRemittanceRows([]); setNonRemittancePaymentMode(''); setNonRemittanceAccountNo(''); setClaimContext(null); };
+
   if (claimStep !== 'list') {
     return (
       <div className="fixed inset-0 z-50 flex flex-col bg-[#f8fafd] overflow-hidden">
@@ -272,9 +282,17 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           <Header onServiceCatalogue={onServiceCatalogue} onHome={onClose} />
         </div>
         <div className="flex-1 overflow-hidden">
+          {claimStep === 'claimTypeEntry' && (
+            <ClaimTypeEntryPage
+              onBack={() => setClaimStep('list')}
+              onContinue={(selectedType) => {
+                setClaimStep('eligible');
+              }}
+            />
+          )}
           {claimStep === 'eligible' && (
             <EligibleDeclarationsPage
-              onBack={() => setClaimStep('list')}
+              onBack={() => setClaimStep('claimTypeEntry')}
               onProceed={(rows, selectedClaimType) => {
                 // Non Remittance goes to its own per-declaration docs page
                 if (selectedClaimType === 'nonRemittance') {
@@ -388,8 +406,43 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             <NonRemittanceDocumentsPage
               rows={nonRemittanceRows}
               onBack={() => setClaimStep('eligible')}
-              onBackToListing={() => { setClaimStep('list'); setClaimContext(null); setNonRemittanceRows([]); }}
-              onContinue={() => setClaimStep('success')}
+              onBackToListing={() => { setClaimStep('list'); resetNRClaim(); }}
+              onContinue={() => setClaimStep('nonRemittanceCharges')}
+            />
+          )}
+          {claimStep === 'nonRemittanceCharges' && (
+            <NonRemittanceChargesPage
+              selectedRows={nonRemittanceRows}
+              onBack={() => setClaimStep('nonRemittanceDocs')}
+              onContinue={(mode, acct) => { setNonRemittancePaymentMode(mode); setNonRemittanceAccountNo(acct); setClaimStep('nonRemittanceReview'); }}
+            />
+          )}
+          {claimStep === 'nonRemittanceReview' && (
+            <NonRemittanceReviewPage
+              selectedRows={nonRemittanceRows}
+              paymentMode={nonRemittancePaymentMode}
+              accountNo={nonRemittanceAccountNo}
+              onBack={() => setClaimStep('nonRemittanceCharges')}
+              onSubmit={() => setClaimStep('nonRemittanceSuccess')}
+            />
+          )}
+          {claimStep === 'nonRemittanceSuccess' && (
+            <NonRemittanceSuccessPage
+              onBack={() => { setClaimStep('list'); resetNRClaim(); }}
+              onViewAck={() => setClaimStep('nonRemittanceAck')}
+              onViewClaim={() => setClaimStep('nonRemittanceClaimView')}
+            />
+          )}
+          {claimStep === 'nonRemittanceAck' && (
+            <NonRemittanceAckPage
+              selectedRows={nonRemittanceRows}
+              onBack={() => setClaimStep('nonRemittanceSuccess')}
+            />
+          )}
+          {claimStep === 'nonRemittanceClaimView' && (
+            <NonRemittanceClaimViewPage
+              selectedRows={nonRemittanceRows}
+              onBack={() => setClaimStep('nonRemittanceSuccess')}
             />
           )}
           {claimStep === 'success' && (
@@ -1085,7 +1138,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   onClick={() => {
                     if (activeMenu === 'VCC') setVccStep('create');
                     if (activeMenu === 'Cargo Transfer') { setCargoFlowMode('create'); setCargoStep('pre'); }
-                    if (activeMenu === 'Refund & Claims') setClaimStep('eligible');
+                    if (activeMenu === 'Refund & Claims') setClaimStep('claimTypeEntry');
                     if (activeMenu === 'Acknowledgement' && ackSelected.size > 0) setAckAcceptOpen(true);
                   }}
                   className="h-[48px] px-[22px] rounded-[4px] text-[16px] text-white flex-shrink-0 transition-colors"

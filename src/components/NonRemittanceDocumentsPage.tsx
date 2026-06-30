@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import BackToListingBar from './BackToListingBar';
 import ClaimantBrokerDetail from './ClaimantBrokerDetail';
-import ClaimStepper from './ClaimStepper';
+import ClaimStepper, { NR_CLAIM_STEPS } from './ClaimStepper';
 import type { Row } from './EligibleDeclarationsPage';
 
 const FONT = "'Dubai', 'Segoe UI', sans-serif";
@@ -157,7 +157,7 @@ export default function NonRemittanceDocumentsPage({ rows, onBack, onContinue, o
           Raise New Claim
         </h1>
         <div className="px-4 sm:px-10">
-          <ClaimStepper activeIndex={2} />
+          <ClaimStepper activeIndex={1} steps={NR_CLAIM_STEPS} />
         </div>
 
         <div className="px-4 sm:px-10 py-[24px] flex flex-col gap-[20px]">
@@ -294,7 +294,7 @@ export default function NonRemittanceDocumentsPage({ rows, onBack, onContinue, o
                 boxShadow: allFilesUploaded ? '0px 0px 8px rgba(28,72,191,0.16)' : 'none',
               }}
             >
-              Submit Claim
+              Next
             </button>
           </div>
         }
