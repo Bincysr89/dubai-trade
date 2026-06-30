@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import Pagination from './Pagination';
 import ManageColumnsModal, { ColDef } from './ManageColumnsModal';
+import { useTableBehaviors, DragDots } from '../hooks/useTableBehaviors';
 
 const font = "'Dubai', sans-serif";
 
@@ -102,20 +103,16 @@ export default function EPaymentsTable({
   const [openFlyout, setOpenFlyout] = useState<number | null>(null);
   const flyoutRef = useRef<HTMLDivElement>(null);
   const [visibleCols, setVisibleCols] = useState<string[]>(SCROLL_COLUMNS.map((c) => c.key));
-  const [colWidths, setColWidths] = useState<Record<string, number>>({});
   const vis = (key: string) => visibleCols.includes(key);
-  const getW = (key: string, def: number) => colWidths[key] ?? def;
   const visibleHeaders = visibleCols.map((k) => SCROLL_COLUMNS.find((c) => c.key === k)!).filter(Boolean);
 
-  const startResize = (key: string, def: number) => (e: React.MouseEvent) => {
-    e.preventDefault();
-    const startX = e.clientX;
-    const startW = colWidths[key] ?? def;
-    const onMove = (ev: MouseEvent) => setColWidths((p) => ({ ...p, [key]: Math.max(60, startW + ev.clientX - startX) }));
-    const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
-  };
+  const {
+    tableRef, scrollRef,
+    hoveredColKey, resizeIndicatorLeft, isNearResize,
+    handleTableMouseMove, handleTableMouseLeave, handleTableMouseDown,
+    onDragStart, onDragEnd, onDragOver, onDragLeave, onDrop,
+    getThStyle, getTdBg, getW,
+  } = useTableBehaviors();
 
   const visibleRows = ROWS.filter(r =>
     (!module || r.module === module) &&
@@ -138,14 +135,22 @@ export default function EPaymentsTable({
         onClose={() => onCloseColModal?.()}
       />
     )}
-    <div className="overflow-x-auto pb-[20px]">
+    <div ref={scrollRef} className="overflow-x-auto pb-[20px]" style={{ position: 'relative' }}>
+      {resizeIndicatorLeft !== null && (
+        <div style={{ position: 'absolute', top: 0, bottom: 0, left: resizeIndicatorLeft, width: 3, background: '#1360D2', borderRadius: 2, pointerEvents: 'none', zIndex: 100 }} />
+      )}
       <table
+        ref={tableRef}
+        onMouseMove={handleTableMouseMove}
+        onMouseLeave={handleTableMouseLeave}
+        onMouseDown={handleTableMouseDown}
         style={{
           width: '100%',
           borderCollapse: 'separate',
           borderSpacing: '0 8px',
           fontFamily: font,
           minWidth: tableMinWidth,
+          cursor: isNearResize ? 'col-resize' : undefined,
         }}
       >
         {/* ── HEADER ── */}
@@ -154,10 +159,10 @@ export default function EPaymentsTable({
             {visibleHeaders.map((col, i) => (
               <th
                 key={col.label}
+                data-col-key={col.key}
                 style={{
                   position: 'relative',
-                  background: '#a6c2e9',
-                  padding: '10px 12px',
+                  padding: '18px 12px 10px',
                   textAlign: 'left',
                   fontWeight: 500,
                   width: getW(col.key, col.w),
@@ -165,10 +170,25 @@ export default function EPaymentsTable({
                   borderTopLeftRadius:    i === 0 ? 8 : 0,
                   borderBottomLeftRadius: i === 0 ? 8 : 0,
                   paddingLeft: i === 0 ? 16 : 12,
+                  ...getThStyle(col.key),
                 }}
+                onDragOver={(e) => onDragOver(col.key, e)}
+                onDragLeave={onDragLeave}
+                onDrop={(e) => onDrop(col.key, e, visibleCols, setVisibleCols)}
               >
+                <div
+                  draggable
+                  onDragStart={(e) => onDragStart(col.key, e)}
+                  onDragEnd={onDragEnd}
+                  style={{
+                    display: hoveredColKey === col.key ? 'flex' : 'none',
+                    position: 'absolute', top: 3, left: '50%', transform: 'translateX(-50%)',
+                    cursor: 'grab', alignItems: 'center', justifyContent: 'center', zIndex: 4,
+                  }}
+                >
+                  <DragDots />
+                </div>
                 <span className="text-[16px] font-medium text-[#051937]">{col.label}</span>
-                <div onMouseDown={startResize(col.key, col.w)} style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 5, cursor: 'col-resize', userSelect: 'none' }} />
               </th>
             ))}
             {/* Sticky: Status */}
@@ -186,8 +206,8 @@ export default function EPaymentsTable({
         <tbody>
           {paginated.map((row, i) => {
             const st = STATUS_STYLE[row.status];
-            const cell = (content: React.ReactNode, w?: number, extra?: React.CSSProperties) => (
-              <td style={{ background: '#fff', padding: '0 12px', height: 54, verticalAlign: 'middle', width: w, borderBottom: '1px solid #f0f4ff', ...extra }}>
+            const cell = (content: React.ReactNode, colKey: string, w?: number, extra?: React.CSSProperties) => (
+              <td data-col-key={colKey} style={{ background: getTdBg(colKey) ?? '#fff', padding: '0 12px', height: 54, verticalAlign: 'middle', width: w, borderBottom: '1px solid #f0f4ff', ...extra }}>
                 {content}
               </td>
             );
@@ -197,13 +217,13 @@ export default function EPaymentsTable({
 
             return (
               <tr key={i}>
-                {vis('reqDate')      && cell(txt(row.reqDate),      130, { paddingLeft: 16 })}
-                {vis('declNo')       && cell(txt(row.declNo),       160)}
-                {vis('approvalDate') && cell(txt(row.approvalDate), 200)}
-                {vis('reqNo')        && cell(txt(row.reqNo),        130)}
-                {vis('reqType')      && cell(txt(row.reqType),      170)}
-                {vis('clientDecRef') && cell(txt(row.clientDecRef), 160)}
-                {vis('amount')       && cell(<span className="flex items-center gap-[4px] text-[16px] text-[#0e1b3d] whitespace-nowrap"><DirhamIcon size={14} color="#0e1b3d" />{row.amount}</span>, 120)}
+                {vis('reqDate')      && cell(txt(row.reqDate),      'reqDate',      130, { paddingLeft: 16 })}
+                {vis('declNo')       && cell(txt(row.declNo),       'declNo',       160)}
+                {vis('approvalDate') && cell(txt(row.approvalDate), 'approvalDate', 200)}
+                {vis('reqNo')        && cell(txt(row.reqNo),        'reqNo',        130)}
+                {vis('reqType')      && cell(txt(row.reqType),      'reqType',      170)}
+                {vis('clientDecRef') && cell(txt(row.clientDecRef), 'clientDecRef', 160)}
+                {vis('amount')       && cell(<span className="flex items-center gap-[4px] text-[16px] text-[#0e1b3d] whitespace-nowrap"><DirhamIcon size={14} color="#0e1b3d" />{row.amount}</span>, 'amount', 120)}
                 {/* Sticky: Status */}
                 <td style={{ position: 'sticky', right: 80, background: '#fff', padding: '0 12px', height: 54, verticalAlign: 'middle', width: 120, borderBottom: '1px solid #f0f4ff', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: openFlyout === i ? 49 : 1 }}>
                   <span

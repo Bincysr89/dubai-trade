@@ -3,6 +3,7 @@ import Pagination from './Pagination';
 import StatusFilterHeader from './StatusFilterHeader';
 import { ColumnFilter } from './ColumnFilter';
 import ManageColumnsModal, { ColDef } from './ManageColumnsModal';
+import { useTableBehaviors, DragDots } from '../hooks/useTableBehaviors';
 
 const font = "'Dubai', sans-serif";
 
@@ -244,25 +245,21 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
 
   const applicableDefs = CLAIMS_COL_DEFS.filter((c) => showDrafts ? !c.claimsOnly : !c.draftsOnly);
   const [visibleCols, setVisibleCols] = useState<string[]>(CLAIMS_COL_DEFS.map((c) => c.key));
-  const [colWidths, setColWidths] = useState<Record<string, number>>({});
   const vis = (key: string) => visibleCols.includes(key);
-  const getW = (key: string, def: number) => colWidths[key] ?? def;
   const visibleHeaders = visibleCols
     .map((k) => applicableDefs.find((c) => c.key === k)!)
     .filter(Boolean);
 
-  const startResize = (key: string, def: number) => (e: React.MouseEvent) => {
-    e.preventDefault();
-    const startX = e.clientX;
-    const startW = colWidths[key] ?? def;
-    const onMove = (ev: MouseEvent) => setColWidths((p) => ({ ...p, [key]: Math.max(60, startW + ev.clientX - startX) }));
-    const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
-  };
+  const {
+    tableRef, scrollRef,
+    hoveredColKey, resizeIndicatorLeft, isNearResize,
+    handleTableMouseMove, handleTableMouseLeave, handleTableMouseDown,
+    onDragStart, onDragEnd, onDragOver, onDragLeave, onDrop,
+    getThStyle, getTdBg, getW,
+  } = useTableBehaviors();
 
-  const cell = (content: React.ReactNode, w: number, extra?: React.CSSProperties) => (
-    <td style={{ background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: w, ...extra }}>{content}</td>
+  const cell = (content: React.ReactNode, colKey: string, w: number, extra?: React.CSSProperties) => (
+    <td data-col-key={colKey} style={{ background: getTdBg(colKey) ?? '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: w, ...extra }}>{content}</td>
   );
 
   const txt = (v: React.ReactNode) => (
@@ -346,17 +343,42 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
       />
     )}
     <div>
-      <div className="overflow-x-auto pb-[20px]">
-        <table style={{ minWidth: tableMinWidth, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }} className="w-full">
+      <div ref={scrollRef} className="overflow-x-auto pb-[20px]" style={{ position: 'relative' }}>
+        {resizeIndicatorLeft !== null && (
+          <div style={{ position: 'absolute', top: 0, bottom: 0, left: resizeIndicatorLeft, width: 3, background: '#1360D2', borderRadius: 2, pointerEvents: 'none', zIndex: 100 }} />
+        )}
+        <table
+          ref={tableRef}
+          onMouseMove={handleTableMouseMove}
+          onMouseLeave={handleTableMouseLeave}
+          onMouseDown={handleTableMouseDown}
+          style={{ minWidth: tableMinWidth, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font, cursor: isNearResize ? 'col-resize' : undefined }}
+          className="w-full"
+        >
           <thead>
             <tr>
               {visibleHeaders.map((col, idx) => (
                 <th
                   key={col.label}
-                  style={{ position: 'relative', width: getW(col.key, col.w), minWidth: getW(col.key, col.w), background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, borderRadius: idx === 0 ? '8px 0 0 0' : undefined, paddingLeft: idx === 0 ? 16 : 12 }}
+                  data-col-key={col.key}
+                  style={{ position: 'relative', width: getW(col.key, col.w), minWidth: getW(col.key, col.w), padding: '18px 12px 10px', textAlign: 'left', fontWeight: 500, borderRadius: idx === 0 ? '8px 0 0 0' : undefined, paddingLeft: idx === 0 ? 16 : 12, ...getThStyle(col.key) }}
+                  onDragOver={(e) => onDragOver(col.key, e)}
+                  onDragLeave={onDragLeave}
+                  onDrop={(e) => onDrop(col.key, e, visibleCols, setVisibleCols)}
                 >
+                  <div
+                    draggable
+                    onDragStart={(e) => onDragStart(col.key, e)}
+                    onDragEnd={onDragEnd}
+                    style={{
+                      display: hoveredColKey === col.key ? 'flex' : 'none',
+                      position: 'absolute', top: 3, left: '50%', transform: 'translateX(-50%)',
+                      cursor: 'grab', alignItems: 'center', justifyContent: 'center', zIndex: 4,
+                    }}
+                  >
+                    <DragDots />
+                  </div>
                   <ColumnFilter label={col.label} labelClass="text-[16px] font-medium text-[#051937]" />
-                  <div onMouseDown={startResize(col.key, col.w)} style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 5, cursor: 'col-resize', userSelect: 'none' }} />
                 </th>
               ))}
               <th style={{ position: 'sticky', right: 79, width: 160, minWidth: 160, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
@@ -376,21 +398,22 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
           <tbody>
             {rows.map((row, i) => (
               <tr key={i}>
-                {vis('reqNo') && cell(txt(row.reqNo), 150, { paddingLeft: 16 })}
-                {!showDrafts && vis('claimNo') && cell(txt(row.claimNo), 120)}
-                {vis('ver') && cell(txt(row.ver), 70)}
-                {vis('claimType') && cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3, fontFamily: font }}>{row.claimType}</span>, 160)}
-                {vis('declarations') && cell(declLink(row.declarations), 150)}
-                {vis('depositType') && cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3, fontFamily: font }}>{row.depositType}</span>, 220)}
+                {vis('reqNo') && cell(txt(row.reqNo), 'reqNo', 150, { paddingLeft: 16 })}
+                {!showDrafts && vis('claimNo') && cell(txt(row.claimNo), 'claimNo', 120)}
+                {vis('ver') && cell(txt(row.ver), 'ver', 70)}
+                {vis('claimType') && cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3, fontFamily: font }}>{row.claimType}</span>, 'claimType', 160)}
+                {vis('declarations') && cell(declLink(row.declarations), 'declarations', 150)}
+                {vis('depositType') && cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3, fontFamily: font }}>{row.depositType}</span>, 'depositType', 220)}
                 {vis('claimant') && cell(
                   <div className="flex flex-col" style={{ lineHeight: 1.3 }}>
                     <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500, fontFamily: font }}>{row.claimantName}</span>
                     <span className="text-[12px] text-[#697498]" style={{ fontFamily: font }}>{row.claimantCode}</span>
                   </div>,
+                  'claimant',
                   280,
                 )}
-                {vis('submissionDate') && cell(txt(row.submissionDate), 170)}
-                {vis('remark') && cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3, fontFamily: font }}>{row.remark}</span>, 200)}
+                {vis('submissionDate') && cell(txt(row.submissionDate), 'submissionDate', 170)}
+                {vis('remark') && cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3, fontFamily: font }}>{row.remark}</span>, 'remark', 200)}
                 {renderStatusCell(row.status, i)}
                 {renderActionCell(i, row.status)}
               </tr>

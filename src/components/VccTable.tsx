@@ -3,6 +3,7 @@ import Pagination from './Pagination';
 import StatusFilterHeader from './StatusFilterHeader';
 import { ColumnFilter } from './ColumnFilter';
 import ManageColumnsModal, { ColDef } from './ManageColumnsModal';
+import { useTableBehaviors, DragDots } from '../hooks/useTableBehaviors';
 
 // Inline data URIs — no external dependency
 const wlpLogoSrc = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAICAYAAAD9aA/QAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAAAg5JREFUeAF9kUFoE0EUht+bnd2ERjezAUniKkStFcVDqKAgovWgN6GQiooXrVBQUYp4yMWzIkhPggc9SEGsKXpViojiwSBiUUqUiklBhdCSrNX0sJuZ8U1qKwHpW5Zl3r753vv/h+B5yR25q1Xbjnknjg8E924PbanVagFQ5PMgnj3AGWTxnsOFdTubTXtRSon1en0pl8snz128W50ovRCUA8uyQEqttYp+fJq7tYvBGjE9DcG2ven80bPX8OSZpxXPH/0mspc/C5FL/qvSwBhThcGDDWIDIPZAQyDvRiG9iXgq1eu6bpu1Wom4559+F7YdlyE9jAGzLOy+wkBGYTB248h2v684ixTgNWF1YhIB3OLu8IX7Fb93ZG74fKk6WhyvcM6zCBKVUp0a0KqLqylPNogrxalZbjleJuOjB95fMBoFAFEUscnHL0UYKTH55JVQUgtEjYb339DmHpoPe13+mkqnfTrqJUSm+TKXZpIKJkrPQdIEts0hDEN4+GiKzqSEW6tGmTCbZYu/lYFms5tAKWma0PBR/WP55p5G48uvruW1CR6LOXqoMBA4jqMNlIwFkmcWBBmCZDduhg12Is7W24mVVhaz4NCBvp8f3lzvn5+fqRstHJr0e+tygYEOHtv//c7Yqf6RS+Pvy29rftSWHbkrE1MDd/e+YsViaPJJ47mmBVJfECJqLSxAx7g/Hi/Gz6+U/BcAAAAASUVORK5CYII=';
@@ -135,20 +136,15 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
     { key: 'remarks',      label: 'Remarks',         w: 320 },
   ];
   const [visibleCols, setVisibleCols] = useState<string[]>(VCC_COL_DEFS.map((c) => c.key));
-  const [colWidths, setColWidths] = useState<Record<string, number>>({});
   const vis = (key: string) => visibleCols.includes(key);
-  const getW = (key: string, def: number) => colWidths[key] ?? def;
   const visibleHeaders = visibleCols.map((k) => VCC_COL_DEFS.find((c) => c.key === k)!).filter(Boolean);
-
-  const startResize = (key: string, def: number) => (e: React.MouseEvent) => {
-    e.preventDefault();
-    const startX = e.clientX;
-    const startW = colWidths[key] ?? def;
-    const onMove = (ev: MouseEvent) => setColWidths((p) => ({ ...p, [key]: Math.max(60, startW + ev.clientX - startX) }));
-    const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
-  };
+  const {
+    tableRef, scrollRef,
+    hoveredColKey, resizeIndicatorLeft, isNearResize,
+    handleTableMouseMove, handleTableMouseLeave, handleTableMouseDown,
+    onDragStart, onDragEnd, onDragOver, onDragLeave, onDrop,
+    getThStyle, getTdBg, getW,
+  } = useTableBehaviors();
 
   /** Status-driven default remark — overrides the row's stored remarks. */
   const remarkFor = (status: VccStatus): string => {
@@ -170,13 +166,21 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
         onClose={() => onCloseColModal?.()}
       />
     )}
-    <div className="overflow-x-auto pb-[20px]">
+    <div ref={scrollRef} className="overflow-x-auto pb-[20px]" style={{ position: 'relative' }}>
+      {resizeIndicatorLeft !== null && (
+        <div style={{ position: 'absolute', top: 0, bottom: 0, left: resizeIndicatorLeft, width: 3, background: '#1360D2', borderRadius: 2, pointerEvents: 'none', zIndex: 100 }} />
+      )}
       <table
+        ref={tableRef}
+        onMouseMove={handleTableMouseMove}
+        onMouseLeave={handleTableMouseLeave}
+        onMouseDown={handleTableMouseDown}
         style={{
           minWidth: tableMinWidth,
           borderCollapse: 'separate',
           borderSpacing: '0 8px',
           fontFamily: "'Dubai', sans-serif",
+          cursor: isNearResize ? 'col-resize' : undefined,
         }}
         className="w-full"
       >
@@ -184,11 +188,34 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
           <tr>
             {visibleHeaders.map((col, idx) => (
               <th
-                key={col.label}
-                style={{ position: 'relative', width: getW(col.key, col.w), minWidth: getW(col.key, col.w), background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, borderRadius: idx === 0 ? '8px 0 0 0' : undefined, paddingLeft: idx === 0 ? 16 : 8 }}
+                key={col.key}
+                data-col-key={col.key}
+                style={{
+                  position: 'relative',
+                  width: getW(col.key, col.w), minWidth: getW(col.key, col.w),
+                  padding: '18px 8px 10px', textAlign: 'left', fontWeight: 500,
+                  borderRadius: idx === 0 ? '8px 0 0 0' : undefined,
+                  paddingLeft: idx === 0 ? 16 : 8,
+                  ...getThStyle(col.key),
+                }}
+                onDragOver={(e) => onDragOver(col.key, e)}
+                onDragLeave={onDragLeave}
+                onDrop={(e) => onDrop(col.key, e, visibleCols, setVisibleCols)}
               >
+                {/* Draggable dot handle — shown on column hover */}
+                <div
+                  draggable
+                  onDragStart={(e) => onDragStart(col.key, e)}
+                  onDragEnd={onDragEnd}
+                  style={{
+                    display: hoveredColKey === col.key ? 'flex' : 'none',
+                    position: 'absolute', top: 3, left: '50%', transform: 'translateX(-50%)',
+                    cursor: 'grab', alignItems: 'center', justifyContent: 'center', zIndex: 4,
+                  }}
+                >
+                  <DragDots visible={true} />
+                </div>
                 <ColumnFilter label={col.label} labelClass="text-[16px] font-medium text-[#051937]" />
-                <div onMouseDown={startResize(col.key, col.w)} style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 5, cursor: 'col-resize', userSelect: 'none' }} />
               </th>
             ))}
             {/* STICKY: Request Status */}
@@ -220,15 +247,18 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
           {filteredRows.map((row, i) => {
             const st = VCC_STATUS_STYLE[row.status];
             const txt = (v: React.ReactNode) => <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{v}</span>;
-            const cell = (content: React.ReactNode, w: number, extra?: React.CSSProperties) => (
-              <td style={{ background: '#fff', padding: '0 8px', height: 54, verticalAlign: 'middle', width: w, ...extra }}>{content}</td>
-            );
+            const cell = (content: React.ReactNode, colKey: string, extra?: React.CSSProperties) => {
+              const def = VCC_COL_DEFS.find(c => c.key === colKey)!;
+              return (
+                <td data-col-key={colKey} style={{ background: getTdBg(colKey) ?? '#fff', padding: '0 8px', height: 54, verticalAlign: 'middle', width: getW(colKey, def.w), ...extra }}>{content}</td>
+              );
+            };
             return (
               <tr key={i}>
-                {vis('reqNo') && cell(txt(row.reqNo), 110, { paddingLeft: 16 })}
+                {vis('reqNo') && cell(txt(row.reqNo), 'reqNo', { paddingLeft: 16 })}
                 {/* No. of Vehicles — clickable */}
                 {vis('vccCount') && (
-                <td style={{ background: '#fff', padding: '0 8px', height: 54, verticalAlign: 'middle', width: 130, textAlign: 'center' }}>
+                <td data-col-key="vccCount" style={{ background: getTdBg('vccCount') ?? '#fff', padding: '0 8px', height: 54, verticalAlign: 'middle', width: getW('vccCount', 130), textAlign: 'center' }}>
                   {(
                     <button
                       onClick={() => onVccCountOpen?.(row)}
@@ -243,7 +273,7 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
                 )}
                 {/* Declaration No. — hyperlink to Customs Declaration page */}
                 {vis('declNo') && (
-                <td style={{ background: '#fff', padding: '0 8px', height: 54, verticalAlign: 'middle', width: 170 }}>
+                <td data-col-key="declNo" style={{ background: getTdBg('declNo') ?? '#fff', padding: '0 8px', height: 54, verticalAlign: 'middle', width: getW('declNo', 170) }}>
                   <div className="flex items-center gap-[10px]">
                     <div className="flex items-center gap-[6px] flex-shrink-0" style={{ minWidth: 58 }}>
                       {(row.badge === 'both' || row.badge === 'wlp') && (
@@ -263,16 +293,13 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
                   </div>
                 </td>
                 )}
-                {vis('reqDate') && cell(txt(row.reqDate),      130)}
-                {vis('requestedFor') && cell(txt(row.requestedFor), 280)}
+                {vis('reqDate') && cell(txt(row.reqDate), 'reqDate')}
+                {vis('requestedFor') && cell(txt(row.requestedFor), 'requestedFor')}
                 {vis('remarks') && cell(
-                  <span
-                    className="text-[16px] text-[#0e1b3d]"
-                    style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3 }}
-                  >
+                  <span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3 }}>
                     {remarkFor(row.status)}
                   </span>,
-                  320,
+                  'remarks',
                 )}
 
                 {/* STICKY: Request Status */}

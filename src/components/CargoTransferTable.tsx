@@ -3,6 +3,7 @@ import Pagination from './Pagination';
 import StatusFilterHeader from './StatusFilterHeader';
 import { ColumnFilter } from './ColumnFilter';
 import ManageColumnsModal, { ColDef } from './ManageColumnsModal';
+import { useTableBehaviors, DragDots } from '../hooks/useTableBehaviors';
 
 type Status = 'Cleared' | 'Submitted' | 'Payment Pending' | 'Declined' | 'Cancelled' | 'Clearance Inspection';
 type DraftStatus = 'Draft';
@@ -177,20 +178,16 @@ export default function CargoTransferTable({ showDrafts = false, onViewRequest, 
     { key: 'statusDate',        label: 'Status Date',             w: 110 },
   ];
   const [visibleCols, setVisibleCols] = useState<string[]>(CARGO_COL_DEFS.map((c) => c.key));
-  const [colWidths, setColWidths] = useState<Record<string, number>>({});
   const vis = (key: string) => visibleCols.includes(key);
-  const getW = (key: string, def: number) => colWidths[key] ?? def;
   const visibleHeaders = visibleCols.map((k) => CARGO_COL_DEFS.find((c) => c.key === k)!).filter(Boolean);
 
-  const startResize = (key: string, def: number) => (e: React.MouseEvent) => {
-    e.preventDefault();
-    const startX = e.clientX;
-    const startW = colWidths[key] ?? def;
-    const onMove = (ev: MouseEvent) => setColWidths((p) => ({ ...p, [key]: Math.max(60, startW + ev.clientX - startX) }));
-    const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
-  };
+  const {
+    tableRef, scrollRef,
+    hoveredColKey, resizeIndicatorLeft, isNearResize,
+    handleTableMouseMove, handleTableMouseLeave, handleTableMouseDown,
+    onDragStart, onDragEnd, onDragOver, onDragLeave, onDrop,
+    getThStyle, getTdBg, getW,
+  } = useTableBehaviors();
 
   const font = "'Dubai', sans-serif";
 
@@ -206,14 +203,42 @@ export default function CargoTransferTable({ showDrafts = false, onViewRequest, 
         onClose={() => onCloseColModal?.()}
       />
     )}
-    <div className="overflow-x-auto pb-[20px]">
-      <table style={{ minWidth: tableMinWidth, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }} className="w-full">
+    <div ref={scrollRef} className="overflow-x-auto pb-[20px]" style={{ position: 'relative' }}>
+      {resizeIndicatorLeft !== null && (
+        <div style={{ position: 'absolute', top: 0, bottom: 0, left: resizeIndicatorLeft, width: 3, background: '#1360D2', borderRadius: 2, pointerEvents: 'none', zIndex: 100 }} />
+      )}
+      <table
+        ref={tableRef}
+        onMouseMove={handleTableMouseMove}
+        onMouseLeave={handleTableMouseLeave}
+        onMouseDown={handleTableMouseDown}
+        style={{ minWidth: tableMinWidth, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font, cursor: isNearResize ? 'col-resize' : undefined }}
+        className="w-full"
+      >
         <thead>
           <tr>
             {visibleHeaders.filter((_, idx) => !(showDrafts && idx === 0)).map((col, idx) => (
-              <th key={col.label} style={{ position: 'relative', width: getW(col.key, col.w), minWidth: getW(col.key, col.w), background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, borderRadius: idx === 0 ? '8px 0 0 0' : undefined, paddingLeft: idx === 0 ? 16 : 8 }}>
+              <th
+                key={col.label}
+                data-col-key={col.key}
+                style={{ position: 'relative', width: getW(col.key, col.w), minWidth: getW(col.key, col.w), padding: '18px 8px 10px', textAlign: 'left', fontWeight: 500, borderRadius: idx === 0 ? '8px 0 0 0' : undefined, paddingLeft: idx === 0 ? 16 : 8, ...getThStyle(col.key) }}
+                onDragOver={(e) => onDragOver(col.key, e)}
+                onDragLeave={onDragLeave}
+                onDrop={(e) => onDrop(col.key, e, visibleCols, setVisibleCols)}
+              >
+                <div
+                  draggable
+                  onDragStart={(e) => onDragStart(col.key, e)}
+                  onDragEnd={onDragEnd}
+                  style={{
+                    display: hoveredColKey === col.key ? 'flex' : 'none',
+                    position: 'absolute', top: 3, left: '50%', transform: 'translateX(-50%)',
+                    cursor: 'grab', alignItems: 'center', justifyContent: 'center', zIndex: 4,
+                  }}
+                >
+                  <DragDots />
+                </div>
                 <ColumnFilter label={col.label} labelClass="text-[16px] font-medium text-[#051937]" />
-                <div onMouseDown={startResize(col.key, col.w)} style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 5, cursor: 'col-resize', userSelect: 'none' }} />
               </th>
             ))}
             {/* Sticky: Status */}
@@ -245,8 +270,8 @@ export default function CargoTransferTable({ showDrafts = false, onViewRequest, 
               ? DRAFT_STYLE['Draft']
               : STATUS_STYLE[row.status as Status];
 
-            const cell = (content: React.ReactNode, w: number) => (
-              <td style={{ background: '#fff', padding: '0 8px', height: 46, verticalAlign: 'middle', width: w, borderBottom: '1px solid #f8f8f8' }}>{content}</td>
+            const cell = (content: React.ReactNode, colKey: string, w: number) => (
+              <td data-col-key={colKey} style={{ background: getTdBg(colKey) ?? '#fff', padding: '0 8px', height: 46, verticalAlign: 'middle', width: w, borderBottom: '1px solid #f8f8f8' }}>{content}</td>
             );
             const txt = (v: React.ReactNode) => (
               <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: font }}>{v}</span>
@@ -254,20 +279,20 @@ export default function CargoTransferTable({ showDrafts = false, onViewRequest, 
 
             return (
               <tr key={i}>
-                {!showDrafts && vis('cargoTransferNo') && <td style={{ background: '#fff', padding: '0 8px 0 16px', height: 46, verticalAlign: 'middle', width: 150, borderBottom: '1px solid #f8f8f8' }}><span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: font }}>{row.cargoTransferNo}</span></td>}
-                {vis('cargoTransferType') && <td style={{ background: '#fff', padding: showDrafts ? '0 8px 0 16px' : '0 8px', height: 46, verticalAlign: 'middle', width: 240, borderBottom: '1px solid #f8f8f8' }}>{txt(row.cargoTransferType)}</td>}
-                {vis('submittedDate') && cell(txt(row.submittedDate), 120)}
-                {vis('transferee') && cell(txt(row.transferee), 140)}
-                {vis('transferor') && cell(txt(row.transferor), 140)}
-                {vis('cargoChannel') && cell(txt(row.cargoChannel), 110)}
-                {vis('reqNo') && cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: font }}>{row.reqNo}</span>, 110)}
-                {vis('requestType') && cell(txt(row.requestType), 105)}
-                {vis('clientRef') && cell(txt(row.clientRef), 140)}
-                {vis('carrierReg') && cell(txt(row.carrierReg), 140)}
-                {vis('mawb') && cell(txt(row.mawb), 110)}
-                {vis('broker') && cell(txt(row.broker), 120)}
-                {vis('createdBy') && cell(txt(row.createdBy), 110)}
-                {vis('statusDate') && cell(txt(row.statusDate), 110)}
+                {!showDrafts && vis('cargoTransferNo') && <td data-col-key="cargoTransferNo" style={{ background: getTdBg('cargoTransferNo') ?? '#fff', padding: '0 8px 0 16px', height: 46, verticalAlign: 'middle', width: 150, borderBottom: '1px solid #f8f8f8' }}><span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: font }}>{row.cargoTransferNo}</span></td>}
+                {vis('cargoTransferType') && <td data-col-key="cargoTransferType" style={{ background: getTdBg('cargoTransferType') ?? '#fff', padding: showDrafts ? '0 8px 0 16px' : '0 8px', height: 46, verticalAlign: 'middle', width: 240, borderBottom: '1px solid #f8f8f8' }}>{txt(row.cargoTransferType)}</td>}
+                {vis('submittedDate') && cell(txt(row.submittedDate), 'submittedDate', 120)}
+                {vis('transferee') && cell(txt(row.transferee), 'transferee', 140)}
+                {vis('transferor') && cell(txt(row.transferor), 'transferor', 140)}
+                {vis('cargoChannel') && cell(txt(row.cargoChannel), 'cargoChannel', 110)}
+                {vis('reqNo') && cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: font }}>{row.reqNo}</span>, 'reqNo', 110)}
+                {vis('requestType') && cell(txt(row.requestType), 'requestType', 105)}
+                {vis('clientRef') && cell(txt(row.clientRef), 'clientRef', 140)}
+                {vis('carrierReg') && cell(txt(row.carrierReg), 'carrierReg', 140)}
+                {vis('mawb') && cell(txt(row.mawb), 'mawb', 110)}
+                {vis('broker') && cell(txt(row.broker), 'broker', 120)}
+                {vis('createdBy') && cell(txt(row.createdBy), 'createdBy', 110)}
+                {vis('statusDate') && cell(txt(row.statusDate), 'statusDate', 110)}
 
                 {/* Sticky: Status badge */}
                 <td style={{ position: 'sticky', right: 76, background: '#fff', padding: '0 8px', height: 46, verticalAlign: 'middle', width: 190, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', borderBottom: '1px solid #f8f8f8', zIndex: openFlyout === i ? 49 : 1 }}>

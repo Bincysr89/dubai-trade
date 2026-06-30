@@ -3,6 +3,7 @@ import Pagination from './Pagination';
 import StatusFilterHeader from './StatusFilterHeader';
 import { ColumnFilter } from './ColumnFilter';
 import ManageColumnsModal, { ColDef } from './ManageColumnsModal';
+import { useTableBehaviors, DragDots } from '../hooks/useTableBehaviors';
 
 type Status = 'Accepted' | 'Pending' | 'Declined';
 
@@ -138,20 +139,16 @@ export default function AcknowledgementTable({ onView, onAccept, onDecline, onHi
     { key: 'ackDate',       label: 'Ack. Date',      w: 110 },
   ];
   const [visibleCols, setVisibleCols] = useState<string[]>(ACK_COL_DEFS.map((c) => c.key));
-  const [colWidths, setColWidths] = useState<Record<string, number>>({});
   const vis = (key: string) => visibleCols.includes(key);
-  const getW = (key: string, def: number) => colWidths[key] ?? def;
   const visibleHeaders = visibleCols.map((k) => ACK_COL_DEFS.find((c) => c.key === k)!).filter(Boolean);
 
-  const startResize = (key: string, def: number) => (e: React.MouseEvent) => {
-    e.preventDefault();
-    const startX = e.clientX;
-    const startW = colWidths[key] ?? def;
-    const onMove = (ev: MouseEvent) => setColWidths((p) => ({ ...p, [key]: Math.max(60, startW + ev.clientX - startX) }));
-    const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
-  };
+  const {
+    tableRef, scrollRef,
+    hoveredColKey, resizeIndicatorLeft, isNearResize,
+    handleTableMouseMove, handleTableMouseLeave, handleTableMouseDown,
+    onDragStart, onDragEnd, onDragOver, onDragLeave, onDrop,
+    getThStyle, getTdBg, getW,
+  } = useTableBehaviors();
 
   const Checkbox = ({ checked, onChange }: { checked: boolean; onChange: () => void }) => (
     <button onClick={onChange} role="checkbox" aria-checked={checked} className="size-[18px] rounded-[3px] flex-shrink-0 inline-flex items-center justify-center" style={{ border: `1.5px solid ${checked ? '#1360d2' : '#a7abb2'}`, background: checked ? '#1360d2' : '#fff' }}>
@@ -171,17 +168,45 @@ export default function AcknowledgementTable({ onView, onAccept, onDecline, onHi
         onClose={() => onCloseColModal?.()}
       />
     )}
-    <div className="overflow-x-auto pb-[20px]">
-      <table style={{ minWidth: tableMinWidth, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: "'Dubai', sans-serif" }} className="w-full">
+    <div ref={scrollRef} className="overflow-x-auto pb-[20px]" style={{ position: 'relative' }}>
+      {resizeIndicatorLeft !== null && (
+        <div style={{ position: 'absolute', top: 0, bottom: 0, left: resizeIndicatorLeft, width: 3, background: '#1360D2', borderRadius: 2, pointerEvents: 'none', zIndex: 100 }} />
+      )}
+      <table
+        ref={tableRef}
+        onMouseMove={handleTableMouseMove}
+        onMouseLeave={handleTableMouseLeave}
+        onMouseDown={handleTableMouseDown}
+        style={{ minWidth: tableMinWidth, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: "'Dubai', sans-serif", cursor: isNearResize ? 'col-resize' : undefined }}
+        className="w-full"
+      >
         <thead>
           <tr>
             <th style={{ width: 48, minWidth: 48, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, borderTopLeftRadius: 8, borderBottomLeftRadius: 8, paddingLeft: 16 }}>
               <Checkbox checked={allChecked} onChange={toggleAll} />
             </th>
             {visibleHeaders.map((col) => (
-              <th key={col.label} style={{ position: 'relative', width: getW(col.key, col.w), minWidth: getW(col.key, col.w), background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500 }}>
+              <th
+                key={col.label}
+                data-col-key={col.key}
+                style={{ position: 'relative', width: getW(col.key, col.w), minWidth: getW(col.key, col.w), padding: '18px 12px 10px', textAlign: 'left', fontWeight: 500, ...getThStyle(col.key) }}
+                onDragOver={(e) => onDragOver(col.key, e)}
+                onDragLeave={onDragLeave}
+                onDrop={(e) => onDrop(col.key, e, visibleCols, setVisibleCols)}
+              >
+                <div
+                  draggable
+                  onDragStart={(e) => onDragStart(col.key, e)}
+                  onDragEnd={onDragEnd}
+                  style={{
+                    display: hoveredColKey === col.key ? 'flex' : 'none',
+                    position: 'absolute', top: 3, left: '50%', transform: 'translateX(-50%)',
+                    cursor: 'grab', alignItems: 'center', justifyContent: 'center', zIndex: 4,
+                  }}
+                >
+                  <DragDots />
+                </div>
                 <ColumnFilter label={col.label} labelClass="text-[16px] font-medium text-[#051937]" />
-                <div onMouseDown={startResize(col.key, col.w)} style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 5, cursor: 'col-resize', userSelect: 'none' }} />
               </th>
             ))}
             <th style={{ position: 'sticky', right: 79, width: 140, minWidth: 140, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
@@ -201,8 +226,8 @@ export default function AcknowledgementTable({ onView, onAccept, onDecline, onHi
         <tbody>
           {filteredRows.map(({ r: row, i }) => {
             const st = STATUS_STYLE[row.ackStatus];
-            const cell = (content: React.ReactNode, w: number) => (
-              <td style={{ background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: w }}>{content}</td>
+            const cell = (content: React.ReactNode, colKey: string, w: number) => (
+              <td data-col-key={colKey} style={{ background: getTdBg(colKey) ?? '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: w }}>{content}</td>
             );
             const txt = (v: React.ReactNode) => <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{v}</span>;
             return (
@@ -210,9 +235,9 @@ export default function AcknowledgementTable({ onView, onAccept, onDecline, onHi
                 <td style={{ background: '#fff', padding: '0 12px 0 16px', height: 60, verticalAlign: 'middle', width: 48, borderTopLeftRadius: 8, borderBottomLeftRadius: 8 }}>
                   <Checkbox checked={selected.has(i)} onChange={() => toggleOne(i)} />
                 </td>
-                {vis('declaration') && cell(<a href="#" className="text-[16px] text-[#1360d2] hover:underline whitespace-nowrap" style={{ fontWeight: 500 }}>{row.declaration}</a>, 140)}
-                {vis('reqType') && cell(txt(row.reqType), 110)}
-                {vis('clearanceDate') && cell(txt(row.clearanceDate), 130)}
+                {vis('declaration') && cell(<a href="#" className="text-[16px] text-[#1360d2] hover:underline whitespace-nowrap" style={{ fontWeight: 500 }}>{row.declaration}</a>, 'declaration', 140)}
+                {vis('reqType') && cell(txt(row.reqType), 'reqType', 110)}
+                {vis('clearanceDate') && cell(txt(row.clearanceDate), 'clearanceDate', 130)}
                 {vis('importer') && cell(
                   <div className="flex flex-col gap-[4px]">
                     <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 200, display: 'inline-block' }}>{row.importer}</span>
@@ -221,13 +246,13 @@ export default function AcknowledgementTable({ onView, onAccept, onDecline, onHi
                         {row.importerTags.join(', ')}
                       </span>
                     )}
-                  </div>, 220
+                  </div>, 'importer', 220
                 )}
-                {vis('exporter') && cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180, display: 'inline-block' }}>{row.exporter}</span>, 200)}
-                {vis('broker') && cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180, display: 'inline-block' }}>{row.broker}</span>, 200)}
-                {vis('value') && cell(txt(row.value), 120)}
-                {vis('decReason') && cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 140, display: 'inline-block' }}>{row.decReason}</span>, 150)}
-                {vis('ackDate') && cell(txt(row.ackDate), 110)}
+                {vis('exporter') && cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180, display: 'inline-block' }}>{row.exporter}</span>, 'exporter', 200)}
+                {vis('broker') && cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180, display: 'inline-block' }}>{row.broker}</span>, 'broker', 200)}
+                {vis('value') && cell(txt(row.value), 'value', 120)}
+                {vis('decReason') && cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 140, display: 'inline-block' }}>{row.decReason}</span>, 'decReason', 150)}
+                {vis('ackDate') && cell(txt(row.ackDate), 'ackDate', 110)}
                 <td style={{ position: 'sticky', right: 79, background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 140, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', borderBottom: '1px solid #f8f8f8', zIndex: openFlyout === i ? 49 : 1 }}>
                   <span className="text-[16px] font-medium whitespace-nowrap inline-flex items-center justify-center" style={{ background: st.bg, color: st.color, padding: '4px 12px', borderRadius: 4, lineHeight: '20px' }}>
                     {row.ackStatus}
