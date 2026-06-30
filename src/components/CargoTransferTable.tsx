@@ -3,7 +3,7 @@ import Pagination from './Pagination';
 import StatusFilterHeader from './StatusFilterHeader';
 import { ColumnFilter } from './ColumnFilter';
 import ManageColumnsModal, { ColDef } from './ManageColumnsModal';
-import { useTableBehaviors, DragDots } from '../hooks/useTableBehaviors';
+import { useTableBehaviors, DragDots, ScrollArrows } from '../hooks/useTableBehaviors';
 
 type Status = 'Cleared' | 'Submitted' | 'Payment Pending' | 'Declined' | 'Cancelled' | 'Clearance Inspection';
 type DraftStatus = 'Draft';
@@ -184,6 +184,7 @@ export default function CargoTransferTable({ showDrafts = false, onViewRequest, 
   const {
     tableRef, scrollRef,
     hoveredColKey, resizeIndicatorLeft, isNearResize,
+    atScrollStart, atScrollEnd, handleScroll, scrollToStart, scrollToEnd,
     handleTableMouseMove, handleTableMouseLeave, handleTableMouseDown,
     onDragStart, onDragEnd, onDragOver, onDragLeave, onDrop,
     getThStyle, getTdBg, getW,
@@ -203,7 +204,9 @@ export default function CargoTransferTable({ showDrafts = false, onViewRequest, 
         onClose={() => onCloseColModal?.()}
       />
     )}
-    <div ref={scrollRef} className="overflow-x-auto pb-[20px]" style={{ position: 'relative' }}>
+    <div style={{ position: 'relative' }}>
+      <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={266} />
+    <div ref={scrollRef} onScroll={handleScroll} className="overflow-x-auto pb-[20px]" style={{ position: 'relative' }}>
       {resizeIndicatorLeft !== null && (
         <div style={{ position: 'absolute', top: 0, bottom: 0, left: resizeIndicatorLeft, width: 3, background: '#1360D2', borderRadius: 2, pointerEvents: 'none', zIndex: 100 }} />
       )}
@@ -361,6 +364,7 @@ export default function CargoTransferTable({ showDrafts = false, onViewRequest, 
       <div className="pt-[16px]">
         <Pagination page={page} totalPages={4} pageSize={pageSize} totalItems={4 * pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} />
       </div>
+    </div>
     </div>
     </>
   );

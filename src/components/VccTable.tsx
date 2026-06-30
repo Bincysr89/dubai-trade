@@ -3,7 +3,7 @@ import Pagination from './Pagination';
 import StatusFilterHeader from './StatusFilterHeader';
 import { ColumnFilter } from './ColumnFilter';
 import ManageColumnsModal, { ColDef } from './ManageColumnsModal';
-import { useTableBehaviors, DragDots } from '../hooks/useTableBehaviors';
+import { useTableBehaviors, DragDots, ScrollArrows } from '../hooks/useTableBehaviors';
 
 // Inline data URIs — no external dependency
 const wlpLogoSrc = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAICAYAAAD9aA/QAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAAAg5JREFUeAF9kUFoE0EUht+bnd2ERjezAUniKkStFcVDqKAgovWgN6GQiooXrVBQUYp4yMWzIkhPggc9SEGsKXpViojiwSBiUUqUiklBhdCSrNX0sJuZ8U1qKwHpW5Zl3r753vv/h+B5yR25q1Xbjnknjg8E924PbanVagFQ5PMgnj3AGWTxnsOFdTubTXtRSon1en0pl8snz128W50ovRCUA8uyQEqttYp+fJq7tYvBGjE9DcG2ven80bPX8OSZpxXPH/0mspc/C5FL/qvSwBhThcGDDWIDIPZAQyDvRiG9iXgq1eu6bpu1Wom4559+F7YdlyE9jAGzLOy+wkBGYTB248h2v684ixTgNWF1YhIB3OLu8IX7Fb93ZG74fKk6WhyvcM6zCBKVUp0a0KqLqylPNogrxalZbjleJuOjB95fMBoFAFEUscnHL0UYKTH55JVQUgtEjYb339DmHpoPe13+mkqnfTrqJUSm+TKXZpIKJkrPQdIEts0hDEN4+GiKzqSEW6tGmTCbZYu/lYFms5tAKWma0PBR/WP55p5G48uvruW1CR6LOXqoMBA4jqMNlIwFkmcWBBmCZDduhg12Is7W24mVVhaz4NCBvp8f3lzvn5+fqRstHJr0e+tygYEOHtv//c7Yqf6RS+Pvy29rftSWHbkrE1MDd/e+YsViaPJJ47mmBVJfECJqLSxAx7g/Hi/Gz6+U/BcAAAAASUVORK5CYII=';
@@ -141,6 +141,7 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
   const {
     tableRef, scrollRef,
     hoveredColKey, resizeIndicatorLeft, isNearResize,
+    atScrollStart, atScrollEnd, handleScroll, scrollToStart, scrollToEnd,
     handleTableMouseMove, handleTableMouseLeave, handleTableMouseDown,
     onDragStart, onDragEnd, onDragOver, onDragLeave, onDrop,
     getThStyle, getTdBg, getW,
@@ -166,7 +167,9 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
         onClose={() => onCloseColModal?.()}
       />
     )}
-    <div ref={scrollRef} className="overflow-x-auto pb-[20px]" style={{ position: 'relative' }}>
+    <div style={{ position: 'relative' }}>
+      <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={242} />
+    <div ref={scrollRef} onScroll={handleScroll} className="overflow-x-auto pb-[20px]" style={{ position: 'relative' }}>
       {resizeIndicatorLeft !== null && (
         <div style={{ position: 'absolute', top: 0, bottom: 0, left: resizeIndicatorLeft, width: 3, background: '#1360D2', borderRadius: 2, pointerEvents: 'none', zIndex: 100 }} />
       )}
@@ -502,6 +505,7 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
           onPageSizeChange={setPageSize}
         />
       </div>
+    </div>
     </div>
     </>
   );

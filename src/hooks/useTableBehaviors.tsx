@@ -14,6 +14,8 @@ export function useTableBehaviors() {
   const [colWidths, setColWidths] = useState<Record<string, number>>({});
   const [resizeIndicatorLeft, setResizeIndicatorLeft] = useState<number | null>(null);
   const [isNearResize, setIsNearResize] = useState(false);
+  const [atScrollStart, setAtScrollStart] = useState(true);
+  const [atScrollEnd, setAtScrollEnd] = useState(false);
 
   const showIndicator = useCallback((th: HTMLTableCellElement) => {
     const scrollEl = scrollRef.current;
@@ -101,6 +103,30 @@ export function useTableBehaviors() {
     };
   }, [showIndicator]);
 
+  // --- Scroll arrows ---
+  const updateScrollState = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setAtScrollStart(el.scrollLeft <= 8);
+    setAtScrollEnd(el.scrollLeft >= el.scrollWidth - el.clientWidth - 8);
+  }, []);
+
+  const handleScroll = useCallback(() => { updateScrollState(); }, [updateScrollState]);
+
+  const scrollToEnd = useCallback(() => {
+    scrollRef.current?.scrollTo({ left: scrollRef.current.scrollWidth, behavior: 'smooth' });
+  }, []);
+
+  const scrollToStart = useCallback(() => {
+    scrollRef.current?.scrollTo({ left: 0, behavior: 'smooth' });
+  }, []);
+
+  // Init scroll state after mount
+  useEffect(() => {
+    const t = setTimeout(updateScrollState, 80);
+    return () => clearTimeout(t);
+  }, [updateScrollState]);
+
   // --- Header drag-to-reorder handlers ---
   const onDragStart = useCallback((colKey: string, e: React.DragEvent) => {
     e.dataTransfer.setData('colKey', colKey);
@@ -163,10 +189,53 @@ export function useTableBehaviors() {
     hoveredColKey, draggingColKey, dragOverColKey,
     colWidths, setColWidths,
     resizeIndicatorLeft, isNearResize,
+    atScrollStart, atScrollEnd,
+    handleScroll, scrollToStart, scrollToEnd,
     handleTableMouseMove, handleTableMouseLeave, handleTableMouseDown,
     onDragStart, onDragEnd, onDragOver, onDragLeave, onDrop,
     getThStyle, getTdBg, getW,
   };
+}
+
+/**
+ * Left/right scroll arrow buttons — place inside a `position: relative` wrapper that also contains the scroll div.
+ * stickyWidth = combined pixel width of sticky Status + Actions columns.
+ */
+export function ScrollArrows({
+  atStart, atEnd, onLeft, onRight, stickyWidth,
+}: {
+  atStart: boolean; atEnd: boolean;
+  onLeft: () => void; onRight: () => void;
+  stickyWidth: number;
+}) {
+  const btn: React.CSSProperties = {
+    position: 'absolute', top: '50%', transform: 'translateY(-50%)',
+    width: 32, height: 32, borderRadius: '50%',
+    background: '#fff', border: 'none',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    cursor: 'pointer', zIndex: 20,
+    transition: 'opacity 0.2s, box-shadow 0.15s',
+    padding: 0,
+  };
+  return (
+    <>
+      {!atStart && (
+        <button onClick={onLeft} style={{ ...btn, left: 12 }} title="Scroll left">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M10 3L5 8l5 5" stroke="#1360D2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      )}
+      {!atEnd && (
+        <button onClick={onRight} style={{ ...btn, right: stickyWidth }} title="Scroll right">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M6 3l5 5-5 5" stroke="#1360D2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      )}
+    </>
+  );
 }
 
 /**

@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import Pagination from './Pagination';
 import ManageColumnsModal, { ColDef } from './ManageColumnsModal';
-import { useTableBehaviors, DragDots } from '../hooks/useTableBehaviors';
+import { useTableBehaviors, DragDots, ScrollArrows } from '../hooks/useTableBehaviors';
 
 const font = "'Dubai', sans-serif";
 
@@ -109,6 +109,7 @@ export default function EPaymentsTable({
   const {
     tableRef, scrollRef,
     hoveredColKey, resizeIndicatorLeft, isNearResize,
+    atScrollStart, atScrollEnd, handleScroll, scrollToStart, scrollToEnd,
     handleTableMouseMove, handleTableMouseLeave, handleTableMouseDown,
     onDragStart, onDragEnd, onDragOver, onDragLeave, onDrop,
     getThStyle, getTdBg, getW,
@@ -135,7 +136,9 @@ export default function EPaymentsTable({
         onClose={() => onCloseColModal?.()}
       />
     )}
-    <div ref={scrollRef} className="overflow-x-auto pb-[20px]" style={{ position: 'relative' }}>
+    <div style={{ position: 'relative' }}>
+      <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={200} />
+    <div ref={scrollRef} onScroll={handleScroll} className="overflow-x-auto pb-[20px]" style={{ position: 'relative' }}>
       {resizeIndicatorLeft !== null && (
         <div style={{ position: 'absolute', top: 0, bottom: 0, left: resizeIndicatorLeft, width: 3, background: '#1360D2', borderRadius: 2, pointerEvents: 'none', zIndex: 100 }} />
       )}
@@ -282,6 +285,7 @@ export default function EPaymentsTable({
         </tbody>
       </table>
 
+    </div>
     </div>
 
     <Pagination
