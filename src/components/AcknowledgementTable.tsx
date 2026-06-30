@@ -165,6 +165,7 @@ export default function AcknowledgementTable({ onView, onAccept, onDecline, onHi
       <ManageColumnsModal
         columns={ACK_COL_DEFS}
         visible={visibleCols}
+        lockedColumns={[{ key: '_status', label: 'Ack. Status' }, { key: '_action', label: 'Actions' }]}
         onSave={setVisibleCols}
         onClose={() => onCloseColModal?.()}
       />

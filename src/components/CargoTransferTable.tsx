@@ -200,6 +200,7 @@ export default function CargoTransferTable({ showDrafts = false, onViewRequest, 
       <ManageColumnsModal
         columns={CARGO_COL_DEFS}
         visible={visibleCols}
+        lockedColumns={[{ key: '_status', label: 'Cargo Transfer Status' }, { key: '_action', label: 'Actions' }]}
         onSave={setVisibleCols}
         onClose={() => onCloseColModal?.()}
       />

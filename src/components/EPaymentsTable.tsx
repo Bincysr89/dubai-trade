@@ -132,6 +132,7 @@ export default function EPaymentsTable({
       <ManageColumnsModal
         columns={SCROLL_COLUMNS}
         visible={visibleCols}
+        lockedColumns={[{ key: '_status', label: 'Status' }, { key: '_action', label: 'Actions' }]}
         onSave={setVisibleCols}
         onClose={() => onCloseColModal?.()}
       />

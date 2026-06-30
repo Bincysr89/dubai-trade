@@ -7,11 +7,19 @@ export type ColDef = { key: string; label: string };
 type Props = {
   columns: ColDef[];
   visible: string[];
+  lockedColumns?: ColDef[];
   onSave: (visible: string[]) => void;
   onClose: () => void;
 };
 
-export default function ManageColumnsModal({ columns, visible, onSave, onClose }: Props) {
+const LockIcon = () => (
+  <svg viewBox="0 0 20 20" width="18" height="18" fill="none">
+    <rect x="4" y="9" width="12" height="9" rx="2" stroke="#9CA3AF" strokeWidth="1.6" />
+    <path d="M7 9V6a3 3 0 016 0v3" stroke="#9CA3AF" strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+);
+
+export default function ManageColumnsModal({ columns, visible, lockedColumns = [], onSave, onClose }: Props) {
   const defaultOrder = columns.map((c) => c.key);
 
   const [checkedKeys, setCheckedKeys] = useState<Set<string>>(new Set(visible));
@@ -45,7 +53,8 @@ export default function ManageColumnsModal({ columns, visible, onSave, onClose }
   };
 
   const handleSave = () => {
-    onSave(orderedKeys.filter((k) => checkedKeys.has(k)));
+    const lockedKeys = lockedColumns.map((c) => c.key);
+    onSave([...orderedKeys.filter((k) => checkedKeys.has(k)), ...lockedKeys]);
     onClose();
   };
 
@@ -58,6 +67,10 @@ export default function ManageColumnsModal({ columns, visible, onSave, onClose }
     .map((k) => columns.find((c) => c.key === k)!)
     .filter(Boolean)
     .filter((c) => c.label.toLowerCase().includes(arrangeSearch.toLowerCase()));
+
+  const filteredLocked = lockedColumns.filter((c) =>
+    c.label.toLowerCase().includes(arrangeSearch.toLowerCase()),
+  );
 
   const onDragStart = (key: string) => {
     dragKey.current = key;
@@ -85,17 +98,9 @@ export default function ManageColumnsModal({ columns, visible, onSave, onClose }
     setDragOverKey(null);
   };
 
-  const removeFromArrange = (key: string) => {
-    toggleKey(key, false);
-  };
+  const removeFromArrange = (key: string) => toggleKey(key, false);
 
-  const SearchBox = ({
-    value,
-    onChange,
-  }: {
-    value: string;
-    onChange: (v: string) => void;
-  }) => (
+  const SearchBox = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
     <div
       className="flex items-center gap-[8px] px-[12px] flex-shrink-0"
       style={{ height: 48, border: '1px solid #f0f0f0', borderRadius: 4, background: '#fff' }}
@@ -144,12 +149,7 @@ export default function ManageColumnsModal({ columns, visible, onSave, onClose }
             style={{ width: 32, height: 32, background: 'none', border: 'none', cursor: 'pointer' }}
           >
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
-              <path
-                d="M18 6L6 18M6 6l12 12"
-                stroke="#455174"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-              />
+              <path d="M18 6L6 18M6 6l12 12" stroke="#455174" strokeWidth="1.8" strokeLinecap="round" />
             </svg>
           </button>
         </div>
@@ -190,23 +190,12 @@ export default function ManageColumnsModal({ columns, visible, onSave, onClose }
                       }}
                     >
                       {checked && (
-                        <svg
-                          viewBox="0 0 16 16"
-                          width="11"
-                          height="11"
-                          fill="none"
-                          stroke="#fff"
-                          strokeWidth="2.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
+                        <svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M3 8l3 3 7-7" />
                         </svg>
                       )}
                     </span>
-                    <span style={{ fontSize: 16, color: '#0E1B3D', fontFamily: font }}>
-                      {col.label}
-                    </span>
+                    <span style={{ fontSize: 16, color: '#0E1B3D', fontFamily: font }}>{col.label}</span>
                   </label>
                 );
               })}
@@ -220,6 +209,7 @@ export default function ManageColumnsModal({ columns, visible, onSave, onClose }
             </span>
             <SearchBox value={arrangeSearch} onChange={setArrangeSearch} />
             <div className="flex-1 overflow-y-auto flex flex-col gap-[6px]">
+              {/* Draggable columns */}
               {filteredArrange.map((col) => {
                 const isDragging = draggingKey === col.key;
                 const isOver = dragOverKey === col.key && draggingKey !== col.key;
@@ -248,9 +238,9 @@ export default function ManageColumnsModal({ columns, visible, onSave, onClose }
                   >
                     <div className="flex items-center gap-[10px]">
                       <svg viewBox="0 0 16 16" width="16" height="16" fill="none" style={{ flexShrink: 0 }}>
-                        <circle cx="5" cy="3.5"  r="1.3" fill="#9CA3AF" />
-                        <circle cx="5" cy="8"    r="1.3" fill="#9CA3AF" />
-                        <circle cx="5" cy="12.5" r="1.3" fill="#9CA3AF" />
+                        <circle cx="5"  cy="3.5"  r="1.3" fill="#9CA3AF" />
+                        <circle cx="5"  cy="8"    r="1.3" fill="#9CA3AF" />
+                        <circle cx="5"  cy="12.5" r="1.3" fill="#9CA3AF" />
                         <circle cx="11" cy="3.5"  r="1.3" fill="#9CA3AF" />
                         <circle cx="11" cy="8"    r="1.3" fill="#9CA3AF" />
                         <circle cx="11" cy="12.5" r="1.3" fill="#9CA3AF" />
@@ -271,7 +261,25 @@ export default function ManageColumnsModal({ columns, visible, onSave, onClose }
                   </div>
                 );
               })}
-              {filteredArrange.length === 0 && (
+
+              {/* Locked columns — always at bottom, not draggable */}
+              {filteredLocked.map((col) => (
+                <div
+                  key={col.key}
+                  className="flex items-center justify-between px-[12px] flex-shrink-0 rounded-[4px] select-none"
+                  style={{
+                    height: 44,
+                    background: '#F8FAFD',
+                    border: '1px solid #EAECF0',
+                    cursor: 'default',
+                  }}
+                >
+                  <span style={{ fontSize: 16, color: '#111838', fontFamily: font }}>{col.label}</span>
+                  <LockIcon />
+                </div>
+              ))}
+
+              {filteredArrange.length === 0 && filteredLocked.length === 0 && (
                 <p style={{ fontSize: 14, color: '#697498', fontFamily: font, padding: '8px 4px' }}>
                   {checkedKeys.size === 0 ? 'Select columns from the left panel.' : 'No columns match your search.'}
                 </p>
@@ -287,16 +295,7 @@ export default function ManageColumnsModal({ columns, visible, onSave, onClose }
         >
           <button
             onClick={reset}
-            style={{
-              fontFamily: font,
-              fontSize: 16,
-              fontWeight: 500,
-              color: '#1360D2',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '0 8px',
-            }}
+            style={{ fontFamily: font, fontSize: 16, fontWeight: 500, color: '#1360D2', background: 'none', border: 'none', cursor: 'pointer', padding: '0 8px' }}
           >
             Reset to default
           </button>
@@ -304,36 +303,14 @@ export default function ManageColumnsModal({ columns, visible, onSave, onClose }
             <button
               onClick={onClose}
               className="hover:bg-[#f0f4ff] transition-colors"
-              style={{
-                height: 44,
-                padding: '0 24px',
-                borderRadius: 4,
-                border: '1.5px solid #1360D2',
-                background: '#fff',
-                color: '#1360D2',
-                fontFamily: font,
-                fontSize: 16,
-                fontWeight: 500,
-                cursor: 'pointer',
-              }}
+              style={{ height: 44, padding: '0 24px', borderRadius: 4, border: '1.5px solid #1360D2', background: '#fff', color: '#1360D2', fontFamily: font, fontSize: 16, fontWeight: 500, cursor: 'pointer' }}
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
               className="hover:opacity-90 transition-opacity"
-              style={{
-                height: 44,
-                padding: '0 36px',
-                borderRadius: 4,
-                border: 'none',
-                background: '#1360D2',
-                color: '#fff',
-                fontFamily: font,
-                fontSize: 16,
-                fontWeight: 500,
-                cursor: 'pointer',
-              }}
+              style={{ height: 44, padding: '0 36px', borderRadius: 4, border: 'none', background: '#1360D2', color: '#fff', fontFamily: font, fontSize: 16, fontWeight: 500, cursor: 'pointer' }}
             >
               Save
             </button>

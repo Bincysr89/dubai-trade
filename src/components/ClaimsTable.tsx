@@ -339,6 +339,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
       <ManageColumnsModal
         columns={applicableDefs}
         visible={visibleCols.filter((k) => applicableDefs.some((c) => c.key === k))}
+        lockedColumns={[{ key: '_status', label: 'Claim Status' }, { key: '_action', label: 'Action' }]}
         onSave={setVisibleCols}
         onClose={() => onCloseColModal?.()}
       />

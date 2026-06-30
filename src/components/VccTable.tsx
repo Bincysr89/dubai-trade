@@ -163,6 +163,7 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
       <ManageColumnsModal
         columns={VCC_COL_DEFS}
         visible={visibleCols}
+        lockedColumns={[{ key: '_status', label: 'Request Status' }, { key: '_action', label: 'Actions' }]}
         onSave={setVisibleCols}
         onClose={() => onCloseColModal?.()}
       />
