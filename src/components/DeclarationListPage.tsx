@@ -1932,6 +1932,21 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             </div>
           </div>
 
+          {/* Drafts toggle — all tabs except VCC, ePayments sidebar, and epay sub-tabs */}
+          {activeMenu !== 'VCC' && activeMenu !== 'E-Payment' && activeTab !== 'epay' && (
+            <div className="flex items-center gap-[8px] flex-shrink-0">
+              <button
+                onClick={() => setShowDrafts(!showDrafts)}
+                className={`relative w-[48px] h-[28px] rounded-full transition-colors ${showDrafts ? 'bg-[#1360d2]' : 'bg-[#e2ebf9]'}`}
+              >
+                <div className={`absolute top-[3px] size-[22px] rounded-full bg-white shadow transition-transform ${showDrafts ? 'translate-x-[22px]' : 'translate-x-[3px]'}`} />
+              </button>
+              <span className="text-[16px] text-[#0e1b3d] font-medium whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>
+                Drafts
+              </span>
+            </div>
+          )}
+
           {/* Columns button */}
           <button
             onClick={() => setShowColModal(true)}
@@ -1945,21 +1960,6 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             </svg>
             Columns
           </button>
-
-          {/* Drafts toggle — all tabs except VCC, ePayments sidebar, and epay sub-tabs */}
-          {activeMenu !== 'VCC' && activeMenu !== 'E-Payment' && activeTab !== 'epay' && (
-            <div className="flex items-center gap-[8px] flex-shrink-0">
-              <span className="text-[16px] text-[#0e1b3d] font-medium whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>
-                Drafts
-              </span>
-              <button
-                onClick={() => setShowDrafts(!showDrafts)}
-                className={`relative w-[48px] h-[28px] rounded-full transition-colors ${showDrafts ? 'bg-[#1360d2]' : 'bg-[#e2ebf9]'}`}
-              >
-                <div className={`absolute top-[3px] size-[22px] rounded-full bg-white shadow transition-transform ${showDrafts ? 'translate-x-[22px]' : 'translate-x-[3px]'}`} />
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Table swap based on active sidebar menu */}
