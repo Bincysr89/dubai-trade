@@ -1,5 +1,13 @@
 import React from 'react';
 
+export const REFUND_DEPOSIT_STEPS: { id: string; label: string }[] = [
+  { id: 'eligible',  label: 'Eligible Declarations' },
+  { id: 'charge',    label: 'Declaration Details' },
+  { id: 'documents', label: 'Upload Documents' },
+  { id: 'payment',   label: 'Payment Details' },
+  { id: 'review',    label: 'Review & Submit' },
+];
+
 export const CLAIM_STEPS: { id: string; label: string }[] = [
   { id: 'claim',     label: 'Claim Details' },
   { id: 'invoice',   label: 'Invoice & HS Code Details' },

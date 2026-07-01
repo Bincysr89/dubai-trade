@@ -108,7 +108,7 @@ export default function ClaimTypeEntryPage({ onBack, onContinue }: Props) {
 
       {/* Claim type card — outside scroll so it's always visible */}
       <div className="px-4 sm:px-10 pb-[16px] flex-shrink-0">
-        <h1 className="text-[28px] text-[#111838] mb-[16px]" style={{ fontWeight: 500 }}>Raise New Claim</h1>
+        <h1 className="text-[28px] text-[#111838] mb-[16px]" style={{ fontWeight: 500 }}>Raise a New Claim - Claim Type</h1>
         <div className="bg-white rounded-[8px] px-[24px] py-[22px] flex flex-col gap-[18px]" style={{ boxShadow: '0px 4px 16px rgba(0,0,0,0.08)' }}>
           <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Select Claim Type</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-[14px]">
@@ -119,7 +119,7 @@ export default function ClaimTypeEntryPage({ onBack, onContinue }: Props) {
                   key={opt.id}
                   onClick={() => {
                     setSelected(opt.id);
-                    if (opt.id === 'nonRemittance') onContinue('nonRemittance');
+                    if (opt.id === 'nonRemittance' || opt.id === 'refundDeposit') onContinue(opt.id);
                   }}
                   className="flex items-start gap-[14px] px-[16px] py-[16px] rounded-[10px] text-left transition-colors h-full"
                   style={{ background: active ? '#f6f9fe' : '#fff', border: `1.5px solid ${active ? '#1360d2' : '#e0e6ef'}` }}

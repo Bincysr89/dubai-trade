@@ -4,7 +4,7 @@ import BackToListingBar from './BackToListingBar';
 import FloatingField from './FloatingField';
 import type { ClaimType } from './ClaimTypeSelectionPage';
 import ClaimantBrokerDetail from './ClaimantBrokerDetail';
-import ClaimStepper, { NR_CLAIM_STEPS } from './ClaimStepper';
+import ClaimStepper, { NR_CLAIM_STEPS, REFUND_DEPOSIT_STEPS } from './ClaimStepper';
 import Dh from './Dh';
 import { DateInput } from './DatePicker';
 
@@ -649,6 +649,18 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
   const [ownerCodeFilter, setOwnerCodeFilter] = useState('');
   const [ownerCodeSearchOpen, setOwnerCodeSearchOpen] = useState(false);
   const ownerSearchRef = useRef<HTMLDivElement>(null);
+
+  // Refund of Deposits — Deposit Method filter
+  const [depositMethodFilter, setDepositMethodFilter] = useState('');
+  const [depositMethodOpen, setDepositMethodOpen] = useState(false);
+  const [depositMethodSearch, setDepositMethodSearch] = useState('');
+  const depositMethodRef = useRef<HTMLDivElement>(null);
+
+  // Refund of Deposits — Charge Type filter
+  const [chargeTypeFilter, setChargeTypeFilter] = useState('');
+  const [chargeTypeOpen, setChargeTypeOpen] = useState(false);
+  const [chargeTypeSearch, setChargeTypeSearch] = useState('');
+  const chargeTypeRef = useRef<HTMLDivElement>(null);
   // derive legacy query from combined field
   const query = searchType === 'Declaration Number' ? searchText : '';
   const [page, setPage] = useState(1);
@@ -681,23 +693,31 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
     const q = query.trim().toLowerCase();
     if (q) rows = rows.filter((r) => r.declarationNo.toLowerCase().includes(q));
     if (ownerCodeFilter) rows = rows.filter((r) => r.importerCode === ownerCodeFilter);
+    if (depositMethodFilter) rows = rows.filter((r) => r.depositMethod === depositMethodFilter);
+    if (chargeTypeFilter) rows = rows.filter((r) => r.depositType === chargeTypeFilter);
     return rows;
-  }, [query, ownerCodeFilter, claimTypeFiltered]);
+  }, [query, ownerCodeFilter, depositMethodFilter, chargeTypeFilter, claimTypeFiltered]);
 
   const isNonRemittance = claimType === 'nonRemittance';
 
   // Close search dropdowns when clicking outside
   useEffect(() => {
-    if (!ownerCodeSearchOpen && !searchTypeOpen) return;
+    if (!ownerCodeSearchOpen && !searchTypeOpen && !depositMethodOpen && !chargeTypeOpen) return;
     const handler = (e: MouseEvent) => {
       if (ownerSearchRef.current && !ownerSearchRef.current.contains(e.target as Node)) {
         setOwnerCodeSearchOpen(false);
         setSearchTypeOpen(false);
       }
+      if (depositMethodRef.current && !depositMethodRef.current.contains(e.target as Node)) {
+        setDepositMethodOpen(false);
+      }
+      if (chargeTypeRef.current && !chargeTypeRef.current.contains(e.target as Node)) {
+        setChargeTypeOpen(false);
+      }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [ownerCodeSearchOpen, searchTypeOpen]);
+  }, [ownerCodeSearchOpen, searchTypeOpen, depositMethodOpen, chargeTypeOpen]);
 
   // Returns true if adding this row would exceed 10 selections for its importer code
   const wouldExceedLimit = (row: Row, currentSelected: Set<string>) => {
@@ -721,7 +741,7 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
     : [
         { label: 'Declaration No.',      w: 170 },
         { label: 'Declaration Date',     w: 140 },
-        { label: 'Deposit Type',         w: 200 },
+        { label: 'Charge Type',           w: 200 },
         { label: 'Declaration Category', w: 190 },
         { label: 'Deposit Amount',       w: 150 },
         { label: 'Deposit Method',       w: 160 },
@@ -746,18 +766,15 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
           <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: "'Dubai', sans-serif" }}>/</span>
           <span className="text-[16px] text-[#111838]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Integrated Clearance</span>
         </div>
-        <div className="bg-[#e2ebf9] rounded-[4px] h-[28px] px-[12px] flex items-center">
-          <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>A180-IMPORTER SONY GULF UAE</span>
-        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px] flex flex-col gap-[20px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
         <h1 className="text-2xl sm:text-3xl lg:text-[32px] text-[#111838] mb-[8px]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
-          Raise New Claim
+          {claimType === 'refundDeposit' ? 'Raise New Claim - Refund of Deposits' : claimType === 'nonRemittance' ? 'Raise New Claim - Non Remittance' : 'Raise New Claim'}
         </h1>
 
         <div>
-          <ClaimStepper activeIndex={0} steps={claimType === 'nonRemittance' ? NR_CLAIM_STEPS : undefined} />
+          <ClaimStepper activeIndex={0} steps={claimType === 'nonRemittance' ? NR_CLAIM_STEPS : claimType === 'refundDeposit' ? REFUND_DEPOSIT_STEPS : undefined} />
         </div>
         {/* Claim Type selection card — hidden if type already chosen via ClaimTypeEntryPage */}
         {!claimTypePreset && (
@@ -771,7 +788,7 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
                 return (
                   <button
                     key={opt.id}
-                    onClick={() => { setClaimType(opt.id); setQuery(''); setOwnerCodeFilter(''); setOwnerSearchText(''); setPage(1); setSelectedDecls(new Set()); }}
+                    onClick={() => { setClaimType(opt.id); setSearchText(''); setOwnerCodeFilter(''); setPage(1); setSelectedDecls(new Set()); setDepositMethodFilter(''); setChargeTypeFilter(''); }}
                     className="flex items-start gap-[14px] px-[16px] py-[16px] rounded-[10px] text-left transition-colors h-full"
                     style={{ background: active ? '#f6f9fe' : '#fff', border: `1.5px solid ${active ? '#1360d2' : '#e0e6ef'}` }}
                   >
@@ -906,6 +923,137 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
                     </div>
                   )}
                 </div>
+
+                {/* Deposit Method — floating-label combobox, Refund of Deposits only */}
+                {claimType === 'refundDeposit' && (() => {
+                  const DM_OPTIONS = ['Standing Guarantee', 'Cash', 'Debit Account'];
+                  const filtered_dm = DM_OPTIONS.filter(o => o.toLowerCase().includes(depositMethodSearch.toLowerCase()));
+                  const dmFloated = depositMethodOpen || !!depositMethodFilter;
+                  return (
+                    <div ref={depositMethodRef} className="relative flex-shrink-0" style={{ minWidth: 200 }}>
+                      <div
+                        className="bg-white rounded-[4px] flex items-center px-[16px] h-[48px] transition-colors"
+                        style={{ border: `1px solid ${depositMethodOpen ? '#1360d2' : '#d5ddfb'}` }}
+                      >
+                        <input
+                          value={depositMethodOpen ? depositMethodSearch : depositMethodFilter}
+                          onChange={e => { setDepositMethodSearch(e.target.value); }}
+                          onFocus={() => { setDepositMethodOpen(true); setDepositMethodSearch(''); }}
+                          placeholder=""
+                          className="flex-1 text-[16px] text-[#0e1b3d] focus:outline-none bg-transparent"
+                          style={{ fontFamily: "'Dubai', sans-serif" }}
+                        />
+                        {depositMethodFilter && !depositMethodOpen
+                          ? <button type="button" onMouseDown={e => { e.preventDefault(); setDepositMethodFilter(''); setPage(1); }} className="flex-shrink-0 size-[20px] inline-flex items-center justify-center rounded-full hover:bg-[#f0f4ff]">
+                              <svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="#697498" strokeWidth="2"><path d="M4 4l8 8M12 4l-8 8" strokeLinecap="round" /></svg>
+                            </button>
+                          : <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0, transition: 'transform 0.15s', transform: depositMethodOpen ? 'rotate(180deg)' : 'none' }}><path d="M6 9l6 6 6-6" /></svg>
+                        }
+                      </div>
+                      <span
+                        className="absolute pointer-events-none transition-all"
+                        style={{
+                          left: dmFloated ? 10 : 16, top: dmFloated ? -9 : '50%',
+                          transform: dmFloated ? 'none' : 'translateY(-50%)',
+                          background: dmFloated ? '#fff' : 'transparent',
+                          padding: dmFloated ? '0 4px' : 0,
+                          fontSize: dmFloated ? 12 : 16,
+                          color: dmFloated ? (depositMethodOpen ? '#1360d2' : '#000') : '#000',
+                          transitionDuration: '120ms', transitionProperty: 'top,left,font-size,transform,padding,background,color',
+                          fontFamily: "'Dubai', sans-serif",
+                        }}
+                      >Deposit Method</span>
+                      {depositMethodOpen && (
+                        <div className="absolute z-[80] left-0 right-0 bg-white rounded-[8px] py-[4px]" style={{ top: 'calc(100% + 4px)', boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5', maxHeight: 220, overflowY: 'auto' }}>
+                          {filtered_dm.length === 0
+                            ? <p className="px-[14px] py-[10px] text-[14px] text-[#697498]" style={{ fontFamily: "'Dubai', sans-serif" }}>No results</p>
+                            : filtered_dm.map(opt => (
+                              <button
+                                key={opt}
+                                type="button"
+                                onMouseDown={e => { e.preventDefault(); setDepositMethodFilter(opt === depositMethodFilter ? '' : opt); setDepositMethodOpen(false); setDepositMethodSearch(''); setPage(1); }}
+                                className="group flex items-center justify-between w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
+                              >
+                                <span className={`text-[16px] group-hover:text-white ${opt === depositMethodFilter ? 'text-[#1360d2]' : 'text-[#111838]'}`} style={{ fontFamily: "'Dubai', sans-serif", fontWeight: opt === depositMethodFilter ? 500 : 400 }}>{opt}</span>
+                                {opt === depositMethodFilter && <svg className="group-hover:stroke-white" viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#1360d2" strokeWidth="2.5"><path d="M4 10l4 4 8-8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+                              </button>
+                            ))
+                          }
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
+                {/* Charge Type — floating-label combobox, Refund of Deposits only */}
+                {claimType === 'refundDeposit' && (() => {
+                  const CT_OPTIONS = [
+                    { label: 'Alternative Duty Deposit',          value: 'Alternative Duty Deposit' },
+                    { label: 'Cargo Transfer Deposit',            value: 'Cargo Transfer Deposit' },
+                    { label: 'Duty Deposit',                      value: 'Duty Deposit' },
+                    { label: 'Document Deposit',                  value: 'Document Deposit' },
+                    { label: 'CDM Deposit',                       value: 'CDM Deposit' },
+                    { label: 'Declaration Amendment - Deposit',   value: 'Declaration Amendment - Deposit' },
+                    { label: 'Declaration Cancellation - Deposit',value: 'Declaration Cancellation - Deposit' },
+                  ];
+                  const filtered_ct = CT_OPTIONS.filter(o => o.label.toLowerCase().includes(chargeTypeSearch.toLowerCase()));
+                  const selectedLabel = CT_OPTIONS.find(o => o.value === chargeTypeFilter)?.label ?? '';
+                  const ctFloated = chargeTypeOpen || !!chargeTypeFilter;
+                  return (
+                    <div ref={chargeTypeRef} className="relative flex-shrink-0" style={{ minWidth: 230 }}>
+                      <div
+                        className="bg-white rounded-[4px] flex items-center px-[16px] h-[48px] transition-colors"
+                        style={{ border: `1px solid ${chargeTypeOpen ? '#1360d2' : '#d5ddfb'}` }}
+                      >
+                        <input
+                          value={chargeTypeOpen ? chargeTypeSearch : selectedLabel}
+                          onChange={e => { setChargeTypeSearch(e.target.value); }}
+                          onFocus={() => { setChargeTypeOpen(true); setChargeTypeSearch(''); }}
+                          placeholder=""
+                          className="flex-1 text-[16px] text-[#0e1b3d] focus:outline-none bg-transparent"
+                          style={{ fontFamily: "'Dubai', sans-serif" }}
+                        />
+                        {chargeTypeFilter && !chargeTypeOpen
+                          ? <button type="button" onMouseDown={e => { e.preventDefault(); setChargeTypeFilter(''); setPage(1); }} className="flex-shrink-0 size-[20px] inline-flex items-center justify-center rounded-full hover:bg-[#f0f4ff]">
+                              <svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="#697498" strokeWidth="2"><path d="M4 4l8 8M12 4l-8 8" strokeLinecap="round" /></svg>
+                            </button>
+                          : <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0, transition: 'transform 0.15s', transform: chargeTypeOpen ? 'rotate(180deg)' : 'none' }}><path d="M6 9l6 6 6-6" /></svg>
+                        }
+                      </div>
+                      <span
+                        className="absolute pointer-events-none transition-all"
+                        style={{
+                          left: ctFloated ? 10 : 16, top: ctFloated ? -9 : '50%',
+                          transform: ctFloated ? 'none' : 'translateY(-50%)',
+                          background: ctFloated ? '#fff' : 'transparent',
+                          padding: ctFloated ? '0 4px' : 0,
+                          fontSize: ctFloated ? 12 : 16,
+                          color: ctFloated ? (chargeTypeOpen ? '#1360d2' : '#000') : '#000',
+                          transitionDuration: '120ms', transitionProperty: 'top,left,font-size,transform,padding,background,color',
+                          fontFamily: "'Dubai', sans-serif",
+                        }}
+                      >Charge Type</span>
+                      {chargeTypeOpen && (
+                        <div className="absolute z-[80] left-0 right-0 bg-white rounded-[8px] py-[4px]" style={{ top: 'calc(100% + 4px)', boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5', maxHeight: 260, overflowY: 'auto' }}>
+                          {filtered_ct.length === 0
+                            ? <p className="px-[14px] py-[10px] text-[14px] text-[#697498]" style={{ fontFamily: "'Dubai', sans-serif" }}>No results</p>
+                            : filtered_ct.map(opt => (
+                              <button
+                                key={opt.value}
+                                type="button"
+                                onMouseDown={e => { e.preventDefault(); setChargeTypeFilter(opt.value === chargeTypeFilter ? '' : opt.value); setChargeTypeOpen(false); setChargeTypeSearch(''); setPage(1); }}
+                                className="group flex items-center justify-between w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
+                              >
+                                <span className={`text-[16px] group-hover:text-white ${opt.value === chargeTypeFilter ? 'text-[#1360d2]' : 'text-[#111838]'}`} style={{ fontFamily: "'Dubai', sans-serif", fontWeight: opt.value === chargeTypeFilter ? 500 : 400 }}>{opt.label}</span>
+                                {opt.value === chargeTypeFilter && <svg className="group-hover:stroke-white" viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#1360d2" strokeWidth="2.5"><path d="M4 10l4 4 8-8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+                              </button>
+                            ))
+                          }
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Info bar */}

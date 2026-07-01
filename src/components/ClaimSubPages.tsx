@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
+import ReactDOM from 'react-dom';
 import BackToListingBar from './BackToListingBar';
 import FloatingField from './FloatingField';
 import ClaimantBrokerDetail from './ClaimantBrokerDetail';
-import ClaimStepper from './ClaimStepper';
+import ClaimStepper, { REFUND_DEPOSIT_STEPS } from './ClaimStepper';
+import type { Row } from './EligibleDeclarationsPage';
 import DTSelect from './DTSelect';
 import Dh, { DhAmount } from './Dh';
 import { DateInput } from './DatePicker';
@@ -37,13 +39,12 @@ export const REFUND_TYPE_LABEL: Record<RefundType, string> = {
 const PageShell: React.FC<{
   title: string;
   children: React.ReactNode;
-  /** Returns to the previous step. Renders the "Back" button when supplied. */
   onBack?: () => void;
-  /** Returns to the main claims listing. Renders "Back to Listing" when supplied (only on first sub-step). */
   onBackToListing?: () => void;
   rightContent: React.ReactNode;
   activeIndex?: number;
-}> = ({ title, children, onBack, onBackToListing, rightContent, activeIndex = 0 }) => (
+  steps?: { id: string; label: string }[];
+}> = ({ title, children, onBack, onBackToListing, rightContent, activeIndex = 0, steps }) => (
   <div className="flex flex-col bg-[#f8fafd] h-full" style={{ fontFamily: "'Dubai', sans-serif" }}>
     {/* Sticky breadcrumb / agent banner — content below scrolls under it. */}
     <div className="flex items-start justify-between px-4 sm:px-10 pt-[24px] pb-[12px] flex-wrap gap-[12px] flex-shrink-0 bg-[#f8fafd]">
@@ -54,9 +55,6 @@ const PageShell: React.FC<{
         <span className="text-[16px] text-[#dc3545]">/</span>
         <span className="text-[16px] text-[#111838]" style={{ fontWeight: 500 }}>Integrated Clearance</span>
       </div>
-      <div className="bg-[#e2ebf9] rounded-[4px] h-[28px] px-[12px] flex items-center">
-        <span className="text-[16px] text-[#0e1b3d]">A180-IMPORTER SONY GULF UAE</span>
-      </div>
     </div>
 
     {/* Title + stepper + body all scroll together below the breadcrumb. */}
@@ -64,7 +62,7 @@ const PageShell: React.FC<{
       <h1 className="px-4 sm:px-10 text-2xl sm:text-3xl lg:text-[32px] text-[#111838] mb-[8px]" style={{ fontWeight: 500 }}>{title}</h1>
 
       <div className="px-4 sm:px-10">
-        <ClaimStepper activeIndex={activeIndex} />
+        <ClaimStepper activeIndex={activeIndex} steps={steps} />
       </div>
 
       <div className="px-4 sm:px-10 py-[24px] flex flex-col gap-[20px]">
@@ -1402,5 +1400,806 @@ export function MissingDocDepositPage({
         </div>
       </Card>
     </PageShell>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * ChargeDetailsPage — Step 2 of the Refund of Deposits flow.
+ * ───────────────────────────────────────────────────────────────────────────── */
+
+export type ChargeDetail = {
+  declarationNo: string;
+  chargeType: string;
+  depositAmount: string;
+  refundType: RefundType | '';
+  outboundDeclNo: string;
+  claimAmount: string;
+};
+
+const REFUND_OPTIONS_ALL: { value: RefundType; label: string }[] = [
+  { value: 'full',          label: 'Full Export' },
+  { value: 'fullImport',    label: 'Full Import' },
+  { value: 'partial',       label: 'Partial Export' },
+  { value: 'partialImport', label: 'Partial Import' },
+  { value: 'no',            label: 'No Export' },
+];
+
+function needsOutbound(rt: RefundType | ''): boolean {
+  return rt === 'full' || rt === 'fullImport' || rt === 'partial' || rt === 'partialImport';
+}
+
+function parseAED(amt: string): number {
+  return parseFloat(amt.replace(/[^0-9.]/g, '').replace(/,/g, '')) || 0;
+}
+
+function autoClaimAmount(rt: RefundType | '', depositAmount: string): string {
+  if (!rt) return '';
+  if (rt === 'no') return '0';
+  if (rt === 'full' || rt === 'fullImport') return String(parseAED(depositAmount));
+  return '';
+}
+
+export function ChargeDetailsPage({
+  rows,
+  onBack,
+  onContinue,
+}: {
+  rows: Row[];
+  onBack: () => void;
+  onContinue: (details: ChargeDetail[]) => void;
+}) {
+  const [details, setDetails] = useState<ChargeDetail[]>(() =>
+    rows.map(r => ({
+      declarationNo: r.declarationNo,
+      chargeType: r.depositType,
+      depositAmount: r.depositAmount,
+      refundType: '' as RefundType | '',
+      outboundDeclNo: '',
+      claimAmount: '',
+    }))
+  );
+
+  const update = (i: number, patch: Partial<ChargeDetail>) =>
+    setDetails(prev => prev.map((d, idx) => idx === i ? { ...d, ...patch } : d));
+
+  const allValid = details.every(d =>
+    d.refundType &&
+    d.claimAmount.trim() !== '' &&
+    (!needsOutbound(d.refundType) || d.outboundDeclNo.trim() !== '')
+  );
+
+  return (
+    <PageShell
+      title="Raise a New Claim - Declaration Details"
+      onBack={onBack}
+      activeIndex={1}
+      steps={REFUND_DEPOSIT_STEPS}
+      rightContent={
+        <PrimaryBtn disabled={!allValid} onClick={() => allValid && onContinue(details)}>
+          Next
+        </PrimaryBtn>
+      }
+    >
+      <Card>
+        <p className="text-[18px] text-[#0e1b3d] mb-[20px]" style={{ fontWeight: 500 }}>Declaration Details</p>
+        <div>
+          <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 10px', fontFamily: "'Dubai', sans-serif" }}>
+            <thead>
+              <tr>
+                <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#051937', background: '#a6c2e9', borderRadius: '8px 0 0 8px', whiteSpace: 'nowrap' }}>Declaration No.</th>
+                <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#051937', background: '#a6c2e9', whiteSpace: 'nowrap' }}>Charge Type</th>
+                <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#051937', background: '#a6c2e9', whiteSpace: 'nowrap' }}>Amount (AED)</th>
+                <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#051937', background: '#a6c2e9', whiteSpace: 'nowrap', minWidth: 200 }}>Refund Type</th>
+                <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#051937', background: '#a6c2e9', borderRadius: '0 8px 8px 0', whiteSpace: 'nowrap', minWidth: 160 }}>Claim Amount (AED)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {details.map((d, i) => (
+                <React.Fragment key={d.declarationNo}>
+                  <tr style={{ background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+                    <td style={{ padding: '14px', fontSize: 16, color: '#1360d2', fontWeight: 500, borderRadius: '8px 0 0 8px', whiteSpace: 'nowrap', border: '1px solid #eef1f6', borderRight: 'none' }}>{d.declarationNo}</td>
+                    <td style={{ padding: '14px', fontSize: 16, color: '#0e1b3d', border: '1px solid #eef1f6', borderLeft: 'none', borderRight: 'none' }}>{d.chargeType}</td>
+                    <td style={{ padding: '14px', fontSize: 16, color: '#0e1b3d', fontWeight: 500, whiteSpace: 'nowrap', border: '1px solid #eef1f6', borderLeft: 'none', borderRight: 'none' }}>
+                      {d.depositAmount === 'N/A' ? '—' : d.depositAmount.replace(/^Dh\s*/, '')}
+                    </td>
+                    <td style={{ padding: '10px 14px', minWidth: 200, border: '1px solid #eef1f6', borderLeft: 'none', borderRight: 'none' }}>
+                      <RefundTypeInlineSelect
+                        value={d.refundType}
+                        onChange={rt => update(i, { refundType: rt, outboundDeclNo: '', claimAmount: autoClaimAmount(rt, d.depositAmount) })}
+                      />
+                    </td>
+                    <td style={{ padding: '10px 14px', minWidth: 160, borderRadius: '0 8px 8px 0', border: '1px solid #eef1f6', borderLeft: 'none' }}>
+                      <input
+                        type="number"
+                        min={0}
+                        value={d.claimAmount}
+                        onChange={e => update(i, { claimAmount: e.target.value })}
+                        placeholder="Enter Amount"
+                        readOnly={d.refundType === 'no' || d.refundType === 'full' || d.refundType === 'fullImport'}
+                        className="w-full h-[44px] rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none"
+                        style={{ border: '1px solid #d5ddfb', fontFamily: "'Dubai', sans-serif", background: (d.refundType === 'no' || d.refundType === 'full' || d.refundType === 'fullImport') ? '#f8fafd' : '#fff' }}
+                      />
+                    </td>
+                  </tr>
+
+                  {needsOutbound(d.refundType) && (
+                    <tr>
+                      <td colSpan={5} style={{ paddingBottom: 6, paddingLeft: 4, paddingRight: 4 }}>
+                        <div className="flex items-start gap-[12px] rounded-[8px] px-[20px] py-[14px]" style={{ background: '#f6f9fe', border: '1px solid #d5ddfb' }}>
+                          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#1360d2" strokeWidth="2" className="flex-shrink-0 mt-[3px]"><circle cx="12" cy="12" r="9" /><path d="M12 8h.01M11 12h1v4h1" strokeLinecap="round" /></svg>
+                          <div className="flex-1 flex flex-col gap-[8px]">
+                            <p className="text-[14px] text-[#455174]">
+                              {d.refundType === 'partial' || d.refundType === 'partialImport' ? 'Partial' : 'Full'} {d.refundType === 'fullImport' || d.refundType === 'partialImport' ? 'import' : 'export'} requires an outbound declaration number.
+                            </p>
+                            <OutboundDeclInput value={d.outboundDeclNo} onChange={v => update(i, { outboundDeclNo: v })} />
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {details.some(d => d.claimAmount !== '') && (
+          <div className="flex justify-end pt-[16px] mt-[4px]" style={{ borderTop: '1px solid #eef1f6' }}>
+            <div className="flex items-center gap-[24px]">
+              <span className="text-[16px] text-[#455174]" style={{ fontFamily: "'Dubai', sans-serif" }}>Total Claim Amount (AED)</span>
+              <span className="text-[20px] text-[#0e1b3d]" style={{ fontWeight: 700, fontFamily: "'Dubai', sans-serif" }}>
+                {details.reduce((sum, d) => sum + (parseFloat(d.claimAmount) || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+          </div>
+        )}
+      </Card>
+    </PageShell>
+  );
+}
+
+function RefundTypeInlineSelect({ value, onChange }: { value: RefundType | ''; onChange: (v: RefundType) => void }) {
+  const [open, setOpen] = useState(false);
+  const [rect, setRect] = useState<DOMRect | null>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const h = (e: MouseEvent) => {
+      if (btnRef.current?.contains(e.target as Node)) return;
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, [open]);
+
+  const handleOpen = () => {
+    if (btnRef.current) setRect(btnRef.current.getBoundingClientRect());
+    setOpen(o => !o);
+  };
+
+  const selected = REFUND_OPTIONS_ALL.find(o => o.value === value);
+  return (
+    <div className="relative">
+      <button ref={btnRef} type="button" onClick={handleOpen}
+        className="w-full h-[44px] flex items-center justify-between px-[12px] rounded-[4px] bg-white transition-colors"
+        style={{ border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}`, fontFamily: "'Dubai', sans-serif" }}>
+        <span className="text-[16px]" style={{ color: selected ? '#0e1b3d' : '#697498' }}>{selected ? selected.label : 'Please Select'}</span>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}><path d="M6 9l6 6 6-6" /></svg>
+      </button>
+      {open && rect && ReactDOM.createPortal(
+        <div ref={ref} className="bg-white rounded-[8px] py-[4px]"
+          style={{ position: 'fixed', top: rect.bottom + 4, left: rect.left, width: rect.width, zIndex: 2000, boxShadow: '0px 4px 20px rgba(0,0,0,0.12)', border: '1px solid #e0e6ef', minWidth: 180 }}>
+          {REFUND_OPTIONS_ALL.map(opt => (
+            <button key={opt.value} type="button" onMouseDown={e => { e.preventDefault(); onChange(opt.value); setOpen(false); }}
+              className="group flex items-center justify-between w-full px-[14px] py-[10px] hover:bg-[#1360d2] transition-colors">
+              <span className={`text-[16px] group-hover:text-white ${opt.value === value ? 'text-[#1360d2]' : 'text-[#111838]'}`}
+                style={{ fontFamily: "'Dubai', sans-serif", fontWeight: opt.value === value ? 500 : 400 }}>{opt.label}</span>
+              {opt.value === value && <svg className="group-hover:stroke-white" viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#1360d2" strokeWidth="2.5"><path d="M4 10l4 4 8-8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+            </button>
+          ))}
+        </div>,
+        document.body
+      )}
+    </div>
+  );
+}
+
+function OutboundDeclInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [search, setSearch] = useState('');
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!pickerOpen) return;
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setPickerOpen(false); };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, [pickerOpen]);
+
+  const selectedRecord = SAMPLE_OUTBOUND.find(ob => ob.declarationNo === value);
+  const filtered = SAMPLE_OUTBOUND.filter(ob =>
+    !search || ob.declarationNo.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div ref={ref} className="flex flex-col gap-[10px]">
+      {/* Search field */}
+      <div className="flex items-center gap-[8px] h-[48px] rounded-[4px] bg-white px-[14px]"
+        style={{ border: `1px solid ${pickerOpen ? '#1360d2' : '#d5ddfb'}`, position: 'relative', maxWidth: 540 }}>
+        <input
+          value={pickerOpen ? search : value}
+          onChange={e => { setSearch(e.target.value); if (!pickerOpen) setPickerOpen(true); }}
+          onFocus={() => { setPickerOpen(true); setSearch(''); }}
+          placeholder="Search outbound declaration no."
+          className="flex-1 text-[16px] text-[#0e1b3d] placeholder:text-[#697498] focus:outline-none bg-transparent"
+          style={{ fontFamily: "'Dubai', sans-serif" }}
+        />
+        {value && !pickerOpen
+          ? <button type="button" onMouseDown={e => { e.preventDefault(); onChange(''); setSearch(''); }}
+              className="flex-shrink-0 size-[20px] inline-flex items-center justify-center rounded-full text-[#697498] hover:bg-[#f0f4ff]">
+              <svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4l8 8M12 4l-8 8" strokeLinecap="round" /></svg>
+            </button>
+          : <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" className="flex-shrink-0 pointer-events-none">
+              <circle cx="9" cy="9" r="6" /><path d="M14 14l4 4" strokeLinecap="round" />
+            </svg>
+        }
+
+        {/* Declaration number dropdown */}
+        {pickerOpen && (
+          <div className="absolute z-[200] left-0 right-0 bg-white rounded-[8px] overflow-hidden"
+            style={{ top: 'calc(100% + 4px)', boxShadow: '0px 4px 20px rgba(0,0,0,0.14)', border: '1px solid #e0e6ef', maxHeight: 220, overflowY: 'auto' }}>
+            {filtered.length === 0
+              ? <p className="px-[14px] py-[10px] text-[14px] text-[#697498]" style={{ fontFamily: "'Dubai', sans-serif" }}>No matching declarations</p>
+              : filtered.map(ob => (
+                <button key={ob.id} type="button"
+                  onMouseDown={e => { e.preventDefault(); onChange(ob.declarationNo); setPickerOpen(false); setSearch(''); }}
+                  className="group w-full flex items-center justify-between px-[14px] py-[11px] text-left hover:bg-[#1360d2] transition-colors"
+                  style={{ borderBottom: '1px solid #f0f0f5' }}>
+                  <span className={`text-[15px] group-hover:text-white ${ob.declarationNo === value ? 'text-[#1360d2]' : 'text-[#0e1b3d]'}`}
+                    style={{ fontFamily: "'Dubai', sans-serif", fontWeight: ob.declarationNo === value ? 500 : 400 }}>
+                    {ob.declarationNo}
+                  </span>
+                  {ob.declarationNo === value && (
+                    <svg className="group-hover:stroke-white" viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#1360d2" strokeWidth="2.5">
+                      <path d="M4 10l4 4 8-8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </button>
+              ))
+            }
+          </div>
+        )}
+      </div>
+
+      {/* Selected record details */}
+      {selectedRecord && (
+        <div className="rounded-[6px] px-[16px] py-[12px] flex items-start"
+          style={{ background: '#f0f5ff', border: '1px solid #c7d9f7', fontFamily: "'Dubai', sans-serif" }}>
+          {[
+            { label: 'Export Type',    val: selectedRecord.exportType },
+            { label: 'Exit Point',     val: selectedRecord.exitPoint },
+            { label: 'Re-export To',   val: selectedRecord.reExportTo },
+            { label: 'Departure Date', val: selectedRecord.departureDate },
+            { label: 'Weight',         val: selectedRecord.weight },
+            { label: 'Stat. Qty',      val: selectedRecord.statQty },
+          ].map(({ label, val }, idx, arr) => (
+            <div key={label} className="flex flex-col gap-[2px] flex-shrink-0"
+              style={{ paddingRight: idx < arr.length - 1 ? 24 : 0, marginRight: idx < arr.length - 1 ? 24 : 0, borderRight: idx < arr.length - 1 ? '1px solid #c7d9f7' : 'none' }}>
+              <span className="text-[16px] text-[#697498] whitespace-nowrap">{label}</span>
+              <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ fontWeight: 500 }}>{val}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * RDDocumentsPage — Step 3: Upload Documents (Refund of Deposits flow)
+ * ───────────────────────────────────────────────────────────────────────────── */
+
+const CLOUD_UPLOAD_ICON = 'https://www.figma.com/api/mcp/asset/9e722d4d-9a2d-4d15-bb37-70e5aba612d5';
+const MAX_DOC_SIZE_MB = 50;
+
+type RDUploadedDoc = { id: string; declNo: string; fileName: string; fileSize: number; uploadedOn: string };
+
+function fmtBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+export function RDDocumentsPage({
+  rows, onBack, onContinue,
+}: {
+  rows: Row[];
+  onBack: () => void;
+  onContinue: (remarks: string) => void;
+}) {
+  const [selectedDecl, setSelectedDecl] = useState<string>(rows[0]?.declarationNo ?? '');
+  const [uploadedDocs, setUploadedDocs] = useState<RDUploadedDoc[]>([]);
+  const [remarks, setRemarks] = useState('');
+  const [dragging, setDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  let docCounter = 0;
+
+  const today = new Date().toLocaleDateString('en-GB');
+
+  const handleFile = (f: File) => {
+    if (!selectedDecl || f.size > MAX_DOC_SIZE_MB * 1024 * 1024) return;
+    docCounter += 1;
+    setUploadedDocs(prev => [...prev, { id: `${f.name}-${f.size}-${docCounter}`, declNo: selectedDecl, fileName: f.name, fileSize: f.size, uploadedOn: today }]);
+  };
+
+  const removeDoc = (id: string) => setUploadedDocs(prev => prev.filter(d => d.id !== id));
+  const countForDecl = (declNo: string) => uploadedDocs.filter(d => d.declNo === declNo).length;
+  const allHaveDocs = rows.every(r => uploadedDocs.some(d => d.declNo === r.declarationNo));
+
+  return (
+    <div className="flex flex-col bg-[#f8fafd] h-full" style={{ fontFamily: "'Dubai', sans-serif" }}>
+      {/* Breadcrumb */}
+      <div className="flex items-start justify-between px-4 sm:px-10 pt-[24px] pb-[12px] flex-wrap gap-[12px] flex-shrink-0">
+        <div className="flex items-center gap-[6px]">
+          <span className="text-[16px] text-[#8f94ae]">Home</span>
+          <span className="text-[16px] text-[#dc3545]">/</span>
+          <span className="text-[16px] text-[#8f94ae]">Import By Sea</span>
+          <span className="text-[16px] text-[#dc3545]">/</span>
+          <span className="text-[16px] text-[#111838]" style={{ fontWeight: 500 }}>Integrated Clearance</span>
+        </div>
+        <div className="bg-[#e2ebf9] rounded-[4px] h-[28px] px-[12px] flex items-center">
+          <span className="text-[16px] text-[#0e1b3d]">A180-IMPORTER SONY GULF UAE</span>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
+        <h1 className="px-4 sm:px-10 text-[32px] text-[#111838] mb-[8px]" style={{ fontWeight: 500 }}>Raise a New Claim - Upload Documents</h1>
+        <div className="px-4 sm:px-10 mb-[24px]">
+          <ClaimStepper activeIndex={2} steps={REFUND_DEPOSIT_STEPS} />
+        </div>
+
+        <div className="px-4 sm:px-10 pb-[32px] flex flex-col gap-[20px]">
+          {/* Top cards */}
+          <div className="flex gap-[16px] flex-wrap lg:flex-nowrap items-stretch">
+            {/* Declaration list */}
+            <div className="bg-white rounded-[8px] px-[24px] py-[22px] flex flex-col gap-[16px]" style={{ flex: '0 0 calc(66% - 8px)', minWidth: 260, boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+              <div className="flex flex-col gap-[4px]">
+                <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Upload Documents</p>
+                <p className="text-[14px] text-[#697498]" style={{ lineHeight: 1.5 }}>Select a declaration and upload its supporting file. Supported: .pdf, .jpg, .png, .xlsx — max 50 MB each.</p>
+              </div>
+              <div className="grid gap-[2px]" style={{ gridTemplateColumns: rows.length > 5 ? '1fr 1fr' : '1fr' }}>
+                {rows.map(row => {
+                  const active = selectedDecl === row.declarationNo;
+                  const count = countForDecl(row.declarationNo);
+                  return (
+                    <label key={row.declarationNo} className="flex items-center gap-[12px] px-[14px] py-[12px] rounded-[6px] cursor-pointer transition-colors"
+                      style={{ background: active ? '#f0f5ff' : 'transparent', border: `1px solid ${active ? '#1360d2' : 'transparent'}` }}>
+                      <span className="size-[18px] rounded-full flex-shrink-0 inline-flex items-center justify-center" style={{ border: `2px solid ${active ? '#1360d2' : '#a7abb2'}`, background: '#fff' }}>
+                        {active && <span className="size-[8px] rounded-full" style={{ background: '#1360d2' }} />}
+                      </span>
+                      <input type="radio" className="sr-only" name="rd-decl-select" value={row.declarationNo} checked={active} onChange={() => setSelectedDecl(row.declarationNo)} />
+                      <span className="text-[15px] flex-1" style={{ color: active ? '#0e1b3d' : '#455174', fontWeight: active ? 500 : 400 }}>{row.declarationNo}</span>
+                      {count > 0 && <span className="text-[12px] px-[8px] py-[2px] rounded-[10px]" style={{ background: 'rgba(26,172,114,0.12)', color: '#1aac72', fontWeight: 600 }}>{count}</span>}
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Upload zone */}
+            <div className="bg-white rounded-[8px] px-[24px] py-[22px] flex flex-col gap-[16px]" style={{ flex: '0 0 calc(28% - 8px)', minWidth: 220, boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+              <div className="flex flex-col gap-[4px]">
+                <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Upload File</p>
+                <p className="text-[13px] text-[#697498]">* Supported: .pdf, .jpg, .png, .xlsx — max 50 MB</p>
+              </div>
+              <div
+                onDragOver={e => { e.preventDefault(); setDragging(true); }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={e => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files?.[0]; if (f) handleFile(f); }}
+                className="flex flex-col items-center justify-center gap-[12px] rounded-[8px] py-[32px] px-[16px] transition-colors"
+                style={{ border: `1.5px dashed ${dragging ? '#1360d2' : '#b5c8e8'}`, background: dragging ? '#edf3ff' : '#f8fafd', cursor: selectedDecl ? 'default' : 'not-allowed', opacity: selectedDecl ? 1 : 0.6 }}>
+                <div className="size-[56px] rounded-full inline-flex items-center justify-center" style={{ background: dragging ? '#d8e8ff' : '#e2ebf9' }}>
+                  <img src={CLOUD_UPLOAD_ICON} alt="" style={{ width: 26, height: 24 }} />
+                </div>
+                <p className="text-[14px] text-[#697498] text-center" style={{ lineHeight: 1.5 }}>Drag and drop or</p>
+                <button type="button" disabled={!selectedDecl} onClick={() => selectedDecl && fileInputRef.current?.click()}
+                  className="h-[40px] px-[20px] rounded-[4px] text-[15px] transition-colors"
+                  style={{ border: '1.5px solid #1360d2', color: '#1360d2', fontWeight: 500, background: '#fff', cursor: selectedDecl ? 'pointer' : 'not-allowed' }}>
+                  Choose File
+                </button>
+              </div>
+              <input ref={fileInputRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.xlsx" className="hidden"
+                onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }} />
+            </div>
+          </div>
+
+          {/* Uploaded docs table */}
+          {uploadedDocs.length > 0 && (
+            <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+              <div className="px-[20px] py-[14px]" style={{ borderBottom: '1px solid #eef1f6' }}>
+                <p className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Documents Uploaded</p>
+              </div>
+              <div className="overflow-x-auto">
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ background: '#a6c2e9' }}>
+                      {['Declaration Number', 'Document Name', 'Uploaded On', 'Action'].map(h => (
+                        <th key={h} style={{ padding: '11px 16px', textAlign: 'left', fontSize: 15, fontWeight: 600, color: '#000', whiteSpace: 'nowrap' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {uploadedDocs.map(doc => (
+                      <tr key={doc.id} style={{ borderBottom: '1px solid #f0f3fa' }}>
+                        <td style={{ padding: '12px 16px' }}><span className="text-[15px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{doc.declNo}</span></td>
+                        <td style={{ padding: '12px 16px' }}>
+                          <div className="flex items-center gap-[8px]">
+                            <div className="size-[30px] rounded-[4px] flex-shrink-0 inline-flex items-center justify-center" style={{ background: '#e8f0ff' }}>
+                              <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="#1360d2" strokeWidth="1.8" strokeLinecap="round"><path d="M5 2h7l3 3v12H5z" /><path d="M12 2v3h3" /></svg>
+                            </div>
+                            <div>
+                              <p className="text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{doc.fileName}</p>
+                              <p className="text-[12px] text-[#697498]">{fmtBytes(doc.fileSize)}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td style={{ padding: '12px 16px' }}><span className="text-[14px] text-[#697498]">{doc.uploadedOn}</span></td>
+                        <td style={{ padding: '12px 16px' }}>
+                          <div className="flex items-center gap-[6px]">
+                            <button type="button" title="Delete" onClick={() => removeDoc(doc.id)} className="size-[32px] inline-flex items-center justify-center rounded hover:bg-[#fef2f2] transition-colors" style={{ color: '#dc3545' }}>
+                              <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M3 5h14M8 5V3h4v2M17 5l-1 13H4L3 5" /><path d="M8 9v5M12 9v5" /></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Remarks */}
+          <div className="bg-white rounded-[8px] px-[24px] py-[20px] flex flex-col gap-[12px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+            <p className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Remarks <span className="text-[14px] text-[#697498]" style={{ fontWeight: 400 }}>(optional)</span></p>
+            <textarea value={remarks} onChange={e => setRemarks(e.target.value)}
+              placeholder="Enter any remarks applicable to all selected declarations…" rows={3}
+              className="w-full rounded-[4px] text-[15px] text-[#0e1b3d] placeholder:text-[#b0b8d0] px-[14px] py-[10px] resize-none focus:outline-none focus:border-[#1360d2] transition-colors"
+              style={{ border: '1px solid #d5ddfb', fontFamily: "'Dubai', sans-serif", lineHeight: '22px' }} />
+          </div>
+        </div>
+      </div>
+
+      <BackToListingBar onBack={onBack} rightContent={
+        <button onClick={() => onContinue(remarks)}
+          className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors"
+          style={{ background: '#1360d2', cursor: 'pointer', fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
+          Next
+        </button>
+      } />
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * RDPaymentPage — Step 4: Payment Details (Refund of Deposits flow)
+ * ───────────────────────────────────────────────────────────────────────────── */
+
+const RD_CHARGES = [
+  { key: 'reg', label: 'Claim Registration Charge', sub: 'Registration Fee',          amount: '100.00' },
+  { key: 'ki',  label: 'Knowledge-Innovation Dirham', sub: 'Knowledge & Innovation Fee', amount: '20.00'  },
+];
+const RD_PAYMENT_MODES   = ['Credit/Debit Account', 'E-Payment'];
+const RD_ACCOUNT_OPTIONS = ['1223193-SW LOGISTICS LLC', '1060423-SONY GULF UAE'];
+
+type RDChargeState = { mode: string; account: string; modeOpen: boolean; accountOpen: boolean };
+
+export type RDPaymentInfo = { charges: { key: string; mode: string; account: string }[]; remarks: string };
+
+export function RDPaymentPage({
+  onBack, onContinue,
+}: {
+  onBack: () => void;
+  onContinue: (info: RDPaymentInfo) => void;
+}) {
+  const [charges, setCharges] = useState<Record<string, RDChargeState>>(
+    Object.fromEntries(RD_CHARGES.map(c => [c.key, { mode: '', account: '', modeOpen: false, accountOpen: false }]))
+  );
+  const [remarks, setRemarks] = useState('');
+
+  const update = (key: string, patch: Partial<RDChargeState>) =>
+    setCharges(prev => ({ ...prev, [key]: { ...prev[key], ...patch } }));
+
+  const closeAll = (exceptKey?: string, exceptField?: 'modeOpen' | 'accountOpen') =>
+    setCharges(prev => {
+      const next = { ...prev };
+      RD_CHARGES.forEach(c => {
+        if (c.key !== exceptKey) { next[c.key] = { ...next[c.key], modeOpen: false, accountOpen: false }; }
+        else if (exceptField) { const other = exceptField === 'modeOpen' ? 'accountOpen' : 'modeOpen'; next[c.key] = { ...next[c.key], [other]: false }; }
+      });
+      return next;
+    });
+
+  const allFilled = RD_CHARGES.every(c => charges[c.key].mode);
+  const total = RD_CHARGES.reduce((s, c) => s + parseFloat(c.amount), 0).toFixed(2);
+
+  return (
+    <div className="flex flex-col bg-[#f8fafd] h-full" style={{ fontFamily: "'Dubai', sans-serif" }}>
+      <div className="flex items-start justify-between px-4 sm:px-10 pt-[24px] pb-[12px] flex-wrap gap-[12px] flex-shrink-0">
+        <div className="flex items-center gap-[6px]">
+          <span className="text-[16px] text-[#8f94ae]">Home</span>
+          <span className="text-[16px] text-[#dc3545]">/</span>
+          <span className="text-[16px] text-[#8f94ae]">Import By Sea</span>
+          <span className="text-[16px] text-[#dc3545]">/</span>
+          <span className="text-[16px] text-[#111838]" style={{ fontWeight: 500 }}>Integrated Clearance</span>
+        </div>
+        <div className="bg-[#e2ebf9] rounded-[4px] h-[28px] px-[12px] flex items-center">
+          <span className="text-[16px] text-[#0e1b3d]">A180-IMPORTER SONY GULF UAE</span>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
+        <h1 className="px-4 sm:px-10 text-[32px] text-[#111838] mb-[8px]" style={{ fontWeight: 500 }}>Raise a New Claim - Payment Details</h1>
+        <div className="px-4 sm:px-10 mb-[24px]">
+          <ClaimStepper activeIndex={3} steps={REFUND_DEPOSIT_STEPS} />
+        </div>
+
+        <div className="px-4 sm:px-10 pb-[32px] flex flex-col gap-[20px]">
+          {/* Payment table card */}
+          <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+            <div className="px-[24px] py-[18px]" style={{ borderBottom: '1px solid #eef1f6' }}>
+              <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Payment Details</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: "'Dubai', sans-serif" }}>
+                <thead>
+                  <tr style={{ background: '#a6c2e9' }}>
+                    {['Charge Description', 'Sub Type', 'Amount (AED)', 'Payment Mode', 'Account No.'].map(h => (
+                      <th key={h} style={{ padding: '11px 16px', textAlign: 'left', fontSize: 15, fontWeight: 600, color: '#000', whiteSpace: 'nowrap' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {RD_CHARGES.map(c => {
+                    const s = charges[c.key];
+                    return (
+                      <tr key={c.key} style={{ borderBottom: '1px solid #f0f3fa' }}>
+                        <td style={{ padding: '14px 16px', fontSize: 16, color: '#0e1b3d', fontWeight: 500 }}>{c.label}</td>
+                        <td style={{ padding: '14px 16px', fontSize: 15, color: '#455174' }}>{c.sub}</td>
+                        <td style={{ padding: '14px 16px', fontSize: 16, color: '#0e1b3d', fontWeight: 500, whiteSpace: 'nowrap' }}>AED {c.amount}</td>
+                        <td style={{ padding: '10px 16px', minWidth: 200 }}>
+                          <RDDropdown value={s.mode} options={RD_PAYMENT_MODES} open={s.modeOpen} placeholder="Select Mode"
+                            onToggle={() => { closeAll(c.key, 'modeOpen'); update(c.key, { modeOpen: !s.modeOpen }); }}
+                            onSelect={v => { update(c.key, { mode: v, account: '', modeOpen: false }); }} />
+                        </td>
+                        <td style={{ padding: '10px 16px', minWidth: 220 }}>
+                          {s.mode === 'Credit/Debit Account'
+                            ? <RDDropdown value={s.account} options={RD_ACCOUNT_OPTIONS} open={s.accountOpen} placeholder="Select Account"
+                                onToggle={() => { closeAll(c.key, 'accountOpen'); update(c.key, { accountOpen: !s.accountOpen }); }}
+                                onSelect={v => update(c.key, { account: v, accountOpen: false })} />
+                            : <span className="text-[14px] text-[#697498]">{s.mode ? '—' : ''}</span>
+                          }
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {/* Total row */}
+                  <tr style={{ background: '#f4f7fc' }}>
+                    <td colSpan={2} style={{ padding: '12px 16px', fontSize: 15, color: '#455174', fontWeight: 600 }}>Total</td>
+                    <td style={{ padding: '12px 16px', fontSize: 16, color: '#0e1b3d', fontWeight: 700 }}>AED {total}</td>
+                    <td colSpan={2} />
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Remarks */}
+          <div className="bg-white rounded-[8px] px-[24px] py-[20px] flex flex-col gap-[12px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+            <p className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Remarks <span className="text-[14px] text-[#697498]" style={{ fontWeight: 400 }}>(optional)</span></p>
+            <textarea value={remarks} onChange={e => setRemarks(e.target.value)} placeholder="Enter payment remarks…" rows={3}
+              className="w-full rounded-[4px] text-[15px] text-[#0e1b3d] placeholder:text-[#b0b8d0] px-[14px] py-[10px] resize-none focus:outline-none focus:border-[#1360d2] transition-colors"
+              style={{ border: '1px solid #d5ddfb', fontFamily: "'Dubai', sans-serif", lineHeight: '22px' }} />
+          </div>
+        </div>
+      </div>
+
+      <BackToListingBar onBack={onBack} rightContent={
+        <button onClick={() => allFilled && onContinue({ charges: RD_CHARGES.map(c => ({ key: c.key, mode: charges[c.key].mode, account: charges[c.key].account })), remarks })}
+          disabled={!allFilled}
+          className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors"
+          style={{ background: allFilled ? '#1360d2' : '#a7c3eb', cursor: allFilled ? 'pointer' : 'not-allowed', fontWeight: 500, boxShadow: allFilled ? '0px 0px 8px rgba(28,72,191,0.16)' : 'none' }}>
+          Next
+        </button>
+      } />
+    </div>
+  );
+}
+
+function RDDropdown({ value, options, open, onToggle, onSelect, placeholder }: { value: string; options: string[]; open: boolean; onToggle: () => void; onSelect: (v: string) => void; placeholder: string }) {
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [rect, setRect] = useState<DOMRect | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const h = (e: MouseEvent) => {
+      if (btnRef.current?.contains(e.target as Node)) return;
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) onToggle();
+    };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, [open]);
+
+  const handleToggle = () => {
+    if (btnRef.current) setRect(btnRef.current.getBoundingClientRect());
+    onToggle();
+  };
+
+  return (
+    <div style={{ minWidth: 180 }}>
+      <button ref={btnRef} type="button" onClick={handleToggle}
+        className="w-full flex items-center justify-between px-[12px] h-[44px] rounded-[4px] bg-white transition-colors"
+        style={{ border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}`, fontFamily: "'Dubai', sans-serif" }}>
+        <span className="text-[16px] flex-1 truncate text-left" style={{ color: value ? '#051937' : '#697498' }}>{value || placeholder}</span>
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#455174" strokeWidth="2" style={{ flexShrink: 0, marginLeft: 6, transform: open ? 'rotate(180deg)' : undefined, transition: 'transform 0.15s' }}><path d="M6 9l6 6 6-6" /></svg>
+      </button>
+      {open && rect && ReactDOM.createPortal(
+        <div ref={menuRef} className="bg-white rounded-[8px] overflow-hidden"
+          style={{ position: 'fixed', top: rect.bottom + 4, left: rect.left, width: rect.width, zIndex: 2000, boxShadow: '0px 8px 24px rgba(0,0,0,0.14)', border: '1px solid #e0e6ef' }}>
+          {options.map(opt => (
+            <button key={opt} type="button" onMouseDown={e => { e.preventDefault(); onSelect(opt); }}
+              className="group w-full flex items-center justify-between px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors">
+              <span className={`text-[16px] group-hover:text-white ${opt === value ? 'text-[#1360d2]' : 'text-[#111838]'}`} style={{ fontFamily: "'Dubai', sans-serif", fontWeight: opt === value ? 500 : 400 }}>{opt}</span>
+              {opt === value && <svg className="group-hover:stroke-white" viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#1360d2" strokeWidth="2.5"><path d="M4 10l4 4 8-8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+            </button>
+          ))}
+        </div>,
+        document.body
+      )}
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * RDReviewPage — Step 5: Review & Submit (Refund of Deposits flow)
+ * ───────────────────────────────────────────────────────────────────────────── */
+
+export function RDReviewPage({
+  chargeDetails, docRemarks, paymentInfo, onBack, onSubmit,
+}: {
+  chargeDetails: ChargeDetail[];
+  docRemarks: string;
+  paymentInfo: RDPaymentInfo;
+  onBack: () => void;
+  onSubmit: () => void;
+}) {
+  const REFUND_LABEL: Record<string, string> = {
+    full: 'Full Export', fullImport: 'Full Import', partial: 'Partial Export', partialImport: 'Partial Import', no: 'No Export',
+  };
+  const total = chargeDetails.reduce((s, d) => s + (parseFloat(d.claimAmount) || 0), 0);
+
+  return (
+    <div className="flex flex-col bg-[#f8fafd] h-full" style={{ fontFamily: "'Dubai', sans-serif" }}>
+      <div className="flex items-start justify-between px-4 sm:px-10 pt-[24px] pb-[12px] flex-wrap gap-[12px] flex-shrink-0">
+        <div className="flex items-center gap-[6px]">
+          <span className="text-[16px] text-[#8f94ae]">Home</span>
+          <span className="text-[16px] text-[#dc3545]">/</span>
+          <span className="text-[16px] text-[#8f94ae]">Import By Sea</span>
+          <span className="text-[16px] text-[#dc3545]">/</span>
+          <span className="text-[16px] text-[#111838]" style={{ fontWeight: 500 }}>Integrated Clearance</span>
+        </div>
+        <div className="bg-[#e2ebf9] rounded-[4px] h-[28px] px-[12px] flex items-center">
+          <span className="text-[16px] text-[#0e1b3d]">A180-IMPORTER SONY GULF UAE</span>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
+        <h1 className="px-4 sm:px-10 text-[32px] text-[#111838] mb-[8px]" style={{ fontWeight: 500 }}>Raise a New Claim - Review & Submit</h1>
+        <div className="px-4 sm:px-10 mb-[24px]">
+          <ClaimStepper activeIndex={4} steps={REFUND_DEPOSIT_STEPS} />
+        </div>
+
+        <div className="px-4 sm:px-10 pb-[32px] flex flex-col gap-[20px]">
+          {/* Charge details summary */}
+          <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+            <div className="px-[24px] py-[16px] flex items-center justify-between" style={{ borderBottom: '1px solid #eef1f6' }}>
+              <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Claim Summary</p>
+              <span className="text-[14px] px-[10px] py-[3px] rounded-[4px]" style={{ background: 'rgba(19,96,210,0.10)', color: '#1360d2', fontWeight: 500 }}>Refund of Deposits</span>
+            </div>
+            <div className="overflow-x-auto">
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ background: '#a6c2e9' }}>
+                    {['Declaration No.', 'Charge Type', 'Deposit Amount (AED)', 'Refund Type', 'Outbound Decl. No.', 'Claim Amount (AED)'].map(h => (
+                      <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 14, fontWeight: 600, color: '#000', whiteSpace: 'nowrap' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {chargeDetails.map(d => (
+                    <tr key={d.declarationNo} style={{ borderBottom: '1px solid #f0f3fa' }}>
+                      <td style={{ padding: '12px 16px', fontSize: 15, color: '#1360d2', fontWeight: 500 }}>{d.declarationNo}</td>
+                      <td style={{ padding: '12px 16px', fontSize: 15, color: '#0e1b3d' }}>{d.chargeType}</td>
+                      <td style={{ padding: '12px 16px', fontSize: 15, color: '#0e1b3d', fontWeight: 500 }}>{d.depositAmount === 'N/A' ? '—' : d.depositAmount.replace(/^Dh\s*/, '')}</td>
+                      <td style={{ padding: '12px 16px', fontSize: 15, color: '#0e1b3d' }}>{REFUND_LABEL[d.refundType] ?? '—'}</td>
+                      <td style={{ padding: '12px 16px', fontSize: 15, color: '#0e1b3d' }}>{d.outboundDeclNo || '—'}</td>
+                      <td style={{ padding: '12px 16px', fontSize: 15, color: '#0e1b3d', fontWeight: 600 }}>{d.claimAmount ? parseFloat(d.claimAmount).toLocaleString('en-US', { minimumFractionDigits: 2 }) : '—'}</td>
+                    </tr>
+                  ))}
+                  <tr style={{ background: '#f4f7fc' }}>
+                    <td colSpan={5} style={{ padding: '12px 16px', fontSize: 15, fontWeight: 600, color: '#455174' }}>Total Claim Amount</td>
+                    <td style={{ padding: '12px 16px', fontSize: 16, fontWeight: 700, color: '#0e1b3d' }}>{total.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Payment summary */}
+          <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+            <div className="px-[24px] py-[16px]" style={{ borderBottom: '1px solid #eef1f6' }}>
+              <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Payment Details</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ background: '#a6c2e9' }}>
+                    {['Charge Description', 'Amount (AED)', 'Payment Mode', 'Account No.'].map(h => (
+                      <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 14, fontWeight: 600, color: '#000', whiteSpace: 'nowrap' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {paymentInfo.charges.map((pc, i) => {
+                    const def = RD_CHARGES.find(c => c.key === pc.key);
+                    return (
+                      <tr key={pc.key} style={{ borderBottom: '1px solid #f0f3fa' }}>
+                        <td style={{ padding: '12px 16px', fontSize: 15, color: '#0e1b3d', fontWeight: 500 }}>{def?.label}</td>
+                        <td style={{ padding: '12px 16px', fontSize: 15, color: '#0e1b3d' }}>AED {def?.amount}</td>
+                        <td style={{ padding: '12px 16px', fontSize: 15, color: '#0e1b3d' }}>{pc.mode}</td>
+                        <td style={{ padding: '12px 16px', fontSize: 15, color: '#0e1b3d' }}>{pc.account || '—'}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            {paymentInfo.remarks && (
+              <div className="px-[24px] py-[14px]" style={{ borderTop: '1px solid #eef1f6' }}>
+                <p className="text-[14px] text-[#697498]">Remarks</p>
+                <p className="text-[15px] text-[#0e1b3d] mt-[4px]">{paymentInfo.remarks}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Declaration remarks */}
+          {docRemarks && (
+            <div className="bg-white rounded-[8px] px-[24px] py-[16px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+              <p className="text-[14px] text-[#697498] mb-[4px]">Document Remarks</p>
+              <p className="text-[15px] text-[#0e1b3d]">{docRemarks}</p>
+            </div>
+          )}
+
+          {/* Disclaimer */}
+          <div className="flex items-start gap-[10px] rounded-[8px] px-[16px] py-[14px]" style={{ background: '#fffbe6', border: '1px solid #ffe082' }}>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#f59e0b" strokeWidth="2" className="flex-shrink-0 mt-[2px]"><path d="M12 9v4M12 16h.01" strokeLinecap="round" /><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>
+            <p className="text-[14px] text-[#92400e]" style={{ lineHeight: 1.6 }}>
+              By submitting this claim, you confirm that all information provided is accurate and complete. Submitting false or misleading information may result in rejection of the claim and potential penalties.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <BackToListingBar onBack={onBack} rightContent={
+        <button onClick={onSubmit}
+          className="h-[48px] px-[36px] rounded-[4px] text-[16px] text-white transition-colors hover:opacity-90"
+          style={{ background: '#1360d2', fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
+          Submit Claim
+        </button>
+      } />
+    </div>
   );
 }

@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import ManageColumnsModal, { ColDef } from './ManageColumnsModal';
 import Header from './Header';
 import VccTable, { type VccRow } from './VccTable';
 import VccListPopup from './VccListPopup';
@@ -24,7 +25,7 @@ import StatusFilterHeader from './StatusFilterHeader';
 import EligibleDeclarationsPage from './EligibleDeclarationsPage';
 import RaiseClaimRequestPage from './RaiseClaimRequestPage';
 import type { ClaimType } from './ClaimTypeSelectionPage';
-import { RefundTypePage, OutboundDeclarationPage, MissingDocDepositPage, DocumentUploadPage, PaymentDetailsPage, REFUND_TYPE_LABEL, type RefundType } from './ClaimSubPages';
+import { RefundTypePage, OutboundDeclarationPage, MissingDocDepositPage, DocumentUploadPage, PaymentDetailsPage, ChargeDetailsPage, RDDocumentsPage, RDPaymentPage, RDReviewPage, REFUND_TYPE_LABEL, type RefundType, type ChargeDetail, type RDPaymentInfo } from './ClaimSubPages';
 import CargoTransferPrePage from './CargoTransferPrePage';
 import CargoTransferRequestPage from './CargoTransferRequestPage';
 import CargoTransferNewRequestPage from './CargoTransferNewRequestPage';
@@ -152,6 +153,30 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
   const isBroker = true;
   const [showDrafts, setShowDrafts] = useState(false);
   const [showColModal, setShowColModal] = useState(false);
+
+  const DECL_COL_DEFS: ColDef[] = useMemo(() => [
+    { key: 'Declaration No.',    label: 'Declaration No.'    },
+    { key: 'Declaration Type',   label: 'Declaration Type'   },
+    { key: 'Submitted Date',     label: 'Submitted Date'     },
+    { key: 'Declaration owner',  label: 'Declaration owner'  },
+    { key: 'Cargo Channel',      label: 'Cargo Channel'      },
+    { key: 'Request No.',        label: 'Request No.'        },
+    { key: 'Request Type',       label: 'Request Type'       },
+    { key: 'Client Ref. No.',    label: 'Client Ref. No.'    },
+    { key: 'Carrier Reg No.',    label: 'Carrier Reg No.'    },
+    { key: 'MAWB/MBOL',         label: 'MAWB/MBOL'         },
+    { key: 'HAWB/HBOL',         label: 'HAWB/HBOL'         },
+    { key: 'DO No.',             label: 'DO No.'             },
+    { key: 'Permit',             label: 'Permit'             },
+    { key: 'Broker',             label: 'Broker'             },
+    { key: 'Created by',         label: 'Created by'         },
+    { key: 'Status Date',        label: 'Status Date'        },
+  ], []);
+  const DECL_LOCKED_COLS: ColDef[] = useMemo(() => [
+    { key: 'Declaration Status', label: 'Declaration Status' },
+    { key: 'Actions',            label: 'Actions'            },
+  ], []);
+  const [declVisibleCols, setDeclVisibleCols] = useState<string[]>(() => DECL_COL_DEFS.map(c => c.key));
   const [searchType, setSearchType] = useState('Declaration');
   const [searchTypeOpen, setSearchTypeOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
@@ -190,8 +215,14 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
   const [stepperReturnStep, setStepperReturnStep] = useState(0);
   const [cargoPreValues, setCargoPreValues] = useState<{ cargoChannel: string; clientRef: string; carrierReg: string; transferType: string }>({ cargoChannel: 'Sea', clientRef: '', carrierReg: '', transferType: '' });
   const [cargoFormValues, setCargoFormValues] = useState<{ clientRef: string; carrierReg: string; mawb: string; transferorBizCode: string; transferorPremCode: string; transfereeBizCode: string; transfereePremCode: string }>({ clientRef: '', carrierReg: '', mawb: '', transferorBizCode: '', transferorPremCode: '', transfereeBizCode: '', transfereePremCode: '' });
-  type ClaimSubStep = 'list' | 'claimTypeEntry' | 'eligible' | 'refundType' | 'outbound' | 'missingDoc' | 'documents' | 'payment' | 'success' | 'nonRemittanceDocs' | 'nonRemittanceCharges' | 'nonRemittanceReview' | 'nonRemittanceSuccess' | 'nonRemittanceAck' | 'nonRemittanceClaimView' | 'claimListView' | 'claimHistory' | 'nrPaymentProcessing' | 'nrPaymentSuccess' | 'nrPaymentRejected';
+  type ClaimSubStep = 'list' | 'claimTypeEntry' | 'eligible' | 'chargeDetails' | 'rdDocuments' | 'rdPayment' | 'rdReview' | 'refundType' | 'outbound' | 'missingDoc' | 'documents' | 'payment' | 'success' | 'nonRemittanceDocs' | 'nonRemittanceCharges' | 'nonRemittanceReview' | 'nonRemittanceSuccess' | 'nonRemittanceAck' | 'nonRemittanceClaimView' | 'claimListView' | 'claimHistory' | 'nrPaymentProcessing' | 'nrPaymentSuccess' | 'nrPaymentRejected';
   const [claimDeclViewOpen, setClaimDeclViewOpen] = useState(false);
+  const [claimListDeclNo, setClaimListDeclNo] = useState<string>('');
+  const [claimListDeclViewOpen, setClaimListDeclViewOpen] = useState(false);
+  const [claimSelectedRows, setClaimSelectedRows] = useState<import('./EligibleDeclarationsPage').Row[]>([]);
+  const [claimChargeDetails, setClaimChargeDetails] = useState<ChargeDetail[]>([]);
+  const [rdDocRemarks, setRdDocRemarks] = useState('');
+  const [rdPaymentInfo, setRdPaymentInfo] = useState<RDPaymentInfo | null>(null);
   const [claimStep, setClaimStep] = useState<ClaimSubStep>('list');
   const [claimContext, setClaimContext] = useState<{ claimType: ClaimType; declarationNo: string; depositType: string; declarationCategory: string | null; refundType?: RefundType; allowedRefundTypes?: RefundType[] } | null>(null);
   const [nonRemittanceRows, setNonRemittanceRows] = useState<Row[]>([]);
@@ -282,6 +313,17 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
 
   const resetNRClaim = () => { setNonRemittanceRows([]); setNonRemittancePaymentMode(''); setNonRemittanceAccountNo(''); setClaimContext(null); };
 
+  if (claimListDeclViewOpen) {
+    return (
+      <CustomsDeclarationViewPage
+        declarationNo={claimListDeclNo}
+        onBack={() => setClaimListDeclViewOpen(false)}
+        onServiceCatalogue={onServiceCatalogue}
+        onHome={onClose}
+      />
+    );
+  }
+
   if (claimStep !== 'list') {
     return (
       <div className="fixed inset-0 z-50 flex flex-col bg-[#f8fafd] overflow-hidden">
@@ -316,26 +358,20 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   return;
                 }
 
-                // Use the first selected row to determine routing
+                // Refund of Deposits → new Charge Details step
+                if (selectedClaimType === 'refundDeposit') {
+                  setClaimSelectedRows(rows);
+                  setClaimStep('chargeDetails');
+                  return;
+                }
+
+                // Refund of Duty — existing single-row flow
                 const row = rows[0];
                 const cat = row.declarationCategory;
-
-                // Determine which refund types are allowed (null = direct refund, no selection needed)
                 let allowedRefundTypes: RefundType[] | null = null;
-
-                if (selectedClaimType === 'refundDeposit' && row.depositType === 'Alternative Duty Deposit') {
-                  if (cat === 'Import for Re Export') {
-                    allowedRefundTypes = ['full', 'partial', 'no'];
-                  } else if (cat === 'Temporary Admission') {
-                    allowedRefundTypes = ['full', 'fullImport', 'partialImport', 'partial'];
-                  } else if (cat === 'Transit (ROW to ROW)' || cat === 'FZ Export') {
-                    allowedRefundTypes = ['full'];
-                  }
-                } else if (selectedClaimType === 'refundDuty' && row.depositType === 'Duty Deposit') {
+                if (row.depositType === 'Duty Deposit') {
                   allowedRefundTypes = ['full', 'partial'];
                 }
-                // All other combinations → direct refund
-
                 setClaimContext({
                   claimType: selectedClaimType,
                   declarationNo: rows.map((r) => r.declarationNo).join(', '),
@@ -343,13 +379,41 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   declarationCategory: cat,
                   allowedRefundTypes: allowedRefundTypes ?? undefined,
                 });
-
                 if (allowedRefundTypes) {
                   setClaimStep('refundType');
                 } else {
                   setClaimStep('missingDoc');
                 }
               }}
+            />
+          )}
+          {claimStep === 'chargeDetails' && claimSelectedRows.length > 0 && (
+            <ChargeDetailsPage
+              rows={claimSelectedRows}
+              onBack={() => setClaimStep('eligible')}
+              onContinue={(details) => { setClaimChargeDetails(details); setClaimStep('rdDocuments'); }}
+            />
+          )}
+          {claimStep === 'rdDocuments' && claimSelectedRows.length > 0 && (
+            <RDDocumentsPage
+              rows={claimSelectedRows}
+              onBack={() => setClaimStep('chargeDetails')}
+              onContinue={(remarks) => { setRdDocRemarks(remarks); setClaimStep('rdPayment'); }}
+            />
+          )}
+          {claimStep === 'rdPayment' && (
+            <RDPaymentPage
+              onBack={() => setClaimStep('rdDocuments')}
+              onContinue={(info) => { setRdPaymentInfo(info); setClaimStep('rdReview'); }}
+            />
+          )}
+          {claimStep === 'rdReview' && rdPaymentInfo && (
+            <RDReviewPage
+              chargeDetails={claimChargeDetails}
+              docRemarks={rdDocRemarks}
+              paymentInfo={rdPaymentInfo}
+              onBack={() => setClaimStep('rdPayment')}
+              onSubmit={() => setClaimStep('success')}
             />
           )}
           {claimStep === 'refundType' && claimContext && !claimDeclViewOpen && (
@@ -2025,6 +2089,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             showDrafts={showDrafts}
             onView={() => setClaimStep('claimListView')}
             onHistory={() => setClaimStep('claimHistory')}
+            onDeclarationOpen={(declNo) => { setClaimListDeclNo(declNo); setClaimListDeclViewOpen(true); }}
             showColModal={showColModal}
             onCloseColModal={() => setShowColModal(false)}
           />
@@ -2067,7 +2132,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                     { label: 'Broker',             w: 110 },
                     { label: 'Created by',         w: 100 },
                     { label: 'Status Date',        w: 100 },
-                  ] as { label: string; w: number }[]).map((col, idx) => (
+                  ] as { label: string; w: number }[]).filter(col => declVisibleCols.includes(col.label)).map((col, idx) => (
                     <th
                       key={col.label}
                       style={{ width: col.w, minWidth: col.w, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, borderRadius: idx === 0 ? '8px 0 0 0' : undefined, paddingLeft: idx === 0 ? 16 : 8 }}
@@ -2115,6 +2180,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                   return (
                     <tr key={i}>
                       {/* Declaration No. */}
+                      {declVisibleCols.includes('Declaration No.') && (
                       <td style={{ background: '#fff', padding: '0 8px 0 16px', height: 46, verticalAlign: 'middle', width: 148 }}>
                         <div className="flex items-center gap-[6px]">
                           <div className="flex items-center gap-[3px] flex-shrink-0">
@@ -2128,27 +2194,30 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                           <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{decl.no}</span>
                         </div>
                       </td>
-                      {cell(txt(decl.type),       210)}
-                      {cell(txt(decl.date),        110)}
-                      {cell(txt(decl.owner),       120)}
-                      {cell(txt(decl.channel),     100)}
-                      {cell(txt(decl.reqNo),       105)}
-                      {cell(txt(decl.reqType),     95)}
-                      {cell(txt(decl.clientRef),   130)}
-                      {cell(txt(decl.carrierReg),  130)}
-                      {cell(txt(decl.mawb),        105)}
-                      {cell(txt(decl.hawb),        100)}
-                      {cell(txt(decl.doNo),        95)}
+                      )}
+                      {declVisibleCols.includes('Declaration Type')  && cell(txt(decl.type),       210)}
+                      {declVisibleCols.includes('Submitted Date')     && cell(txt(decl.date),        110)}
+                      {declVisibleCols.includes('Declaration owner')  && cell(txt(decl.owner),       120)}
+                      {declVisibleCols.includes('Cargo Channel')      && cell(txt(decl.channel),     100)}
+                      {declVisibleCols.includes('Request No.')        && cell(txt(decl.reqNo),       105)}
+                      {declVisibleCols.includes('Request Type')       && cell(txt(decl.reqType),     95)}
+                      {declVisibleCols.includes('Client Ref. No.')    && cell(txt(decl.clientRef),   130)}
+                      {declVisibleCols.includes('Carrier Reg No.')    && cell(txt(decl.carrierReg),  130)}
+                      {declVisibleCols.includes('MAWB/MBOL')         && cell(txt(decl.mawb),        105)}
+                      {declVisibleCols.includes('HAWB/HBOL')         && cell(txt(decl.hawb),        100)}
+                      {declVisibleCols.includes('DO No.')             && cell(txt(decl.doNo),        95)}
                       {/* Permit */}
+                      {declVisibleCols.includes('Permit') && (
                       <td style={{ background: '#fff', padding: '0 8px', height: 46, verticalAlign: 'middle', width: 72 }}>
                         {decl.permit
                           ? <span className="text-[16px] text-[#1360d2] cursor-pointer hover:underline">Yes</span>
                           : <span className="text-[16px] text-[#0e1b3d]">No</span>
                         }
                       </td>
-                      {cell(txt(decl.broker),      110)}
-                      {cell(txt(decl.createdBy),   100)}
-                      {cell(txt(decl.statusDate),  100)}
+                      )}
+                      {declVisibleCols.includes('Broker')      && cell(txt(decl.broker),      110)}
+                      {declVisibleCols.includes('Created by')  && cell(txt(decl.createdBy),   100)}
+                      {declVisibleCols.includes('Status Date') && cell(txt(decl.statusDate),  100)}
 
                       {/* STICKY: Declaration Status */}
                       <td style={{
@@ -2265,6 +2334,15 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
       <VccRecheckSuccessModal open={recheckModalOpen} onClose={() => setRecheckModalOpen(false)} />
       {vccListPopupRow && (
         <VccListPopup row={vccListPopupRow} onClose={() => setVccListPopupRow(null)} />
+      )}
+      {showColModal && activeMenu === 'Declaration' && (
+        <ManageColumnsModal
+          columns={DECL_COL_DEFS}
+          visible={declVisibleCols}
+          lockedColumns={DECL_LOCKED_COLS}
+          onSave={setDeclVisibleCols}
+          onClose={() => setShowColModal(false)}
+        />
       )}
     </div>
   );

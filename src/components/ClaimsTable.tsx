@@ -119,7 +119,7 @@ const DRAFT_ROWS: ClaimRow[] = [
   },
 ];
 
-function DeclarationsModal({ declarations, onClose }: { declarations: DeclDetail[]; onClose: () => void }) {
+function DeclarationsModal({ declarations, onClose, onDeclarationOpen }: { declarations: DeclDetail[]; onClose: () => void; onDeclarationOpen?: (declNo: string) => void }) {
   return (
     <div
       className="fixed inset-0 z-[1000] flex items-center justify-center p-[24px]"
@@ -159,7 +159,15 @@ function DeclarationsModal({ declarations, onClose }: { declarations: DeclDetail
                 {declarations.map((d, i) => (
                   <tr key={d.declNo} style={{ borderTop: '1px solid #eef1f6' }}>
                     <td className="text-[14px] text-[#697498]" style={{ padding: '12px' }}>{i + 1}</td>
-                    <td className="text-[16px] text-[#1360d2]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>{d.declNo}</td>
+                    <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>
+                      <button
+                        className="text-[16px] text-[#1360d2] hover:underline"
+                        style={{ fontWeight: 500 }}
+                        onClick={() => { onDeclarationOpen?.(d.declNo); onClose(); }}
+                      >
+                        {d.declNo}
+                      </button>
+                    </td>
                     <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{d.date}</td>
                     <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'normal', lineHeight: 1.3 }}>{d.category}</td>
                     <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{d.ownerCode}</td>
@@ -194,12 +202,13 @@ type Props = {
   onPrint?: () => void;
   onViewDocs?: () => void;
   onHistory?: () => void;
+  onDeclarationOpen?: (declNo: string) => void;
   showDrafts?: boolean;
   showColModal?: boolean;
   onCloseColModal?: () => void;
 };
 
-export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onViewDocs, onHistory, showDrafts = false, showColModal, onCloseColModal }: Props = {}) {
+export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onViewDocs, onHistory, onDeclarationOpen, showDrafts = false, showColModal, onCloseColModal }: Props = {}) {
   const [openFlyout, setOpenFlyout] = useState<number | null>(null);
   const flyoutRef = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState(1);
@@ -428,7 +437,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
         </div>
       </div>
     </div>
-    {declModal && <DeclarationsModal declarations={declModal} onClose={() => setDeclModal(null)} />}
+    {declModal && <DeclarationsModal declarations={declModal} onClose={() => setDeclModal(null)} onDeclarationOpen={onDeclarationOpen} />}
     </>
   );
 }

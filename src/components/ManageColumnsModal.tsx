@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
 
@@ -120,10 +121,10 @@ export default function ManageColumnsModal({ columns, visible, lockedColumns = [
     </div>
   );
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[2000] flex items-center justify-center"
-      style={{ background: 'rgba(0,0,0,0.45)' }}
+      className="fixed inset-0 flex items-center justify-center"
+      style={{ background: 'rgba(0,0,0,0.45)', zIndex: 2000 }}
       onClick={onClose}
     >
       <div
@@ -317,6 +318,7 @@ export default function ManageColumnsModal({ columns, visible, lockedColumns = [
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
