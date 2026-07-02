@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import ClaimStepper, { NR_CLAIM_STEPS } from './ClaimStepper';
 import Dh from './Dh';
 import type { Row } from './EligibleDeclarationsPage';
 
@@ -9,12 +8,13 @@ type Props = {
   onBack: () => void;
   onSubmit: () => void;
   onSaveAndPreview?: () => void;
+  onViewClaim?: () => void;
   selectedRows: Row[];
   paymentMode?: string;
   accountNo?: string;
 };
 
-export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPreview, selectedRows, paymentMode = 'Credit/Debit Account', accountNo = '1223193-SW LOGISTICS LLC' }: Props) {
+export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPreview, onViewClaim, selectedRows, paymentMode = 'Credit/Debit Account', accountNo = '1223193-SW LOGISTICS LLC' }: Props) {
   const [declared, setDeclared] = useState(false);
 
   return (
@@ -28,36 +28,20 @@ export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPre
           <span className="text-[16px] text-[#dc3545]">/</span>
           <span className="text-[16px] text-[#111838]" style={{ fontWeight: 500 }}>Integrated Clearance</span>
         </div>
-        <div className="bg-[#e2ebf9] rounded-[4px] h-[28px] px-[12px] flex items-center">
-          <span className="text-[16px] text-[#0e1b3d]">A180-IMPORTER SONY GULF UAE</span>
-        </div>
+        <button
+          onClick={() => onViewClaim?.()}
+          className="h-[40px] px-[20px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
+          style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
+        >
+          View Claim
+        </button>
       </div>
 
       {/* Scrollable body */}
       <div className="flex-1 overflow-y-auto">
         <h1 className="px-4 sm:px-10 text-[32px] text-[#111838] mb-[8px]" style={{ fontWeight: 500 }}>Raise New Claim</h1>
-        <div className="px-4 sm:px-10 mb-[24px]">
-          <ClaimStepper activeIndex={3} steps={NR_CLAIM_STEPS} />
-        </div>
 
         <div className="px-4 sm:px-10 pb-[32px] flex flex-col gap-[20px]">
-          {/* Warning banner */}
-          <div className="flex flex-col gap-[8px] p-[16px] rounded-[8px]" style={{ background: '#fffbf0', border: '1px solid #fff2d1' }}>
-            <div className="flex items-center gap-[8px]">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
-                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="#cc9200" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                <line x1="12" y1="9" x2="12" y2="13" stroke="#cc9200" strokeWidth="1.8" strokeLinecap="round" />
-                <circle cx="12" cy="17" r="1" fill="#cc9200" />
-              </svg>
-              <span className="text-[16px] text-[#cc9200]" style={{ fontWeight: 500 }}>Warning</span>
-            </div>
-            <p className="text-[16px] text-[#455174]" style={{ lineHeight: 1.4 }}>
-              You are currently not logged in through UAE Pass. You can click{' '}
-              <span className="text-[#1360d2] underline cursor-pointer" style={{ fontWeight: 500 }}>HERE</span>{' '}
-              to re-login using UAE Pass for claim submission. Submissions through Digital Certificate is available for a temporary period only and will be discontinued at a later date.
-            </p>
-          </div>
-
           {/* Claimant Details */}
           <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
             <div className="px-[24px] py-[16px] border-b border-[#eef1f6]">
@@ -165,13 +149,6 @@ export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPre
           Previous
         </button>
         <div className="flex items-center gap-[12px]">
-          <button
-            onClick={() => onSaveAndPreview?.()}
-            className="h-[48px] px-[28px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
-            style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
-          >
-            Save &amp; Preview Claim
-          </button>
           <button
             disabled={!declared}
             onClick={() => { if (declared) onSubmit(); }}

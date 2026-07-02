@@ -88,7 +88,7 @@ export default function ClaimSubmittedSuccessPage({
             className="h-[48px] px-[28px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
             style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}
           >
-            Print Acknowledgement
+            Print Claim Acknowledgement Receipt
           </button>
           <button
             onClick={onViewDocs ?? onBack}

@@ -44,7 +44,7 @@ export default function NonRemittanceSuccessPage({ onBack, onViewAck, onViewClai
           {/* Reference chips */}
           <div className="flex flex-col sm:flex-row items-center gap-[12px]">
             <div className="border border-[#ebebeb] rounded-[6px] px-[16px] py-[10px] flex items-center gap-[8px]">
-              <span className="text-[16px] text-[#696f83]">Request Number:</span>
+              <span className="text-[16px] text-[#696f83]">Claim Request Number:</span>
               <span className="text-[16px] text-[#1360d2]" style={{ fontWeight: 600 }}>2588017</span>
             </div>
             <div className="border border-[#ebebeb] rounded-[6px] px-[16px] py-[10px] flex items-center gap-[8px]">
@@ -67,7 +67,7 @@ export default function NonRemittanceSuccessPage({ onBack, onViewAck, onViewClai
               className="h-[52px] px-[28px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
               style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
             >
-              Download Acknowledgment Receipt
+              Print Claim Acknowledgement Receipt
             </button>
             <button
               onClick={onViewClaim}

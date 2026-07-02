@@ -414,6 +414,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               paymentInfo={rdPaymentInfo}
               onBack={() => setClaimStep('rdPayment')}
               onSubmit={() => setClaimStep('success')}
+              onViewClaim={() => setClaimStep('nonRemittanceClaimView')}
             />
           )}
           {claimStep === 'refundType' && claimContext && !claimDeclViewOpen && (
@@ -498,6 +499,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               onBack={() => setClaimStep('nonRemittanceCharges')}
               onSubmit={() => nonRemittancePaymentMode === 'E-Payment' ? setClaimStep('nrPaymentProcessing') : setClaimStep('nonRemittanceSuccess')}
               onSaveAndPreview={() => { setClaimViewReturnStep('nonRemittanceReview'); setClaimStep('nonRemittanceClaimView'); }}
+              onViewClaim={() => { setClaimViewReturnStep('nonRemittanceReview'); setClaimStep('nonRemittanceClaimView'); }}
             />
           )}
           {claimStep === 'nonRemittanceSuccess' && (

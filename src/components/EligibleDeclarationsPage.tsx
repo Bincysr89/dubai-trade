@@ -729,25 +729,20 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
   };
   const headers: { label: string; w: number }[] = isNonRemittance
     ? [
-        { label: 'Declaration No.',      w: 170 },
-        { label: 'Declaration Date',     w: 140 },
-        { label: 'Declaration Type',     w: 180 },
-        { label: 'Owner Code',           w: 260 },
-        { label: 'Claim Expiry',         w: 130 },
-        { label: 'Export Expiry',        w: 130 },
-        { label: 'Declaration Expiry',   w: 140 },
-        { label: 'Remarks',              w: 110 },
+        { label: 'Declaration No.',              w: 170 },
+        { label: 'Declaration Clearance Date',   w: 180 },
+        { label: 'Declaration Type',             w: 180 },
+        { label: 'Owner Code',                   w: 260 },
+        { label: 'Remarks',                      w: 110 },
       ]
     : [
-        { label: 'Declaration No.',      w: 170 },
-        { label: 'Declaration Date',     w: 140 },
-        { label: 'Charge Type',           w: 200 },
-        { label: 'Declaration Type',     w: 190 },
-        { label: 'Deposit Amount',       w: 150 },
-        { label: 'Deposit Method',       w: 160 },
-        { label: 'Claim Expiry',         w: 130 },
-        { label: 'Export Expiry',        w: 130 },
-        { label: 'Remarks',              w: 110 },
+        { label: 'Declaration No.',              w: 170 },
+        { label: 'Declaration Clearance Date',   w: 180 },
+        { label: 'Charge Type',                  w: 200 },
+        { label: 'Declaration Type',             w: 190 },
+        { label: 'Deposit Amount',               w: 150 },
+        { label: 'Deposit Method',               w: 160 },
+        { label: 'Remarks',                      w: 110 },
       ];
   const tableMinWidth = headers.reduce((s, h) => s + h.w, 0) + 48 + 130;
 
@@ -1231,9 +1226,6 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
                             {cell(<span className="text-[16px]" style={{ color: row.depositMethod === 'N/A' ? '#697498' : '#0e1b3d' }}>{row.depositMethod}</span>, 160)}
                           </>
                         )}
-                        {cell(<span className="text-[16px] whitespace-nowrap" style={{ color: '#dc3545', fontWeight: 500 }}>{row.claimExpiry}</span>, 130)}
-                        {cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.exportExpiry}</span>, 130)}
-                        {isNonRemittance && cell(txt('30/12/2025'), 140)}
                         {cell(<span className="text-[16px] text-[#697498]">{row.remarks}</span>, 110)}
                         <td style={{ position: 'sticky', right: 0, background: isSelected ? '#f6f9fe' : '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 130, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', borderBottom: '1px solid #f8f8f8' }}>
                           {(() => {

@@ -1720,6 +1720,16 @@ function fmtBytes(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+const MANDATORY_DOCS: Record<string, { chargeType: string; mandatory: string; docName: string; docNature: string }[]> = {
+  default: [
+    { chargeType: 'Deposit Alternative duty rate', mandatory: 'Yes', docName: 'Export Bill', docNature: 'Copy' },
+    { chargeType: '', mandatory: 'Yes', docName: 'Bill of Entry', docNature: 'Consignee Claim Copy' },
+    { chargeType: '', mandatory: 'Yes', docName: 'Export Declaration', docNature: 'Copy' },
+    { chargeType: '', mandatory: 'Yes', docName: 'Exit / Entry Certificate', docNature: 'Original' },
+    { chargeType: '', mandatory: 'No',  docName: 'Export Manifest', docNature: 'Copy' },
+  ],
+};
+
 export function RDDocumentsPage({
   rows, onBack, onContinue,
 }: {
@@ -1769,6 +1779,37 @@ export function RDDocumentsPage({
         </div>
 
         <div className="px-4 sm:px-10 pb-[32px] flex flex-col gap-[20px]">
+          {/* Mandatory Documents for selected declaration */}
+          {selectedDecl && (
+            <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+              <div className="px-[20px] py-[14px]" style={{ borderBottom: '1px solid #eef1f6' }}>
+                <p className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Mandatory Documents — <span style={{ color: '#1360d2' }}>{selectedDecl}</span></p>
+              </div>
+              <div className="overflow-x-auto">
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ background: '#a6c2e9' }}>
+                      {['Charge Type', 'Mandatory', 'Doc. Name', 'Doc. Nature', 'Current Status'].map(h => (
+                        <th key={h} style={{ padding: '11px 16px', textAlign: 'left', fontSize: 15, fontWeight: 600, color: '#000', whiteSpace: 'nowrap' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(MANDATORY_DOCS[selectedDecl] ?? MANDATORY_DOCS.default).map((doc, i) => (
+                      <tr key={i} style={{ borderBottom: '1px solid #f0f3fa' }}>
+                        <td style={{ padding: '12px 16px', fontSize: 15, color: '#0e1b3d' }}>{doc.chargeType}</td>
+                        <td style={{ padding: '12px 16px', fontSize: 15, color: '#0e1b3d' }}>{doc.mandatory}</td>
+                        <td style={{ padding: '12px 16px', fontSize: 15, color: '#0e1b3d' }}>{doc.docName}</td>
+                        <td style={{ padding: '12px 16px', fontSize: 15, color: '#0e1b3d' }}>{doc.docNature}</td>
+                        <td style={{ padding: '12px 16px', fontSize: 15, color: '#dc3545', fontWeight: 500 }}>Not Submitted</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
           {/* Top cards */}
           <div className="flex gap-[16px] flex-wrap lg:flex-nowrap items-stretch">
             {/* Declaration list */}
@@ -2076,13 +2117,14 @@ function RDDropdown({ value, options, open, onToggle, onSelect, placeholder }: {
  * ───────────────────────────────────────────────────────────────────────────── */
 
 export function RDReviewPage({
-  chargeDetails, docRemarks, paymentInfo, onBack, onSubmit,
+  chargeDetails, docRemarks, paymentInfo, onBack, onSubmit, onViewClaim,
 }: {
   chargeDetails: ChargeDetail[];
   docRemarks: string;
   paymentInfo: RDPaymentInfo;
   onBack: () => void;
   onSubmit: () => void;
+  onViewClaim?: () => void;
 }) {
   const REFUND_LABEL: Record<string, string> = {
     full: 'Full Export', fullImport: 'Full Import', partial: 'Partial Export', partialImport: 'Partial Import', no: 'No Export',
@@ -2099,16 +2141,17 @@ export function RDReviewPage({
           <span className="text-[16px] text-[#dc3545]">/</span>
           <span className="text-[16px] text-[#111838]" style={{ fontWeight: 500 }}>Integrated Clearance</span>
         </div>
-        <div className="bg-[#e2ebf9] rounded-[4px] h-[28px] px-[12px] flex items-center">
-          <span className="text-[16px] text-[#0e1b3d]">A180-IMPORTER SONY GULF UAE</span>
-        </div>
+        <button
+          onClick={() => onViewClaim?.()}
+          className="h-[40px] px-[20px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
+          style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}
+        >
+          View Claim
+        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto">
         <h1 className="px-4 sm:px-10 text-[32px] text-[#111838] mb-[8px]" style={{ fontWeight: 500 }}>Raise a New Claim - Review & Submit</h1>
-        <div className="px-4 sm:px-10 mb-[24px]">
-          <ClaimStepper activeIndex={4} steps={REFUND_DEPOSIT_STEPS} />
-        </div>
 
         <div className="px-4 sm:px-10 pb-[32px] flex flex-col gap-[20px]">
           {/* Charge details summary */}
