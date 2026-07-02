@@ -105,6 +105,16 @@ const PrimaryBtn = (
   </button>
 );
 
+const SaveExitBtn = ({ onBack }: { onBack: () => void }) => (
+  <button
+    onClick={onBack}
+    className="h-[48px] px-[28px] rounded-[4px] text-[16px] bg-white transition-colors hover:bg-[#f0f4ff]"
+    style={{ border: '1.5px solid #1360d2', color: '#1360d2', fontWeight: 500, fontFamily: "'Dubai', sans-serif" }}
+  >
+    Save &amp; Exit
+  </button>
+);
+
 /* ───────── Sample outbound declarations (inline picker) ───────── */
 type OutboundRow = {
   id: string;
@@ -1051,7 +1061,7 @@ export function DocumentUploadPage({
       activeIndex={2}
       onBack={onBack}
       onBackToListing={onBackToListing}
-      rightContent={<PrimaryBtn disabled={!requiredMet} onClick={() => onContinue(docs)}>Continue</PrimaryBtn>}
+      rightContent={<div className="flex items-center gap-[12px]"><SaveExitBtn onBack={onBack} /><PrimaryBtn disabled={!requiredMet} onClick={() => onContinue(docs)}>Continue</PrimaryBtn></div>}
     >
       <Card>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-[20px]">
@@ -1235,7 +1245,7 @@ export function PaymentDetailsPage({
       activeIndex={3}
       onBack={onBack}
       onBackToListing={onBackToListing}
-      rightContent={<PrimaryBtn disabled={!valid} onClick={() => onContinue({ mode, accountNo })}>Submit Claim</PrimaryBtn>}
+      rightContent={<div className="flex items-center gap-[12px]"><SaveExitBtn onBack={onBack} /><PrimaryBtn disabled={!valid} onClick={() => onContinue({ mode, accountNo })}>Submit Claim</PrimaryBtn></div>}
     >
       <SectionHeader>Claim Summary</SectionHeader>
       <Card>
@@ -1475,9 +1485,7 @@ export function ChargeDetailsPage({
       activeIndex={1}
       steps={REFUND_DEPOSIT_STEPS}
       rightContent={
-        <PrimaryBtn disabled={!allValid} onClick={() => allValid && onContinue(details)}>
-          Next
-        </PrimaryBtn>
+        <div className="flex items-center gap-[12px]"><SaveExitBtn onBack={onBack} /><PrimaryBtn disabled={!allValid} onClick={() => allValid && onContinue(details)}>Next</PrimaryBtn></div>
       }
     >
       <Card>
@@ -1873,11 +1881,11 @@ export function RDDocumentsPage({
       </div>
 
       <BackToListingBar onBack={onBack} rightContent={
-        <button onClick={() => onContinue(remarks)}
+        <div className="flex items-center gap-[12px]"><SaveExitBtn onBack={onBack} /><button onClick={() => onContinue(remarks)}
           className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors"
           style={{ background: '#1360d2', cursor: 'pointer', fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
           Next
-        </button>
+        </button></div>
       } />
     </div>
   );
@@ -2007,12 +2015,12 @@ export function RDPaymentPage({
       </div>
 
       <BackToListingBar onBack={onBack} rightContent={
-        <button onClick={() => allFilled && onContinue({ charges: RD_CHARGES.map(c => ({ key: c.key, mode: charges[c.key].mode, account: charges[c.key].account })), remarks })}
+        <div className="flex items-center gap-[12px]"><SaveExitBtn onBack={onBack} /><button onClick={() => allFilled && onContinue({ charges: RD_CHARGES.map(c => ({ key: c.key, mode: charges[c.key].mode, account: charges[c.key].account })), remarks })}
           disabled={!allFilled}
           className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors"
           style={{ background: allFilled ? '#1360d2' : '#a7c3eb', cursor: allFilled ? 'pointer' : 'not-allowed', fontWeight: 500, boxShadow: allFilled ? '0px 0px 8px rgba(28,72,191,0.16)' : 'none' }}>
           Next
-        </button>
+        </button></div>
       } />
     </div>
   );
@@ -2183,13 +2191,6 @@ export function RDReviewPage({
             </div>
           )}
 
-          {/* Disclaimer */}
-          <div className="flex items-start gap-[10px] rounded-[8px] px-[16px] py-[14px]" style={{ background: '#fffbe6', border: '1px solid #ffe082' }}>
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#f59e0b" strokeWidth="2" className="flex-shrink-0 mt-[2px]"><path d="M12 9v4M12 16h.01" strokeLinecap="round" /><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>
-            <p className="text-[14px] text-[#92400e]" style={{ lineHeight: 1.6 }}>
-              By submitting this claim, you confirm that all information provided is accurate and complete. Submitting false or misleading information may result in rejection of the claim and potential penalties.
-            </p>
-          </div>
         </div>
       </div>
 

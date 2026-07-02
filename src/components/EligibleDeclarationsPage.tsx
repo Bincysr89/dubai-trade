@@ -689,7 +689,7 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
   );
 
   const filtered = useMemo(() => {
-    let rows = claimTypeFiltered;
+    let rows = claimTypeFiltered.filter((r) => r.kind !== 'expired');
     const q = query.trim().toLowerCase();
     if (q) rows = rows.filter((r) => r.declarationNo.toLowerCase().includes(q));
     if (ownerCodeFilter) rows = rows.filter((r) => r.importerCode === ownerCodeFilter);
@@ -731,7 +731,7 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
     ? [
         { label: 'Declaration No.',      w: 170 },
         { label: 'Declaration Date',     w: 140 },
-        { label: 'Declaration Category', w: 180 },
+        { label: 'Declaration Type',     w: 180 },
         { label: 'Owner Code',           w: 260 },
         { label: 'Claim Expiry',         w: 130 },
         { label: 'Export Expiry',        w: 130 },
@@ -742,7 +742,7 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
         { label: 'Declaration No.',      w: 170 },
         { label: 'Declaration Date',     w: 140 },
         { label: 'Charge Type',           w: 200 },
-        { label: 'Declaration Category', w: 190 },
+        { label: 'Declaration Type',     w: 190 },
         { label: 'Deposit Amount',       w: 150 },
         { label: 'Deposit Method',       w: 160 },
         { label: 'Claim Expiry',         w: 130 },
@@ -1238,7 +1238,7 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
                         <td style={{ position: 'sticky', right: 0, background: isSelected ? '#f6f9fe' : '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 130, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', borderBottom: '1px solid #f8f8f8' }}>
                           {(() => {
                             const st = expired ? STATUS_STYLE.Expired : STATUS_STYLE.Active;
-                            const label = expired ? 'Expired' : 'Active';
+                            const label = expired ? 'Expired' : 'Cleared';
                             return (
                               <span className="text-[16px] font-medium whitespace-nowrap inline-flex items-center justify-center" style={{ background: st.bg, color: st.color, padding: '4px 12px', borderRadius: 4, lineHeight: '20px', fontFamily: "'Dubai', sans-serif" }}>
                                 {label}

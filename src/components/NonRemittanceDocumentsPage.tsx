@@ -31,7 +31,7 @@ function formatBytes(bytes: number) {
 export default function NonRemittanceDocumentsPage({ rows, onBack, onContinue, onBackToListing }: Props) {
   const [selectedDecl, setSelectedDecl] = useState<string>(rows[0]?.declarationNo ?? '');
   const [uploadedDocs, setUploadedDocs] = useState<UploadedDoc[]>([]);
-  const [commonRemarks, setCommonRemarks] = useState('');
+  const [declRemarks, setDeclRemarks] = useState<Record<string, string>>({});
   const [dragging, setDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   let docCounter = 0;
@@ -145,6 +145,23 @@ export default function NonRemittanceDocumentsPage({ rows, onBack, onContinue, o
                   );
                 })}
               </div>
+
+              {/* Per-declaration remarks */}
+              {rows.map((row) => (
+                <div key={`remarks-${row.declarationNo}`} className="flex flex-col gap-[6px]">
+                  <label className="text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>
+                    Remarks (Optional) — {row.declarationNo}
+                  </label>
+                  <textarea
+                    value={declRemarks[row.declarationNo] ?? ''}
+                    onChange={(e) => setDeclRemarks(prev => ({ ...prev, [row.declarationNo]: e.target.value }))}
+                    placeholder="Enter remarks for this declaration…"
+                    rows={2}
+                    className="w-full rounded-[4px] text-[14px] text-[#0e1b3d] placeholder:text-[#b0b8d0] px-[12px] py-[8px] resize-none focus:outline-none focus:border-[#1360d2] transition-colors"
+                    style={{ border: '1px solid #d5ddfb', fontFamily: FONT, lineHeight: '20px' }}
+                  />
+                </div>
+              ))}
             </div>
 
             {/* Right card — Upload File */}
@@ -298,18 +315,6 @@ export default function NonRemittanceDocumentsPage({ rows, onBack, onContinue, o
             </div>
           )}
 
-          {/* Common Remarks card */}
-          <div className="bg-white rounded-[8px] px-[24px] py-[20px] flex flex-col gap-[12px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-            <p className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Remarks <span className="text-[14px] text-[#697498]" style={{ fontWeight: 400 }}>(optional)</span></p>
-            <textarea
-              value={commonRemarks}
-              onChange={(e) => setCommonRemarks(e.target.value)}
-              placeholder="Enter any remarks applicable to all selected declarations…"
-              rows={3}
-              className="w-full rounded-[4px] border border-[#d5ddfb] bg-white text-[15px] text-[#0e1b3d] placeholder:text-[#b0b8d0] px-[14px] py-[10px] resize-none focus:outline-none focus:border-[#1360d2] transition-colors"
-              style={{ fontFamily: FONT, lineHeight: '22px' }}
-            />
-          </div>
         </div>
       </div>
 
@@ -318,18 +323,27 @@ export default function NonRemittanceDocumentsPage({ rows, onBack, onContinue, o
         onBack={onBack}
         onBackToListing={onBackToListing}
         rightContent={
-          <button
-            onClick={onContinue}
-            className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors"
-            style={{
-              background: '#1360d2',
-              fontFamily: FONT,
-              fontWeight: 500,
-              boxShadow: '0px 0px 8px rgba(28,72,191,0.16)',
-            }}
-          >
-            Next
-          </button>
+          <>
+            <button
+              onClick={onBack}
+              className="h-[48px] px-[28px] rounded-[4px] border bg-white text-[16px] hover:bg-[#f0f4ff] transition-colors"
+              style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: FONT, fontWeight: 500 }}
+            >
+              Save &amp; Exit
+            </button>
+            <button
+              onClick={onContinue}
+              className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors"
+              style={{
+                background: '#1360d2',
+                fontFamily: FONT,
+                fontWeight: 500,
+                boxShadow: '0px 0px 8px rgba(28,72,191,0.16)',
+              }}
+            >
+              Next
+            </button>
+          </>
         }
       />
     </div>

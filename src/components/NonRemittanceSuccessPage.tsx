@@ -20,28 +20,10 @@ export default function NonRemittanceSuccessPage({ onBack, onViewAck, onViewClai
           <span className="text-[16px] text-[#dc3545]">/</span>
           <span className="text-[16px] text-[#111838]" style={{ fontWeight: 500 }}>Integrated Clearance</span>
         </div>
-        <div className="bg-[#e2ebf9] rounded-[4px] h-[28px] px-[12px] flex items-center">
-          <span className="text-[16px] text-[#0e1b3d]">A180-IMPORTER SONY GULF UAE</span>
-        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
         <h1 className="text-[32px] text-[#111838] mb-[8px]" style={{ fontWeight: 500 }}>Raise New Claim</h1>
-
-        {/* Important Update banner */}
-        <div className="flex flex-col gap-[8px] p-[16px] rounded-[8px] mb-[24px]" style={{ background: '#fffbf0', border: '1px solid #fff2d1' }}>
-          <div className="flex items-center gap-[8px]">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
-              <circle cx="12" cy="12" r="9" stroke="#cc9200" strokeWidth="1.8" />
-              <line x1="12" y1="8" x2="12" y2="13" stroke="#cc9200" strokeWidth="1.8" strokeLinecap="round" />
-              <circle cx="12" cy="16.5" r="1" fill="#cc9200" />
-            </svg>
-            <span className="text-[16px] text-[#cc9200]" style={{ fontWeight: 500 }}>Important Update</span>
-          </div>
-          <p className="text-[16px] text-[#455174]" style={{ lineHeight: 1.4 }}>
-            Declaration and claim submissions, via Dubai Trade, may currently be authenticated using Digital Certificate based authentication is available for a temporary period only and will be discontinued at later date, to be announced by Dubai Customs in due course.
-          </p>
-        </div>
 
         {/* Success card */}
         <div className="bg-white rounded-[8px] flex flex-col items-center gap-[32px] px-[24px] py-[60px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
