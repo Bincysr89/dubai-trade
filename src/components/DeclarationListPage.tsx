@@ -50,6 +50,7 @@ import NonRemittanceSuccessPage from './NonRemittanceSuccessPage';
 import NonRemittanceAckPage from './NonRemittanceAckPage';
 import NonRemittanceClaimViewPage from './NonRemittanceClaimViewPage';
 import ClaimsAuditHistoryPage from './ClaimsAuditHistoryPage';
+import NRPaymentPendingPage from './NRPaymentPendingPage';
 import NRPaymentProcessingPage from './NRPaymentProcessingPage';
 import NRPaymentSuccessPage from './NRPaymentSuccessPage';
 import NRPaymentRejectedPage from './NRPaymentRejectedPage';
@@ -215,7 +216,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
   const [stepperReturnStep, setStepperReturnStep] = useState(0);
   const [cargoPreValues, setCargoPreValues] = useState<{ cargoChannel: string; clientRef: string; carrierReg: string; transferType: string }>({ cargoChannel: 'Sea', clientRef: '', carrierReg: '', transferType: '' });
   const [cargoFormValues, setCargoFormValues] = useState<{ clientRef: string; carrierReg: string; mawb: string; transferorBizCode: string; transferorPremCode: string; transfereeBizCode: string; transfereePremCode: string }>({ clientRef: '', carrierReg: '', mawb: '', transferorBizCode: '', transferorPremCode: '', transfereeBizCode: '', transfereePremCode: '' });
-  type ClaimSubStep = 'list' | 'claimTypeEntry' | 'eligible' | 'chargeDetails' | 'rdDocuments' | 'rdPayment' | 'rdReview' | 'refundType' | 'outbound' | 'missingDoc' | 'documents' | 'payment' | 'success' | 'nonRemittanceDocs' | 'nonRemittanceCharges' | 'nonRemittanceReview' | 'nonRemittanceSuccess' | 'nonRemittanceAck' | 'nonRemittanceClaimView' | 'claimListView' | 'claimHistory' | 'nrPaymentProcessing' | 'nrPaymentSuccess' | 'nrPaymentRejected';
+  type ClaimSubStep = 'list' | 'claimTypeEntry' | 'eligible' | 'eligibleDeclView' | 'chargeDetails' | 'rdDocuments' | 'rdPayment' | 'rdReview' | 'refundType' | 'outbound' | 'missingDoc' | 'documents' | 'payment' | 'success' | 'nonRemittanceDocs' | 'nonRemittanceCharges' | 'nonRemittanceReview' | 'nonRemittanceSuccess' | 'nonRemittanceAck' | 'nonRemittanceClaimView' | 'claimListView' | 'claimHistory' | 'nrPaymentPending' | 'nrPaymentProcessing' | 'nrPaymentSuccess' | 'nrPaymentRejected';
   const [claimDeclViewOpen, setClaimDeclViewOpen] = useState(false);
   const [claimListDeclNo, setClaimListDeclNo] = useState<string>('');
   const [claimListDeclViewOpen, setClaimListDeclViewOpen] = useState(false);
@@ -344,6 +345,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             <EligibleDeclarationsPage
               initialClaimType={selectedClaimTypeForFlow}
               onBack={() => setClaimStep('claimTypeEntry')}
+              onBackToListing={() => setClaimStep('list')}
+              onDeclarationOpen={(declNo) => { setClaimListDeclNo(declNo); setClaimStep('eligibleDeclView'); }}
               onProceed={(rows, selectedClaimType) => {
                 // Non Remittance goes to its own per-declaration docs page
                 if (selectedClaimType === 'nonRemittance') {
@@ -387,10 +390,19 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               }}
             />
           )}
+          {claimStep === 'eligibleDeclView' && (
+            <CustomsDeclarationViewPage
+              declarationNo={claimListDeclNo}
+              onBack={() => setClaimStep('eligible')}
+              onServiceCatalogue={onServiceCatalogue}
+              onHome={onClose}
+            />
+          )}
           {claimStep === 'chargeDetails' && claimSelectedRows.length > 0 && (
             <ChargeDetailsPage
               rows={claimSelectedRows}
               onBack={() => setClaimStep('eligible')}
+              onBackToListing={() => setClaimStep('list')}
               onContinue={(details) => { setClaimChargeDetails(details); setClaimStep('rdDocuments'); }}
             />
           )}
@@ -488,6 +500,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             <NonRemittanceChargesPage
               selectedRows={nonRemittanceRows}
               onBack={() => setClaimStep('nonRemittanceDocs')}
+              onBackToListing={() => setClaimStep('list')}
               onContinue={(mode, acct) => { setNonRemittancePaymentMode(mode); setNonRemittanceAccountNo(acct); setClaimStep('nonRemittanceReview'); }}
             />
           )}
@@ -497,7 +510,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               paymentMode={nonRemittancePaymentMode}
               accountNo={nonRemittanceAccountNo}
               onBack={() => setClaimStep('nonRemittanceCharges')}
-              onSubmit={() => nonRemittancePaymentMode === 'E-Payment' ? setClaimStep('nrPaymentProcessing') : setClaimStep('nonRemittanceSuccess')}
+              onSubmit={() => nonRemittancePaymentMode === 'E-Payment' ? setClaimStep('nrPaymentPending') : setClaimStep('nonRemittanceSuccess')}
               onSaveAndPreview={() => { setClaimViewReturnStep('nonRemittanceReview'); setClaimStep('nonRemittanceClaimView'); }}
               onViewClaim={() => { setClaimViewReturnStep('nonRemittanceReview'); setClaimStep('nonRemittanceClaimView'); }}
             />
@@ -530,6 +543,12 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           {claimStep === 'claimHistory' && (
             <ClaimsAuditHistoryPage
               onBack={() => setClaimStep('list')}
+            />
+          )}
+          {claimStep === 'nrPaymentPending' && (
+            <NRPaymentPendingPage
+              onBackToListing={() => { setClaimStep('list'); resetNRClaim(); }}
+              onMakePayment={() => setClaimStep('nrPaymentProcessing')}
             />
           )}
           {claimStep === 'nrPaymentProcessing' && (

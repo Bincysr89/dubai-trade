@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import SaveExitModal from './SaveExitModal';
 import ReactDOM from 'react-dom';
 import BackToListingBar from './BackToListingBar';
 import FloatingField from './FloatingField';
@@ -105,15 +106,21 @@ const PrimaryBtn = (
   </button>
 );
 
-const SaveExitBtn = ({ onBack }: { onBack: () => void }) => (
-  <button
-    onClick={onBack}
-    className="h-[48px] px-[28px] rounded-[4px] text-[16px] bg-white transition-colors hover:bg-[#f0f4ff]"
-    style={{ border: '1.5px solid #1360d2', color: '#1360d2', fontWeight: 500, fontFamily: "'Dubai', sans-serif" }}
-  >
-    Save &amp; Exit
-  </button>
-);
+const SaveExitBtn = ({ onBackToListing }: { onBackToListing: () => void }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="h-[48px] px-[28px] rounded-[4px] text-[16px] bg-white transition-colors hover:bg-[#f0f4ff]"
+        style={{ border: '1.5px solid #1360d2', color: '#1360d2', fontWeight: 500, fontFamily: "'Dubai', sans-serif" }}
+      >
+        Save &amp; Exit
+      </button>
+      {open && <SaveExitModal onCancel={() => setOpen(false)} onBackToListing={onBackToListing} />}
+    </>
+  );
+};
 
 /* ───────── Sample outbound declarations (inline picker) ───────── */
 type OutboundRow = {
@@ -1061,8 +1068,37 @@ export function DocumentUploadPage({
       activeIndex={2}
       onBack={onBack}
       onBackToListing={onBackToListing}
-      rightContent={<div className="flex items-center gap-[12px]"><SaveExitBtn onBack={onBack} /><PrimaryBtn disabled={!requiredMet} onClick={() => onContinue(docs)}>Continue</PrimaryBtn></div>}
+      rightContent={<div className="flex items-center gap-[12px]"><SaveExitBtn onBackToListing={onBackToListing} /><PrimaryBtn disabled={!requiredMet} onClick={() => onContinue(docs)}>Continue</PrimaryBtn></div>}
     >
+      {/* Mandatory Documents table */}
+      <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+        <div className="px-[20px] py-[14px]" style={{ borderBottom: '1px solid #eef1f6' }}>
+          <p className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Mandatory Documents</p>
+        </div>
+        <div className="overflow-x-auto">
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ background: '#a6c2e9' }}>
+                {['Charge Type', 'Mandatory', 'Doc. Name', 'Doc. Nature', 'Current Status'].map(h => (
+                  <th key={h} style={{ padding: '11px 16px', textAlign: 'left', fontSize: 15, fontWeight: 600, color: '#000', whiteSpace: 'nowrap' }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {MANDATORY_DOCS.default.map((doc, i) => (
+                <tr key={i} style={{ borderBottom: '1px solid #f0f3fa' }}>
+                  <td style={{ padding: '12px 16px', fontSize: 15, color: '#0e1b3d' }}>{doc.chargeType}</td>
+                  <td style={{ padding: '12px 16px', fontSize: 15, color: '#0e1b3d' }}>{doc.mandatory}</td>
+                  <td style={{ padding: '12px 16px', fontSize: 15, color: '#0e1b3d' }}>{doc.docName}</td>
+                  <td style={{ padding: '12px 16px', fontSize: 15, color: '#0e1b3d' }}>{doc.docNature}</td>
+                  <td style={{ padding: '12px 16px', fontSize: 15, color: '#dc3545', fontWeight: 500 }}>Not Submitted</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <Card>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-[20px]">
           {/* Left — doc type selection */}
@@ -1245,7 +1281,7 @@ export function PaymentDetailsPage({
       activeIndex={3}
       onBack={onBack}
       onBackToListing={onBackToListing}
-      rightContent={<div className="flex items-center gap-[12px]"><SaveExitBtn onBack={onBack} /><PrimaryBtn disabled={!valid} onClick={() => onContinue({ mode, accountNo })}>Submit Claim</PrimaryBtn></div>}
+      rightContent={<div className="flex items-center gap-[12px]"><SaveExitBtn onBackToListing={onBackToListing} /><PrimaryBtn disabled={!valid} onClick={() => onContinue({ mode, accountNo })}>Submit Claim</PrimaryBtn></div>}
     >
       <SectionHeader>Claim Summary</SectionHeader>
       <Card>
@@ -1452,10 +1488,12 @@ function autoClaimAmount(rt: RefundType | '', depositAmount: string): string {
 export function ChargeDetailsPage({
   rows,
   onBack,
+  onBackToListing,
   onContinue,
 }: {
   rows: Row[];
   onBack: () => void;
+  onBackToListing?: () => void;
   onContinue: (details: ChargeDetail[]) => void;
 }) {
   const [details, setDetails] = useState<ChargeDetail[]>(() =>
@@ -1480,12 +1518,12 @@ export function ChargeDetailsPage({
 
   return (
     <PageShell
-      title="Raise a New Claim - Declaration Details"
+      title="Raise New Claim - Refund of Deposits"
       onBack={onBack}
       activeIndex={1}
       steps={REFUND_DEPOSIT_STEPS}
       rightContent={
-        <div className="flex items-center gap-[12px]"><SaveExitBtn onBack={onBack} /><PrimaryBtn disabled={!allValid} onClick={() => allValid && onContinue(details)}>Next</PrimaryBtn></div>
+        <div className="flex items-center gap-[12px]"><SaveExitBtn onBackToListing={onBackToListing} /><PrimaryBtn disabled={!allValid} onClick={() => allValid && onContinue(details)}>Next</PrimaryBtn></div>
       }
     >
       <Card>
@@ -1712,7 +1750,7 @@ function OutboundDeclInput({ value, onChange }: { value: string; onChange: (v: s
 const CLOUD_UPLOAD_ICON = 'https://www.figma.com/api/mcp/asset/9e722d4d-9a2d-4d15-bb37-70e5aba612d5';
 const MAX_DOC_SIZE_MB = 50;
 
-type RDUploadedDoc = { id: string; declNo: string; fileName: string; fileSize: number; uploadedOn: string };
+type RDUploadedDoc = { id: string; declNo: string; fileName: string; fileSize: number; uploadedOn: string; remarks?: string };
 
 function fmtBytes(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
@@ -1749,7 +1787,9 @@ export function RDDocumentsPage({
   const handleFile = (f: File) => {
     if (!selectedDecl || f.size > MAX_DOC_SIZE_MB * 1024 * 1024) return;
     docCounter += 1;
-    setUploadedDocs(prev => [...prev, { id: `${f.name}-${f.size}-${docCounter}`, declNo: selectedDecl, fileName: f.name, fileSize: f.size, uploadedOn: today }]);
+    const capturedRemarks = remarks;
+    setUploadedDocs(prev => [...prev, { id: `${f.name}-${f.size}-${docCounter}`, declNo: selectedDecl, fileName: f.name, fileSize: f.size, uploadedOn: today, remarks: capturedRemarks || undefined }]);
+    setRemarks('');
   };
 
   const removeDoc = (id: string) => setUploadedDocs(prev => prev.filter(d => d.id !== id));
@@ -1773,7 +1813,7 @@ export function RDDocumentsPage({
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        <h1 className="px-4 sm:px-10 text-[32px] text-[#111838] mb-[8px]" style={{ fontWeight: 500 }}>Raise a New Claim - Upload Documents</h1>
+        <h1 className="px-4 sm:px-10 text-[32px] text-[#111838] mb-[8px]" style={{ fontWeight: 500 }}>Raise New Claim - Refund of Deposits</h1>
         <div className="px-4 sm:px-10 mb-[24px]">
           <ClaimStepper activeIndex={2} steps={REFUND_DEPOSIT_STEPS} />
         </div>
@@ -1874,7 +1914,7 @@ export function RDDocumentsPage({
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ background: '#a6c2e9' }}>
-                      {['Declaration Number', 'Document Name', 'Uploaded On', 'Action'].map(h => (
+                      {['Declaration Number', 'Document Name', 'Uploaded On', 'Remarks', 'Action'].map(h => (
                         <th key={h} style={{ padding: '11px 16px', textAlign: 'left', fontSize: 15, fontWeight: 600, color: '#000', whiteSpace: 'nowrap' }}>{h}</th>
                       ))}
                     </tr>
@@ -1895,6 +1935,7 @@ export function RDDocumentsPage({
                           </div>
                         </td>
                         <td style={{ padding: '12px 16px' }}><span className="text-[14px] text-[#697498]">{doc.uploadedOn}</span></td>
+                        <td style={{ padding: '12px 16px' }}><span className="text-[14px] text-[#0e1b3d]">{doc.remarks ?? '—'}</span></td>
                         <td style={{ padding: '12px 16px' }}>
                           <div className="flex items-center gap-[6px]">
                             <button type="button" title="Delete" onClick={() => removeDoc(doc.id)} className="size-[32px] inline-flex items-center justify-center rounded hover:bg-[#fef2f2] transition-colors" style={{ color: '#dc3545' }}>
@@ -1910,19 +1951,21 @@ export function RDDocumentsPage({
             </div>
           )}
 
-          {/* Remarks */}
-          <div className="bg-white rounded-[8px] px-[24px] py-[20px] flex flex-col gap-[12px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-            <p className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Remarks <span className="text-[14px] text-[#697498]" style={{ fontWeight: 400 }}>(optional)</span></p>
-            <textarea value={remarks} onChange={e => setRemarks(e.target.value)}
-              placeholder="Enter any remarks applicable to all selected declarations…" rows={3}
-              className="w-full rounded-[4px] text-[15px] text-[#0e1b3d] placeholder:text-[#b0b8d0] px-[14px] py-[10px] resize-none focus:outline-none focus:border-[#1360d2] transition-colors"
-              style={{ border: '1px solid #d5ddfb', fontFamily: "'Dubai', sans-serif", lineHeight: '22px' }} />
-          </div>
+          {/* Remarks — only shown when a declaration is selected */}
+          {selectedDecl && (
+            <div className="bg-white rounded-[8px] px-[24px] py-[20px] flex flex-col gap-[12px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+              <p className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Remarks <span className="text-[14px] text-[#697498]" style={{ fontWeight: 400 }}>(optional)</span></p>
+              <textarea value={remarks} onChange={e => setRemarks(e.target.value)}
+                placeholder="Enter any remarks for this declaration…" rows={3}
+                className="w-full rounded-[4px] text-[15px] text-[#0e1b3d] placeholder:text-[#b0b8d0] px-[14px] py-[10px] resize-none focus:outline-none focus:border-[#1360d2] transition-colors"
+                style={{ border: '1px solid #d5ddfb', fontFamily: "'Dubai', sans-serif", lineHeight: '22px' }} />
+            </div>
+          )}
         </div>
       </div>
 
       <BackToListingBar onBack={onBack} rightContent={
-        <div className="flex items-center gap-[12px]"><SaveExitBtn onBack={onBack} /><button onClick={() => onContinue(remarks)}
+        <div className="flex items-center gap-[12px]"><SaveExitBtn onBackToListing={onBackToListing} /><button onClick={() => onContinue(remarks)}
           className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors"
           style={{ background: '#1360d2', cursor: 'pointer', fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
           Next
@@ -1936,14 +1979,50 @@ export function RDDocumentsPage({
  * RDPaymentPage — Step 4: Payment Details (Refund of Deposits flow)
  * ───────────────────────────────────────────────────────────────────────────── */
 
-const RD_CHARGES = [
-  { key: 'reg', label: 'Claim Registration Charge', sub: 'Registration Fee',          amount: '100.00' },
-  { key: 'ki',  label: 'Knowledge-Innovation Dirham', sub: 'Knowledge & Innovation Fee', amount: '20.00'  },
+const RD_SUB_CHARGES = [
+  { key: 'reg', label: 'Registration Fee',                   amount: 80 },
+  { key: 'ki',  label: 'Knowledge-Innovation Dirham Charge', amount: 20 },
 ];
-const RD_PAYMENT_MODES   = ['Credit/Debit Account', 'E-Payment'];
-const RD_ACCOUNT_OPTIONS = ['1223193-SW LOGISTICS LLC', '1060423-SONY GULF UAE'];
+const RD_TOTAL = RD_SUB_CHARGES.reduce((s, c) => s + c.amount, 0);
+const RD_PAYMENT_MODES = ['Credit/Debit Account', 'E-Payment'];
+const RD_PAYMENT_REFS  = ['Account Number', 'Reference No'];
 
-type RDChargeState = { mode: string; account: string; modeOpen: boolean; accountOpen: boolean };
+function RDDirhamIcon({ size = 14, color = 'currentColor' }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size * 0.85} viewBox="0 0 20 17" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'inline', verticalAlign: 'middle', flexShrink: 0 }}>
+      <path d="M1.766 0.0195402C1.774 0.0312644 1.818 0.084023 1.86 0.134828C2.166 0.49046 2.396 1.06885 2.52 1.7977C2.602 2.27644 2.606 2.4269 2.606 4.25195V5.95195H1.77C1.006 5.95195 0.918 5.94805 0.768 5.91874C0.532 5.86988 0.288 5.73897 0.124 5.57092C-0.006 5.43609 -0.002 5.42828 0.006 5.83667C0.016 6.17471 0.02 6.21184 0.07 6.39552C0.15 6.68667 0.26 6.90356 0.426 7.09701C0.652 7.36276 0.882 7.51126 1.21 7.61092C1.28 7.63046 1.428 7.63828 1.952 7.64218L2.606 7.65195V8.49805V9.34609L1.684 9.34023L0.758 9.33437L0.598 9.27184C0.408 9.19759 0.322 9.14287 0.136 8.98069L0 8.86149L0.008 9.23471C0.018 9.58057 0.02 9.61965 0.07 9.79552C0.244 10.4169 0.664 10.8605 1.218 11.0051C1.356 11.0422 1.41 11.0441 1.988 11.052L2.606 11.0598V12.8106C2.606 13.8677 2.6 14.6474 2.59 14.7802C2.58 14.9014 2.548 15.128 2.52 15.2863C2.39 16.0152 2.156 16.5643 1.82 16.9199L1.752 16.9922H5.134C7.156 16.9922 8.668 16.9844 8.89 16.9746C9.28 16.9551 10.15 16.871 10.346 16.83C10.408 16.8183 10.524 16.8007 10.6 16.789C10.762 16.7655 11.03 16.7108 11.416 16.6151C11.96 16.4822 12.456 16.3161 12.942 16.1051C13.094 16.0386 13.53 15.8217 13.646 15.7533C13.708 15.7182 13.782 15.6752 13.81 15.6615C13.888 15.6205 14.018 15.5384 14.208 15.4055C14.302 15.3391 14.396 15.2746 14.416 15.2609C14.5 15.2062 14.79 14.9698 14.922 14.8506C15.424 14.3992 15.844 13.897 16.17 13.3597C16.216 13.2815 16.276 13.1838 16.302 13.1428C16.368 13.0333 16.64 12.4862 16.666 12.4041C16.678 12.367 16.694 12.3279 16.702 12.3201C16.754 12.2537 17.054 11.3314 17.09 11.1301C17.102 11.0656 17.108 11.0559 17.158 11.0461C17.19 11.0402 17.656 11.0402 18.194 11.0441C19.27 11.052 19.27 11.052 19.508 11.1594C19.642 11.22 19.682 11.2474 19.83 11.3783C20.024 11.5483 20.006 11.5756 19.994 11.1497C19.986 10.8995 19.976 10.7452 19.958 10.6826C19.89 10.4423 19.874 10.3915 19.814 10.2703C19.618 9.85218 19.29 9.55322 18.87 9.41057L18.706 9.35195L18.038 9.34414L17.372 9.33437L17.38 9.10575C17.388 8.80483 17.388 8.20885 17.378 7.90207L17.37 7.65586L18.262 7.65195C19.026 7.64805 19.168 7.65195 19.252 7.67345C19.504 7.74184 19.674 7.83563 19.882 8.02126L19.998 8.12678V7.83759C19.998 7.49368 19.98 7.34126 19.908 7.1146C19.766 6.6554 19.486 6.31345 19.086 6.10241C18.826 5.96563 18.81 5.96172 17.916 5.95586C17.392 5.95195 17.118 5.94414 17.104 5.93241C17.092 5.92069 17.082 5.90115 17.082 5.88552C17.082 5.86989 17.052 5.74678 17.012 5.61391C16.544 3.99793 15.67 2.71414 14.392 1.76253C14.218 1.63161 13.792 1.35609 13.62 1.2623C13.554 1.22517 13.482 1.18609 13.464 1.17437C13.38 1.12943 12.898 0.898851 12.778 0.85C12.706 0.818736 12.612 0.779655 12.57 0.764023C11.864 0.465057 10.68 0.181724 9.776 0.0937931C9.628 0.0801149 9.432 0.0586207 9.342 0.0508046C8.934 0.00586207 8.368 0 5.154 0C2.438 0 1.756 0.00586207 1.766 0.0195402ZM8.38 0.865632C9.056 0.904713 9.472 0.955517 9.958 1.0708C11.442 1.41471 12.486 2.14161 13.244 3.35701C13.314 3.47034 13.61 4.06046 13.654 4.17966C13.864 4.73264 13.966 5.06092 14.056 5.49471C14.078 5.60023 14.108 5.74092 14.122 5.80736C14.136 5.87184 14.142 5.93241 14.136 5.93828C14.126 5.94609 12.118 5.95 9.67 5.94805L5.22 5.94414L5.214 3.43322C5.212 2.05368 5.214 0.906667 5.22 0.885172L5.228 0.848046H6.65C7.43 0.848046 8.21 0.855862 8.38 0.865632ZM14.33 7.71057C14.344 7.7946 14.344 9.22103 14.33 9.29138L14.318 9.34414L9.768 9.34023L5.22 9.33437L5.216 8.50586C5.212 8.05057 5.216 7.67149 5.22 7.66368C5.226 7.65391 7.164 7.64805 9.774 7.64805H14.318L14.33 7.71057ZM14.126 11.0656C14.136 11.0949 14.088 11.3353 13.99 11.7261C13.878 12.1657 13.726 12.6093 13.572 12.9376C13.496 13.1056 13.306 13.4691 13.26 13.5375C13.238 13.5687 13.174 13.6684 13.118 13.7563C12.758 14.3074 12.244 14.8095 11.658 15.1808C11.444 15.3137 11.004 15.5403 10.886 15.5755C10.862 15.5814 10.836 15.5931 10.826 15.6009C10.812 15.6126 10.63 15.6791 10.418 15.7533C10.028 15.8882 9.286 16.0347 8.69 16.0953C8.304 16.1324 8.242 16.1344 6.756 16.1344H5.218V13.6V11.0637L9.636 11.0559C12.066 11.052 14.068 11.0461 14.084 11.0422C14.102 11.0402 14.12 11.052 14.126 11.0656Z" fill={color} />
+    </svg>
+  );
+}
+
+function RDPlainSelect({ value, onChange, options, disabled }: { value: string; onChange: (v: string) => void; options: string[]; disabled?: boolean }) {
+  const [open, setOpen] = useState(false);
+  const f = "'Dubai', sans-serif";
+  return (
+    <div className="relative">
+      <button type="button" onClick={() => !disabled && setOpen(o => !o)}
+        className="w-full flex items-center px-[12px]"
+        style={{ height: 56, border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}`, borderRadius: 4, fontFamily: f, background: disabled ? '#f4f6fb' : '#fff', cursor: disabled ? 'not-allowed' : 'pointer' }}>
+        <span className="flex-1 text-left text-[16px]" style={{ color: disabled ? '#b0b8cc' : value ? '#051937' : '#697498' }}>{value || 'Select'}</span>
+        <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke={disabled ? '#b0b8cc' : '#697498'} strokeWidth="2" className={`flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}>
+          <path d="M5 8l5 5 5-5" />
+        </svg>
+      </button>
+      {open && !disabled && (
+        <ul className="absolute z-[50] left-0 right-0 bg-white rounded-[6px] py-[4px]"
+          style={{ top: 52, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
+          {options.map(opt => (
+            <li key={opt} onClick={() => { onChange(opt); setOpen(false); }}
+              className="px-[12px] py-[10px] text-[16px] cursor-pointer hover:bg-[#e2ebf9] transition-colors"
+              style={{ color: opt === value ? '#1360d2' : '#051937', fontWeight: opt === value ? 500 : 400, fontFamily: f }}>
+              {opt}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
 
 export type RDPaymentInfo = { charges: { key: string; mode: string; account: string }[]; remarks: string };
 
@@ -1953,29 +2032,15 @@ export function RDPaymentPage({
   onBack: () => void;
   onContinue: (info: RDPaymentInfo) => void;
 }) {
-  const [charges, setCharges] = useState<Record<string, RDChargeState>>(
-    Object.fromEntries(RD_CHARGES.map(c => [c.key, { mode: '', account: '', modeOpen: false, accountOpen: false }]))
-  );
+  const [paymentMode, setPaymentMode] = useState('Credit/Debit Account');
+  const [paymentRef,  setPaymentRef]  = useState('Account Number');
   const [remarks, setRemarks] = useState('');
-
-  const update = (key: string, patch: Partial<RDChargeState>) =>
-    setCharges(prev => ({ ...prev, [key]: { ...prev[key], ...patch } }));
-
-  const closeAll = (exceptKey?: string, exceptField?: 'modeOpen' | 'accountOpen') =>
-    setCharges(prev => {
-      const next = { ...prev };
-      RD_CHARGES.forEach(c => {
-        if (c.key !== exceptKey) { next[c.key] = { ...next[c.key], modeOpen: false, accountOpen: false }; }
-        else if (exceptField) { const other = exceptField === 'modeOpen' ? 'accountOpen' : 'modeOpen'; next[c.key] = { ...next[c.key], [other]: false }; }
-      });
-      return next;
-    });
-
-  const allFilled = RD_CHARGES.every(c => charges[c.key].mode);
-  const total = RD_CHARGES.reduce((s, c) => s + parseFloat(c.amount), 0).toFixed(2);
+  const f = "'Dubai', sans-serif";
+  const rdIsEPayment = paymentMode === 'E-Payment';
+  const handleRDPaymentMode = (v: string) => { setPaymentMode(v); if (v === 'E-Payment') setPaymentRef('Reference No'); else setPaymentRef('Account Number'); };
 
   return (
-    <div className="flex flex-col bg-[#f8fafd] h-full" style={{ fontFamily: "'Dubai', sans-serif" }}>
+    <div className="flex flex-col bg-[#f8fafd] h-full" style={{ fontFamily: f }}>
       <div className="flex items-start justify-between px-4 sm:px-10 pt-[24px] pb-[12px] flex-wrap gap-[12px] flex-shrink-0">
         <div className="flex items-center gap-[6px]">
           <span className="text-[16px] text-[#8f94ae]">Home</span>
@@ -1990,78 +2055,75 @@ export function RDPaymentPage({
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        <h1 className="px-4 sm:px-10 text-[32px] text-[#111838] mb-[8px]" style={{ fontWeight: 500 }}>Raise a New Claim - Payment Details</h1>
+        <h1 className="px-4 sm:px-10 text-[32px] text-[#111838] mb-[8px]" style={{ fontWeight: 500 }}>Raise New Claim - Refund of Deposits</h1>
         <div className="px-4 sm:px-10 mb-[24px]">
           <ClaimStepper activeIndex={3} steps={REFUND_DEPOSIT_STEPS} />
         </div>
 
-        <div className="px-4 sm:px-10 pb-[32px] flex flex-col gap-[20px]">
-          {/* Payment table card */}
-          <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-            <div className="px-[24px] py-[18px]" style={{ borderBottom: '1px solid #eef1f6' }}>
-              <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Payment Details</p>
-            </div>
-            <div className="overflow-x-auto">
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: "'Dubai', sans-serif" }}>
-                <thead>
-                  <tr style={{ background: '#a6c2e9' }}>
-                    {['Charge Description', 'Sub Type', 'Amount (AED)', 'Payment Mode', 'Account No.'].map(h => (
-                      <th key={h} style={{ padding: '11px 16px', textAlign: 'left', fontSize: 15, fontWeight: 600, color: '#000', whiteSpace: 'nowrap' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {RD_CHARGES.map(c => {
-                    const s = charges[c.key];
-                    return (
-                      <tr key={c.key} style={{ borderBottom: '1px solid #f0f3fa' }}>
-                        <td style={{ padding: '14px 16px', fontSize: 16, color: '#0e1b3d', fontWeight: 500 }}>{c.label}</td>
-                        <td style={{ padding: '14px 16px', fontSize: 15, color: '#455174' }}>{c.sub}</td>
-                        <td style={{ padding: '14px 16px', fontSize: 16, color: '#0e1b3d', fontWeight: 500, whiteSpace: 'nowrap' }}>AED {c.amount}</td>
-                        <td style={{ padding: '10px 16px', minWidth: 200 }}>
-                          <RDDropdown value={s.mode} options={RD_PAYMENT_MODES} open={s.modeOpen} placeholder="Select Mode"
-                            onToggle={() => { closeAll(c.key, 'modeOpen'); update(c.key, { modeOpen: !s.modeOpen }); }}
-                            onSelect={v => { update(c.key, { mode: v, account: '', modeOpen: false }); }} />
-                        </td>
-                        <td style={{ padding: '10px 16px', minWidth: 220 }}>
-                          {s.mode === 'Credit/Debit Account'
-                            ? <RDDropdown value={s.account} options={RD_ACCOUNT_OPTIONS} open={s.accountOpen} placeholder="Select Account"
-                                onToggle={() => { closeAll(c.key, 'accountOpen'); update(c.key, { accountOpen: !s.accountOpen }); }}
-                                onSelect={v => update(c.key, { account: v, accountOpen: false })} />
-                            : <span className="text-[14px] text-[#697498]">{s.mode ? '—' : ''}</span>
-                          }
-                        </td>
-                      </tr>
-                    );
-                  })}
-                  {/* Total row */}
-                  <tr style={{ background: '#f4f7fc' }}>
-                    <td colSpan={2} style={{ padding: '12px 16px', fontSize: 15, color: '#455174', fontWeight: 600 }}>Total</td>
-                    <td style={{ padding: '12px 16px', fontSize: 16, color: '#0e1b3d', fontWeight: 700 }}>AED {total}</td>
-                    <td colSpan={2} />
-                  </tr>
-                </tbody>
-              </table>
+        <div className="px-4 sm:px-10 pb-[32px] flex flex-col gap-[24px]">
+          {/* Payment card */}
+          <div className="bg-white rounded-[8px] p-[24px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.07)' }}>
+            <h2 className="text-[20px] text-[#051937] mb-[16px]" style={{ fontFamily: f, fontWeight: 500 }}>Payment Details</h2>
+            <div className="rounded-[8px]" style={{ border: '1px solid #c4d8f5' }}>
+              {/* Header */}
+              <div className="flex" style={{ background: '#a6c2e9', borderRadius: '8px 8px 0 0' }}>
+                <div className="h-[44px] flex items-center pl-[20px]" style={{ flex: '0 0 50%' }}>
+                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: f, fontWeight: 500 }}>Charges</span>
+                </div>
+                <div className="h-[44px] flex items-center pl-[8px] flex-1">
+                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: f, fontWeight: 500 }}>Payment Mode</span>
+                </div>
+                <div className="h-[44px] flex items-center pl-[8px] flex-1">
+                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: f, fontWeight: 500 }}>Payment Reference</span>
+                </div>
+              </div>
+              {/* Other Charges row */}
+              <div className="flex flex-col lg:flex-row gap-[20px] py-[20px] bg-white">
+                <div className="flex flex-col gap-[10px] w-full lg:w-[calc(50%-10px)]">
+                  <div className="flex items-center h-[49px] gap-[12px] px-[12px]" style={{ background: '#eff2f7' }}>
+                    <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: f, fontWeight: 600, width: 320 }}>Total Charges</span>
+                    <span className="flex items-center gap-[4px] text-[20px] text-[#051937]" style={{ fontFamily: f, fontWeight: 700 }}>
+                      <RDDirhamIcon size={16} color="#051937" />{RD_TOTAL}
+                    </span>
+                  </div>
+                  {RD_SUB_CHARGES.map((c, i) => (
+                    <div key={i} className="flex items-start gap-[12px] px-[12px]">
+                      <span className="text-[16px] text-[#696f83]" style={{ fontFamily: f, fontWeight: 500, width: 320, whiteSpace: 'nowrap' }}>{c.label}</span>
+                      <span className="flex items-center gap-[4px] text-[16px] text-[#051937]" style={{ fontFamily: f, fontWeight: 700 }}>
+                        <RDDirhamIcon size={13} color="#051937" />{c.amount}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex-1">
+                  <RDPlainSelect value={paymentMode} onChange={handleRDPaymentMode} options={RD_PAYMENT_MODES} />
+                </div>
+                <div className="flex-1">
+                  <RDPlainSelect value={paymentRef} onChange={setPaymentRef} options={RD_PAYMENT_REFS} disabled={rdIsEPayment} />
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Remarks */}
-          <div className="bg-white rounded-[8px] px-[24px] py-[20px] flex flex-col gap-[12px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+          <div className="bg-white rounded-[8px] px-[24px] py-[20px] flex flex-col gap-[12px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.07)' }}>
             <p className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Remarks <span className="text-[14px] text-[#697498]" style={{ fontWeight: 400 }}>(optional)</span></p>
             <textarea value={remarks} onChange={e => setRemarks(e.target.value)} placeholder="Enter payment remarks…" rows={3}
               className="w-full rounded-[4px] text-[15px] text-[#0e1b3d] placeholder:text-[#b0b8d0] px-[14px] py-[10px] resize-none focus:outline-none focus:border-[#1360d2] transition-colors"
-              style={{ border: '1px solid #d5ddfb', fontFamily: "'Dubai', sans-serif", lineHeight: '22px' }} />
+              style={{ border: '1px solid #d5ddfb', fontFamily: f, lineHeight: '22px' }} />
           </div>
         </div>
       </div>
 
       <BackToListingBar onBack={onBack} rightContent={
-        <div className="flex items-center gap-[12px]"><SaveExitBtn onBack={onBack} /><button onClick={() => allFilled && onContinue({ charges: RD_CHARGES.map(c => ({ key: c.key, mode: charges[c.key].mode, account: charges[c.key].account })), remarks })}
-          disabled={!allFilled}
-          className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors"
-          style={{ background: allFilled ? '#1360d2' : '#a7c3eb', cursor: allFilled ? 'pointer' : 'not-allowed', fontWeight: 500, boxShadow: allFilled ? '0px 0px 8px rgba(28,72,191,0.16)' : 'none' }}>
-          Next
-        </button></div>
+        <div className="flex items-center gap-[12px]">
+          <SaveExitBtn onBackToListing={onBackToListing} />
+          <button onClick={() => onContinue({ charges: RD_SUB_CHARGES.map(c => ({ key: c.key, mode: paymentMode, account: paymentRef })), remarks })}
+            className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors"
+            style={{ background: '#1360d2', fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
+            Next
+          </button>
+        </div>
       } />
     </div>
   );
@@ -2141,17 +2203,22 @@ export function RDReviewPage({
           <span className="text-[16px] text-[#dc3545]">/</span>
           <span className="text-[16px] text-[#111838]" style={{ fontWeight: 500 }}>Integrated Clearance</span>
         </div>
-        <button
-          onClick={() => onViewClaim?.()}
-          className="h-[40px] px-[20px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
-          style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}
-        >
-          View Claim
-        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        <h1 className="px-4 sm:px-10 text-[32px] text-[#111838] mb-[8px]" style={{ fontWeight: 500 }}>Raise a New Claim - Review & Submit</h1>
+        <div className="px-4 sm:px-10 mb-[8px] flex items-center justify-between flex-wrap gap-[12px]">
+          <div className="flex items-center gap-[16px] flex-wrap">
+            <h1 className="text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>Raise New Claim - Refund of Deposits</h1>
+            <span className="text-[14px] px-[10px] py-[3px] rounded-[4px]" style={{ background: 'rgba(19,96,210,0.10)', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap' }}>Refund of Deposits</span>
+          </div>
+          <button
+            onClick={() => onViewClaim?.()}
+            className="h-[40px] px-[20px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
+            style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}
+          >
+            View Claim
+          </button>
+        </div>
 
         <div className="px-4 sm:px-10 pb-[32px] flex flex-col gap-[20px]">
           {/* Charge details summary */}

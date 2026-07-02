@@ -20,7 +20,7 @@ export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPre
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full" style={{ fontFamily: font }}>
       {/* Breadcrumb */}
-      <div className="flex items-start justify-between px-4 sm:px-10 pt-[24px] pb-[12px] flex-wrap gap-[12px] flex-shrink-0 bg-[#f8fafd]">
+      <div className="flex items-start px-4 sm:px-10 pt-[24px] pb-[12px] flex-wrap gap-[12px] flex-shrink-0 bg-[#f8fafd]">
         <div className="flex items-center gap-[6px]">
           <span className="text-[16px] text-[#8f94ae]">Home</span>
           <span className="text-[16px] text-[#dc3545]">/</span>
@@ -28,18 +28,23 @@ export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPre
           <span className="text-[16px] text-[#dc3545]">/</span>
           <span className="text-[16px] text-[#111838]" style={{ fontWeight: 500 }}>Integrated Clearance</span>
         </div>
-        <button
-          onClick={() => onViewClaim?.()}
-          className="h-[40px] px-[20px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
-          style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
-        >
-          View Claim
-        </button>
       </div>
 
       {/* Scrollable body */}
       <div className="flex-1 overflow-y-auto">
-        <h1 className="px-4 sm:px-10 text-[32px] text-[#111838] mb-[8px]" style={{ fontWeight: 500 }}>Raise New Claim</h1>
+        <div className="px-4 sm:px-10 mb-[8px] flex items-center justify-between flex-wrap gap-[12px]">
+          <div className="flex items-center gap-[16px] flex-wrap">
+            <h1 className="text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>Raise New Claim - Non Remittance</h1>
+            <span className="text-[14px] px-[10px] py-[3px] rounded-[4px]" style={{ background: 'rgba(19,96,210,0.10)', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap' }}>Non Remittance</span>
+          </div>
+          <button
+            onClick={() => onViewClaim?.()}
+            className="h-[40px] px-[20px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
+            style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
+          >
+            View Claim
+          </button>
+        </div>
 
         <div className="px-4 sm:px-10 pb-[32px] flex flex-col gap-[20px]">
           {/* Claimant Details */}

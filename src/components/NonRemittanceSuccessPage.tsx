@@ -23,7 +23,10 @@ export default function NonRemittanceSuccessPage({ onBack, onViewAck, onViewClai
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
-        <h1 className="text-[32px] text-[#111838] mb-[8px]" style={{ fontWeight: 500 }}>Raise New Claim</h1>
+        <div className="flex items-center gap-[16px] flex-wrap mb-[8px]">
+          <h1 className="text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>Raise New Claim - Non Remittance</h1>
+          <span className="text-[14px] px-[10px] py-[3px] rounded-[4px]" style={{ background: 'rgba(19,96,210,0.10)', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: font }}>Non Remittance</span>
+        </div>
 
         {/* Success card */}
         <div className="bg-white rounded-[8px] flex flex-col items-center gap-[32px] px-[24px] py-[60px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>

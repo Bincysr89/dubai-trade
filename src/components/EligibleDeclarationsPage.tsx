@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import SaveExitModal from './SaveExitModal';
 import Pagination from './Pagination';
 import BackToListingBar from './BackToListingBar';
 import FloatingField from './FloatingField';
@@ -555,8 +556,10 @@ const ROWS: Row[] = [
 
 type Props = {
   onBack: () => void;
+  onBackToListing?: () => void;
   initialClaimType?: ClaimType | null;
   onProceed?: (rows: Row[], claimType: ClaimType) => void;
+  onDeclarationOpen?: (declNo: string) => void;
 };
 
 const CLAIM_TYPE_OPTIONS: { id: ClaimType; title: string; sub: string; icon: React.ReactNode }[] = [
@@ -641,8 +644,9 @@ const IMPORTER_CODE_NAMES: Record<string, string> = {
 const codeWithName = (code: string) =>
   IMPORTER_CODE_NAMES[code] ? `${code} - ${IMPORTER_CODE_NAMES[code]}` : code;
 
-export default function EligibleDeclarationsPage({ onBack, initialClaimType, onProceed }: Props) {
+export default function EligibleDeclarationsPage({ onBack, onBackToListing, initialClaimType, onProceed, onDeclarationOpen }: Props) {
   const [claimType, setClaimType] = useState<ClaimType | null>(initialClaimType ?? null);
+  const [showSaveModal, setShowSaveModal] = useState(false);
   const [searchType, setSearchType] = useState<'Declaration Number' | 'Owner Code'>('Declaration Number');
   const [searchTypeOpen, setSearchTypeOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
@@ -733,6 +737,8 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
         { label: 'Declaration Clearance Date',   w: 180 },
         { label: 'Declaration Type',             w: 180 },
         { label: 'Owner Code',                   w: 260 },
+        { label: 'Claim Expiry',                 w: 130 },
+        { label: 'Export Expiry',                w: 130 },
         { label: 'Remarks',                      w: 110 },
       ]
     : [
@@ -1161,8 +1167,9 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
                   filtered.map((row, i) => {
                     const expired = row.kind === 'expired';
                     const isSelected = selectedDecls.has(row.declarationNo);
+                    const atLimit = selectedDecls.size >= 10 && !isSelected;
                     const toggleRow = () => {
-                      if (expired) return;
+                      if (expired || atLimit) return;
                       setSelectedDecls((prev) => {
                         const next = new Set(prev);
                         if (next.has(row.declarationNo)) {
@@ -1184,16 +1191,16 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
                     );
                     const txt = (v: React.ReactNode) => <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{v}</span>;
                     return (
-                      <tr key={i} className={`${expired ? 'is-disabled' : ''} ${isSelected ? 'is-selected' : ''}`.trim()} onClick={toggleRow} style={{ cursor: expired ? 'default' : 'pointer' }}>
+                      <tr key={i} className={`${expired ? 'is-disabled' : ''} ${isSelected ? 'is-selected' : ''}`.trim()} onClick={toggleRow} style={{ cursor: expired || atLimit ? 'default' : 'pointer' }}>
                         <td style={{ background: isSelected ? '#f6f9fe' : '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 48 }}>
                           <button
                             type="button"
-                            disabled={expired}
+                            disabled={expired || atLimit}
                             onClick={(e) => { e.stopPropagation(); toggleRow(); }}
                             role="checkbox"
                             aria-checked={isSelected}
                             className="size-[20px] rounded-[4px] inline-flex items-center justify-center"
-                            style={{ border: `2px solid ${isSelected ? '#1360d2' : '#a7abb2'}`, opacity: expired ? 0.5 : 1, cursor: expired ? 'not-allowed' : 'pointer', background: isSelected ? '#1360d2' : '#fff' }}
+                            style={{ border: `2px solid ${isSelected ? '#1360d2' : '#a7abb2'}`, opacity: (expired || atLimit) ? 0.4 : 1, cursor: (expired || atLimit) ? 'not-allowed' : 'pointer', background: isSelected ? '#1360d2' : '#fff' }}
                           >
                             {isSelected && <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8l3 3 7-7" /></svg>}
                           </button>
@@ -1201,7 +1208,7 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
                         {cell(
                           <a
                             href="#"
-                            onClick={(e) => e.preventDefault()}
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDeclarationOpen?.(row.declarationNo); }}
                             className="text-[16px] text-[#1360d2] hover:underline whitespace-nowrap"
                             style={{ fontWeight: 500 }}
                           >{row.declarationNo}</a>,
@@ -1212,6 +1219,8 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
                           <>
                             {cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.declarationCategory ?? 'Freezone Export'}</span>, 180)}
                             {cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.importerCode ? codeWithName(row.importerCode) : '—'}</span>, 140)}
+                            {cell(<span className="text-[16px] whitespace-nowrap" style={{ color: '#dc3545', fontWeight: 500 }}>{row.claimExpiry}</span>, 130)}
+                            {cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.exportExpiry}</span>, 130)}
                           </>
                         ) : (
                           <>
@@ -1262,12 +1271,19 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
           const selectedRows = filtered.filter((r) => selectedDecls.has(r.declarationNo));
           const enabled = selectedRows.length > 0;
           return (
-            <div className="flex items-center gap-[16px]">
+            <div className="flex items-center gap-[12px]">
               {enabled && (
                 <span className="text-[16px] text-[#455174]" style={{ fontFamily: "'Dubai', sans-serif" }}>
                   {selectedRows.length} declaration{selectedRows.length !== 1 ? 's' : ''} selected
                 </span>
               )}
+              <button
+                onClick={() => setShowSaveModal(true)}
+                className="h-[48px] px-[28px] rounded-[4px] text-[16px] bg-white transition-colors hover:bg-[#f0f4ff]"
+                style={{ border: '1.5px solid #1360d2', color: '#1360d2', fontWeight: 500, fontFamily: "'Dubai', sans-serif" }}
+              >
+                Save &amp; Exit
+              </button>
               <button
                 disabled={!enabled}
                 onClick={() => { if (enabled && claimType) onProceed?.(selectedRows, claimType); }}
@@ -1286,7 +1302,7 @@ export default function EligibleDeclarationsPage({ onBack, initialClaimType, onP
           );
         })()}
       />
-
+      {showSaveModal && <SaveExitModal onCancel={() => setShowSaveModal(false)} onBackToListing={onBackToListing ?? onBack} />}
     </div>
   );
 }
