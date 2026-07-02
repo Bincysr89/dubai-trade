@@ -38,7 +38,7 @@ const LABELS: Record<FlyoutId, string> = {
   viewDocs:     'View Document Required Details',
   history:      'Audit History',
   uploadDoc:    'Upload Document',
-  printReceipt: 'Print Claim Submission Receipt',
+  printReceipt: 'Print Claim Acknowledgment Receipt',
   continue:     'Continue',
 };
 
@@ -309,7 +309,8 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
                 if (id === 'view')     onView?.();
                 if (id === 'amend')    onAmend?.();
                 if (id === 'cancel')   onCancel?.();
-                if (id === 'print')    onPrint?.();
+                if (id === 'print')       onPrint?.();
+                if (id === 'printReceipt') onPrint?.();
                 if (id === 'viewDocs') onViewDocs?.();
                 if (id === 'history')  onHistory?.();
               }}
