@@ -31,9 +31,8 @@ export default function NRPaymentSuccessPage({
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
-        <div className="flex items-center gap-[16px] flex-wrap mb-[24px]">
+        <div className="mb-[24px]">
           <h1 className="text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>Raise New Claim - Non Remittance</h1>
-          <span className="text-[14px] px-[10px] py-[3px] rounded-[4px]" style={{ background: 'rgba(19,96,210,0.10)', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: font }}>Non Remittance</span>
         </div>
         <div
           className="bg-white rounded-[8px] flex flex-col items-center gap-[28px] px-[20px] py-[48px]"

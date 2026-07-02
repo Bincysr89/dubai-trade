@@ -73,9 +73,8 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        <div className="px-4 sm:px-10 flex items-center gap-[16px] flex-wrap mb-[8px]">
+        <div className="px-4 sm:px-10 mb-[8px]">
           <h1 className="text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>Raise New Claim - Non Remittance</h1>
-          <span className="text-[14px] px-[10px] py-[3px] rounded-[4px]" style={{ background: 'rgba(19,96,210,0.10)', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: font }}>Non Remittance</span>
         </div>
         <div className="px-4 sm:px-10 mb-[24px]">
           <ClaimStepper activeIndex={2} steps={NR_CLAIM_STEPS} />

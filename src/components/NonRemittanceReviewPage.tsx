@@ -35,7 +35,6 @@ export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPre
         <div className="px-4 sm:px-10 mb-[8px] flex items-center justify-between flex-wrap gap-[12px]">
           <div className="flex items-center gap-[16px] flex-wrap">
             <h1 className="text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>Raise New Claim - Non Remittance</h1>
-            <span className="text-[14px] px-[10px] py-[3px] rounded-[4px]" style={{ background: 'rgba(19,96,210,0.10)', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap' }}>Non Remittance</span>
           </div>
           <button
             onClick={() => onViewClaim?.()}
