@@ -42,7 +42,7 @@ import SuspensionHistoryViewPage from './SuspensionHistoryViewPage';
 import SuspensionResponsePage from './SuspensionResponsePage';
 import SuspensionSuccessModal from './SuspensionSuccessModal';
 import ClaimSubmittedSuccessPage from './ClaimSubmittedSuccessPage';
-import NonRemittanceDocumentsPage from './NonRemittanceDocumentsPage';
+import NonRemittanceDocumentsPage, { type UploadedDoc as NRUploadedDoc } from './NonRemittanceDocumentsPage';
 import ClaimTypeEntryPage from './ClaimTypeEntryPage';
 import NonRemittanceChargesPage from './NonRemittanceChargesPage';
 import NonRemittanceReviewPage from './NonRemittanceReviewPage';
@@ -227,6 +227,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
   const [claimStep, setClaimStep] = useState<ClaimSubStep>('list');
   const [claimContext, setClaimContext] = useState<{ claimType: ClaimType; declarationNo: string; depositType: string; declarationCategory: string | null; refundType?: RefundType; allowedRefundTypes?: RefundType[] } | null>(null);
   const [nonRemittanceRows, setNonRemittanceRows] = useState<Row[]>([]);
+  const [nonRemittanceUploadedDocs, setNonRemittanceUploadedDocs] = useState<NRUploadedDoc[]>([]);
   const [nonRemittancePaymentMode, setNonRemittancePaymentMode] = useState('');
   const [nonRemittanceAccountNo, setNonRemittanceAccountNo] = useState('');
   const [selectedClaimTypeForFlow, setSelectedClaimTypeForFlow] = useState<ClaimType | null>(null);
@@ -494,6 +495,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               onBack={() => setClaimStep('eligible')}
               onBackToListing={() => { setClaimStep('list'); resetNRClaim(); }}
               onContinue={() => setClaimStep('nonRemittanceCharges')}
+              onUploadedDocsChange={setNonRemittanceUploadedDocs}
             />
           )}
           {claimStep === 'nonRemittanceCharges' && (
@@ -531,12 +533,14 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           {claimStep === 'nonRemittanceClaimView' && (
             <NonRemittanceClaimViewPage
               selectedRows={nonRemittanceRows}
+              uploadedDocs={nonRemittanceUploadedDocs}
               onBack={() => setClaimStep(claimViewReturnStep)}
             />
           )}
           {claimStep === 'claimListView' && (
             <NonRemittanceClaimViewPage
               selectedRows={[]}
+              uploadedDocs={[]}
               onBack={() => setClaimStep('list')}
             />
           )}

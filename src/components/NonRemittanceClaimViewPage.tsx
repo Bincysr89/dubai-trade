@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Row } from './EligibleDeclarationsPage';
+import type { UploadedDoc } from './NonRemittanceDocumentsPage';
 import Dh from './Dh';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
@@ -32,9 +33,9 @@ const versionRows = [
   { version: 'Version 1', submittedDate: '29/06/2026, 10:14', status: 'Under Processing', isCurrentlyViewing: true },
 ];
 
-type Props = { onBack: () => void; selectedRows: Row[] };
+type Props = { onBack: () => void; selectedRows: Row[]; uploadedDocs?: UploadedDoc[] };
 
-export default function NonRemittanceClaimViewPage({ onBack, selectedRows }: Props) {
+export default function NonRemittanceClaimViewPage({ onBack, selectedRows, uploadedDocs = [] }: Props) {
   const displayRows = selectedRows.length > 0 ? selectedRows : [
     { declarationNo: '3030004738426', declarationDate: '01/01/2026', depositType: 'Non Remittance Claim', declarationCategory: null, depositAmount: 'N/A', depositMethod: 'N/A', claimExpiry: '', exportExpiry: '', remarks: 'Sample remark', kind: 'request' as const },
   ];
@@ -140,6 +141,39 @@ export default function NonRemittanceClaimViewPage({ onBack, selectedRows }: Pro
                   ))}
                 </tbody>
               </table>
+            </div>
+          </Section>
+
+          {/* Uploaded Documents */}
+          <Section title="Uploaded Documents">
+            <div className="px-[16px] py-[12px] overflow-x-auto">
+              {uploadedDocs.length === 0 ? (
+                <p className="text-[16px] py-[8px]" style={{ color: '#697498', fontFamily: font }}>No documents uploaded.</p>
+              ) : (
+                <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontFamily: font, minWidth: 700 }}>
+                  <thead>
+                    <tr>
+                      {['S.No', 'Declaration No.', 'Document Type', 'File Name', 'Uploaded On', 'Remarks'].map(h => (
+                        <th key={h} style={{ background: '#a6c2e9', padding: '10px 14px', textAlign: 'left', borderBottom: '1px solid #e8edf5', whiteSpace: 'nowrap' }}>
+                          <span className="text-[16px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>{h}</span>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {uploadedDocs.map((doc, i) => (
+                      <tr key={doc.id} style={{ borderBottom: '1px solid #f0f3fa' }}>
+                        <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{i + 1}</span></td>
+                        <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#1360d2', fontFamily: font, fontWeight: 500 }}>{doc.declNo}</span></td>
+                        <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{doc.docType}</span></td>
+                        <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{doc.fileName}</span></td>
+                        <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{doc.uploadedOn}</span></td>
+                        <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#697498', fontFamily: font }}>{doc.remarks || '—'}</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </Section>
 

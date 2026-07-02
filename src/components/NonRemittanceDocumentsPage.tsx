@@ -17,7 +17,7 @@ const MANDATORY_DOCS = [
   { docName: 'Other Documents',          docNature: 'Any',                  mandatory: false },
 ];
 
-type UploadedDoc = {
+export type UploadedDoc = {
   id: string;
   declNo: string;
   docType: string;
@@ -32,6 +32,7 @@ type Props = {
   onBack: () => void;
   onContinue: () => void;
   onBackToListing: () => void;
+  onUploadedDocsChange?: (docs: UploadedDoc[]) => void;
 };
 
 function formatBytes(bytes: number) {
@@ -71,11 +72,14 @@ function DeclDropdown({ value, options, onChange }: { value: string; options: st
   );
 }
 
-export default function NonRemittanceDocumentsPage({ rows, onBack, onContinue, onBackToListing }: Props) {
+export default function NonRemittanceDocumentsPage({ rows, onBack, onContinue, onBackToListing, onUploadedDocsChange }: Props) {
   const [selectedDecl, setSelectedDecl] = useState<string>(rows[0]?.declarationNo ?? '');
   const [selectedDocType, setSelectedDocType] = useState<string>('');
   const [remarks, setRemarks] = useState('');
   const [uploadedDocs, setUploadedDocs] = useState<UploadedDoc[]>([]);
+  const updateDocs = (fn: (prev: UploadedDoc[]) => UploadedDoc[]) => {
+    setUploadedDocs(prev => { const next = fn(prev); onUploadedDocsChange?.(next); return next; });
+  };
   const [dragging, setDragging] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -87,7 +91,7 @@ export default function NonRemittanceDocumentsPage({ rows, onBack, onContinue, o
     if (!selectedDecl || !selectedDocType) return;
     if (f.size > MAX_SIZE_MB * 1024 * 1024) return;
     docCounter += 1;
-    setUploadedDocs(prev => [...prev, {
+    updateDocs(prev => [...prev, {
       id: `${f.name}-${f.size}-${docCounter}`,
       declNo: selectedDecl,
       docType: selectedDocType,
@@ -99,7 +103,7 @@ export default function NonRemittanceDocumentsPage({ rows, onBack, onContinue, o
     setRemarks('');
   };
 
-  const removeDoc = (id: string) => setUploadedDocs(prev => prev.filter(d => d.id !== id));
+  const removeDoc = (id: string) => updateDocs(prev => prev.filter(d => d.id !== id));
 
   const canUpload = !!selectedDecl && !!selectedDocType;
 
