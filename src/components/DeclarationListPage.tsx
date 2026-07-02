@@ -425,7 +425,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               docRemarks={rdDocRemarks}
               paymentInfo={rdPaymentInfo}
               onBack={() => setClaimStep('rdPayment')}
-              onSubmit={() => setClaimStep('success')}
+              onSubmit={() => rdPaymentInfo?.charges.some(c => c.mode === 'E-Payment') ? setClaimStep('nrPaymentPending') : setClaimStep('success')}
               onViewClaim={() => setClaimStep('nonRemittanceClaimView')}
             />
           )}
