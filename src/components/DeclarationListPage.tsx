@@ -232,6 +232,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
   const [nonRemittanceAccountNo, setNonRemittanceAccountNo] = useState('');
   const [selectedClaimTypeForFlow, setSelectedClaimTypeForFlow] = useState<ClaimType | null>(null);
   const [claimViewReturnStep, setClaimViewReturnStep] = useState<ClaimSubStep>('nonRemittanceSuccess');
+  const [ackReturnStep, setAckReturnStep] = useState<ClaimSubStep>('nonRemittanceSuccess');
   const [ackStep, setAckStep] = useState<'list' | 'acceptSuccess' | 'declineSuccess'>('list');
   const [ackSelected, setAckSelected] = useState<Set<number>>(new Set());
   const [ackAcceptOpen, setAckAcceptOpen] = useState(false);
@@ -520,14 +521,14 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           {claimStep === 'nonRemittanceSuccess' && (
             <NonRemittanceSuccessPage
               onBack={() => { setClaimStep('list'); resetNRClaim(); }}
-              onViewAck={() => setClaimStep('nonRemittanceAck')}
+              onViewAck={() => { setAckReturnStep('nonRemittanceSuccess'); setClaimStep('nonRemittanceAck'); }}
               onViewClaim={() => { setClaimViewReturnStep('nonRemittanceSuccess'); setClaimStep('nonRemittanceClaimView'); }}
             />
           )}
           {claimStep === 'nonRemittanceAck' && (
             <NonRemittanceAckPage
               selectedRows={nonRemittanceRows}
-              onBack={() => setClaimStep('nonRemittanceSuccess')}
+              onBack={() => setClaimStep(ackReturnStep)}
             />
           )}
           {claimStep === 'nonRemittanceClaimView' && (
@@ -565,7 +566,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           {claimStep === 'nrPaymentSuccess' && (
             <NRPaymentSuccessPage
               onBackToListing={() => { setClaimStep('list'); resetNRClaim(); }}
-              onDownloadAck={() => setClaimStep('nonRemittanceAck')}
+              onDownloadAck={() => { setAckReturnStep('nrPaymentSuccess'); setClaimStep('nonRemittanceAck'); }}
               onViewClaim={() => { setClaimViewReturnStep('nrPaymentSuccess'); setClaimStep('nonRemittanceClaimView'); }}
             />
           )}
@@ -2113,6 +2114,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           <ClaimsTable
             showDrafts={showDrafts}
             onView={() => setClaimStep('claimListView')}
+            onPrint={() => { setAckReturnStep('list'); setClaimStep('nonRemittanceAck'); }}
             onHistory={() => setClaimStep('claimHistory')}
             onDeclarationOpen={(declNo) => { setClaimListDeclNo(declNo); setClaimListDeclViewOpen(true); }}
             showColModal={showColModal}
