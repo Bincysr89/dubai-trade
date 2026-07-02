@@ -153,7 +153,7 @@ export default function NonRemittanceClaimViewPage({ onBack, selectedRows, uploa
                 <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontFamily: font, minWidth: 700 }}>
                   <thead>
                     <tr>
-                      {['S.No', 'Declaration No.', 'Document Type', 'File Name', 'Uploaded On', 'Remarks'].map(h => (
+                      {['S.No', 'Declaration No.', 'Document Type', 'File Name', 'Uploaded On', 'Remarks', 'Action'].map(h => (
                         <th key={h} style={{ background: '#a6c2e9', padding: '10px 14px', textAlign: 'left', borderBottom: '1px solid #e8edf5', whiteSpace: 'nowrap' }}>
                           <span className="text-[16px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>{h}</span>
                         </th>
@@ -169,6 +169,23 @@ export default function NonRemittanceClaimViewPage({ onBack, selectedRows, uploa
                         <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{doc.fileName}</span></td>
                         <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{doc.uploadedOn}</span></td>
                         <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#697498', fontFamily: font }}>{doc.remarks || '—'}</span></td>
+                        <td style={{ padding: '10px 14px' }}>
+                          <button
+                            title="Download"
+                            onClick={() => {
+                              const a = document.createElement('a');
+                              a.href = '#';
+                              a.download = doc.fileName;
+                              a.click();
+                            }}
+                            className="inline-flex items-center justify-center w-[34px] h-[34px] rounded-[4px] hover:bg-[#e8f0ff] transition-colors"
+                            style={{ border: '1px solid #d5ddfb', color: '#1360d2' }}
+                          >
+                            <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M10 3v10M6 9l4 4 4-4" /><path d="M4 16h12" />
+                            </svg>
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
