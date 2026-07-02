@@ -148,7 +148,7 @@ function DeclarationsModal({ declarations, onClose, onDeclarationOpen }: { decla
             <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 860, fontFamily: font }}>
               <thead>
                 <tr style={{ background: '#a6c2e9' }}>
-                  {['#', 'Declaration No.', 'Date', 'Category', 'Owner Code', 'Claim Expiry', 'Export Expiry'].map((h, i) => (
+                  {['#', 'Declaration No.', 'Date', 'Declaration Type', 'Owner Code', 'Claim Expiry', 'Export Expiry'].map((h, i) => (
                     <th key={h} className="text-left text-[16px] text-[#000]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap', width: i === 0 ? 44 : undefined }}>
                       {h}
                     </th>
