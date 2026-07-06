@@ -505,6 +505,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               onBack={() => setClaimStep('nonRemittanceDocs')}
               onBackToListing={() => setClaimStep('list')}
               onContinue={(mode, acct) => { setNonRemittancePaymentMode(mode); setNonRemittanceAccountNo(acct); setClaimStep('nonRemittanceReview'); }}
+              onDeclarationOpen={(declNo) => { setClaimListDeclNo(declNo); setClaimListDeclViewOpen(true); }}
             />
           )}
           {claimStep === 'nonRemittanceReview' && (

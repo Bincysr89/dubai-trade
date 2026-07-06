@@ -48,9 +48,17 @@ function PlainSelect({ value, onChange, options, disabled }: { value: string; on
   );
 }
 
-type Props = { onBack: () => void; onBackToListing: () => void; onContinue: (paymentMode: string, accountNo: string) => void; selectedRows: Row[] };
+const IMPORTER_CODE_NAMES: Record<string, string> = {
+  'A180': 'IMPORTER SONY GULF UAE',
+  'A220': 'SW LOGISTICS LLC',
+  'A350': 'FREIGHT FORWARDER CO.',
+};
+const codeWithName = (code: string) =>
+  IMPORTER_CODE_NAMES[code] ? `${code} - ${IMPORTER_CODE_NAMES[code]}` : code;
 
-export default function NonRemittanceChargesPage({ onBack, onBackToListing, onContinue, selectedRows }: Props) {
+type Props = { onBack: () => void; onBackToListing: () => void; onContinue: (paymentMode: string, accountNo: string) => void; selectedRows: Row[]; onDeclarationOpen?: (declNo: string) => void };
+
+export default function NonRemittanceChargesPage({ onBack, onBackToListing, onContinue, selectedRows, onDeclarationOpen }: Props) {
   const [paymentMode, setPaymentMode] = useState('Credit/Debit Account');
   const [paymentRef,  setPaymentRef]  = useState('Account Number');
   const [showSaveModal, setShowSaveModal] = useState(false);
@@ -118,7 +126,8 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
                         <span className="text-[16px] text-[#697498]">{i + 1}</span>
                       </td>
                       <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 170 }}>
-                        <span className="text-[16px] whitespace-nowrap" style={{ color: '#1360d2', fontWeight: 500 }}>{row.declarationNo}</span>
+                        <a href="#" onClick={(e) => { e.preventDefault(); onDeclarationOpen?.(row.declarationNo); }}
+                          className="text-[16px] whitespace-nowrap hover:underline" style={{ color: '#1360d2', fontWeight: 500 }}>{row.declarationNo}</a>
                       </td>
                       <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 180 }}>
                         <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.declarationDate || '—'}</span>
@@ -127,7 +136,7 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
                         <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.declarationCategory ?? 'Freezone Export'}</span>
                       </td>
                       <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 260 }}>
-                        <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.importerCode ? `${row.importerCode}` : '—'}</span>
+                        <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.importerCode ? codeWithName(row.importerCode) : '—'}</span>
                       </td>
                       <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 130 }}>
                         <span className="text-[16px] whitespace-nowrap" style={{ color: '#dc3545', fontWeight: 500 }}>{row.claimExpiry}</span>
