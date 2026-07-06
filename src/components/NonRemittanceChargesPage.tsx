@@ -110,9 +110,7 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
                       { label: 'Declaration Clearance Date',   w: 180 },
                       { label: 'Declaration Type',             w: 180 },
                       { label: 'Owner Code',                   w: 260 },
-                      { label: 'Claim Expiry',                 w: 130 },
-                      { label: 'Export Expiry',                w: 130 },
-                      { label: 'Remarks',                      w: 110 },
+                      { label: 'Amount',                       w: 140 },
                     ].map((h, i) => (
                       <th key={h.label} style={{ width: h.w, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, fontSize: 16, color: '#0e1b3d', whiteSpace: 'nowrap', borderTopLeftRadius: i === 0 ? 8 : 0, borderBottomLeftRadius: i === 0 ? 8 : 0 }}>
                         {h.label}
@@ -139,20 +137,14 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
                       <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 260 }}>
                         <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.importerCode ? codeWithName(row.importerCode) : '—'}</span>
                       </td>
-                      <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 130 }}>
-                        <span className="text-[16px] whitespace-nowrap" style={{ color: '#dc3545', fontWeight: 500 }}>{row.claimExpiry}</span>
-                      </td>
-                      <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 130 }}>
-                        <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.exportExpiry}</span>
-                      </td>
-                      <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 110 }}>
-                        <span className="text-[16px] text-[#697498]">{row.remarks}</span>
+                      <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 140 }}>
+                        <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ fontWeight: 500 }}>AED 250.00</span>
                       </td>
                     </tr>
                   ))}
                   {displayRows.length === 0 && (
                     <tr>
-                      <td colSpan={8} style={{ background: '#fff', padding: '40px 12px', textAlign: 'center' }}>
+                      <td colSpan={6} style={{ background: '#fff', padding: '40px 12px', textAlign: 'center' }}>
                         <span className="text-[16px] text-[#697498]">No declarations selected.</span>
                       </td>
                     </tr>

@@ -38,6 +38,7 @@ import CargoTransferViewPage from './CargoTransferViewPage';
 import CargoTransferCancelFlow from './CargoTransferCancelFlow';
 import ClaimCancelFlow from './ClaimCancelFlow';
 import ClaimAmendFlow from './ClaimAmendFlow';
+import ClaimDocumentsPage from './ClaimDocumentsPage';
 import CargoTransferReceiptReleasePage from './CargoTransferReceiptReleasePage';
 import CargoTransferHistoryPage from './CargoTransferHistoryPage';
 import SuspensionHistoryPage from './SuspensionHistoryPage';
@@ -219,7 +220,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
   const [stepperReturnStep, setStepperReturnStep] = useState(0);
   const [cargoPreValues, setCargoPreValues] = useState<{ cargoChannel: string; clientRef: string; carrierReg: string; transferType: string }>({ cargoChannel: 'Sea', clientRef: '', carrierReg: '', transferType: '' });
   const [cargoFormValues, setCargoFormValues] = useState<{ clientRef: string; carrierReg: string; mawb: string; transferorBizCode: string; transferorPremCode: string; transfereeBizCode: string; transfereePremCode: string }>({ clientRef: '', carrierReg: '', mawb: '', transferorBizCode: '', transferorPremCode: '', transfereeBizCode: '', transfereePremCode: '' });
-  type ClaimSubStep = 'list' | 'claimTypeEntry' | 'eligible' | 'eligibleDeclView' | 'chargeDetails' | 'rdDocuments' | 'rdPayment' | 'rdReview' | 'refundType' | 'outbound' | 'missingDoc' | 'documents' | 'payment' | 'success' | 'nonRemittanceDocs' | 'nonRemittanceCharges' | 'nonRemittanceReview' | 'nonRemittanceSuccess' | 'nonRemittanceAck' | 'nonRemittanceClaimView' | 'claimListView' | 'claimHistory' | 'cancelClaim' | 'amendClaim' | 'nrPaymentPending' | 'nrPaymentProcessing' | 'nrPaymentSuccess' | 'nrPaymentRejected';
+  type ClaimSubStep = 'list' | 'claimTypeEntry' | 'eligible' | 'eligibleDeclView' | 'chargeDetails' | 'rdDocuments' | 'rdPayment' | 'rdReview' | 'refundType' | 'outbound' | 'missingDoc' | 'documents' | 'payment' | 'success' | 'nonRemittanceDocs' | 'nonRemittanceCharges' | 'nonRemittanceReview' | 'nonRemittanceSuccess' | 'nonRemittanceAck' | 'nonRemittanceClaimView' | 'claimListView' | 'claimHistory' | 'cancelClaim' | 'amendClaim' | 'claimDocs' | 'claimSuspension' | 'nrPaymentPending' | 'nrPaymentProcessing' | 'nrPaymentSuccess' | 'nrPaymentRejected';
   const [claimDeclViewOpen, setClaimDeclViewOpen] = useState(false);
   const [claimListDeclNo, setClaimListDeclNo] = useState<string>('');
   const [claimListDeclViewOpen, setClaimListDeclViewOpen] = useState(false);
@@ -554,6 +555,16 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           )}
           {claimStep === 'amendClaim' && (
             <ClaimAmendFlow onBack={() => setClaimStep('list')} />
+          )}
+          {claimStep === 'claimDocs' && (
+            <ClaimDocumentsPage onBack={() => setClaimStep('list')} />
+          )}
+          {claimStep === 'claimSuspension' && (
+            <SuspensionResponsePage
+              onBack={() => setClaimStep('list')}
+              onBackToListing={() => setClaimStep('list')}
+              onSubmit={() => setClaimStep('list')}
+            />
           )}
           {claimStep === 'claimHistory' && (
             <ClaimsAuditHistoryPage
@@ -2126,6 +2137,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             onView={() => setClaimStep('claimListView')}
             onAmend={() => setClaimStep('amendClaim')}
             onCancel={() => setClaimStep('cancelClaim')}
+            onViewDocs={() => setClaimStep('claimDocs')}
+            onSuspensionResponse={() => setClaimStep('claimSuspension')}
             onPrint={() => { setAckReturnStep('list'); setClaimStep('nonRemittanceAck'); }}
             onHistory={() => setClaimStep('claimHistory')}
             onDeclarationOpen={(declNo) => { setClaimListDeclNo(declNo); setClaimListDeclViewOpen(true); }}

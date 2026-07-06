@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import NonRemittanceClaimViewPage from './NonRemittanceClaimViewPage';
+import NonRemittanceDocumentsPage, { UploadedDoc as NRUploadedDoc } from './NonRemittanceDocumentsPage';
 import ClaimantBrokerDetail from './ClaimantBrokerDetail';
 import ClaimStepper from './ClaimStepper';
+import type { Row } from './EligibleDeclarationsPage';
 
 const font = "'Dubai', sans-serif";
 
@@ -14,7 +16,7 @@ const AMEND_STEPS: { id: string; label: string }[] = [
 
 const CLAIM_TITLE = 'Amend - Non Remittance Claim - 2420390';
 
-const AMEND_REASONS = ['Add/Update Documents', 'Correction in Claim Details', 'Other'];
+const AMEND_REASONS = ['Wrong Details Entered', 'Other'];
 
 /* Declarations the user selected when raising the claim — read-only here. */
 const CLAIM_DECLARATIONS = [
@@ -23,12 +25,26 @@ const CLAIM_DECLARATIONS = [
   { declNo: '305-08812347-24', date: '11/20/2024', category: 'Freezone Export', ownerCode: 'A180 - IMPORTER SONY GULF UAE', claimExpiry: '07/20/2025', exportExpiry: '06/20/2025' },
 ];
 
-type UploadedDoc = { name: string; type: string; size: string; date: string };
+/* Same declarations as Row objects for the shared documents page. */
+const AMEND_ROWS: Row[] = CLAIM_DECLARATIONS.map(d => ({
+  declarationNo: d.declNo,
+  declarationDate: d.date,
+  depositType: 'Non Remittance Claim',
+  declarationCategory: d.category,
+  depositAmount: 'N/A',
+  depositMethod: 'N/A',
+  claimExpiry: d.claimExpiry,
+  exportExpiry: d.exportExpiry,
+  remarks: '—',
+  kind: 'request',
+  importerCode: 'A180',
+}));
 
-const INITIAL_DOCS: UploadedDoc[] = [
-  { name: 'Invoice 12124.PDF',  type: 'Invoice',  size: '50 MB', date: '12-12-2024' },
-  { name: 'Invoice 898486.xls', type: 'Invoice',  size: '50 MB', date: '12-12-2024' },
-  { name: 'BOL123.pdf',         type: 'AWB/BOL',  size: '50 MB', date: '08-12-2024' },
+/* Documents already uploaded on the claim — shown by default when amending. */
+const AMEND_INITIAL_DOCS: NRUploadedDoc[] = [
+  { id: 'am-1', declNo: '305-08812345-24', docType: 'Export Bill',              fileName: 'Invoice 12124.PDF',  fileSize: 2_400_000, uploadedOn: '12/12/2024', remarks: '' },
+  { id: 'am-2', declNo: '305-08812346-24', docType: 'Bill of Entry',            fileName: 'Invoice 898486.xls', fileSize: 1_100_000, uploadedOn: '12/12/2024', remarks: '' },
+  { id: 'am-3', declNo: '305-08812347-24', docType: 'Exit / Entry Certificate', fileName: 'BOL123.pdf',         fileSize: 3_200_000, uploadedOn: '08/12/2024', remarks: '' },
 ];
 
 // ── shared helpers (mirrors ClaimCancelFlow) ─────────────────────────────────
@@ -255,138 +271,6 @@ function Step1({ onBack, onProceed, onViewClaim }: { onBack: () => void; onProce
           </div>
         </Card>
       </div>
-    </StepShell>
-  );
-}
-
-// ── Step 2: Document Upload + Remarks ─────────────────────────────────────────
-
-function Step2({ onBack, onProceed, docs, setDocs, remarks, setRemarks }: {
-  onBack: () => void; onProceed: () => void;
-  docs: UploadedDoc[]; setDocs: (d: UploadedDoc[]) => void;
-  remarks: string; setRemarks: (v: string) => void;
-}) {
-  const [dragging, setDragging] = useState(false);
-
-  return (
-    <StepShell onBack={onBack} stepIndex={1} bottom={<BottomNav onBack={onBack} onProceed={onProceed} />}>
-      {/* Upload card */}
-      <Card className="p-[24px]">
-        <div className="flex gap-[24px] flex-wrap">
-          <div className="flex-1" style={{ minWidth: 280 }}>
-            <p className="text-[24px] mb-[8px]" style={{ fontFamily: font, fontWeight: 500, color: '#060c28' }}>Upload Documents</p>
-            <p className="text-[18px] mb-[20px]" style={{ fontFamily: font, color: '#323c64' }}>
-              Upload any additional documents for this claim, we will share the documents with authorities
-            </p>
-            <label className="flex items-center gap-[17px] cursor-pointer select-none">
-              <div className="flex-shrink-0 size-[18px] rounded-full border-[2px] flex items-center justify-center" style={{ borderColor: '#1360d2' }}>
-                <div className="size-[9px] rounded-full bg-[#1360d2]" />
-              </div>
-              <span className="text-[18px]" style={{ fontFamily: font, color: '#060c28' }}>Supporting Documents</span>
-            </label>
-          </div>
-
-          <div className="bg-white rounded-[8px] overflow-hidden p-[20px] flex flex-col gap-[12px]" style={{ width: 516, maxWidth: '100%', border: '1px solid #f0f0f5' }}>
-            <p className="text-[20px]" style={{ fontFamily: font, fontWeight: 500, color: '#060c28' }}>Upload File</p>
-            <p className="text-[16px]" style={{ fontFamily: font, color: '#323c64' }}>
-              *Supported file type of .pdf, .jpg etc, max file size up to 50MB
-            </p>
-            <div
-              onDragOver={e => { e.preventDefault(); setDragging(true); }}
-              onDragLeave={() => setDragging(false)}
-              onDrop={e => { e.preventDefault(); setDragging(false); }}
-              className="flex-1 min-h-[200px] flex flex-col items-center justify-center gap-[12px] rounded-[4px] transition-colors"
-              style={{
-                background: dragging ? '#e2ebf9' : '#f8fafd',
-                border: `1px dashed ${dragging ? '#1360d2' : '#8f94ae'}`,
-              }}
-            >
-              <div className="size-[60px] rounded-full bg-[#dfe5e9] flex items-center justify-center">
-                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#6d707e" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" />
-                  <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
-                </svg>
-              </div>
-              <p className="text-[16px]" style={{ fontFamily: font, color: '#6d707e' }}>Drag and drop or</p>
-              <button
-                className="h-[48px] px-[20px] rounded-[4px] text-[16px] hover:bg-[#f0f4ff] transition-colors"
-                style={{ border: '1px solid #1360d2', color: '#1360d2', fontFamily: font }}
-              >
-                Choose File
-              </button>
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      {/* Remarks */}
-      <Card className="p-[20px]">
-        <p className="text-[20px] mb-[12px]" style={{ fontFamily: font, fontWeight: 500, color: '#051937' }}>Remarks</p>
-        <textarea
-          value={remarks}
-          onChange={e => setRemarks(e.target.value)}
-          rows={3}
-          className="w-full rounded-[4px] px-[16px] py-[12px] text-[16px] resize-none focus:outline-none"
-          style={{ border: '1px solid #d5ddfb', fontFamily: font, color: '#0e1b3d', background: 'white', maxWidth: 700 }}
-          placeholder="Enter remarks (optional)"
-        />
-      </Card>
-
-      {/* Documents uploaded table — rows can be deleted */}
-      <Card className="p-[20px]">
-        <p className="text-[24px] mb-[16px]" style={{ fontFamily: font, fontWeight: 500, color: '#051937' }}>Documents Uploaded</p>
-        <div className="overflow-x-auto">
-          <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontFamily: font }}>
-            <thead>
-              <tr>
-                {['', 'Document Name', 'Document Type', 'Uploaded size', 'Uploaded on', 'Action'].map((h, i) => (
-                  <th
-                    key={h + i}
-                    style={{
-                      background: '#a6c2e9', padding: '10px 12px', textAlign: 'left',
-                      fontWeight: 500, fontSize: 14, color: '#696f83',
-                      borderRadius: i === 0 ? '8px 0 0 8px' : i === 5 ? '0 8px 8px 0' : 0,
-                    }}
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {docs.length === 0 ? (
-                <tr>
-                  <td colSpan={6} style={{ padding: '20px 12px', fontSize: 16, color: '#697498', textAlign: 'center' }}>No documents uploaded.</td>
-                </tr>
-              ) : docs.map((doc, i) => (
-                <tr key={doc.name}>
-                  <td style={{ padding: '12px', fontSize: 16, color: '#051937', textAlign: 'center' }}>{i + 1}</td>
-                  <td style={{ padding: '12px', fontSize: 16, color: '#051937' }}>{doc.name}</td>
-                  <td style={{ padding: '12px', fontSize: 16, color: '#051937' }}>{doc.type}</td>
-                  <td style={{ padding: '12px', fontSize: 16, color: '#051937' }}>{doc.size}</td>
-                  <td style={{ padding: '12px', fontSize: 16, color: '#051937' }}>{doc.date}</td>
-                  <td style={{ padding: '12px' }}>
-                    <div className="flex items-center gap-[16px]">
-                      <button
-                        onClick={() => setDocs(docs.filter((_, j) => j !== i))}
-                        className="text-[#dc3545] hover:opacity-70 transition-opacity" aria-label="Delete">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4h6v2" />
-                        </svg>
-                      </button>
-                      <button className="text-[#1360d2] hover:opacity-70 transition-opacity" aria-label="Download">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
     </StepShell>
   );
 }
@@ -671,8 +555,6 @@ export default function ClaimAmendFlow({ onBack }: Props) {
   const [step, setStep] = useState<Step>(1);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showViewClaim, setShowViewClaim] = useState(false);
-  const [docs, setDocs] = useState<UploadedDoc[]>(INITIAL_DOCS);
-  const [remarks, setRemarks] = useState('');
   const [reason, setReason] = useState('');
   const [reasonDesc, setReasonDesc] = useState('');
 
@@ -694,8 +576,16 @@ export default function ClaimAmendFlow({ onBack }: Props) {
       <div className="flex flex-col h-full">
         {step === 1 && <Step1 onBack={onBack}           onProceed={() => setStep(2)} onViewClaim={openViewClaim} />}
         {step === 2 && (
-          <Step2 onBack={() => setStep(1)} onProceed={() => setStep(3)}
-            docs={docs} setDocs={setDocs} remarks={remarks} setRemarks={setRemarks} />
+          <NonRemittanceDocumentsPage
+            rows={AMEND_ROWS}
+            title={CLAIM_TITLE}
+            steps={AMEND_STEPS}
+            activeIndex={1}
+            initialDocs={AMEND_INITIAL_DOCS}
+            onBack={() => setStep(1)}
+            onContinue={() => setStep(3)}
+            onBackToListing={onBack}
+          />
         )}
         {step === 3 && <Step3 onBack={() => setStep(2)} onProceed={() => setStep(4)} onViewClaim={openViewClaim} />}
         {step === 4 && (

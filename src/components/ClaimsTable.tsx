@@ -8,7 +8,7 @@ import { useTableBehaviors, DragDots, ScrollArrows } from '../hooks/useTableBeha
 const font = "'Dubai', sans-serif";
 
 type Status = 'Under Processing' | 'Completed' | 'Suspended' | 'Draft' | 'Submitted';
-type FlyoutId = 'view' | 'amend' | 'cancel' | 'print' | 'viewDocs' | 'history' | 'uploadDoc' | 'printReceipt' | 'continue';
+type FlyoutId = 'view' | 'amend' | 'cancel' | 'print' | 'viewDocs' | 'history' | 'uploadDoc' | 'printReceipt' | 'continue' | 'suspensionResponse';
 
 const STATUS_STYLE: Record<Status, { bg: string; color: string }> = {
   'Under Processing': { bg: 'rgba(255,169,26,0.16)',  color: '#b45309' },
@@ -28,6 +28,7 @@ const ICONS: Record<FlyoutId, React.ReactNode> = {
   uploadDoc:    <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M10 3v10M5 8l5-5 5 5" strokeLinecap="round" strokeLinejoin="round"/><path d="M3 14v2a1 1 0 001 1h12a1 1 0 001-1v-2" /></svg>,
   printReceipt: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 3h12v14l-2-1-2 1-2-1-2 1-2-1-2 1V3z" /><path d="M7 7h6M7 10h6M7 13h4" /></svg>,
   continue:     <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 10h12M11 5l5 5-5 5" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  suspensionResponse: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="10" cy="10" r="7.5" /><path d="M8 7v6M12 7v6" /></svg>,
 };
 
 const LABELS: Record<FlyoutId, string> = {
@@ -35,20 +36,21 @@ const LABELS: Record<FlyoutId, string> = {
   amend:        'Amend Claim',
   cancel:       'Cancel Claim',
   print:        'Print Acknowledgement',
-  viewDocs:     'View Document Required Details',
+  viewDocs:     'View Documents',
   history:      'Audit History',
   uploadDoc:    'Upload Document',
   printReceipt: 'Print Claim Acknowledgment Receipt',
   continue:     'Continue',
+  suspensionResponse: 'Suspension Response',
 };
 
 function getFlyoutItems(status: Status, isDraft: boolean, isNonRemittance = false): FlyoutId[] {
   if (isDraft) return ['continue'];
   if (status === 'Completed') return ['viewDocs', 'history'];
   if (status === 'Submitted') {
-    // Non Remittance claims can be amended or cancelled from the listing.
+    // Non Remittance claims get the full action set from the listing.
     return isNonRemittance
-      ? ['view', 'amend', 'cancel', 'uploadDoc', 'printReceipt', 'history']
+      ? ['view', 'amend', 'cancel', 'viewDocs', 'suspensionResponse', 'printReceipt', 'history']
       : ['view', 'uploadDoc', 'printReceipt', 'history'];
   }
   return ['view', 'amend', 'cancel'];
@@ -207,13 +209,14 @@ type Props = {
   onPrint?: () => void;
   onViewDocs?: () => void;
   onHistory?: () => void;
+  onSuspensionResponse?: () => void;
   onDeclarationOpen?: (declNo: string) => void;
   showDrafts?: boolean;
   showColModal?: boolean;
   onCloseColModal?: () => void;
 };
 
-export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onViewDocs, onHistory, onDeclarationOpen, showDrafts = false, showColModal, onCloseColModal }: Props = {}) {
+export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onViewDocs, onHistory, onSuspensionResponse, onDeclarationOpen, showDrafts = false, showColModal, onCloseColModal }: Props = {}) {
   const [openFlyout, setOpenFlyout] = useState<number | null>(null);
   const flyoutRef = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState(1);
@@ -318,6 +321,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
                 if (id === 'printReceipt') onPrint?.();
                 if (id === 'viewDocs') onViewDocs?.();
                 if (id === 'history')  onHistory?.();
+                if (id === 'suspensionResponse') onSuspensionResponse?.();
               }}
             >
               <span className="text-[#1360d2] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">{ICONS[id]}</span>

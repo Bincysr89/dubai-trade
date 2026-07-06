@@ -34,6 +34,11 @@ type Props = {
   onContinue: () => void;
   onBackToListing: () => void;
   onUploadedDocsChange?: (docs: UploadedDoc[]) => void;
+  /** Overrides for reuse outside the raise-new-claim flow (e.g. amend claim). */
+  title?: string;
+  steps?: { id: string; label: string }[];
+  activeIndex?: number;
+  initialDocs?: UploadedDoc[];
 };
 
 function formatBytes(bytes: number) {
@@ -73,11 +78,11 @@ function DeclDropdown({ value, options, onChange }: { value: string; options: st
   );
 }
 
-export default function NonRemittanceDocumentsPage({ rows, onBack, onContinue, onBackToListing, onUploadedDocsChange }: Props) {
+export default function NonRemittanceDocumentsPage({ rows, onBack, onContinue, onBackToListing, onUploadedDocsChange, title, steps, activeIndex = 1, initialDocs }: Props) {
   const [selectedDecl, setSelectedDecl] = useState<string>(rows[0]?.declarationNo ?? '');
   const [selectedDocType, setSelectedDocType] = useState<string>('');
   const [remarks, setRemarks] = useState('');
-  const [uploadedDocs, setUploadedDocs] = useState<UploadedDoc[]>([]);
+  const [uploadedDocs, setUploadedDocs] = useState<UploadedDoc[]>(initialDocs ?? []);
   const updateDocs = (fn: (prev: UploadedDoc[]) => UploadedDoc[]) => {
     setUploadedDocs(prev => { const next = fn(prev); onUploadedDocsChange?.(next); return next; });
   };
@@ -127,14 +132,14 @@ export default function NonRemittanceDocumentsPage({ rows, onBack, onContinue, o
       {/* Scrollable body */}
       <div className="flex-1 overflow-y-auto">
         <div className="px-4 sm:px-10 flex items-center gap-[16px] flex-wrap mb-[8px]">
-          <h1 className="text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>Raise New Claim - Non Remittance</h1>
+          <h1 className="text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>{title ?? 'Raise New Claim - Non Remittance'}</h1>
           <span className="text-[16px] px-[10px] py-[3px] rounded-[4px]"
             style={{ background: 'rgba(19,96,210,0.10)', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap' }}>
             Non Remittance
           </span>
         </div>
         <div className="px-4 sm:px-10 mb-[24px]">
-          <ClaimStepper activeIndex={1} steps={NR_CLAIM_STEPS} />
+          <ClaimStepper activeIndex={activeIndex} steps={steps ?? NR_CLAIM_STEPS} />
         </div>
 
         <div className="px-4 sm:px-10 pb-[32px] flex flex-col gap-[20px]">
