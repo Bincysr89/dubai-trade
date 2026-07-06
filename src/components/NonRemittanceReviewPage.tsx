@@ -13,9 +13,14 @@ type Props = {
   selectedRows: Row[];
   paymentMode?: string;
   accountNo?: string;
+  /** Overrides for reuse outside the NR flow (e.g. missing-doc refund of deposits). */
+  title?: string;
+  steps?: { id: string; label: string }[];
+  activeIndex?: number;
+  claimType?: string;
 };
 
-export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPreview, onViewClaim, selectedRows, paymentMode = 'Credit/Debit Account', accountNo = '1223193-SW LOGISTICS LLC' }: Props) {
+export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPreview, onViewClaim, selectedRows, paymentMode = 'Credit/Debit Account', accountNo = '1223193-SW LOGISTICS LLC', title, steps, activeIndex = 3, claimType = 'Non Remittance Claim' }: Props) {
   const [declared, setDeclared] = useState(false);
 
   return (
@@ -35,7 +40,7 @@ export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPre
       <div className="flex-1 overflow-y-auto">
         <div className="px-4 sm:px-10 mb-[8px] flex items-center justify-between flex-wrap gap-[12px]">
           <div className="flex items-center gap-[16px] flex-wrap">
-            <h1 className="text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>Raise New Claim - Non Remittance</h1>
+            <h1 className="text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>{title ?? 'Raise New Claim - Non Remittance'}</h1>
           </div>
           <button
             onClick={() => onViewClaim?.()}
@@ -47,7 +52,7 @@ export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPre
         </div>
 
         <div className="px-4 sm:px-10 mb-[24px]">
-          <ClaimStepper activeIndex={3} steps={NR_CLAIM_STEPS} />
+          <ClaimStepper activeIndex={activeIndex} steps={steps ?? NR_CLAIM_STEPS} />
         </div>
 
         <div className="px-4 sm:px-10 pb-[32px] flex flex-col gap-[20px]">
@@ -78,7 +83,7 @@ export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPre
             <div className="px-[24px] py-[20px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-[32px] gap-y-[20px]">
               {[
                 { label: 'Request No.',                         value: '2588017' },
-                { label: 'Claim Type',                          value: 'Non Remittance Claim' },
+                { label: 'Claim Type',                          value: claimType },
                 { label: 'Total No. of Sub Claims in the Claim', value: String(selectedRows.length || 1) },
               ].map((f) => (
                 <div key={f.label} className="flex flex-col gap-[4px]">

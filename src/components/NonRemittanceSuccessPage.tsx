@@ -6,9 +6,13 @@ type Props = {
   onBack: () => void;
   onViewAck: () => void;
   onViewClaim: () => void;
+  /** Overrides for reuse outside the NR flow (e.g. missing-doc refund of deposits). */
+  title?: string;
+  heading?: string;
+  message?: string;
 };
 
-export default function NonRemittanceSuccessPage({ onBack, onViewAck, onViewClaim }: Props) {
+export default function NonRemittanceSuccessPage({ onBack, onViewAck, onViewClaim, title, heading, message }: Props) {
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full" style={{ fontFamily: font }}>
       {/* Breadcrumb */}
@@ -24,7 +28,7 @@ export default function NonRemittanceSuccessPage({ onBack, onViewAck, onViewClai
 
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
         <div className="mb-[8px]">
-          <h1 className="text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>Raise New Claim - Non Remittance</h1>
+          <h1 className="text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>{title ?? 'Raise New Claim - Non Remittance'}</h1>
         </div>
 
         {/* Success card */}
@@ -36,11 +40,11 @@ export default function NonRemittanceSuccessPage({ onBack, onViewAck, onViewClai
           </svg>
 
           <p className="text-[24px] text-[#0e1b3d] text-center" style={{ fontWeight: 500 }}>
-            Non Remittance Claim Submitted Successfully
+            {heading ?? 'Non Remittance Claim Submitted Successfully'}
           </p>
 
           <p className="text-[16px] text-[#696f83] text-center max-w-[640px]" style={{ lineHeight: 1.5 }}>
-            Your Non Remittance Claim has been submitted successfully and is currently under processing. Please click on View Claim button for the details.
+            {message ?? 'Your Non Remittance Claim has been submitted successfully and is currently under processing. Please click on View Claim button for the details.'}
           </p>
 
           {/* Info banners */}

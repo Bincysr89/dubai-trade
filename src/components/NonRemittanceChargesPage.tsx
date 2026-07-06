@@ -57,9 +57,14 @@ const IMPORTER_CODE_NAMES: Record<string, string> = {
 const codeWithName = (code: string) =>
   IMPORTER_CODE_NAMES[code] ? `${code} - ${IMPORTER_CODE_NAMES[code]}` : code;
 
-type Props = { onBack: () => void; onBackToListing: () => void; onContinue: (paymentMode: string, accountNo: string) => void; selectedRows: Row[]; onDeclarationOpen?: (declNo: string) => void };
+type Props = {
+  onBack: () => void; onBackToListing: () => void; onContinue: (paymentMode: string, accountNo: string) => void;
+  selectedRows: Row[]; onDeclarationOpen?: (declNo: string) => void;
+  /** Overrides for reuse outside the NR flow (e.g. missing-doc refund of deposits). */
+  title?: string; steps?: { id: string; label: string }[]; activeIndex?: number;
+};
 
-export default function NonRemittanceChargesPage({ onBack, onBackToListing, onContinue, selectedRows, onDeclarationOpen }: Props) {
+export default function NonRemittanceChargesPage({ onBack, onBackToListing, onContinue, selectedRows, onDeclarationOpen, title, steps, activeIndex = 2 }: Props) {
   const [paymentMode, setPaymentMode] = useState('Credit/Debit Account');
   const [paymentRef,  setPaymentRef]  = useState('Account Number');
   const [showSaveModal, setShowSaveModal] = useState(false);
@@ -83,10 +88,10 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
 
       <div className="flex-1 overflow-y-auto">
         <div className="px-4 sm:px-10 mb-[8px]">
-          <h1 className="text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>Raise New Claim - Non Remittance</h1>
+          <h1 className="text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>{title ?? 'Raise New Claim - Non Remittance'}</h1>
         </div>
         <div className="px-4 sm:px-10 mb-[24px]">
-          <ClaimStepper activeIndex={2} steps={NR_CLAIM_STEPS} />
+          <ClaimStepper activeIndex={activeIndex} steps={steps ?? NR_CLAIM_STEPS} />
         </div>
 
         {/* Two-column layout — same grid as VCC */}
