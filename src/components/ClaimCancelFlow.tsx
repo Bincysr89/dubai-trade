@@ -126,29 +126,27 @@ function Breadcrumb({ onBack }: { onBack: () => void }) {
 
 const CLAIM_TITLE = 'Cancel - Non Remittance Claim - 2420390';
 
-const CANCEL_REASONS = ['Claim raised in error', 'Incorrect declaration selected', 'Goods not exported', 'Duplicate claim request', 'Other'];
+const CANCEL_REASONS = ['Wrong Declaration Claimed', 'Not Interested', 'Others'];
 
+/* Claim Details card — field set mirrors the legacy Cancel Claim screen. */
 const CLAIM_DETAILS = [
-  { label: 'Claim Request No.',        value: '2588017' },
-  { label: 'Claim No.',                value: '2420390' },
-  { label: 'Version',                  value: '1' },
-  { label: 'Claim Type',               value: 'Non Remittance' },
-  { label: 'Deposit Type',             value: 'Non Remittance Claim' },
-  { label: 'No. of Declarations',      value: '3' },
-  { label: 'Declaration Category',     value: 'Freezone Export' },
-  { label: 'Claimant Business Code-Name', value: 'AE-9106286 - SW Logistics LLC' },
-  { label: 'Claim Submission Date',    value: '29/06/2026' },
-  { label: 'Claim Status',             value: 'Submitted' },
-  { label: 'Claim Expiry',             value: '07/12/2025' },
-  { label: 'Export Expiry',            value: '06/12/2025' },
+  { label: 'Claim No.',                     value: '2420390 (Version 1)' },
+  { label: 'Claim Type',                    value: 'Non Remittance' },
+  { label: 'Deposit Method',                value: 'Non Remittance Claim' },
+  { label: 'Claimant Code - Name (Type)',   value: 'AE-9106286 - SW Logistics LLC (Business)' },
+  { label: 'Submission Date',               value: '29/06/2026' },
+  { label: 'Registration Date',             value: '29/06/2026' },
+  { label: 'Total No. of Sub Claims',       value: '1' },
 ];
 
 // ── Step 1: Reason for Cancellation ──────────────────────────────────────────
 
-function Step1({ onBack, onProceed, onViewClaim }: { onBack: () => void; onProceed: () => void; onViewClaim: () => void }) {
-  const [reason, setReason] = useState('');
+function Step1({ onBack, onProceed, onViewClaim, reason, setReason, reasonDesc, setReasonDesc }: {
+  onBack: () => void; onProceed: () => void; onViewClaim: () => void;
+  reason: string; setReason: (v: string) => void;
+  reasonDesc: string; setReasonDesc: (v: string) => void;
+}) {
   const [reasonOpen, setReasonOpen] = useState(false);
-  const [remarks, setRemarks] = useState('');
 
   return (
     <div className="flex flex-col h-full bg-[#f8fafd]">
@@ -161,11 +159,32 @@ function Step1({ onBack, onProceed, onViewClaim }: { onBack: () => void; onProce
         </div>
         <div className="flex flex-col gap-[24px]">
 
+          {/* Claim Details */}
+          <div className="flex flex-col gap-[12px]">
+            <SectionLabel>Claim Details</SectionLabel>
+            <Card className="p-[20px]">
+              <div className="flex flex-wrap gap-[20px]">
+                {CLAIM_DETAILS.map(f => (
+                  <InfoCard key={f.label} label={f.label} value={f.value} />
+                ))}
+                {/* View Claim link — inside the card, like the legacy screen */}
+                <div className="flex flex-col gap-[4px] py-[12px] px-[12px]" style={{ minWidth: 240, flex: '0 0 280px' }}>
+                  <span className="text-[16px]" style={{ fontFamily: font, color: '#455174', whiteSpace: 'nowrap' }}>View Claim</span>
+                  <button type="button" onClick={onViewClaim}
+                    className="text-[18px] text-left hover:underline"
+                    style={{ fontFamily: font, fontWeight: 500, color: '#1360d2', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
+                    View Claim
+                  </button>
+                </div>
+              </div>
+            </Card>
+          </div>
+
           {/* Cancellation Details */}
           <Card className="p-[20px]">
             <p className="text-[20px] mb-[20px]" style={{ fontFamily: font, fontWeight: 500 }}>Cancellation Details</p>
             <div className="flex flex-col gap-[20px]">
-              {/* Reason of Cancellation dropdown */}
+              {/* Cancellation Reason dropdown */}
               <div className="relative" style={{ width: 390 }}>
                 <button
                   type="button"
@@ -175,7 +194,7 @@ function Step1({ onBack, onProceed, onViewClaim }: { onBack: () => void; onProce
                 >
                   <span className="flex-1 text-[16px] whitespace-nowrap" style={{ fontFamily: font, color: reason ? '#0e1b3d' : '#697498' }}>
                     <span style={{ color: '#ea2428' }}>*&nbsp;&nbsp;</span>
-                    {reason || 'Reason of Cancellation'}
+                    {reason || 'Cancellation Reason'}
                   </span>
                   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" className={`transition-transform ${reasonOpen ? 'rotate-180' : ''}`}>
                     <path d="M6 9l6 6 6-6" stroke="#697498" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -195,36 +214,22 @@ function Step1({ onBack, onProceed, onViewClaim }: { onBack: () => void; onProce
                   </div>
                 )}
               </div>
-              {/* Remarks text field — half width */}
-              <div className="relative" style={{ width: '50%', minWidth: 300 }}>
-                <textarea
-                  value={remarks}
-                  onChange={e => setRemarks(e.target.value)}
-                  rows={2}
-                  className="w-full rounded-[4px] px-[16px] py-[12px] text-[16px] resize-none focus:outline-none"
-                  style={{ border: '1px solid #d5ddfb', fontFamily: font, color: '#0e1b3d', background: 'white' }}
-                  placeholder="Remarks"
-                />
-              </div>
+              {/* Cancellation Reason Description — only when "Others" is selected */}
+              {reason === 'Others' && (
+                <div className="relative" style={{ width: '50%', minWidth: 300 }}>
+                  <p className="text-[14px] mb-[6px]" style={{ fontFamily: font, color: '#697498' }}>Cancellation Reason Description</p>
+                  <textarea
+                    value={reasonDesc}
+                    onChange={e => setReasonDesc(e.target.value)}
+                    rows={2}
+                    className="w-full rounded-[4px] px-[16px] py-[12px] text-[16px] resize-none focus:outline-none"
+                    style={{ border: '1px solid #d5ddfb', fontFamily: font, color: '#0e1b3d', background: 'white' }}
+                    placeholder='Enter reason if "others" option is selected'
+                  />
+                </div>
+              )}
             </div>
           </Card>
-
-          {/* Claim Request Details */}
-          <div className="flex flex-col gap-[12px]">
-            <div className="flex items-center justify-between">
-              <SectionLabel>Claim Request Details</SectionLabel>
-              <OutlineBtn onClick={onViewClaim}>
-                <span className="whitespace-nowrap">View Claim Details</span>
-              </OutlineBtn>
-            </div>
-            <Card className="p-[20px]">
-              <div className="flex flex-wrap gap-[20px]">
-                {CLAIM_DETAILS.map(f => (
-                  <InfoCard key={f.label} label={f.label} value={f.value} />
-                ))}
-              </div>
-            </Card>
-          </div>
         </div>
       </div>
 
@@ -370,7 +375,6 @@ const PAYMENT_REFS  = ['Standard Guarantee', 'Account Number', 'Transaction ID']
 function Step3({ onBack, onProceed, onViewClaim }: { onBack: () => void; onProceed: () => void; onViewClaim: () => void }) {
   const [paymentMode, setPaymentMode] = useState('Credit/Debit Account');
   const [paymentRef, setPaymentRef]   = useState('Standard Guarantee');
-  const [agreed, setAgreed] = useState(true);
 
   return (
     <div className="flex flex-col h-full bg-[#f8fafd]">
@@ -457,22 +461,6 @@ function Step3({ onBack, onProceed, onViewClaim }: { onBack: () => void; onProce
             </Card>
           </div>
 
-          {/* Declaration checkbox */}
-          <Card className="px-[20px] py-[16px]">
-            <label className="flex items-center gap-[16px] cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={agreed}
-                onChange={e => setAgreed(e.target.checked)}
-                className="size-[20px] rounded cursor-pointer"
-                style={{ accentColor: '#1360d2' }}
-              />
-              <span className="text-[16px]" style={{ fontFamily: font, color: '#0e1b3d' }}>
-                We hereby request you to cancel this claim request as the claim is no longer required to be processed.
-              </span>
-            </label>
-          </Card>
-
           {/* Party Information */}
           <div className="flex flex-col gap-[20px]">
             <h2 className="text-[24px] text-[#051937]" style={{ fontFamily: font, fontWeight: 500 }}>Party Information</h2>
@@ -496,7 +484,12 @@ function Step3({ onBack, onProceed, onViewClaim }: { onBack: () => void; onProce
 
 // ── Step 4: Summary / Submit ──────────────────────────────────────────────────
 
-function Step4({ onBack, onSubmit, onViewClaim }: { onBack: () => void; onSubmit: () => void; onViewClaim: () => void }) {
+function Step4({ onBack, onSubmit, onViewClaim, reason, reasonDesc }: {
+  onBack: () => void; onSubmit: () => void; onViewClaim: () => void;
+  reason: string; reasonDesc: string;
+}) {
+  const [declared, setDeclared] = useState(false);
+
   return (
     <div className="flex flex-col h-full bg-[#f8fafd]">
       <Breadcrumb onBack={onBack} />
@@ -510,38 +503,71 @@ function Step4({ onBack, onSubmit, onViewClaim }: { onBack: () => void; onSubmit
         </div>
         <div className="flex flex-col gap-[24px]">
 
-          {/* Cancellation Details summary */}
-          <div className="flex flex-col gap-[8px]">
-            <SectionLabel>Cancellation Details</SectionLabel>
-            <Card className="px-[20px] py-[32px]">
-              <div className="flex flex-wrap gap-[20px]">
-                <InfoCard label="Request Number"          value="REQ12345" />
-                <InfoCard label="Submission Date"         value="06/07/2026" />
-                <InfoCard label="Reason for Cancellation" value="Claim raised in error" />
-              </div>
-            </Card>
-          </div>
-
           {/* Claim Details summary */}
           <div className="flex flex-col gap-[8px]">
             <SectionLabel>Claim Details</SectionLabel>
             <Card className="px-[20px] py-[32px]">
               <div className="flex flex-wrap gap-[20px]">
-                {CLAIM_DETAILS.map(f => (
-                  <InfoCard key={f.label} label={f.label} value={f.value} />
-                ))}
+                <InfoCard label="Claimant Code - Name (Type)" value="AE-9106286 - SW Logistics LLC (Business)" />
+                <InfoCard label="Claim No."                   value="2420390 (1)" />
+                <InfoCard label="Claim Type"                  value="Non Remittance" />
+                <InfoCard label="Submission Date"             value="29/06/2026" />
+                <InfoCard label="Registration Date"           value="29/06/2026" />
+                <InfoCard label="Deposit Method"              value="Non Remittance Claim" />
               </div>
             </Card>
           </div>
+
+          {/* Cancellation Details summary */}
+          <div className="flex flex-col gap-[8px]">
+            <SectionLabel>Cancellation Details</SectionLabel>
+            <Card className="px-[20px] py-[32px]">
+              <div className="flex flex-wrap gap-[20px]">
+                <InfoCard label="Cancellation Reason"    value={reason || '—'} />
+                {reason === 'Others' && (
+                  <InfoCard label="Cancellation Reason Description" value={reasonDesc || '—'} />
+                )}
+                <InfoCard label="Total No. of Sub Claims" value="1" />
+                <InfoCard label="Total Charges"           value="100.00 AED" />
+              </div>
+            </Card>
+          </div>
+
+          {/* Declaration checkbox */}
+          <Card className="px-[20px] py-[16px]">
+            <label className="flex items-start gap-[16px] cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={declared}
+                onChange={e => setDeclared(e.target.checked)}
+                className="size-[20px] rounded cursor-pointer flex-shrink-0 mt-[2px]"
+                style={{ accentColor: '#1360d2' }}
+              />
+              <span className="text-[16px]" style={{ fontFamily: font, color: '#0e1b3d' }}>
+                I, hereby, declare that all the information entered and stated in the Request is true and correct and shall bear full responsibility for entering incorrect statement and all the consequences arising thereof.
+              </span>
+            </label>
+          </Card>
         </div>
       </div>
 
       <BottomNav
         onBack={onBack}
-        onProceed={onSubmit}
+        onProceed={declared ? onSubmit : undefined}
         proceedLabel="Submit"
         extraBtn={
-          <OutlineBtn onClick={() => window.print()}>Print Claim</OutlineBtn>
+          <>
+            <OutlineBtn onClick={() => window.print()}>Print Claim</OutlineBtn>
+            {!declared && (
+              <button
+                disabled
+                className="h-[48px] px-[40px] rounded-[4px] flex items-center justify-center text-[16px] text-white"
+                style={{ background: '#a7c3eb', fontFamily: font, fontWeight: 500, cursor: 'not-allowed' }}
+              >
+                Submit
+              </button>
+            )}
+          </>
         }
       />
     </div>
@@ -607,6 +633,8 @@ export default function ClaimCancelFlow({ onBack }: Props) {
   const [step, setStep] = useState<Step>(1);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showViewClaim, setShowViewClaim] = useState(false);
+  const [reason, setReason] = useState('');
+  const [reasonDesc, setReasonDesc] = useState('');
 
   const handleSuccess  = () => setShowSuccess(true);
   const handleClose    = () => { setShowSuccess(false); onBack(); };
@@ -624,10 +652,16 @@ export default function ClaimCancelFlow({ onBack }: Props) {
   return (
     <>
       <div className="flex flex-col h-full">
-        {step === 1 && <Step1 onBack={onBack}           onProceed={() => setStep(2)} onViewClaim={openViewClaim} />}
+        {step === 1 && (
+          <Step1 onBack={onBack} onProceed={() => setStep(2)} onViewClaim={openViewClaim}
+            reason={reason} setReason={setReason} reasonDesc={reasonDesc} setReasonDesc={setReasonDesc} />
+        )}
         {step === 2 && <Step2 onBack={() => setStep(1)} onProceed={() => setStep(3)} />}
         {step === 3 && <Step3 onBack={() => setStep(2)} onProceed={() => setStep(4)} onViewClaim={openViewClaim} />}
-        {step === 4 && <Step4 onBack={() => setStep(3)} onSubmit={handleSuccess}     onViewClaim={openViewClaim} />}
+        {step === 4 && (
+          <Step4 onBack={() => setStep(3)} onSubmit={handleSuccess} onViewClaim={openViewClaim}
+            reason={reason} reasonDesc={reasonDesc} />
+        )}
       </div>
 
       {showSuccess && <SuccessPopup onClose={handleClose} />}
