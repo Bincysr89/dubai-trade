@@ -8,11 +8,9 @@ const font = "'Dubai', 'Segoe UI', sans-serif";
 const PAYMENT_MODES = ['Credit/Debit Account', 'E-Payment'];
 const PAYMENT_REFS  = ['Account Number', 'Reference No'];
 
-const TOTAL_AED = 100;
-const SUB_CHARGES = [
-  { label: 'Registration Fee',                amount: 80 },
-  { label: 'Knowledge-Innovation Dirham Charge', amount: 20 },
-];
+const REG_FEE   = 80;
+const KNOW_FEE  = 20;
+const TOTAL_AED = REG_FEE + KNOW_FEE;
 
 function DirhamIcon({ size = 14, color = 'currentColor' }: { size?: number; color?: string }) {
   return (
@@ -28,8 +26,8 @@ function PlainSelect({ value, onChange, options, disabled }: { value: string; on
     <div className="relative">
       <button type="button" onClick={() => !disabled && setOpen(o => !o)}
         className="w-full flex items-center px-[12px]"
-        style={{ height: 56, border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}`, borderRadius: 4, fontFamily: font, background: disabled ? '#f4f6fb' : '#fff', cursor: disabled ? 'not-allowed' : 'pointer' }}>
-        <span className="flex-1 text-left text-[16px]" style={{ color: disabled ? '#b0b8cc' : value ? '#051937' : '#697498' }}>{value || 'Select'}</span>
+        style={{ height: 48, border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}`, borderRadius: 4, fontFamily: font, background: disabled ? '#f4f6fb' : '#fff', cursor: disabled ? 'not-allowed' : 'pointer' }}>
+        <span className="flex-1 text-left text-[16px]" style={{ color: disabled ? '#b0b8cc' : value ? '#051937' : '#697498' }}>{value || 'Select payment mode'}</span>
         <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke={disabled ? '#b0b8cc' : '#697498'} strokeWidth="2" className={`flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}>
           <path d="M5 8l5 5 5-5" />
         </svg>
@@ -52,12 +50,14 @@ function PlainSelect({ value, onChange, options, disabled }: { value: string; on
 
 type Props = { onBack: () => void; onBackToListing: () => void; onContinue: (paymentMode: string, accountNo: string) => void; selectedRows: Row[] };
 
-export default function NonRemittanceChargesPage({ onBack, onBackToListing, onContinue }: Props) {
+export default function NonRemittanceChargesPage({ onBack, onBackToListing, onContinue, selectedRows }: Props) {
   const [paymentMode, setPaymentMode] = useState('Credit/Debit Account');
   const [paymentRef,  setPaymentRef]  = useState('Account Number');
   const [showSaveModal, setShowSaveModal] = useState(false);
   const isEPayment = paymentMode === 'E-Payment';
   const handlePaymentMode = (v: string) => { setPaymentMode(v); if (v === 'E-Payment') setPaymentRef('Reference No'); else setPaymentRef('Account Number'); };
+
+  const displayRows = selectedRows.length > 0 ? selectedRows : [];
 
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full" style={{ fontFamily: font }}>
@@ -80,51 +80,102 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
           <ClaimStepper activeIndex={2} steps={NR_CLAIM_STEPS} />
         </div>
 
-        <div className="px-4 sm:px-10 pb-[32px] flex flex-col gap-[20px]">
-          <div className="bg-white rounded-[8px] p-[24px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.07)' }}>
-            <h2 className="text-[20px] text-[#051937] mb-[16px]" style={{ fontFamily: font, fontWeight: 500 }}>Payment Details</h2>
+        {/* Two-column layout */}
+        <div className="px-4 sm:px-10 pb-[32px] flex flex-col lg:flex-row gap-[24px] items-start">
 
-            <div className="rounded-[8px]" style={{ border: '1px solid #c4d8f5' }}>
-              {/* Header */}
-              <div className="flex" style={{ background: '#a6c2e9', borderRadius: '8px 8px 0 0' }}>
-                <div className="h-[44px] flex items-center pl-[20px]" style={{ flex: '0 0 50%' }}>
-                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 500 }}>Charges</span>
-                </div>
-                <div className="h-[44px] flex items-center pl-[8px] flex-1">
-                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 500 }}>Payment Mode</span>
-                </div>
-                <div className="h-[44px] flex items-center pl-[8px] flex-1">
-                  <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 500 }}>Payment Reference</span>
-                </div>
-              </div>
-
-              {/* Other Charges row */}
-              <div className="flex flex-col lg:flex-row gap-[20px] py-[20px] bg-white">
-                <div className="flex flex-col gap-[10px] w-full lg:w-[calc(50%-10px)]">
-                  <div className="flex items-center h-[49px] gap-[12px] px-[12px]" style={{ background: '#eff2f7' }}>
-                    <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 600, width: 320 }}>Total Charges</span>
-                    <span className="flex items-center gap-[4px] text-[20px] text-[#051937]" style={{ fontFamily: font, fontWeight: 700 }}>
-                      <DirhamIcon size={16} color="#051937" />{TOTAL_AED}
-                    </span>
-                  </div>
-                  {SUB_CHARGES.map((c, i) => (
-                    <div key={i} className="flex items-start gap-[12px] px-[12px]">
-                      <span className="text-[16px] text-[#696f83]" style={{ fontFamily: font, fontWeight: 500, width: 320, whiteSpace: 'nowrap' }}>{c.label}</span>
-                      <span className="flex items-center gap-[4px] text-[16px] text-[#051937]" style={{ fontFamily: font, fontWeight: 700 }}>
-                        <DirhamIcon size={13} color="#051937" />{c.amount}
-                      </span>
-                    </div>
+          {/* Left — Selected Declarations table */}
+          <div className="flex-1 min-w-0 bg-white rounded-[8px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.07)' }}>
+            <div className="px-[24px] pt-[20px] pb-[12px]">
+              <p className="text-[20px] text-[#051937]" style={{ fontWeight: 500 }}>Selected Declarations</p>
+              <p className="text-[14px] text-[#697498] mt-[2px]">
+                Review the declarations you've selected for this claim.{' '}
+                <span className="font-medium text-[#1360d2]">{displayRows.length} selected</span>
+              </p>
+            </div>
+            <div className="overflow-x-auto">
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: font }}>
+                <thead>
+                  <tr style={{ background: '#a6c2e9' }}>
+                    {['#', 'Declaration No.', 'Date', 'Declaration Type', 'Deposit Type', 'Deposit Amount'].map((h, i) => (
+                      <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 15, fontWeight: 600, color: '#000', whiteSpace: 'nowrap', width: i === 0 ? 44 : undefined }}>
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {displayRows.map((row, i) => (
+                    <tr key={row.declarationNo} style={{ borderBottom: '1px solid #f0f3fa' }}>
+                      <td style={{ padding: '12px 16px', fontSize: 15, color: '#697498' }}>{i + 1}</td>
+                      <td style={{ padding: '12px 16px', fontSize: 15, color: '#1360d2', fontWeight: 500 }}>{row.declarationNo}</td>
+                      <td style={{ padding: '12px 16px', fontSize: 15, color: '#051937', whiteSpace: 'nowrap' }}>{row.declarationDate || '—'}</td>
+                      <td style={{ padding: '12px 16px', fontSize: 15, color: '#051937' }}>{row.declarationCategory ?? 'Freezone Export'}</td>
+                      <td style={{ padding: '12px 16px', fontSize: 15, color: '#051937' }}>{row.depositType}</td>
+                      <td style={{ padding: '12px 16px', fontSize: 15, color: '#051937', fontWeight: 500 }}>{row.depositAmount}</td>
+                    </tr>
                   ))}
-                </div>
-                <div className="flex-1">
-                  <PlainSelect value={paymentMode} onChange={handlePaymentMode} options={PAYMENT_MODES} />
-                </div>
-                <div className="flex-1">
-                  <PlainSelect value={paymentRef} onChange={setPaymentRef} options={PAYMENT_REFS} disabled={isEPayment} />
-                </div>
-              </div>
+                  {displayRows.length === 0 && (
+                    <tr>
+                      <td colSpan={6} style={{ padding: '24px 16px', textAlign: 'center', fontSize: 15, color: '#697498' }}>No declarations selected.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
+
+          {/* Right — Payment Summary card */}
+          <div className="w-full lg:w-[320px] flex-shrink-0 bg-white rounded-[8px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.07)' }}>
+            <div className="px-[20px] pt-[20px] pb-[16px]" style={{ borderBottom: '1px solid #eef1f6' }}>
+              <p className="text-[18px] text-[#051937]" style={{ fontWeight: 700 }}>Payment Summary</p>
+            </div>
+            <div className="px-[20px] py-[16px] flex flex-col gap-[12px]">
+              {/* Line items */}
+              <div className="flex items-center justify-between">
+                <span className="text-[15px] text-[#697498]" style={{ fontFamily: font }}>No. of Declarations</span>
+                <span className="text-[15px] text-[#051937]" style={{ fontFamily: font, fontWeight: 500 }}>{displayRows.length}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[15px] text-[#697498]" style={{ fontFamily: font }}>Registration Fee</span>
+                <span className="flex items-center gap-[4px] text-[15px] text-[#051937]" style={{ fontFamily: font }}>
+                  <DirhamIcon size={13} color="#051937" />{REG_FEE}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[15px] text-[#697498]" style={{ fontFamily: font }}>Knowledge-Innovation Fee</span>
+                <span className="flex items-center gap-[4px] text-[15px] text-[#051937]" style={{ fontFamily: font }}>
+                  <DirhamIcon size={13} color="#051937" />{KNOW_FEE}
+                </span>
+              </div>
+              <div className="flex items-center justify-between pt-[8px]" style={{ borderTop: '1px solid #eef1f6' }}>
+                <span className="text-[16px] text-[#051937]" style={{ fontFamily: font, fontWeight: 700 }}>Total Amount</span>
+                <span className="flex items-center gap-[4px] text-[18px] text-[#1360d2]" style={{ fontFamily: font, fontWeight: 700 }}>
+                  <DirhamIcon size={15} color="#1360d2" />{TOTAL_AED}
+                </span>
+              </div>
+
+              {/* Payment Mode */}
+              <div className="flex flex-col gap-[6px] pt-[4px]">
+                <label className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>Payment Mode</label>
+                <PlainSelect value={paymentMode} onChange={handlePaymentMode} options={PAYMENT_MODES} />
+              </div>
+
+              {/* Payment Reference */}
+              <div className="flex flex-col gap-[6px]">
+                <label className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>Payment Reference</label>
+                <PlainSelect value={paymentRef} onChange={setPaymentRef} options={PAYMENT_REFS} disabled={isEPayment} />
+              </div>
+
+              {/* Submit button */}
+              <button
+                onClick={() => onContinue(paymentMode, paymentRef)}
+                className="w-full h-[48px] rounded-[4px] text-[16px] text-white mt-[4px] transition-colors hover:opacity-90"
+                style={{ background: '#1360d2', fontFamily: font, fontWeight: 500 }}>
+                Next
+              </button>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -135,19 +186,13 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
           style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
           Back
         </button>
-        <div className="flex items-center gap-[12px]">
-          <button onClick={() => setShowSaveModal(true)}
-            className="h-[48px] px-[28px] rounded-[4px] border bg-white text-[16px] hover:bg-[#f0f4ff] transition-colors"
-            style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
-            Save &amp; Exit
-          </button>
-          <button onClick={() => onContinue(paymentMode, paymentRef)}
-            className="h-[48px] px-[40px] rounded-[4px] text-[16px] text-white transition-colors"
-            style={{ background: '#1360d2', fontFamily: font, fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
-            Next
-          </button>
-        </div>
+        <button onClick={() => setShowSaveModal(true)}
+          className="h-[48px] px-[28px] rounded-[4px] border bg-white text-[16px] hover:bg-[#f0f4ff] transition-colors"
+          style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
+          Save &amp; Exit
+        </button>
       </div>
+
       {showSaveModal && <SaveExitModal onCancel={() => setShowSaveModal(false)} onBackToListing={onBackToListing} />}
     </div>
   );
