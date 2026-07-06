@@ -80,43 +80,71 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
           <ClaimStepper activeIndex={2} steps={NR_CLAIM_STEPS} />
         </div>
 
-        {/* Two-column layout */}
-        <div className="px-4 sm:px-10 pb-[32px] flex flex-col lg:flex-row gap-[24px] items-start">
+        {/* Two-column layout — same grid as VCC */}
+        <div className="px-4 sm:px-10 pb-[32px] grid gap-[24px] items-start grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px]">
 
           {/* Left — Selected Declarations table */}
-          <div className="flex-1 min-w-0 bg-white rounded-[8px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.07)' }}>
-            <div className="px-[24px] pt-[20px] pb-[12px]">
-              <p className="text-[20px] text-[#051937]" style={{ fontWeight: 500 }}>Selected Declarations</p>
-              <p className="text-[14px] text-[#697498] mt-[2px]">
-                Review the declarations you've selected for this claim.{' '}
-                <span className="font-medium text-[#1360d2]">{displayRows.length} selected</span>
+          <div className="min-w-0 bg-white rounded-[8px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+            <div className="px-[24px] pt-[20px] pb-[12px] border-b border-[#eef1f6]">
+              <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Selected Declarations</p>
+              <p className="text-[14px] text-[#697498] mt-[4px]">
+                {displayRows.length} declaration{displayRows.length !== 1 ? 's' : ''} selected for this claim
               </p>
             </div>
-            <div className="overflow-x-auto">
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: font }}>
+            <div className="overflow-x-auto px-[16px] py-[8px]">
+              <table style={{ width: '100%', minWidth: 700, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }}>
                 <thead>
-                  <tr style={{ background: '#a6c2e9' }}>
-                    {['#', 'Declaration No.', 'Date', 'Declaration Type', 'Deposit Type', 'Deposit Amount'].map((h, i) => (
-                      <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 15, fontWeight: 600, color: '#000', whiteSpace: 'nowrap', width: i === 0 ? 44 : undefined }}>
-                        {h}
+                  <tr>
+                    {[
+                      { label: '#',                            w: 48  },
+                      { label: 'Declaration No.',              w: 170 },
+                      { label: 'Declaration Clearance Date',   w: 180 },
+                      { label: 'Declaration Type',             w: 180 },
+                      { label: 'Owner Code',                   w: 260 },
+                      { label: 'Claim Expiry',                 w: 130 },
+                      { label: 'Export Expiry',                w: 130 },
+                      { label: 'Remarks',                      w: 110 },
+                    ].map((h, i) => (
+                      <th key={h.label} style={{ width: h.w, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, fontSize: 16, color: '#0e1b3d', whiteSpace: 'nowrap', borderTopLeftRadius: i === 0 ? 8 : 0, borderBottomLeftRadius: i === 0 ? 8 : 0 }}>
+                        {h.label}
                       </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {displayRows.map((row, i) => (
-                    <tr key={row.declarationNo} style={{ borderBottom: '1px solid #f0f3fa' }}>
-                      <td style={{ padding: '12px 16px', fontSize: 15, color: '#697498' }}>{i + 1}</td>
-                      <td style={{ padding: '12px 16px', fontSize: 15, color: '#1360d2', fontWeight: 500 }}>{row.declarationNo}</td>
-                      <td style={{ padding: '12px 16px', fontSize: 15, color: '#051937', whiteSpace: 'nowrap' }}>{row.declarationDate || '—'}</td>
-                      <td style={{ padding: '12px 16px', fontSize: 15, color: '#051937' }}>{row.declarationCategory ?? 'Freezone Export'}</td>
-                      <td style={{ padding: '12px 16px', fontSize: 15, color: '#051937' }}>{row.depositType}</td>
-                      <td style={{ padding: '12px 16px', fontSize: 15, color: '#051937', fontWeight: 500 }}>{row.depositAmount}</td>
+                    <tr key={row.declarationNo}>
+                      <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 48 }}>
+                        <span className="text-[16px] text-[#697498]">{i + 1}</span>
+                      </td>
+                      <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 170 }}>
+                        <span className="text-[16px] whitespace-nowrap" style={{ color: '#1360d2', fontWeight: 500 }}>{row.declarationNo}</span>
+                      </td>
+                      <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 180 }}>
+                        <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.declarationDate || '—'}</span>
+                      </td>
+                      <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 180 }}>
+                        <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.declarationCategory ?? 'Freezone Export'}</span>
+                      </td>
+                      <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 260 }}>
+                        <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.importerCode ? `${row.importerCode}` : '—'}</span>
+                      </td>
+                      <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 130 }}>
+                        <span className="text-[16px] whitespace-nowrap" style={{ color: '#dc3545', fontWeight: 500 }}>{row.claimExpiry}</span>
+                      </td>
+                      <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 130 }}>
+                        <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.exportExpiry}</span>
+                      </td>
+                      <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 110 }}>
+                        <span className="text-[16px] text-[#697498]">{row.remarks}</span>
+                      </td>
                     </tr>
                   ))}
                   {displayRows.length === 0 && (
                     <tr>
-                      <td colSpan={6} style={{ padding: '24px 16px', textAlign: 'center', fontSize: 15, color: '#697498' }}>No declarations selected.</td>
+                      <td colSpan={8} style={{ background: '#fff', padding: '40px 12px', textAlign: 'center' }}>
+                        <span className="text-[16px] text-[#697498]">No declarations selected.</span>
+                      </td>
                     </tr>
                   )}
                 </tbody>
@@ -124,8 +152,8 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
             </div>
           </div>
 
-          {/* Right — Payment Summary card */}
-          <div className="w-full lg:w-[320px] flex-shrink-0 bg-white rounded-[8px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.07)' }}>
+          {/* Right — Payment Summary card (360px, same as VCC) */}
+          <div className="bg-white rounded-[8px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
             <div className="px-[20px] pt-[20px] pb-[16px]" style={{ borderBottom: '1px solid #eef1f6' }}>
               <p className="text-[18px] text-[#051937]" style={{ fontWeight: 700 }}>Payment Summary</p>
             </div>
