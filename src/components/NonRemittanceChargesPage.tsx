@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import SaveExitModal from './SaveExitModal';
 import ClaimStepper, { NR_CLAIM_STEPS } from './ClaimStepper';
+import ClaimantBrokerDetail from './ClaimantBrokerDetail';
 import type { Row } from './EligibleDeclarationsPage';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
@@ -213,6 +214,10 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
             </div>
           </div>
 
+        </div>
+
+        <div className="px-4 sm:px-10 pb-[32px]">
+          <ClaimantBrokerDetail />
         </div>
       </div>
 

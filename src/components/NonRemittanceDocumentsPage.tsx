@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import SaveExitModal from './SaveExitModal';
 import BackToListingBar from './BackToListingBar';
 import ClaimStepper, { NR_CLAIM_STEPS } from './ClaimStepper';
+import ClaimantBrokerDetail from './ClaimantBrokerDetail';
 import type { Row } from './EligibleDeclarationsPage';
 
 const FONT = "'Dubai', 'Segoe UI', sans-serif";
@@ -137,28 +138,6 @@ export default function NonRemittanceDocumentsPage({ rows, onBack, onContinue, o
         </div>
 
         <div className="px-4 sm:px-10 pb-[32px] flex flex-col gap-[20px]">
-
-          {/* Claimant & Broker Details */}
-          <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-            <div className="px-[24px] py-[16px] border-b border-[#eef1f6]">
-              <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: FONT, fontWeight: 500 }}>Claimant &amp; Broker Details</p>
-            </div>
-            <div className="px-[24px] py-[20px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-[32px] gap-y-[20px]">
-              {[
-                { label: 'Claimant Type',   value: 'Business' },
-                { label: 'Claimant Code',   value: 'AE-9106286' },
-                { label: 'Claimant Name',   value: 'SW Logistics LLC' },
-                { label: 'Beneficiary',     value: 'SW Logistics LLC (Business - AE-9106286)' },
-                { label: 'Broker Code',     value: 'AE-9106286' },
-                { label: 'Broker Name',     value: 'SW Logistics LLC' },
-              ].map((f) => (
-                <div key={f.label} className="flex flex-col gap-[4px]">
-                  <span className="text-[16px] text-[#697498]" style={{ fontFamily: FONT }}>{f.label}</span>
-                  <span className="text-[16px] text-[#051937]" style={{ fontFamily: FONT, fontWeight: 500 }}>{f.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
 
           {/* Two cards side by side */}
           <div className="flex gap-[16px] flex-wrap lg:flex-nowrap items-stretch">
@@ -376,6 +355,8 @@ export default function NonRemittanceDocumentsPage({ rows, onBack, onContinue, o
               </div>
             </div>
           )}
+
+          <ClaimantBrokerDetail />
 
         </div>
       </div>
