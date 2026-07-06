@@ -26,7 +26,8 @@ import EligibleDeclarationsPage from './EligibleDeclarationsPage';
 import RaiseClaimRequestPage from './RaiseClaimRequestPage';
 import type { ClaimType } from './ClaimTypeSelectionPage';
 import { RefundTypePage, OutboundDeclarationPage, MissingDocDepositPage, DocumentUploadPage, PaymentDetailsPage, RDDocumentsPage, RDPaymentPage, RDReviewPage, REFUND_TYPE_LABEL, type RefundType, type ChargeDetail, type RDPaymentInfo } from './ClaimSubPages';
-import { RDChargeFlowPage } from './RDChargeFlowPage';
+import { RDChargeFlowPage, isMissingDocCharge } from './RDChargeFlowPage';
+import { REFUND_DEPOSIT_STEPS_NO_DOCS } from './ClaimStepper';
 import CargoTransferPrePage from './CargoTransferPrePage';
 import CargoTransferRequestPage from './CargoTransferRequestPage';
 import CargoTransferNewRequestPage from './CargoTransferNewRequestPage';
@@ -225,6 +226,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
   const [claimListDeclNo, setClaimListDeclNo] = useState<string>('');
   const [claimListDeclViewOpen, setClaimListDeclViewOpen] = useState(false);
   const [claimSelectedRows, setClaimSelectedRows] = useState<import('./EligibleDeclarationsPage').Row[]>([]);
+  // Missing/Document Deposit claims have no document upload step.
+  const rdSkipDocs = claimSelectedRows.length > 0 && claimSelectedRows.every(r => isMissingDocCharge(r.depositType));
   const [claimChargeDetails, setClaimChargeDetails] = useState<ChargeDetail[]>([]);
   const [rdDocRemarks, setRdDocRemarks] = useState('');
   const [rdPaymentInfo, setRdPaymentInfo] = useState<RDPaymentInfo | null>(null);
@@ -409,7 +412,11 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               rows={claimSelectedRows}
               onBack={() => setClaimStep('eligible')}
               onBackToListing={() => setClaimStep('list')}
-              onContinue={({ details }) => { setClaimChargeDetails(details); setClaimStep('rdDocuments'); }}
+              onContinue={({ details }) => {
+                setClaimChargeDetails(details);
+                // Missing/Document Deposit claims have no document upload step.
+                setClaimStep(rdSkipDocs ? 'rdPayment' : 'rdDocuments');
+              }}
             />
           )}
           {claimStep === 'rdDocuments' && claimSelectedRows.length > 0 && (
@@ -421,8 +428,10 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           )}
           {claimStep === 'rdPayment' && (
             <RDPaymentPage
-              onBack={() => setClaimStep('rdDocuments')}
+              onBack={() => setClaimStep(rdSkipDocs ? 'chargeDetails' : 'rdDocuments')}
               onContinue={(info) => { setRdPaymentInfo(info); setClaimStep('rdReview'); }}
+              steps={rdSkipDocs ? REFUND_DEPOSIT_STEPS_NO_DOCS : undefined}
+              activeIndex={rdSkipDocs ? 2 : 3}
             />
           )}
           {claimStep === 'rdReview' && rdPaymentInfo && (

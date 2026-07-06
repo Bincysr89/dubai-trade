@@ -8,6 +8,10 @@ export const REFUND_DEPOSIT_STEPS: { id: string; label: string }[] = [
   { id: 'review',    label: 'Review & Submit' },
 ];
 
+/* Missing/Document Deposit claims have no document upload step. */
+export const REFUND_DEPOSIT_STEPS_NO_DOCS: { id: string; label: string }[] =
+  REFUND_DEPOSIT_STEPS.filter(s => s.id !== 'documents');
+
 export const CLAIM_STEPS: { id: string; label: string }[] = [
   { id: 'claim',     label: 'Claim Details' },
   { id: 'invoice',   label: 'Invoice & HS Code Details' },

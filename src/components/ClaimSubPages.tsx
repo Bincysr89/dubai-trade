@@ -11,7 +11,7 @@ import Dh, { DhAmount } from './Dh';
 import { DateInput } from './DatePicker';
 
 /* ───────── Shared types ───────── */
-export type RefundType = 'full' | 'partial' | 'no' | 'fullImport' | 'partialImport';
+export type RefundType = 'full' | 'partial' | 'no' | 'fullImport' | 'partialImport' | 'refund' | 'noRefund';
 export type DepositMethod = 'standing' | 'cash' | 'epayment';
 
 const DEPOSIT_METHOD_LABEL: Record<DepositMethod, string> = {
@@ -34,6 +34,8 @@ export const REFUND_TYPE_LABEL: Record<RefundType, string> = {
   no:           'No Export',
   fullImport:   'Full Import',
   partialImport:'Partial Import',
+  refund:       'Refund',
+  noRefund:     'No Refund',
 };
 
 /* ───────── Common DT page shell ───────── */
@@ -1951,11 +1953,12 @@ const MANDATORY_DOCS: Record<string, { chargeType: string; mandatory: string; do
 };
 
 export function RDDocumentsPage({
-  rows, onBack, onContinue,
+  rows, onBack, onContinue, onBackToListing,
 }: {
   rows: Row[];
   onBack: () => void;
   onContinue: (remarks: string) => void;
+  onBackToListing?: () => void;
 }) {
   const [selectedDecl, setSelectedDecl] = useState<string>(rows[0]?.declarationNo ?? '');
   const [uploadedDocs, setUploadedDocs] = useState<RDUploadedDoc[]>([]);
@@ -2147,7 +2150,7 @@ export function RDDocumentsPage({
       </div>
 
       <BackToListingBar onBack={onBack} rightContent={
-        <div className="flex items-center gap-[12px]"><SaveExitBtn onBackToListing={onBackToListing} /><button onClick={() => onContinue(remarks)}
+        <div className="flex items-center gap-[12px]"><SaveExitBtn onBackToListing={onBackToListing ?? onBack} /><button onClick={() => onContinue(remarks)}
           className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors"
           style={{ background: '#1360d2', cursor: 'pointer', fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
           Next
@@ -2209,10 +2212,13 @@ function RDPlainSelect({ value, onChange, options, disabled }: { value: string; 
 export type RDPaymentInfo = { charges: { key: string; mode: string; account: string }[]; remarks: string };
 
 export function RDPaymentPage({
-  onBack, onContinue,
+  onBack, onContinue, onBackToListing, steps, activeIndex = 3,
 }: {
   onBack: () => void;
   onContinue: (info: RDPaymentInfo) => void;
+  onBackToListing?: () => void;
+  steps?: { id: string; label: string }[];
+  activeIndex?: number;
 }) {
   const [paymentMode, setPaymentMode] = useState('Credit/Debit Account');
   const [paymentRef,  setPaymentRef]  = useState('Account Number');
@@ -2239,7 +2245,7 @@ export function RDPaymentPage({
       <div className="flex-1 overflow-y-auto">
         <h1 className="px-4 sm:px-10 text-[32px] text-[#111838] mb-[8px]" style={{ fontWeight: 500 }}>Raise New Claim - Refund of Deposits</h1>
         <div className="px-4 sm:px-10 mb-[24px]">
-          <ClaimStepper activeIndex={3} steps={REFUND_DEPOSIT_STEPS} />
+          <ClaimStepper activeIndex={activeIndex} steps={steps ?? REFUND_DEPOSIT_STEPS} />
         </div>
 
         <div className="px-4 sm:px-10 pb-[32px] flex flex-col gap-[24px]">
@@ -2299,7 +2305,7 @@ export function RDPaymentPage({
 
       <BackToListingBar onBack={onBack} rightContent={
         <div className="flex items-center gap-[12px]">
-          <SaveExitBtn onBackToListing={onBackToListing} />
+          <SaveExitBtn onBackToListing={onBackToListing ?? onBack} />
           <button onClick={() => onContinue({ charges: RD_SUB_CHARGES.map(c => ({ key: c.key, mode: paymentMode, account: paymentRef })), remarks })}
             className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors"
             style={{ background: '#1360d2', fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
@@ -2372,6 +2378,7 @@ export function RDReviewPage({
 }) {
   const REFUND_LABEL: Record<string, string> = {
     full: 'Full Export', fullImport: 'Full Import', partial: 'Partial Export', partialImport: 'Partial Import', no: 'No Export',
+    refund: 'Refund', noRefund: 'No Refund',
   };
   const total = chargeDetails.reduce((s, d) => s + (parseFloat(d.claimAmount) || 0), 0);
 
@@ -2454,7 +2461,7 @@ export function RDReviewPage({
                 </thead>
                 <tbody>
                   {paymentInfo.charges.map((pc, i) => {
-                    const def = RD_CHARGES.find(c => c.key === pc.key);
+                    const def = RD_SUB_CHARGES.find(c => c.key === pc.key);
                     return (
                       <tr key={pc.key} style={{ borderBottom: '1px solid #f0f3fa' }}>
                         <td style={{ padding: '12px 16px', fontSize: 15, color: '#0e1b3d', fontWeight: 500 }}>{def?.label}</td>

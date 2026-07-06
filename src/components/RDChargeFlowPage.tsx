@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import SaveExitModal from './SaveExitModal';
 import BackToListingBar from './BackToListingBar';
-import ClaimStepper, { REFUND_DEPOSIT_STEPS } from './ClaimStepper';
+import ClaimStepper, { REFUND_DEPOSIT_STEPS, REFUND_DEPOSIT_STEPS_NO_DOCS } from './ClaimStepper';
 import type { Row } from './EligibleDeclarationsPage';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
@@ -11,7 +11,12 @@ const COLS    = '56px repeat(7, minmax(160px, 1fr))';
 const TBL_MIN = 1190;
 
 /* ─── Domain types ──────────────────────────────────────────────── */
-type RefundType = 'full' | 'fullImport' | 'partial' | 'partialImport' | 'no' | '';
+type RefundType = 'full' | 'fullImport' | 'partial' | 'partialImport' | 'no' | 'refund' | 'noRefund' | '';
+
+/* Charge types with no export linkage — plain Refund / No Refund only,
+   and the flow skips the document upload step entirely. */
+export const MISSING_DOC_CHARGE_TYPES = ['Missing Document Deposit', 'Document Deposit'];
+export const isMissingDocCharge = (ct: string) => MISSING_DOC_CHARGE_TYPES.includes(ct);
 
 export type ChargeDetail = {
   declarationNo: string;
@@ -106,6 +111,12 @@ const REFUND_OPTIONS: { value: RefundType; label: string }[] = [
   { value: 'no',            label: 'No Export'      },
 ];
 
+/* Missing/Document Deposit — only plain Refund / No Refund. */
+const MISSING_DOC_REFUND_OPTIONS: { value: RefundType; label: string }[] = [
+  { value: 'refund',   label: 'Refund'    },
+  { value: 'noRefund', label: 'No Refund' },
+];
+
 const ALLOCATION_OPTIONS = ['single', 'multiple'];
 const CUSTOMS_AUTHORITIES = ['Abu Dhabi Customs', 'AJMAN Customs', 'Dubai Customs', 'Dubai Customs (Manifest)', 'FUJAIRAH Customs', 'RAK Customs', 'Sharjah Customs', 'UMM AL QUWAIN Customs'];
 const DECLARATION_TYPES   = ['Export', 'Re-Export', 'Transit'];
@@ -122,8 +133,8 @@ const DUBAI_DECLARATIONS: Omit<OutboundDetail, 'id' | 'customsAuthority'>[] = [
 function needsOutbound(rt: RefundType) { return rt === 'full' || rt === 'fullImport' || rt === 'partial' || rt === 'partialImport'; }
 function parseAED(s: string)           { return parseFloat(s.replace(/[^0-9.]/g, '')) || 0; }
 function autoAmount(rt: RefundType, dep: string) {
-  if (rt === 'no') return '0';
-  if (rt === 'full' || rt === 'fullImport') return String(parseAED(dep));
+  if (rt === 'no' || rt === 'noRefund') return '0';
+  if (rt === 'full' || rt === 'fullImport' || rt === 'refund') return String(parseAED(dep));
   return '';
 }
 function obKey(d: string, h: string) { return `${d}::${h}`; }
@@ -162,11 +173,13 @@ function FlyoutMenu({ pos, options, value, onSelect }: {
 }
 
 /* ─── Refund Type dropdown (fixed-position) ─────────────────────── */
-function RefundSelect({ value, onChange }: { value: RefundType; onChange: (v: RefundType) => void }) {
+function RefundSelect({ value, onChange, options = REFUND_OPTIONS }: {
+  value: RefundType; onChange: (v: RefundType) => void; options?: { value: RefundType; label: string }[];
+}) {
   const [open, setOpen] = useState(false);
   const [pos,  setPos]  = useState<{ top: number; left: number; width: number } | null>(null);
   const btnRef          = useRef<HTMLButtonElement>(null);
-  const opt             = REFUND_OPTIONS.find(o => o.value === value);
+  const opt             = options.find(o => o.value === value);
 
   const openMenu = () => {
     if (btnRef.current) {
@@ -205,7 +218,7 @@ function RefundSelect({ value, onChange }: { value: RefundType; onChange: (v: Re
       </button>
 
       {open && pos && (
-        <FlyoutMenu pos={pos} options={REFUND_OPTIONS.map(o => ({ value: o.value, label: o.label }))} value={value}
+        <FlyoutMenu pos={pos} options={options.map(o => ({ value: o.value, label: o.label }))} value={value}
           onSelect={v => { onChange(v as RefundType); setOpen(false); }} />
       )}
     </>
@@ -653,7 +666,7 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
   const invoices = getInvoices(d.declarationNo);
   const needsOb  = needsOutbound(d.refundType);
   const prog     = declProgress(d.declarationNo, d.refundType, obs);
-  const isAuto   = d.refundType === 'no' || d.refundType === 'full' || d.refundType === 'fullImport';
+  const isAuto   = d.refundType === 'no' || d.refundType === 'full' || d.refundType === 'fullImport' || d.refundType === 'refund' || d.refundType === 'noRefund';
   const meta     = DECL_META[d.declarationNo] ?? { declarationType: 'Import for Re-Export', depositMethod: 'Alternative Duty' };
 
   /* Search above the invoice table — combined type-dropdown + input, as on the first stepper */
@@ -738,7 +751,8 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
         </div>
 
         <div style={{ paddingRight: 8 }}>
-          <RefundSelect value={d.refundType} onChange={rt => onRefund(idx, rt)} />
+          <RefundSelect value={d.refundType} onChange={rt => onRefund(idx, rt)}
+            options={isMissingDocCharge(d.chargeType) ? MISSING_DOC_REFUND_OPTIONS : REFUND_OPTIONS} />
         </div>
 
         <div>
@@ -964,12 +978,15 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue }: 
     setModal(m => m ? { ...m, ctx: { ...m.ctx, editId: undefined }, existing: undefined } : null);
   };
   const allValid = details.every(d => {
-    if (!d.refundType || (!d.claimAmount.trim() && d.refundType !== 'no')) return false;
+    if (!d.refundType || (!d.claimAmount.trim() && d.refundType !== 'no' && d.refundType !== 'noRefund')) return false;
     if (!needsOutbound(d.refundType)) return true;
     return getInvoices(d.declarationNo).every(inv => inv.hsCodes.every(hs => (obs[obKey(d.declarationNo, hs.id)] ?? []).length > 0));
   });
 
   const totalClaim = details.reduce((s, d) => s + parseAED(d.claimAmount), 0);
+
+  /* Missing/Document Deposit claims skip the document upload step. */
+  const allMissingDoc = details.length > 0 && details.every(d => isMissingDocCharge(d.chargeType));
 
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full" style={{ fontFamily: font }}>
@@ -991,7 +1008,7 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue }: 
 
       {/* Stepper */}
       <div className="px-4 sm:px-10 pb-[20px] flex-shrink-0">
-        <ClaimStepper activeIndex={1} steps={REFUND_DEPOSIT_STEPS} />
+        <ClaimStepper activeIndex={1} steps={allMissingDoc ? REFUND_DEPOSIT_STEPS_NO_DOCS : REFUND_DEPOSIT_STEPS} />
       </div>
 
       {/* Scrollable body */}
