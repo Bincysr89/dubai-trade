@@ -1,29 +1,65 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import NonRemittanceClaimViewPage from './NonRemittanceClaimViewPage';
+import ClaimantBrokerDetail from './ClaimantBrokerDetail';
 
 const font = "'Dubai', sans-serif";
 
-// ── shared helpers (mirrors CargoTransferCancelFlow) ─────────────────────────
+/* DTSelect-style dropdown with a fixed-position menu so it escapes
+   overflow containers (payment table card). */
+function PaySelect({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: string[] }) {
+  const [open, setOpen] = useState(false);
+  const [pos,  setPos]  = useState<{ top: number; left: number; width: number } | null>(null);
+  const btnRef          = useRef<HTMLButtonElement>(null);
 
-function PartyInfoCard({ items }: { items: { label: string; value: string }[] }) {
+  const toggle = () => {
+    if (btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect();
+      setPos({ top: r.bottom + 2, left: r.left, width: r.width });
+    }
+    setOpen(o => !o);
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: MouseEvent) => { if (btnRef.current && !btnRef.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [open]);
+
   return (
-    <div className="bg-white rounded-[8px] p-[20px]" style={{ boxShadow: '1px 2px 12px rgba(0,0,0,0.06)' }}>
-      <div className="flex items-center flex-wrap gap-y-[12px]">
-        {items.map((item, i) => (
-          <React.Fragment key={i}>
-            <div className="flex flex-col gap-[4px] px-[12px] py-[4px]">
-              <span style={{ fontSize: 14, color: '#696f83', fontFamily: font, fontWeight: 400, whiteSpace: 'nowrap' }}>{item.label}</span>
-              <span style={{ fontSize: 18, color: '#051937', fontFamily: font, fontWeight: 500 }}>{item.value}</span>
-            </div>
-            {i < items.length - 1 && (
-              <div style={{ width: 1, height: 40, background: '#e8edf5', flexShrink: 0 }} />
-            )}
-          </React.Fragment>
-        ))}
-      </div>
-    </div>
+    <>
+      <button ref={btnRef} type="button" onClick={toggle} aria-haspopup="listbox" aria-expanded={open}
+        className="w-full bg-white rounded-[4px] flex items-center px-[12px] text-left transition-colors"
+        style={{ height: 48, border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}`, fontFamily: font, cursor: 'pointer' }}>
+        <span className="flex-1 text-[16px]" style={{ color: '#0e1b3d' }}>{value}</span>
+        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"
+          className={`transition-transform flex-shrink-0 ${open ? 'rotate-180' : ''}`}>
+          <path d="M5 8l5 5 5-5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+      {open && pos && (
+        <div className="py-[4px]" role="listbox"
+          style={{ position: 'fixed', top: pos.top, left: pos.left, width: Math.max(pos.width, 160), zIndex: 9999,
+            background: '#fff', borderRadius: 8, border: '1px solid #f0f0f5', boxShadow: '0px 2px 16px 0px rgba(0,0,0,0.12)',
+            overflow: 'hidden', fontFamily: font }}>
+          {options.map(o => {
+            const isSel = o === value;
+            return (
+              <button key={o} type="button" role="option" aria-selected={isSel}
+                onMouseDown={e => { e.preventDefault(); onChange(o); setOpen(false); }}
+                className="block w-full text-left px-[14px] py-[10px] text-[16px] transition-colors hover:bg-[#e2ebf9]"
+                style={{ background: isSel ? '#e2ebf9' : 'transparent', color: isSel ? '#1360d2' : '#0e1b3d', fontWeight: isSel ? 500 : 400, fontFamily: font }}>
+                {o}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </>
   );
 }
+
+// ── shared helpers (mirrors CargoTransferCancelFlow) ─────────────────────────
 
 function InfoCard({ label, value }: { label: string; value: string }) {
   return (
@@ -159,27 +195,6 @@ function Step1({ onBack, onProceed, onViewClaim, reason, setReason, reasonDesc, 
         </div>
         <div className="flex flex-col gap-[24px]">
 
-          {/* Claim Details */}
-          <div className="flex flex-col gap-[12px]">
-            <SectionLabel>Claim Details</SectionLabel>
-            <Card className="p-[20px]">
-              <div className="flex flex-wrap gap-[20px]">
-                {CLAIM_DETAILS.map(f => (
-                  <InfoCard key={f.label} label={f.label} value={f.value} />
-                ))}
-                {/* View Claim link — inside the card, like the legacy screen */}
-                <div className="flex flex-col gap-[4px] py-[12px] px-[12px]" style={{ minWidth: 240, flex: '0 0 280px' }}>
-                  <span className="text-[16px]" style={{ fontFamily: font, color: '#455174', whiteSpace: 'nowrap' }}>View Claim</span>
-                  <button type="button" onClick={onViewClaim}
-                    className="text-[18px] text-left hover:underline"
-                    style={{ fontFamily: font, fontWeight: 500, color: '#1360d2', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
-                    View Claim
-                  </button>
-                </div>
-              </div>
-            </Card>
-          </div>
-
           {/* Cancellation Details */}
           <Card className="p-[20px]">
             <p className="text-[20px] mb-[20px]" style={{ fontFamily: font, fontWeight: 500 }}>Cancellation Details</p>
@@ -230,6 +245,23 @@ function Step1({ onBack, onProceed, onViewClaim, reason, setReason, reasonDesc, 
               )}
             </div>
           </Card>
+
+          {/* Claim Details */}
+          <div className="flex flex-col gap-[12px]">
+            <div className="flex items-center justify-between">
+              <SectionLabel>Claim Details</SectionLabel>
+              <OutlineBtn onClick={onViewClaim}>
+                <span className="whitespace-nowrap">View Claim</span>
+              </OutlineBtn>
+            </div>
+            <Card className="p-[20px]">
+              <div className="flex flex-wrap gap-[20px]">
+                {CLAIM_DETAILS.map(f => (
+                  <InfoCard key={f.label} label={f.label} value={f.value} />
+                ))}
+              </div>
+            </Card>
+          </div>
         </div>
       </div>
 
@@ -426,33 +458,13 @@ function Step3({ onBack, onProceed, onViewClaim }: { onBack: () => void; onProce
                       </div>
                     </td>
                     <td style={{ padding: '16px 8px' }}>
-                      <div className="relative" style={{ width: 260 }}>
-                        <select
-                          value={paymentMode}
-                          onChange={e => setPaymentMode(e.target.value)}
-                          className="appearance-none w-full h-[48px] pl-[12px] pr-[36px] rounded-[4px] text-[16px] cursor-pointer focus:outline-none"
-                          style={{ border: '1px solid #d5ddfb', fontFamily: font, color: '#0e1b3d' }}
-                        >
-                          {PAYMENT_MODES.map(m => <option key={m}>{m}</option>)}
-                        </select>
-                        <svg className="pointer-events-none absolute right-[10px] top-1/2 -translate-y-1/2" width="16" height="16" viewBox="0 0 24 24" fill="none">
-                          <path d="M6 9l6 6 6-6" stroke="#455174" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
+                      <div style={{ width: 260 }}>
+                        <PaySelect value={paymentMode} onChange={setPaymentMode} options={PAYMENT_MODES} />
                       </div>
                     </td>
                     <td style={{ padding: '16px 8px' }}>
-                      <div className="relative" style={{ width: 260 }}>
-                        <select
-                          value={paymentRef}
-                          onChange={e => setPaymentRef(e.target.value)}
-                          className="appearance-none w-full h-[48px] pl-[12px] pr-[36px] rounded-[4px] text-[16px] cursor-pointer focus:outline-none"
-                          style={{ border: '1px solid #d5ddfb', fontFamily: font, color: '#0e1b3d' }}
-                        >
-                          {PAYMENT_REFS.map(r => <option key={r}>{r}</option>)}
-                        </select>
-                        <svg className="pointer-events-none absolute right-[10px] top-1/2 -translate-y-1/2" width="16" height="16" viewBox="0 0 24 24" fill="none">
-                          <path d="M6 9l6 6 6-6" stroke="#455174" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
+                      <div style={{ width: 260 }}>
+                        <PaySelect value={paymentRef} onChange={setPaymentRef} options={PAYMENT_REFS} />
                       </div>
                     </td>
                   </tr>
@@ -461,19 +473,8 @@ function Step3({ onBack, onProceed, onViewClaim }: { onBack: () => void; onProce
             </Card>
           </div>
 
-          {/* Party Information */}
-          <div className="flex flex-col gap-[20px]">
-            <h2 className="text-[24px] text-[#051937]" style={{ fontFamily: font, fontWeight: 500 }}>Party Information</h2>
-            <PartyInfoCard items={[
-              { label: 'Claimant Business Code & Name', value: 'AE-9106286 - SW Logistics LLC' },
-              { label: 'License Expires on', value: '15-11-2029' },
-              { label: 'VAT TRN', value: '100234567890003' },
-            ]} />
-            <PartyInfoCard items={[
-              { label: 'Broker Business Code & Name', value: 'AE-9106286 - SW Logistics LLC' },
-              { label: 'License Expires on', value: '15-11-2029' },
-            ]} />
-          </div>
+          {/* Claimant and Broker Detail — same as Raise New Claim */}
+          <ClaimantBrokerDetail />
         </div>
       </div>
 
@@ -503,21 +504,6 @@ function Step4({ onBack, onSubmit, onViewClaim, reason, reasonDesc }: {
         </div>
         <div className="flex flex-col gap-[24px]">
 
-          {/* Claim Details summary */}
-          <div className="flex flex-col gap-[8px]">
-            <SectionLabel>Claim Details</SectionLabel>
-            <Card className="px-[20px] py-[32px]">
-              <div className="flex flex-wrap gap-[20px]">
-                <InfoCard label="Claimant Code - Name (Type)" value="AE-9106286 - SW Logistics LLC (Business)" />
-                <InfoCard label="Claim No."                   value="2420390 (1)" />
-                <InfoCard label="Claim Type"                  value="Non Remittance" />
-                <InfoCard label="Submission Date"             value="29/06/2026" />
-                <InfoCard label="Registration Date"           value="29/06/2026" />
-                <InfoCard label="Deposit Method"              value="Non Remittance Claim" />
-              </div>
-            </Card>
-          </div>
-
           {/* Cancellation Details summary */}
           <div className="flex flex-col gap-[8px]">
             <SectionLabel>Cancellation Details</SectionLabel>
@@ -529,6 +515,21 @@ function Step4({ onBack, onSubmit, onViewClaim, reason, reasonDesc }: {
                 )}
                 <InfoCard label="Total No. of Sub Claims" value="1" />
                 <InfoCard label="Total Charges"           value="100.00 AED" />
+              </div>
+            </Card>
+          </div>
+
+          {/* Claim Details summary */}
+          <div className="flex flex-col gap-[8px]">
+            <SectionLabel>Claim Details</SectionLabel>
+            <Card className="px-[20px] py-[32px]">
+              <div className="flex flex-wrap gap-[20px]">
+                <InfoCard label="Claimant Code - Name (Type)" value="AE-9106286 - SW Logistics LLC (Business)" />
+                <InfoCard label="Claim No."                   value="2420390 (1)" />
+                <InfoCard label="Claim Type"                  value="Non Remittance" />
+                <InfoCard label="Submission Date"             value="29/06/2026" />
+                <InfoCard label="Registration Date"           value="29/06/2026" />
+                <InfoCard label="Deposit Method"              value="Non Remittance Claim" />
               </div>
             </Card>
           </div>
