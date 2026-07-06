@@ -2380,6 +2380,7 @@ export function RDReviewPage({
     full: 'Full Export', fullImport: 'Full Import', partial: 'Partial Export', partialImport: 'Partial Import', no: 'No Export',
     refund: 'Refund', noRefund: 'No Refund',
   };
+  const [declared, setDeclared] = useState(false);
   const total = chargeDetails.reduce((s, d) => s + (parseFloat(d.claimAmount) || 0), 0);
 
   return (
@@ -2490,13 +2491,30 @@ export function RDReviewPage({
             </div>
           )}
 
+          {/* Declaration checkbox — required before submit */}
+          <div className="bg-white rounded-[8px] px-[24px] py-[16px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+            <label className="flex items-start gap-[16px] cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={declared}
+                onChange={e => setDeclared(e.target.checked)}
+                className="size-[20px] rounded cursor-pointer flex-shrink-0 mt-[2px]"
+                style={{ accentColor: '#1360d2' }}
+              />
+              <span className="text-[16px] text-[#0e1b3d]">
+                I, hereby, declare that all the information entered and stated in the Request is true and correct and shall bear full responsibility for entering incorrect statement and all the consequences arising thereof.
+              </span>
+            </label>
+          </div>
+
         </div>
       </div>
 
       <BackToListingBar onBack={onBack} rightContent={
-        <button onClick={onSubmit}
+        <button onClick={() => declared && onSubmit()} disabled={!declared}
           className="h-[48px] px-[36px] rounded-[4px] text-[16px] text-white transition-colors hover:opacity-90"
-          style={{ background: '#1360d2', fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
+          style={{ background: declared ? '#1360d2' : '#a7c3eb', fontWeight: 500, cursor: declared ? 'pointer' : 'not-allowed',
+            boxShadow: declared ? '0px 0px 8px rgba(28,72,191,0.16)' : 'none' }}>
           Submit Claim
         </button>
       } />
