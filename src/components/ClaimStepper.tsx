@@ -19,6 +19,7 @@ export const NR_CLAIM_STEPS: { id: string; label: string }[] = [
   { id: 'claim',     label: 'Claim Details' },
   { id: 'documents', label: 'Document Details' },
   { id: 'payment',   label: 'Claim Payment Details' },
+  { id: 'review',    label: 'Review & Submit' },
 ];
 
 export default function ClaimStepper({ activeIndex, steps }: { activeIndex: number; steps?: { id: string; label: string }[] }) {

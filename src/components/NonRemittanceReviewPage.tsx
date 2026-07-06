@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Dh from './Dh';
+import ClaimStepper, { NR_CLAIM_STEPS } from './ClaimStepper';
 import type { Row } from './EligibleDeclarationsPage';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
@@ -43,6 +44,10 @@ export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPre
           >
             View Claim
           </button>
+        </div>
+
+        <div className="px-4 sm:px-10 mb-[24px]">
+          <ClaimStepper activeIndex={3} steps={NR_CLAIM_STEPS} />
         </div>
 
         <div className="px-4 sm:px-10 pb-[32px] flex flex-col gap-[20px]">
