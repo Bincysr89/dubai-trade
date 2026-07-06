@@ -42,10 +42,15 @@ const LABELS: Record<FlyoutId, string> = {
   continue:     'Continue',
 };
 
-function getFlyoutItems(status: Status, isDraft: boolean): FlyoutId[] {
+function getFlyoutItems(status: Status, isDraft: boolean, isNonRemittance = false): FlyoutId[] {
   if (isDraft) return ['continue'];
   if (status === 'Completed') return ['viewDocs', 'history'];
-  if (status === 'Submitted') return ['view', 'uploadDoc', 'printReceipt', 'history'];
+  if (status === 'Submitted') {
+    // Non Remittance claims can be amended or cancelled from the listing.
+    return isNonRemittance
+      ? ['view', 'amend', 'cancel', 'uploadDoc', 'printReceipt', 'history']
+      : ['view', 'uploadDoc', 'printReceipt', 'history'];
+  }
   return ['view', 'amend', 'cancel'];
 }
 
@@ -287,7 +292,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
     </button>
   );
 
-  const renderFlyout = (i: number, status: Status) => (
+  const renderFlyout = (i: number, status: Status, claimType: string) => (
     <div className="relative inline-block" ref={openFlyout === i ? flyoutRef : undefined}>
       <button
         className="size-[28px] inline-flex items-center justify-center rounded hover:bg-[#f0f4ff] transition-colors"
@@ -300,7 +305,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
       </button>
       {openFlyout === i && (
         <div className="absolute z-[100] bg-white rounded-[8px] py-[4px] overflow-hidden" style={{ right: '100%', top: 0, marginRight: 6, width: 272, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
-          {getFlyoutItems(status, showDrafts).map((id) => (
+          {getFlyoutItems(status, showDrafts, claimType === 'Non Remittance').map((id) => (
             <button
               key={id}
               className="group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
@@ -335,9 +340,9 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
     );
   };
 
-  const renderActionCell = (i: number, status: Status) => (
+  const renderActionCell = (i: number, status: Status, claimType: string) => (
     <td style={{ position: 'sticky', right: 0, background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 79, textAlign: 'center', borderBottom: '1px solid #f8f8f8', zIndex: openFlyout === i ? 50 : 1 }}>
-      {renderFlyout(i, status)}
+      {renderFlyout(i, status, claimType)}
     </td>
   );
 
@@ -428,7 +433,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
                 {vis('submissionDate') && cell(txt(row.submissionDate), 'submissionDate', 170)}
                 {vis('remark') && cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3, fontFamily: font }}>{row.remark}</span>, 'remark', 200)}
                 {renderStatusCell(row.status, i)}
-                {renderActionCell(i, row.status)}
+                {renderActionCell(i, row.status, row.claimType)}
               </tr>
             ))}
           </tbody>

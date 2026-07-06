@@ -83,6 +83,15 @@ label {
   background: #e2ebf9;
 }
 
+/* Lined variant — rows sit flush with a grey separator line between them,
+   for tables rendered inside a white card where the 8px gap is invisible. */
+.dt-table--lined {
+  border-spacing: 0;
+}
+.dt-table--lined tbody td {
+  border-bottom: 1px solid #e5e9f2;
+}
+
 /* Eligible declarations table — same row hover / selection treatment.
    Uses !important to override the per-cell inline `background: #fff` styles. */
 .eligible-table tbody tr:not(.is-disabled):hover td {

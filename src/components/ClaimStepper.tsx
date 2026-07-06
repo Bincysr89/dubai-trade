@@ -1,8 +1,8 @@
 import React from 'react';
 
 export const REFUND_DEPOSIT_STEPS: { id: string; label: string }[] = [
-  { id: 'eligible',  label: 'Eligible Declarations' },
-  { id: 'charge',    label: 'Declaration Details' },
+  { id: 'eligible',  label: 'Select Declarations' },
+  { id: 'charge',    label: 'Refund Details' },
   { id: 'documents', label: 'Upload Documents' },
   { id: 'payment',   label: 'Payment Details' },
   { id: 'review',    label: 'Review & Submit' },

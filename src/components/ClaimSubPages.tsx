@@ -1453,6 +1453,164 @@ export function MissingDocDepositPage({
  * ChargeDetailsPage — Step 2 of the Refund of Deposits flow.
  * ───────────────────────────────────────────────────────────────────────────── */
 
+export type OutboundDetail = {
+  customsAuthority: string;
+  declarationNo: string;
+  declarationType: string;
+  exitPoint: string;
+  actualDepartureDate: string;
+  statQty: string;
+  weight: string;
+  suppQty: string;
+  reExportTo: string;
+};
+
+const BLANK_OUTBOUND: OutboundDetail = {
+  customsAuthority: 'Dubai Customs',
+  declarationNo: '',
+  declarationType: '',
+  exitPoint: '',
+  actualDepartureDate: '',
+  statQty: '',
+  weight: '',
+  suppQty: '',
+  reExportTo: '',
+};
+
+const CUSTOMS_AUTHORITIES = ['Dubai Customs', 'Abu Dhabi Customs', 'Sharjah Customs'];
+const DECLARATION_TYPES = ['Export', 'Re-Export', 'Transit'];
+const EXIT_POINTS = ['Jebel Ali Port', 'Dubai International Airport', 'Port Rashid', 'Al Maktoum Airport'];
+const RE_EXPORT_DESTINATIONS = ['United States', 'United Kingdom', 'Germany', 'India', 'China', 'Saudi Arabia', 'Kuwait', 'Oman'];
+
+function OutboundModal({
+  open,
+  initialData,
+  onSave,
+  onSaveNew,
+  onClose,
+}: {
+  open: boolean;
+  initialData?: OutboundDetail;
+  onSave: (d: OutboundDetail) => void;
+  onSaveNew: (d: OutboundDetail) => void;
+  onClose: () => void;
+}) {
+  const [form, setForm] = useState<OutboundDetail>(initialData ?? { ...BLANK_OUTBOUND });
+  useEffect(() => { if (open) setForm(initialData ?? { ...BLANK_OUTBOUND }); }, [open]);
+
+  const set = (k: keyof OutboundDetail, v: string) => setForm(f => ({ ...f, [k]: v }));
+  const isValid = form.declarationNo.trim() !== '' && form.declarationType !== '' && form.exitPoint !== '' && form.actualDepartureDate !== '' && form.statQty.trim() !== '' && form.weight.trim() !== '' && form.reExportTo !== '';
+
+  if (!open) return null;
+
+  const font = "'Dubai', 'Segoe UI', sans-serif";
+
+  const LabelInput = ({ label, required, field, type = 'text', placeholder = '' }: { label: string; required?: boolean; field: keyof OutboundDetail; type?: string; placeholder?: string }) => (
+    <div className="flex flex-col gap-[6px]">
+      <label className="text-[14px]" style={{ color: '#697498', fontFamily: font }}>
+        {required && <span className="text-[#dc3545] mr-[2px]">*</span>}{label}
+      </label>
+      <input
+        type={type}
+        value={form[field]}
+        onChange={e => set(field, e.target.value)}
+        placeholder={placeholder}
+        className="h-[40px] rounded-[4px] px-[12px] text-[15px] focus:outline-none"
+        style={{ border: '1px solid #d5ddfb', fontFamily: font, color: '#0e1b3d', background: '#fff' }}
+      />
+    </div>
+  );
+
+  const LabelSelect = ({ label, required, field, options }: { label: string; required?: boolean; field: keyof OutboundDetail; options: string[] }) => (
+    <div className="flex flex-col gap-[6px]">
+      <label className="text-[14px]" style={{ color: '#697498', fontFamily: font }}>
+        {required && <span className="text-[#dc3545] mr-[2px]">*</span>}{label}
+      </label>
+      <select
+        value={form[field]}
+        onChange={e => set(field, e.target.value)}
+        className="h-[40px] rounded-[4px] px-[12px] text-[15px] focus:outline-none appearance-none"
+        style={{ border: '1px solid #d5ddfb', fontFamily: font, color: form[field] ? '#0e1b3d' : '#697498', background: '#fff' }}
+      >
+        <option value="">Please Select</option>
+        {options.map(o => <option key={o} value={o}>{o}</option>)}
+      </select>
+    </div>
+  );
+
+  return (
+    <div className="fixed inset-0 z-[500] flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.45)' }}>
+      <div className="bg-white rounded-[8px] w-full max-w-[600px] mx-[16px] flex flex-col overflow-hidden" style={{ boxShadow: '0 8px 40px rgba(0,0,0,0.22)', maxHeight: '90vh' }}>
+        {/* Header */}
+        <div className="flex items-center justify-between px-[24px] py-[16px] flex-shrink-0" style={{ background: '#1360d2' }}>
+          <p className="text-[18px] text-white" style={{ fontWeight: 600, fontFamily: font }}>Add Outbound Declaration Details</p>
+          <button type="button" onClick={onClose} className="size-[28px] inline-flex items-center justify-center rounded hover:bg-white/20 transition-colors">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto px-[24px] py-[20px] flex flex-col gap-[16px]">
+          <p className="text-[15px] text-[#1360d2]" style={{ fontWeight: 600, fontFamily: font }}>Outbound Declaration Detail</p>
+
+          <div className="grid grid-cols-2 gap-x-[20px] gap-y-[14px]">
+            <LabelSelect label="Customs Authority" required field="customsAuthority" options={CUSTOMS_AUTHORITIES} />
+            <div className="flex flex-col gap-[6px]">
+              <label className="text-[14px]" style={{ color: '#697498', fontFamily: font }}><span className="text-[#dc3545] mr-[2px]">*</span>Declaration No.</label>
+              <div className="flex gap-[8px]">
+                <input
+                  value={form.declarationNo}
+                  onChange={e => set('declarationNo', e.target.value)}
+                  placeholder="Enter declaration no."
+                  className="flex-1 h-[40px] rounded-[4px] px-[12px] text-[15px] focus:outline-none"
+                  style={{ border: '1px solid #d5ddfb', fontFamily: font, color: '#0e1b3d' }}
+                />
+                <button type="button" title="Search"
+                  className="size-[40px] flex-shrink-0 inline-flex items-center justify-center rounded-[4px] transition-colors hover:bg-[#0f4fb5]"
+                  style={{ background: '#1360d2' }}>
+                  <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round"><circle cx="9" cy="9" r="5.5"/><path d="M14 14l4 4"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <LabelSelect label="Declaration Type" required field="declarationType" options={DECLARATION_TYPES} />
+            <LabelSelect label="Exit Point" required field="exitPoint" options={EXIT_POINTS} />
+
+            <LabelInput label="Actual Departure Date" required field="actualDepartureDate" type="date" />
+            <LabelInput label="Stat. Qty" required field="statQty" type="number" placeholder="Enter quantity" />
+
+            <LabelInput label="Weight" required field="weight" type="number" placeholder="Enter weight (kg)" />
+            <LabelInput label="Supp. Qty" field="suppQty" type="number" placeholder="Enter supp. qty" />
+
+            <div className="col-span-2">
+              <LabelSelect label="Re-Export To" required field="reExportTo" options={RE_EXPORT_DESTINATIONS} />
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-[12px] px-[24px] py-[16px] flex-shrink-0" style={{ borderTop: '1px solid #eef1f6' }}>
+          <button type="button" onClick={onClose}
+            className="h-[40px] px-[20px] rounded-[4px] border text-[15px] hover:bg-[#f0f4ff] transition-colors"
+            style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
+            Close
+          </button>
+          <button type="button" disabled={!isValid} onClick={() => isValid && onSaveNew(form)}
+            className="h-[40px] px-[20px] rounded-[4px] border text-[15px] transition-colors"
+            style={{ borderColor: isValid ? '#1360d2' : '#d5ddfb', color: isValid ? '#1360d2' : '#b0b8cc', fontFamily: font, fontWeight: 500, cursor: isValid ? 'pointer' : 'not-allowed' }}>
+            Save &amp; Create New
+          </button>
+          <button type="button" disabled={!isValid} onClick={() => isValid && onSave(form)}
+            className="h-[40px] px-[24px] rounded-[4px] text-[15px] text-white transition-colors"
+            style={{ background: isValid ? '#1360d2' : '#a7c3eb', fontFamily: font, fontWeight: 500, cursor: isValid ? 'pointer' : 'not-allowed' }}>
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export type ChargeDetail = {
   declarationNo: string;
   chargeType: string;
@@ -1506,9 +1664,17 @@ export function ChargeDetailsPage({
       claimAmount: '',
     }))
   );
+  const [outboundModal, setOutboundModal] = useState<{ rowIndex: number } | null>(null);
+  const [outboundDetails, setOutboundDetails] = useState<Record<number, OutboundDetail>>({});
 
   const update = (i: number, patch: Partial<ChargeDetail>) =>
     setDetails(prev => prev.map((d, idx) => idx === i ? { ...d, ...patch } : d));
+
+  const saveOutbound = (i: number, d: OutboundDetail, closeModal: boolean) => {
+    setOutboundDetails(prev => ({ ...prev, [i]: d }));
+    update(i, { outboundDeclNo: d.declarationNo });
+    if (closeModal) setOutboundModal(null);
+  };
 
   const allValid = details.every(d =>
     d.refundType &&
@@ -1536,7 +1702,8 @@ export function ChargeDetailsPage({
                 <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#051937', background: '#a6c2e9', whiteSpace: 'nowrap' }}>Charge Type</th>
                 <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#051937', background: '#a6c2e9', whiteSpace: 'nowrap' }}>Amount (AED)</th>
                 <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#051937', background: '#a6c2e9', whiteSpace: 'nowrap', minWidth: 200 }}>Refund Type</th>
-                <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#051937', background: '#a6c2e9', borderRadius: '0 8px 8px 0', whiteSpace: 'nowrap', minWidth: 160 }}>Claim Amount (AED)</th>
+                <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#051937', background: '#a6c2e9', whiteSpace: 'nowrap', minWidth: 160 }}>Claim Amount (AED)</th>
+                <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#051937', background: '#a6c2e9', borderRadius: '0 8px 8px 0', whiteSpace: 'nowrap' }}>Action</th>
               </tr>
             </thead>
             <tbody>
@@ -1554,7 +1721,7 @@ export function ChargeDetailsPage({
                         onChange={rt => update(i, { refundType: rt, outboundDeclNo: '', claimAmount: autoClaimAmount(rt, d.depositAmount) })}
                       />
                     </td>
-                    <td style={{ padding: '10px 14px', minWidth: 160, borderRadius: '0 8px 8px 0', border: '1px solid #eef1f6', borderLeft: 'none' }}>
+                    <td style={{ padding: '10px 14px', minWidth: 160, border: '1px solid #eef1f6', borderLeft: 'none', borderRight: 'none' }}>
                       <input
                         type="number"
                         min={0}
@@ -1566,23 +1733,30 @@ export function ChargeDetailsPage({
                         style={{ border: '1px solid #d5ddfb', fontFamily: "'Dubai', sans-serif", background: (d.refundType === 'no' || d.refundType === 'full' || d.refundType === 'fullImport') ? '#f8fafd' : '#fff' }}
                       />
                     </td>
-                  </tr>
-
-                  {needsOutbound(d.refundType) && (
-                    <tr>
-                      <td colSpan={5} style={{ paddingBottom: 6, paddingLeft: 4, paddingRight: 4 }}>
-                        <div className="flex items-start gap-[12px] rounded-[8px] px-[20px] py-[14px]" style={{ background: '#f6f9fe', border: '1px solid #d5ddfb' }}>
-                          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#1360d2" strokeWidth="2" className="flex-shrink-0 mt-[3px]"><circle cx="12" cy="12" r="9" /><path d="M12 8h.01M11 12h1v4h1" strokeLinecap="round" /></svg>
-                          <div className="flex-1 flex flex-col gap-[8px]">
-                            <p className="text-[14px] text-[#455174]">
-                              {d.refundType === 'partial' || d.refundType === 'partialImport' ? 'Partial' : 'Full'} {d.refundType === 'fullImport' || d.refundType === 'partialImport' ? 'import' : 'export'} requires an outbound declaration number.
-                            </p>
-                            <OutboundDeclInput value={d.outboundDeclNo} onChange={v => update(i, { outboundDeclNo: v })} />
+                    <td style={{ padding: '10px 14px', borderRadius: '0 8px 8px 0', border: '1px solid #eef1f6', borderLeft: 'none', whiteSpace: 'nowrap' }}>
+                      {needsOutbound(d.refundType) ? (
+                        d.outboundDeclNo.trim() ? (
+                          <div className="flex items-center gap-[6px]">
+                            <span className="inline-flex items-center gap-[4px] text-[14px] px-[10px] py-[4px] rounded-[4px]" style={{ background: '#e6f7ee', color: '#1a7a42', fontWeight: 500 }}>
+                              <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8l3 3 7-7"/></svg>
+                              Added
+                            </span>
+                            <button type="button" onClick={() => setOutboundModal({ rowIndex: i })}
+                              className="text-[13px] hover:underline" style={{ color: '#1360d2' }}>Edit</button>
                           </div>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
+                        ) : (
+                          <button type="button" onClick={() => setOutboundModal({ rowIndex: i })}
+                            className="inline-flex items-center gap-[6px] h-[36px] px-[14px] rounded-[4px] text-[14px] transition-colors hover:bg-[#e8f0ff]"
+                            style={{ border: '1.5px solid #1360d2', color: '#1360d2', fontFamily: "'Dubai', sans-serif", fontWeight: 500, background: '#fff' }}>
+                            <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M8 3v10M3 8h10"/></svg>
+                            Add Outbound Declaration
+                          </button>
+                        )
+                      ) : (
+                        <span className="text-[14px] text-[#b0b8cc]">—</span>
+                      )}
+                    </td>
+                  </tr>
                 </React.Fragment>
               ))}
             </tbody>
@@ -1600,6 +1774,14 @@ export function ChargeDetailsPage({
           </div>
         )}
       </Card>
+
+      <OutboundModal
+        open={outboundModal !== null}
+        initialData={outboundModal !== null ? (outboundDetails[outboundModal.rowIndex] ?? undefined) : undefined}
+        onSave={d => saveOutbound(outboundModal!.rowIndex, d, true)}
+        onSaveNew={d => { saveOutbound(outboundModal!.rowIndex, d, false); setOutboundModal({ rowIndex: outboundModal!.rowIndex }); }}
+        onClose={() => setOutboundModal(null)}
+      />
     </PageShell>
   );
 }

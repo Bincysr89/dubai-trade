@@ -43,6 +43,26 @@ export default function NonRemittanceSuccessPage({ onBack, onViewAck, onViewClai
             Your Non Remittance Claim has been submitted successfully and is currently under processing. Please click on View Claim button for the details.
           </p>
 
+          {/* Info banners */}
+          <div className="w-full max-w-[640px] flex flex-col gap-[12px]">
+            <div className="flex items-start gap-[12px] rounded-[6px] px-[16px] py-[14px]" style={{ background: '#fff8e1', border: '1px solid #f5c842' }}>
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none" style={{ flexShrink: 0, marginTop: 1 }}>
+                <circle cx="11" cy="11" r="10" fill="#f5c842" />
+                <text x="11" y="16" textAnchor="middle" fontSize="13" fontWeight="700" fill="#fff">i</text>
+              </svg>
+              <p className="text-[15px] text-[#b45309]" style={{ lineHeight: 1.5 }}>Please Submit Mandatory Doc. for further Claim Processing.</p>
+            </div>
+            <div className="flex items-start gap-[12px] rounded-[6px] px-[16px] py-[14px]" style={{ background: '#fff8e1', border: '1px solid #f5c842' }}>
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none" style={{ flexShrink: 0, marginTop: 1 }}>
+                <circle cx="11" cy="11" r="10" fill="#f5c842" />
+                <text x="11" y="16" textAnchor="middle" fontSize="13" fontWeight="700" fill="#fff">i</text>
+              </svg>
+              <p className="text-[15px] text-[#b45309]" style={{ lineHeight: 1.5 }}>
+                All email messages, related to submission, suspension, approval or rejection of this claim, will be sent to <strong>infogain.sandeepk@dubaicustoms.ae</strong> for <strong>AE-9106286</strong>.
+              </p>
+            </div>
+          </div>
+
           {/* Reference chips */}
           <div className="flex flex-col sm:flex-row items-center gap-[12px]">
             <div className="border border-[#ebebeb] rounded-[6px] px-[16px] py-[10px] flex items-center gap-[8px]">
