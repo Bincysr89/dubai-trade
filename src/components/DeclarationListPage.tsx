@@ -472,6 +472,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               typeColumnLabel="Charge Type"
               showChargeType
               hideSaveExit={rdAmendMode}
+              chargesNote={rdAmendMode ? 'Charges not applicable for Refund of Deposits Claim' : undefined}
               steps={rdSkipDocs ? REFUND_DEPOSIT_STEPS_NO_DOCS : REFUND_DEPOSIT_STEPS}
               activeIndex={rdSkipDocs ? 2 : 3}
               onBack={() => setClaimStep(rdSkipDocs ? 'chargeDetails' : 'rdDocuments')}

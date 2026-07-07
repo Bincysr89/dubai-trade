@@ -494,6 +494,7 @@ export default function ClaimAmendFlow({ onBack }: Props) {
           steps={AMEND_STEPS}
           activeIndex={2}
           hideSaveExit
+          chargesNote="Charges not applicable for NR Claim"
           onBack={() => setStep(2)}
           onBackToListing={onBack}
           onContinue={() => setStep(4)}

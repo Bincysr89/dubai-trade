@@ -66,9 +66,11 @@ type Props = {
   typeColumnLabel?: string; showChargeType?: boolean;
   /** Amend flow: hide the Save & Exit button. */
   hideSaveExit?: boolean;
+  /** Amend flow: show an info bar and make the payment mode/reference read-only. */
+  chargesNote?: string;
 };
 
-export default function NonRemittanceChargesPage({ onBack, onBackToListing, onContinue, selectedRows, onDeclarationOpen, title, steps, activeIndex = 2, typeColumnLabel = 'Declaration Type', showChargeType = false, hideSaveExit = false }: Props) {
+export default function NonRemittanceChargesPage({ onBack, onBackToListing, onContinue, selectedRows, onDeclarationOpen, title, steps, activeIndex = 2, typeColumnLabel = 'Declaration Type', showChargeType = false, hideSaveExit = false, chargesNote }: Props) {
   const [paymentMode, setPaymentMode] = useState('Credit/Debit Account');
   const [paymentRef,  setPaymentRef]  = useState('Account Number');
   const [showSaveModal, setShowSaveModal] = useState(false);
@@ -97,6 +99,16 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
         <div className="px-4 sm:px-10 mb-[24px]">
           <ClaimStepper activeIndex={activeIndex} steps={steps ?? NR_CLAIM_STEPS} />
         </div>
+
+        {/* Info bar — charges not applicable (amend flow) */}
+        {chargesNote && (
+          <div className="px-4 sm:px-10 mb-[16px]">
+            <div className="flex items-center gap-[10px] rounded-[6px] px-[16px] py-[12px]" style={{ background: '#e2ebf9', border: '1px solid #d5ddfb' }}>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#1360d2" strokeWidth="2" className="flex-shrink-0"><circle cx="12" cy="12" r="9" /><path d="M12 8h.01M11 12h1v4h1" strokeLinecap="round" /></svg>
+              <p className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>{chargesNote}</p>
+            </div>
+          </div>
+        )}
 
         {/* Two-column layout — same grid as VCC */}
         <div className="px-4 sm:px-10 pb-[32px] grid gap-[24px] items-start grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px]">
@@ -196,13 +208,13 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
               {/* Payment Mode */}
               <div className="flex flex-col gap-[6px] pt-[4px]">
                 <label className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>Payment Mode</label>
-                <PlainSelect value={paymentMode} onChange={handlePaymentMode} options={PAYMENT_MODES} />
+                <PlainSelect value={paymentMode} onChange={handlePaymentMode} options={PAYMENT_MODES} disabled={!!chargesNote} />
               </div>
 
               {/* Payment Reference */}
               <div className="flex flex-col gap-[6px]">
                 <label className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>Payment Reference</label>
-                <PlainSelect value={paymentRef} onChange={setPaymentRef} options={PAYMENT_REFS} disabled={isEPayment} />
+                <PlainSelect value={paymentRef} onChange={setPaymentRef} options={PAYMENT_REFS} disabled={isEPayment || !!chargesNote} />
               </div>
             </div>
           </div>
