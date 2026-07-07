@@ -183,6 +183,22 @@ function Step1({ onBack, onProceed, onViewClaim, reason, setReason, reasonDesc, 
   reasonDesc: string; setReasonDesc: (v: string) => void;
 }) {
   const [reasonOpen, setReasonOpen] = useState(false);
+  const [reasonPos, setReasonPos] = useState<{ top: number; left: number; width: number } | null>(null);
+  const reasonBtnRef = useRef<HTMLButtonElement>(null);
+
+  const toggleReason = () => {
+    if (reasonBtnRef.current) {
+      const r = reasonBtnRef.current.getBoundingClientRect();
+      setReasonPos({ top: r.bottom + 4, left: r.left, width: r.width });
+    }
+    setReasonOpen(o => !o);
+  };
+  useEffect(() => {
+    if (!reasonOpen) return;
+    const close = (e: MouseEvent) => { if (reasonBtnRef.current && !reasonBtnRef.current.contains(e.target as Node)) setReasonOpen(false); };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [reasonOpen]);
 
   return (
     <div className="flex flex-col h-full bg-[#f8fafd]">
@@ -200,10 +216,11 @@ function Step1({ onBack, onProceed, onViewClaim, reason, setReason, reasonDesc, 
             <p className="text-[20px] mb-[20px]" style={{ fontFamily: font, fontWeight: 500 }}>Cancellation Details</p>
             <div className="flex flex-col gap-[20px]">
               {/* Cancellation Reason dropdown */}
-              <div className="relative" style={{ width: 390 }}>
+              <div style={{ width: 390 }}>
                 <button
+                  ref={reasonBtnRef}
                   type="button"
-                  onClick={() => setReasonOpen(o => !o)}
+                  onClick={toggleReason}
                   className="w-full bg-white rounded-[4px] h-[56px] flex items-center px-[16px] gap-[8px] cursor-pointer text-left"
                   style={{ border: `1px solid ${reasonOpen ? '#1360d2' : '#d5ddfb'}` }}
                 >
@@ -215,12 +232,13 @@ function Step1({ onBack, onProceed, onViewClaim, reason, setReason, reasonDesc, 
                     <path d="M6 9l6 6 6-6" stroke="#697498" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </button>
-                {reasonOpen && (
-                  <div className="absolute z-[80] left-0 right-0 mt-[4px] bg-white rounded-[8px] py-[4px] overflow-hidden"
-                    style={{ boxShadow: '0px 2px 16px 0px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
+                {reasonOpen && reasonPos && (
+                  <div className="py-[4px]" role="listbox"
+                    style={{ position: 'fixed', top: reasonPos.top, left: reasonPos.left, width: reasonPos.width, zIndex: 9999,
+                      background: '#fff', borderRadius: 8, border: '1px solid #f0f0f5', boxShadow: '0px 2px 16px 0px rgba(0,0,0,0.12)', overflow: 'hidden', fontFamily: font }}>
                     {CANCEL_REASONS.map(r => (
                       <button key={r} type="button"
-                        onClick={() => { setReason(r); setReasonOpen(false); }}
+                        onMouseDown={e => { e.preventDefault(); setReason(r); setReasonOpen(false); }}
                         className="block w-full text-left px-[14px] py-[10px] text-[16px] transition-colors hover:bg-[#e2ebf9]"
                         style={{ background: r === reason ? '#e2ebf9' : 'transparent', color: r === reason ? '#1360d2' : '#0e1b3d', fontWeight: r === reason ? 500 : 400, fontFamily: font }}>
                         {r}
