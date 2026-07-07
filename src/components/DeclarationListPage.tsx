@@ -338,12 +338,19 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
 
   if (claimListDeclViewOpen) {
     return (
-      <CustomsDeclarationViewPage
-        declarationNo={claimListDeclNo}
-        onBack={() => setClaimListDeclViewOpen(false)}
-        onServiceCatalogue={onServiceCatalogue}
-        onHome={onClose}
-      />
+      <div className="fixed inset-0 z-50 flex flex-col bg-[#f8fafd] overflow-hidden">
+        <div className="flex-shrink-0">
+          <Header onServiceCatalogue={onServiceCatalogue} onHome={onClose} />
+        </div>
+        <div className="flex-1 overflow-hidden">
+          <CustomsDeclarationViewPage
+            declarationNo={claimListDeclNo}
+            onBack={() => setClaimListDeclViewOpen(false)}
+            onServiceCatalogue={onServiceCatalogue}
+            onHome={onClose}
+          />
+        </div>
+      </div>
     );
   }
 
