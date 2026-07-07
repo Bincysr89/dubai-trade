@@ -204,7 +204,7 @@ function DeclarationsModal({ declarations, onClose, onDeclarationOpen }: { decla
 
 type Props = {
   onView?: () => void;
-  onAmend?: () => void;
+  onAmend?: (claimType: string) => void;
   onCancel?: () => void;
   onPrint?: () => void;
   onViewDocs?: () => void;
@@ -315,7 +315,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
               onClick={() => {
                 setOpenFlyout(null);
                 if (id === 'view')     onView?.();
-                if (id === 'amend')    onAmend?.();
+                if (id === 'amend')    onAmend?.(claimType);
                 if (id === 'cancel')   onCancel?.();
                 if (id === 'print')       onPrint?.();
                 if (id === 'printReceipt') onPrint?.();

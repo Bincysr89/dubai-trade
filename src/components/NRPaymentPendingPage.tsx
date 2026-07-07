@@ -2,18 +2,15 @@ import React from 'react';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
 
-const BADGE = (
-  <span className="text-[14px] px-[10px] py-[3px] rounded-[4px]"
-    style={{ background: 'rgba(19,96,210,0.10)', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap' as const, fontFamily: font }}>
-    Non Remittance
-  </span>
-);
-
 type Props = {
   onBackToListing: () => void;
   onMakePayment: () => void;
   requestNumber?: string;
   totalCharges?: number;
+  /** Overrides for reuse outside the NR flow (e.g. Refund of Deposits). */
+  title?: string;
+  badgeLabel?: string;
+  claimLabel?: string;
 };
 
 export default function NRPaymentPendingPage({
@@ -21,7 +18,16 @@ export default function NRPaymentPendingPage({
   onMakePayment,
   requestNumber = '2588017',
   totalCharges = 100,
+  title = 'Raise New Claim - Non Remittance',
+  badgeLabel = 'Non Remittance',
+  claimLabel = 'Non Remittance',
 }: Props) {
+  const BADGE = (
+    <span className="text-[14px] px-[10px] py-[3px] rounded-[4px]"
+      style={{ background: 'rgba(19,96,210,0.10)', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap' as const, fontFamily: font }}>
+      {badgeLabel}
+    </span>
+  );
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full" style={{ fontFamily: font }}>
       <div className="flex items-start justify-between px-4 sm:px-10 pt-[24px] pb-[8px] flex-wrap gap-[12px] flex-shrink-0">
@@ -36,7 +42,7 @@ export default function NRPaymentPendingPage({
 
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
         <div className="flex items-center gap-[16px] flex-wrap mb-[24px]">
-          <h1 className="text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>Raise New Claim - Non Remittance</h1>
+          <h1 className="text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>{title}</h1>
           {BADGE}
         </div>
 
@@ -57,7 +63,7 @@ export default function NRPaymentPendingPage({
           </p>
 
           <div className="text-center text-[#0e1b3d] max-w-[640px]" style={{ lineHeight: 1.9 }}>
-            <span style={{ fontSize: 16 }}>Your Non Remittance claim has been processed. Please initiate the payment transaction.</span>
+            <span style={{ fontSize: 16 }}>Your {claimLabel} claim has been processed. Please initiate the payment transaction.</span>
             <br />
             <span style={{ fontSize: 20, fontWeight: 700 }}>Request Number: {requestNumber}</span>
             <br />

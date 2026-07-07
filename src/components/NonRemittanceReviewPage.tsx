@@ -1,9 +1,60 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Dh from './Dh';
 import ClaimStepper, { NR_CLAIM_STEPS } from './ClaimStepper';
 import type { Row } from './EligibleDeclarationsPage';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
+
+const AMEND_REASONS = ['Wrong Details Entered', 'Other'];
+
+/* DTSelect-style dropdown with a fixed-position menu (amendment reason). */
+function AmendReasonSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [pos,  setPos]  = useState<{ top: number; left: number; width: number } | null>(null);
+  const btnRef          = useRef<HTMLButtonElement>(null);
+  const toggle = () => {
+    if (btnRef.current) { const r = btnRef.current.getBoundingClientRect(); setPos({ top: r.bottom + 2, left: r.left, width: r.width }); }
+    setOpen(o => !o);
+  };
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: MouseEvent) => { if (btnRef.current && !btnRef.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [open]);
+  return (
+    <>
+      <button ref={btnRef} type="button" onClick={toggle} aria-haspopup="listbox" aria-expanded={open}
+        className="bg-white rounded-[4px] flex items-center px-[16px] gap-[8px] text-left transition-colors"
+        style={{ width: 390, maxWidth: '100%', height: 56, border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}`, fontFamily: font, cursor: 'pointer' }}>
+        <span className="flex-1 text-[16px] whitespace-nowrap" style={{ color: value ? '#0e1b3d' : '#697498' }}>
+          <span style={{ color: '#ea2428' }}>*&nbsp;&nbsp;</span>{value || 'Amendment Reason'}
+        </span>
+        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"
+          className={`transition-transform flex-shrink-0 ${open ? 'rotate-180' : ''}`}>
+          <path d="M5 8l5 5 5-5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+      {open && pos && (
+        <div className="py-[4px]" role="listbox"
+          style={{ position: 'fixed', top: pos.top, left: pos.left, width: Math.max(pos.width, 160), zIndex: 9999,
+            background: '#fff', borderRadius: 8, border: '1px solid #f0f0f5', boxShadow: '0px 2px 16px 0px rgba(0,0,0,0.12)', overflow: 'hidden', fontFamily: font }}>
+          {AMEND_REASONS.map(o => {
+            const isSel = o === value;
+            return (
+              <button key={o} type="button" role="option" aria-selected={isSel}
+                onMouseDown={e => { e.preventDefault(); onChange(o); setOpen(false); }}
+                className="block w-full text-left px-[14px] py-[10px] text-[16px] transition-colors hover:bg-[#e2ebf9]"
+                style={{ background: isSel ? '#e2ebf9' : 'transparent', color: isSel ? '#1360d2' : '#0e1b3d', fontWeight: isSel ? 500 : 400, fontFamily: font }}>
+                {o}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </>
+  );
+}
 
 type Props = {
   onBack: () => void;
@@ -18,10 +69,14 @@ type Props = {
   steps?: { id: string; label: string }[];
   activeIndex?: number;
   claimType?: string;
+  /** Amend mode: show an editable Amendment Detail card at the top. */
+  showAmendment?: boolean;
 };
 
-export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPreview, onViewClaim, selectedRows, paymentMode = 'Credit/Debit Account', accountNo = '1223193-SW LOGISTICS LLC', title, steps, activeIndex = 3, claimType = 'Non Remittance Claim' }: Props) {
+export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPreview, onViewClaim, selectedRows, paymentMode = 'Credit/Debit Account', accountNo = '1223193-SW LOGISTICS LLC', title, steps, activeIndex = 3, claimType = 'Non Remittance Claim', showAmendment = false }: Props) {
   const [declared, setDeclared] = useState(false);
+  const [amendReason, setAmendReason] = useState('');
+  const [amendReasonDesc, setAmendReasonDesc] = useState('');
 
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full" style={{ fontFamily: font }}>
@@ -56,6 +111,31 @@ export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPre
         </div>
 
         <div className="px-4 sm:px-10 pb-[32px] flex flex-col gap-[20px]">
+          {/* Amendment Detail — amend mode only */}
+          {showAmendment && (
+            <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+              <div className="px-[24px] py-[16px] border-b border-[#eef1f6]">
+                <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Amendment Detail</p>
+              </div>
+              <div className="px-[24px] py-[20px] flex flex-col gap-[20px]">
+                <AmendReasonSelect value={amendReason} onChange={setAmendReason} />
+                {amendReason === 'Other' && (
+                  <div className="relative" style={{ width: '50%', minWidth: 300 }}>
+                    <p className="text-[14px] mb-[6px]" style={{ color: '#697498' }}>Amendment Reason Description</p>
+                    <textarea
+                      value={amendReasonDesc}
+                      onChange={e => setAmendReasonDesc(e.target.value)}
+                      rows={2}
+                      className="w-full rounded-[4px] px-[16px] py-[12px] text-[16px] resize-none focus:outline-none"
+                      style={{ border: '1px solid #d5ddfb', fontFamily: font, color: '#0e1b3d', background: 'white' }}
+                      placeholder='Enter reason if "Other" option is selected'
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Claimant Details */}
           <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
             <div className="px-[24px] py-[16px] border-b border-[#eef1f6]">

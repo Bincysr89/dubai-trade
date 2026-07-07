@@ -837,19 +837,24 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
                 )}
               </div>
 
-              {/* Bulk add — appears when rows are selected */}
-              {selectedHs.size > 0 && (
-                <button type="button" onClick={bulkAdd}
-                  className="h-[48px] px-[20px] rounded-[4px] text-[16px] text-white inline-flex items-center gap-[8px] flex-shrink-0"
-                  style={{ background: '#1360d2', border: 'none', fontFamily: font, fontWeight: 500, cursor: 'pointer',
-                    boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
-                  <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                    <path d="M7 2v10M2 7h10"/>
-                  </svg>
-                  Add Outbound
-                  <span className="text-[12px] px-[8px] py-[1px] rounded-[10px]" style={{ background: 'rgba(255,255,255,0.22)' }}>{selectedHs.size}</span>
-                </button>
-              )}
+              {/* Bulk add — secondary button, greyed until rows are selected */}
+              {(() => {
+                const hasSelection = selectedHs.size > 0;
+                return (
+                  <button type="button" onClick={bulkAdd} disabled={!hasSelection}
+                    className="h-[48px] px-[20px] rounded-[4px] text-[16px] bg-white inline-flex items-center gap-[8px] flex-shrink-0 transition-colors"
+                    style={{ border: `1.5px solid ${hasSelection ? '#1360d2' : '#d5ddfb'}`, color: hasSelection ? '#1360d2' : '#a7abb2',
+                      fontFamily: font, fontWeight: 500, cursor: hasSelection ? 'pointer' : 'not-allowed' }}>
+                    <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                      <path d="M7 2v10M2 7h10"/>
+                    </svg>
+                    Add Outbound to Selected
+                    {hasSelection && (
+                      <span className="text-[12px] px-[8px] py-[1px] rounded-[10px]" style={{ background: 'rgba(19,96,210,0.10)', color: '#1360d2' }}>{selectedHs.size}</span>
+                    )}
+                  </button>
+                );
+              })()}
               </div>
 
               <div style={{ overflowX: 'auto' }}>
@@ -907,20 +912,44 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
 }
 
 /* ─── Main page ─────────────────────────────────────────────────── */
-export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue }: {
+export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, title = 'Raise New Claim — Refund of Deposits', breadcrumbLast = 'Raise New Claim', prefill = false }: {
   rows: Row[]; onBack: () => void; onBackToListing?: () => void;
   onContinue: (r: RDFlowResult) => void;
+  /** Overrides for reuse in the amend flow. */
+  title?: string; breadcrumbLast?: string;
+  /** Amend mode: pre-fill refund type, claim amount, allocation and outbound declarations. */
+  prefill?: boolean;
 }) {
   const [details, setDetails] = useState<ChargeDetail[]>(() =>
-    rows.map(r => ({
-      declarationNo: r.declarationNo, chargeType: r.depositType ?? 'Alternative Duty Deposit',
-      depositAmount: r.depositAmount ?? '0', refundType: '' as RefundType,
-      outboundDeclNo: '', claimAmount: '',
-    }))
+    rows.map(r => {
+      const chargeType = r.depositType ?? 'Alternative Duty Deposit';
+      const depositAmount = r.depositAmount ?? '0';
+      const refundType: RefundType = prefill ? (isMissingDocCharge(chargeType) ? 'refund' : 'full') : '';
+      return {
+        declarationNo: r.declarationNo, chargeType, depositAmount,
+        refundType,
+        outboundDeclNo: '', claimAmount: prefill ? autoAmount(refundType, depositAmount) : '',
+      };
+    })
   );
-  const [obs,       setObs]       = useState<OutboundState>({});
+  // Pre-fill outbound declarations + allocation for every HS line item when amending.
+  const buildPrefill = () => {
+    const obs0: OutboundState = {};
+    const hs0: Record<string, { allocationMethod?: string }> = {};
+    rows.forEach(r => {
+      if (isMissingDocCharge(r.depositType ?? '')) return;
+      const sample = DUBAI_DECLARATIONS[0];
+      getInvoices(r.declarationNo).forEach(inv => inv.hsCodes.forEach(hs => {
+        obs0[obKey(r.declarationNo, hs.id)] = [{ id: `pf-${r.declarationNo}-${hs.id}`, customsAuthority: 'Dubai Customs', ...sample }];
+        hs0[hs.id] = { allocationMethod: 'single' };
+      }));
+    });
+    return { obs0, hs0 };
+  };
+  const prefilled = prefill ? buildPrefill() : { obs0: {}, hs0: {} };
+  const [obs,       setObs]       = useState<OutboundState>(prefilled.obs0);
   const [invOpen,   setInvOpen]   = useState<Record<number, boolean>>({});
-  const [hsEdits,   setHsEdits]   = useState<Record<string, { allocationMethod?: string }>>({});
+  const [hsEdits,   setHsEdits]   = useState<Record<string, { allocationMethod?: string }>>(prefilled.hs0);
   const [modal,     setModal]     = useState<{ ctx: DrawerCtx; hsIds: string[]; onApplied?: () => void; existing?: OutboundDetail } | null>(null);
   const [viewOb,    setViewOb]    = useState<OutboundDetail | null>(null);
   const [saveModal, setSaveModal] = useState(false);
@@ -970,7 +999,7 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue }: 
 
       {/* Breadcrumb */}
       <div className="flex items-center gap-[6px] px-4 sm:px-10 pt-[24px] pb-[8px] flex-shrink-0 flex-wrap">
-        {['Home', 'Refund & Claims', 'Raise New Claim'].map((l, i, arr) => (
+        {['Home', 'Refund & Claims', breadcrumbLast].map((l, i, arr) => (
           <React.Fragment key={l}>
             <span className="text-[16px]" style={{ color: i === arr.length - 1 ? '#111838' : '#8f94ae', fontWeight: i === arr.length - 1 ? 500 : 400 }}>{l}</span>
             {i < arr.length - 1 && <span className="text-[16px] text-[#dc3545]">/</span>}
@@ -980,7 +1009,7 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue }: 
 
       {/* Title */}
       <div className="px-4 sm:px-10 mb-[8px] flex-shrink-0">
-        <h1 className="text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>Raise New Claim — Refund of Deposits</h1>
+        <h1 className="text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>{title}</h1>
       </div>
 
       {/* Stepper */}

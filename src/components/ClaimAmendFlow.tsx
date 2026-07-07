@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import NonRemittanceClaimViewPage from './NonRemittanceClaimViewPage';
 import NonRemittanceDocumentsPage, { UploadedDoc as NRUploadedDoc } from './NonRemittanceDocumentsPage';
-import ClaimantBrokerDetail from './ClaimantBrokerDetail';
+import NonRemittanceChargesPage from './NonRemittanceChargesPage';
 import ClaimStepper from './ClaimStepper';
 import type { Row } from './EligibleDeclarationsPage';
 
@@ -275,132 +275,6 @@ function Step1({ onBack, onProceed, onViewClaim }: { onBack: () => void; onProce
   );
 }
 
-// ── Step 3: Payment ───────────────────────────────────────────────────────────
-
-const PAYMENT_MODES = ['Credit/Debit Account', 'Cash', 'Cheque'];
-const PAYMENT_REFS  = ['Standard Guarantee', 'Account Number', 'Transaction ID'];
-
-function PaySelect({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: string[] }) {
-  const [open, setOpen] = useState(false);
-  const [pos,  setPos]  = useState<{ top: number; left: number; width: number } | null>(null);
-  const btnRef          = useRef<HTMLButtonElement>(null);
-
-  const toggle = () => {
-    if (btnRef.current) {
-      const r = btnRef.current.getBoundingClientRect();
-      setPos({ top: r.bottom + 2, left: r.left, width: r.width });
-    }
-    setOpen(o => !o);
-  };
-
-  useEffect(() => {
-    if (!open) return;
-    const close = (e: MouseEvent) => { if (btnRef.current && !btnRef.current.contains(e.target as Node)) setOpen(false); };
-    document.addEventListener('mousedown', close);
-    return () => document.removeEventListener('mousedown', close);
-  }, [open]);
-
-  return (
-    <>
-      <button ref={btnRef} type="button" onClick={toggle} aria-haspopup="listbox" aria-expanded={open}
-        className="w-full bg-white rounded-[4px] flex items-center px-[12px] text-left transition-colors"
-        style={{ height: 48, border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}`, fontFamily: font, cursor: 'pointer' }}>
-        <span className="flex-1 text-[16px]" style={{ color: '#0e1b3d' }}>{value}</span>
-        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"
-          className={`transition-transform flex-shrink-0 ${open ? 'rotate-180' : ''}`}>
-          <path d="M5 8l5 5 5-5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </button>
-      {open && pos && (
-        <div className="py-[4px]" role="listbox"
-          style={{ position: 'fixed', top: pos.top, left: pos.left, width: Math.max(pos.width, 160), zIndex: 9999,
-            background: '#fff', borderRadius: 8, border: '1px solid #f0f0f5', boxShadow: '0px 2px 16px 0px rgba(0,0,0,0.12)',
-            overflow: 'hidden', fontFamily: font }}>
-          {options.map(o => {
-            const isSel = o === value;
-            return (
-              <button key={o} type="button" role="option" aria-selected={isSel}
-                onMouseDown={e => { e.preventDefault(); onChange(o); setOpen(false); }}
-                className="block w-full text-left px-[14px] py-[10px] text-[16px] transition-colors hover:bg-[#e2ebf9]"
-                style={{ background: isSel ? '#e2ebf9' : 'transparent', color: isSel ? '#1360d2' : '#0e1b3d', fontWeight: isSel ? 500 : 400, fontFamily: font }}>
-                {o}
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </>
-  );
-}
-
-function Step3({ onBack, onProceed, onViewClaim }: { onBack: () => void; onProceed: () => void; onViewClaim: () => void }) {
-  const [paymentMode, setPaymentMode] = useState('Credit/Debit Account');
-  const [paymentRef, setPaymentRef]   = useState('Standard Guarantee');
-
-  return (
-    <StepShell onBack={onBack} stepIndex={2} bottom={<BottomNav onBack={onBack} onProceed={onProceed} proceedLabel="Proceed" />}>
-      <div className="flex flex-col gap-[8px]">
-        <div className="flex items-center justify-between">
-          <SectionLabel>Payment Details</SectionLabel>
-          <OutlineBtn onClick={onViewClaim}>
-            <span className="whitespace-nowrap">View Claim</span>
-          </OutlineBtn>
-        </div>
-        <Card className="overflow-x-auto">
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: font }}>
-            <thead>
-              <tr style={{ background: '#a6c2e9' }}>
-                {['Charges', 'Amount', 'Payment Mode', 'Payment Reference'].map((h, i) => (
-                  <th
-                    key={h}
-                    style={{
-                      padding: '12px 8px', textAlign: 'left', fontSize: 16, fontWeight: 500, color: '#051937',
-                      borderRadius: i === 0 ? '5px 0 0 5px' : i === 3 ? '0 5px 5px 0' : 0,
-                    }}
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td style={{ padding: '16px 8px', fontSize: 18, fontWeight: 500, color: '#051937' }}>
-                  Claim Amendment Charge:
-                </td>
-                <td style={{ padding: '16px 8px' }}>
-                  <div className="flex items-center gap-[12px]">
-                    <span className="text-[18px]" style={{ fontFamily: font, color: '#051937' }}>AED 50.00</span>
-                    <span
-                      className="text-[16px] px-[12px] py-[4px] rounded-[4px]"
-                      style={{ background: 'rgba(19,96,210,0.08)', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
-                    >
-                      Collect
-                    </span>
-                  </div>
-                </td>
-                <td style={{ padding: '16px 8px' }}>
-                  <div style={{ width: 260 }}>
-                    <PaySelect value={paymentMode} onChange={setPaymentMode} options={PAYMENT_MODES} />
-                  </div>
-                </td>
-                <td style={{ padding: '16px 8px' }}>
-                  <div style={{ width: 260 }}>
-                    <PaySelect value={paymentRef} onChange={setPaymentRef} options={PAYMENT_REFS} />
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </Card>
-      </div>
-
-      {/* Claimant and Broker Detail — same as Raise New Claim */}
-      <ClaimantBrokerDetail />
-    </StepShell>
-  );
-}
-
 // ── Step 4: Amendment Details + Review / Submit ───────────────────────────────
 
 function Step4({ onBack, onSubmit, onViewClaim, reason, setReason, reasonDesc, setReasonDesc }: {
@@ -483,49 +357,77 @@ function Step4({ onBack, onSubmit, onViewClaim, reason, setReason, reasonDesc, s
   );
 }
 
-// ── Success Popup ─────────────────────────────────────────────────────────────
+// ── Success Page (full page, like the Cargo Transfer amend flow) ──────────────
 
-function SuccessPopup({ onClose }: { onClose: () => void }) {
+function SuccessPage({ onBackToListing, onViewClaim }: { onBackToListing: () => void; onViewClaim: () => void }) {
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50">
-      <div
-        className="bg-white rounded-[8px] flex flex-col items-center justify-center gap-[16px] px-[60px] py-[60px]"
-        style={{ minWidth: 520, maxWidth: 600, boxShadow: '0 8px 40px rgba(0,0,0,0.18)' }}
-      >
-        <div
-          className="size-[100px] rounded-full flex items-center justify-center"
-          style={{ background: '#27ae60' }}
-        >
-          <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
+    <div className="flex flex-col h-full bg-[#f8fafd]">
+      <Breadcrumb onBack={onBackToListing} />
+      <div className="flex-1 overflow-y-auto px-[40px] pb-[24px]">
+        <div className="mb-[8px]">
+          <PageTitle>{CLAIM_TITLE}</PageTitle>
         </div>
 
-        <p className="text-[24px] text-center" style={{ fontFamily: font, fontWeight: 500, color: '#111838' }}>
-          Claim Amendment Request Submitted Successfully
-        </p>
-
-        <div className="text-center flex flex-col gap-[8px]">
-          <p className="text-[18px]" style={{ fontFamily: font, color: '#455174' }}>
-            Your request has been sent for approval.
+        {/* Important Update banner */}
+        <div className="flex flex-col gap-[8px] p-[16px] rounded-[8px] mb-[24px]"
+          style={{ background: '#fffbf0', border: '1px solid #fff2d1' }}>
+          <div className="flex items-center gap-[8px]">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="#cc9200" strokeWidth="1.8" />
+              <line x1="12" y1="8" x2="12" y2="13" stroke="#cc9200" strokeWidth="1.8" strokeLinecap="round" />
+              <circle cx="12" cy="16.5" r="1" fill="#cc9200" />
+            </svg>
+            <span className="text-[16px] text-[#cc9200]" style={{ fontFamily: font, fontWeight: 500 }}>Important Update</span>
+          </div>
+          <p className="text-[16px] text-[#455174]" style={{ fontFamily: font, lineHeight: 1.32 }}>
+            Declaration and claim submissions, via Dubai Trade, may currently be authenticated using Digital Certificate based
+            authentication is available for a temporary period only and will be discontinued at later date, to be announced
+            by Dubai Customs in due course
           </p>
-          <div className="border border-[#ebebeb] rounded-[5px] px-[12px] py-[8px] inline-flex items-center gap-[6px]" style={{ fontFamily: font }}>
-            <span className="text-[16px] text-[#696f83]">Request Number:</span>
-            <span className="text-[16px] text-[#1360d2]" style={{ fontWeight: 500 }}>REQ123457</span>
-          </div>
-          <div className="border border-[#ebebeb] rounded-[5px] px-[12px] py-[8px] inline-flex items-center gap-[6px]" style={{ fontFamily: font }}>
-            <span className="text-[16px] text-[#696f83]">Claim Number:</span>
-            <span className="text-[16px] text-[#1360d2]" style={{ fontWeight: 500 }}>2420390</span>
-          </div>
         </div>
 
-        <button
-          onClick={onClose}
-          className="h-[48px] px-[24px] rounded-[3px] text-[16px] text-white capitalize hover:opacity-90 transition-opacity"
-          style={{ background: '#1360d2', fontFamily: font, fontWeight: 500 }}
-        >
-          Back to Listing
-        </button>
+        <div className="bg-white rounded-[8px] flex flex-col items-center gap-[40px] px-[24px] py-[60px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+          <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
+            <circle cx="50" cy="50" r="44" fill="#28A745" />
+            <path d="M30 51 l13 13 27 -29" stroke="#FFFFFF" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+          </svg>
+
+          <p className="text-[24px] text-[#0e1b3d] text-center" style={{ fontFamily: font, fontWeight: 500 }}>
+            Claim Amendment Request Submitted Successfully
+          </p>
+
+          <div className="text-center text-[16px] text-[#696f83] max-w-[776px]" style={{ fontFamily: font, lineHeight: 1.3 }}>
+            <p>Your claim amendment request has been submitted successfully and sent for approval.</p>
+          </div>
+
+          <div className="flex flex-col items-center gap-[8px]">
+            <div className="border border-[#ebebeb] rounded-[5px] px-[12px] py-[8px] flex items-center gap-[6px]" style={{ fontFamily: font }}>
+              <span className="text-[16px] text-[#696f83]">Request Number:</span>
+              <span className="text-[16px] text-[#1360d2]" style={{ fontWeight: 500 }}>REQ123457</span>
+            </div>
+            <div className="border border-[#ebebeb] rounded-[5px] px-[12px] py-[8px] flex items-center gap-[6px]" style={{ fontFamily: font }}>
+              <span className="text-[16px] text-[#696f83]">Claim Number:</span>
+              <span className="text-[16px] text-[#1360d2]" style={{ fontWeight: 500 }}>2420390</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-[16px]">
+            <button
+              onClick={onBackToListing}
+              className="h-[52px] px-[40px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
+              style={{ fontFamily: font, fontWeight: 500 }}
+            >
+              Back to Listing
+            </button>
+            <button
+              onClick={onViewClaim}
+              className="h-[52px] px-[40px] rounded-[4px] bg-[#1360d2] text-[16px] text-white hover:bg-[#0f4fb5] transition-colors"
+              style={{ fontFamily: font, fontWeight: 500 }}
+            >
+              View Claim
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -545,7 +447,6 @@ export default function ClaimAmendFlow({ onBack }: Props) {
   const [reasonDesc, setReasonDesc] = useState('');
 
   const handleSuccess  = () => setShowSuccess(true);
-  const handleClose    = () => { setShowSuccess(false); onBack(); };
   const openViewClaim  = () => setShowViewClaim(true);
   const closeViewClaim = () => setShowViewClaim(false);
 
@@ -557,30 +458,45 @@ export default function ClaimAmendFlow({ onBack }: Props) {
     );
   }
 
-  return (
-    <>
+  if (showSuccess) {
+    return (
       <div className="flex flex-col h-full">
-        {step === 1 && <Step1 onBack={onBack}           onProceed={() => setStep(2)} onViewClaim={openViewClaim} />}
-        {step === 2 && (
-          <NonRemittanceDocumentsPage
-            rows={AMEND_ROWS}
-            title={CLAIM_TITLE}
-            steps={AMEND_STEPS}
-            activeIndex={1}
-            initialDocs={AMEND_INITIAL_DOCS}
-            onBack={() => setStep(1)}
-            onContinue={() => setStep(3)}
-            onBackToListing={onBack}
-          />
-        )}
-        {step === 3 && <Step3 onBack={() => setStep(2)} onProceed={() => setStep(4)} onViewClaim={openViewClaim} />}
-        {step === 4 && (
-          <Step4 onBack={() => setStep(3)} onSubmit={handleSuccess} onViewClaim={openViewClaim}
-            reason={reason} setReason={setReason} reasonDesc={reasonDesc} setReasonDesc={setReasonDesc} />
-        )}
+        <SuccessPage onBackToListing={onBack} onViewClaim={openViewClaim} />
       </div>
+    );
+  }
 
-      {showSuccess && <SuccessPopup onClose={handleClose} />}
-    </>
+  return (
+    <div className="flex flex-col h-full">
+      {step === 1 && <Step1 onBack={onBack}           onProceed={() => setStep(2)} onViewClaim={openViewClaim} />}
+      {step === 2 && (
+        <NonRemittanceDocumentsPage
+          rows={AMEND_ROWS}
+          title={CLAIM_TITLE}
+          steps={AMEND_STEPS}
+          activeIndex={1}
+          initialDocs={AMEND_INITIAL_DOCS}
+          onBack={() => setStep(1)}
+          onContinue={() => setStep(3)}
+          onBackToListing={onBack}
+        />
+      )}
+      {step === 3 && (
+        /* Payment step uses the same design as the NR / new claim flow. */
+        <NonRemittanceChargesPage
+          selectedRows={AMEND_ROWS}
+          title={CLAIM_TITLE}
+          steps={AMEND_STEPS}
+          activeIndex={2}
+          onBack={() => setStep(2)}
+          onBackToListing={onBack}
+          onContinue={() => setStep(4)}
+        />
+      )}
+      {step === 4 && (
+        <Step4 onBack={() => setStep(3)} onSubmit={handleSuccess} onViewClaim={openViewClaim}
+          reason={reason} setReason={setReason} reasonDesc={reasonDesc} setReasonDesc={setReasonDesc} />
+      )}
+    </div>
   );
 }

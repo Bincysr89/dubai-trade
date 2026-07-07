@@ -7,6 +7,7 @@ type Props = {
   onDownloadAck?: () => void;
   onViewClaim?: () => void;
   requestNumber?: string;
+  title?: string;
 };
 
 export default function NRPaymentSuccessPage({
@@ -14,6 +15,7 @@ export default function NRPaymentSuccessPage({
   onDownloadAck,
   onViewClaim,
   requestNumber = '2588017',
+  title = 'Raise New Claim - Non Remittance',
 }: Props) {
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full" style={{ fontFamily: font }}>
@@ -32,7 +34,7 @@ export default function NRPaymentSuccessPage({
 
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px]">
         <div className="mb-[24px]">
-          <h1 className="text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>Raise New Claim - Non Remittance</h1>
+          <h1 className="text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>{title}</h1>
         </div>
         <div
           className="bg-white rounded-[8px] flex flex-col items-center gap-[28px] px-[20px] py-[48px]"
