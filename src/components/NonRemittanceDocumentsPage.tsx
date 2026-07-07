@@ -34,8 +34,9 @@ type Props = {
   onContinue: () => void;
   onBackToListing: () => void;
   onUploadedDocsChange?: (docs: UploadedDoc[]) => void;
-  /** Overrides for reuse outside the raise-new-claim flow (e.g. amend claim). */
+  /** Overrides for reuse outside the raise-new-claim flow (e.g. amend claim, refund of deposits). */
   title?: string;
+  badge?: string;
   steps?: { id: string; label: string }[];
   activeIndex?: number;
   initialDocs?: UploadedDoc[];
@@ -78,7 +79,7 @@ function DeclDropdown({ value, options, onChange }: { value: string; options: st
   );
 }
 
-export default function NonRemittanceDocumentsPage({ rows, onBack, onContinue, onBackToListing, onUploadedDocsChange, title, steps, activeIndex = 1, initialDocs }: Props) {
+export default function NonRemittanceDocumentsPage({ rows, onBack, onContinue, onBackToListing, onUploadedDocsChange, title, badge, steps, activeIndex = 1, initialDocs }: Props) {
   const [selectedDecl, setSelectedDecl] = useState<string>(rows[0]?.declarationNo ?? '');
   const [selectedDocType, setSelectedDocType] = useState<string>('');
   const [remarks, setRemarks] = useState('');
@@ -135,7 +136,7 @@ export default function NonRemittanceDocumentsPage({ rows, onBack, onContinue, o
           <h1 className="text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>{title ?? 'Raise New Claim - Non Remittance'}</h1>
           <span className="text-[16px] px-[10px] py-[3px] rounded-[4px]"
             style={{ background: 'rgba(19,96,210,0.10)', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap' }}>
-            Non Remittance
+            {badge ?? 'Non Remittance'}
           </span>
         </div>
         <div className="px-4 sm:px-10 mb-[24px]">

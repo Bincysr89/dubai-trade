@@ -62,9 +62,11 @@ type Props = {
   selectedRows: Row[]; onDeclarationOpen?: (declNo: string) => void;
   /** Overrides for reuse outside the NR flow (e.g. missing-doc refund of deposits). */
   title?: string; steps?: { id: string; label: string }[]; activeIndex?: number;
+  /** When set, the "Declaration Type" column is relabelled and shows the deposit/charge type. */
+  typeColumnLabel?: string; showChargeType?: boolean;
 };
 
-export default function NonRemittanceChargesPage({ onBack, onBackToListing, onContinue, selectedRows, onDeclarationOpen, title, steps, activeIndex = 2 }: Props) {
+export default function NonRemittanceChargesPage({ onBack, onBackToListing, onContinue, selectedRows, onDeclarationOpen, title, steps, activeIndex = 2, typeColumnLabel = 'Declaration Type', showChargeType = false }: Props) {
   const [paymentMode, setPaymentMode] = useState('Credit/Debit Account');
   const [paymentRef,  setPaymentRef]  = useState('Account Number');
   const [showSaveModal, setShowSaveModal] = useState(false);
@@ -113,7 +115,7 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
                       { label: '#',                            w: 48  },
                       { label: 'Declaration No.',              w: 170 },
                       { label: 'Declaration Clearance Date',   w: 180 },
-                      { label: 'Declaration Type',             w: 180 },
+                      { label: typeColumnLabel,                w: 180 },
                       { label: 'Owner Code',                   w: 260 },
                       { label: 'Amount',                       w: 140 },
                     ].map((h, i) => (
@@ -137,7 +139,7 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
                         <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.declarationDate || '—'}</span>
                       </td>
                       <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 180 }}>
-                        <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.declarationCategory ?? 'Freezone Export'}</span>
+                        <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{showChargeType ? (row.depositType || '—') : (row.declarationCategory ?? 'Freezone Export')}</span>
                       </td>
                       <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 260 }}>
                         <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.importerCode ? codeWithName(row.importerCode) : '—'}</span>

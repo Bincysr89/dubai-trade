@@ -164,15 +164,14 @@ export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPre
         </button>
         <div className="flex items-center gap-[12px]">
           <button
-            disabled={!declared}
-            onClick={() => { if (declared) onSubmit(); }}
+            onClick={onSubmit}
             className="h-[48px] px-[40px] rounded-[4px] text-[16px] text-white transition-colors"
             style={{
-              background: declared ? '#1360d2' : '#a7c3eb',
-              cursor: declared ? 'pointer' : 'not-allowed',
+              background: '#1360d2',
+              cursor: 'pointer',
               fontFamily: font,
               fontWeight: 500,
-              boxShadow: declared ? '0px 0px 8px rgba(28,72,191,0.16)' : 'none',
+              boxShadow: '0px 0px 8px rgba(28,72,191,0.16)',
             }}
           >
             Submit

@@ -25,9 +25,9 @@ import StatusFilterHeader from './StatusFilterHeader';
 import EligibleDeclarationsPage from './EligibleDeclarationsPage';
 import RaiseClaimRequestPage from './RaiseClaimRequestPage';
 import type { ClaimType } from './ClaimTypeSelectionPage';
-import { RefundTypePage, OutboundDeclarationPage, MissingDocDepositPage, DocumentUploadPage, PaymentDetailsPage, RDDocumentsPage, RDPaymentPage, RDReviewPage, REFUND_TYPE_LABEL, type RefundType, type ChargeDetail, type RDPaymentInfo } from './ClaimSubPages';
+import { RefundTypePage, OutboundDeclarationPage, MissingDocDepositPage, DocumentUploadPage, PaymentDetailsPage, REFUND_TYPE_LABEL, type RefundType, type ChargeDetail } from './ClaimSubPages';
 import { RDChargeFlowPage, isMissingDocCharge } from './RDChargeFlowPage';
-import { REFUND_DEPOSIT_STEPS_NO_DOCS } from './ClaimStepper';
+import { REFUND_DEPOSIT_STEPS, REFUND_DEPOSIT_STEPS_NO_DOCS } from './ClaimStepper';
 import CargoTransferPrePage from './CargoTransferPrePage';
 import CargoTransferRequestPage from './CargoTransferRequestPage';
 import CargoTransferNewRequestPage from './CargoTransferNewRequestPage';
@@ -229,8 +229,6 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
   // Missing/Document Deposit claims have no document upload step.
   const rdSkipDocs = claimSelectedRows.length > 0 && claimSelectedRows.every(r => isMissingDocCharge(r.depositType));
   const [claimChargeDetails, setClaimChargeDetails] = useState<ChargeDetail[]>([]);
-  const [rdDocRemarks, setRdDocRemarks] = useState('');
-  const [rdPaymentInfo, setRdPaymentInfo] = useState<RDPaymentInfo | null>(null);
   const [claimStep, setClaimStep] = useState<ClaimSubStep>('list');
   const [claimContext, setClaimContext] = useState<{ claimType: ClaimType; declarationNo: string; depositType: string; declarationCategory: string | null; refundType?: RefundType; allowedRefundTypes?: RefundType[] } | null>(null);
   const [nonRemittanceRows, setNonRemittanceRows] = useState<Row[]>([]);
@@ -420,58 +418,50 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             />
           )}
           {claimStep === 'rdDocuments' && claimSelectedRows.length > 0 && (
-            <RDDocumentsPage
+            /* Same document upload design as the NR claim flow. */
+            <NonRemittanceDocumentsPage
               rows={claimSelectedRows}
+              title="Raise New Claim - Refund of Deposits"
+              badge="Refund of Deposits"
+              steps={REFUND_DEPOSIT_STEPS}
+              activeIndex={2}
               onBack={() => setClaimStep('chargeDetails')}
-              onContinue={(remarks) => { setRdDocRemarks(remarks); setClaimStep('rdPayment'); }}
+              onContinue={() => setClaimStep('rdPayment')}
+              onBackToListing={() => setClaimStep('list')}
             />
           )}
-          {claimStep === 'rdPayment' && rdSkipDocs && (
-            /* Missing/Document Deposit — payment step uses the NR claim design. */
+          {claimStep === 'rdPayment' && (
+            /* Payment step uses the same design as the NR claim flow. */
             <NonRemittanceChargesPage
               selectedRows={claimSelectedRows}
               title="Raise New Claim - Refund of Deposits"
-              steps={REFUND_DEPOSIT_STEPS_NO_DOCS}
-              activeIndex={2}
-              onBack={() => setClaimStep('chargeDetails')}
+              typeColumnLabel="Charge Type"
+              showChargeType
+              steps={rdSkipDocs ? REFUND_DEPOSIT_STEPS_NO_DOCS : REFUND_DEPOSIT_STEPS}
+              activeIndex={rdSkipDocs ? 2 : 3}
+              onBack={() => setClaimStep(rdSkipDocs ? 'chargeDetails' : 'rdDocuments')}
               onBackToListing={() => setClaimStep('list')}
               onContinue={(mode, acct) => { setNonRemittancePaymentMode(mode); setNonRemittanceAccountNo(acct); setClaimStep('rdReview'); }}
               onDeclarationOpen={(declNo) => { setClaimListDeclNo(declNo); setClaimListDeclViewOpen(true); }}
             />
           )}
-          {claimStep === 'rdPayment' && !rdSkipDocs && (
-            <RDPaymentPage
-              onBack={() => setClaimStep('rdDocuments')}
-              onContinue={(info) => { setRdPaymentInfo(info); setClaimStep('rdReview'); }}
-            />
-          )}
-          {claimStep === 'rdReview' && rdSkipDocs && (
-            /* Missing/Document Deposit — review step uses the NR claim design. */
+          {claimStep === 'rdReview' && (
+            /* Review step uses the same design as the NR claim flow. */
             <NonRemittanceReviewPage
               selectedRows={claimSelectedRows}
               paymentMode={nonRemittancePaymentMode}
               accountNo={nonRemittanceAccountNo}
               title="Raise New Claim - Refund of Deposits"
-              steps={REFUND_DEPOSIT_STEPS_NO_DOCS}
-              activeIndex={3}
+              steps={rdSkipDocs ? REFUND_DEPOSIT_STEPS_NO_DOCS : REFUND_DEPOSIT_STEPS}
+              activeIndex={rdSkipDocs ? 3 : 4}
               claimType="Refund of Deposits"
               onBack={() => setClaimStep('rdPayment')}
               onSubmit={() => setClaimStep('rdNrSuccess')}
               onViewClaim={() => { setClaimViewReturnStep('rdReview'); setClaimStep('nonRemittanceClaimView'); }}
             />
           )}
-          {claimStep === 'rdReview' && !rdSkipDocs && rdPaymentInfo && (
-            <RDReviewPage
-              chargeDetails={claimChargeDetails}
-              docRemarks={rdDocRemarks}
-              paymentInfo={rdPaymentInfo}
-              onBack={() => setClaimStep('rdPayment')}
-              onSubmit={() => rdPaymentInfo?.charges.some(c => c.mode === 'E-Payment') ? setClaimStep('nrPaymentPending') : setClaimStep('success')}
-              onViewClaim={() => setClaimStep('nonRemittanceClaimView')}
-            />
-          )}
           {claimStep === 'rdNrSuccess' && (
-            /* Missing/Document Deposit — success page uses the NR claim design. */
+            /* Success page uses the same design as the NR claim flow. */
             <NonRemittanceSuccessPage
               title="Raise New Claim - Refund of Deposits"
               heading="Refund of Deposits Claim Submitted Successfully"
@@ -607,6 +597,11 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           )}
           {claimStep === 'claimSuspension' && (
             <SuspensionResponsePage
+              breadcrumbParent="Refund & Claims"
+              title="Suspension Response - Refund of Deposits - 2420390"
+              successHeading="Suspension Response Submitted Successfully"
+              successMessage="Your suspension response for the Refund of Deposits claim has been submitted successfully and is currently under processing."
+              requestNumber="2588017"
               onBack={() => setClaimStep('list')}
               onBackToListing={() => setClaimStep('list')}
               onSubmit={() => setClaimStep('list')}

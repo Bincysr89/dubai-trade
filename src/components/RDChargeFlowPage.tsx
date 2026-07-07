@@ -138,11 +138,6 @@ function autoAmount(rt: RefundType, dep: string) {
   return '';
 }
 function obKey(d: string, h: string) { return `${d}::${h}`; }
-function declProgress(declNo: string, rt: RefundType, obs: OutboundState) {
-  if (!needsOutbound(rt)) return { total: 0, done: 0 };
-  const all = getInvoices(declNo).flatMap(i => i.hsCodes);
-  return { total: all.length, done: all.filter(h => (obs[obKey(declNo, h.id)] ?? []).length > 0).length };
-}
 
 /* ─── Shared flyout menu — DTSelect look (white card, soft shadow,
        blue-tinted hover/selected), fixed-position so it escapes
@@ -588,20 +583,6 @@ function HSRow({ hs, inv, declNo, rt, obs, edit, selected, onToggleSelect, onPat
       <td className="text-[16px]" style={{ color: '#051937', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: font }}>{hs.hsCode}</td>
       {/* Goods Description */}
       <td className="text-[16px] text-[#0e1b3d]" style={{ minWidth: 180 }}>{hs.description}</td>
-      {/* Statistical Qty */}
-      <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap', textAlign: 'right', fontFamily: font }}>{hs.statQty} <span className="text-[14px] text-[#697498]">{hs.unit}</span></td>
-      {/* Supplementary Qty */}
-      <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap', textAlign: 'right', fontFamily: font }}>{hs.suppQty} <span className="text-[14px] text-[#697498]">{hs.unit}</span></td>
-      {/* Weight */}
-      <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap', textAlign: 'right', fontFamily: font }}>{hs.weight} <span className="text-[14px] text-[#697498]">kg</span></td>
-      {/* Allocation Method */}
-      <td style={{ minWidth: 120 }}>
-        <InlineSelect value={alloc} onChange={v => onPatchHs(hs.id, { allocationMethod: v })} options={ALLOCATION_OPTIONS} placeholder="Select" />
-      </td>
-      {/* Unit Price */}
-      <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap', textAlign: 'right', fontFamily: font }}>{hs.unitPrice}</td>
-      {/* Currency — plain text */}
-      <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap', fontFamily: font }}>{hs.currency}</td>
       {/* Outbound Declaration No — hyperlinks open the view popup */}
       <td style={{ minWidth: 170 }}>
         {list.length > 0 ? (
@@ -619,6 +600,20 @@ function HSRow({ hs, inv, declNo, rt, obs, edit, selected, onToggleSelect, onPat
           <span className="text-[16px]" style={{ color: '#c0c8d8' }}>—</span>
         )}
       </td>
+      {/* Statistical Qty */}
+      <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap', textAlign: 'right', fontFamily: font }}>{hs.statQty} <span className="text-[14px] text-[#697498]">{hs.unit}</span></td>
+      {/* Supplementary Qty */}
+      <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap', textAlign: 'right', fontFamily: font }}>{hs.suppQty} <span className="text-[14px] text-[#697498]">{hs.unit}</span></td>
+      {/* Weight */}
+      <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap', textAlign: 'right', fontFamily: font }}>{hs.weight} <span className="text-[14px] text-[#697498]">kg</span></td>
+      {/* Allocation Method */}
+      <td style={{ minWidth: 120 }}>
+        <InlineSelect value={alloc} onChange={v => onPatchHs(hs.id, { allocationMethod: v })} options={ALLOCATION_OPTIONS} placeholder="Select" />
+      </td>
+      {/* Unit Price */}
+      <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap', textAlign: 'right', fontFamily: font }}>{hs.unitPrice}</td>
+      {/* Currency — plain text */}
+      <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap', fontFamily: font }}>{hs.currency}</td>
       {/* Action — sticky so it stays visible while the rest scrolls */}
       <td style={{ whiteSpace: 'nowrap', position: 'sticky', right: 0, zIndex: 1, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>
         {needsOb ? (
@@ -665,7 +660,6 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
 }) {
   const invoices = getInvoices(d.declarationNo);
   const needsOb  = needsOutbound(d.refundType);
-  const prog     = declProgress(d.declarationNo, d.refundType, obs);
   const isAuto   = d.refundType === 'no' || d.refundType === 'full' || d.refundType === 'fullImport' || d.refundType === 'refund' || d.refundType === 'noRefund';
   const meta     = DECL_META[d.declarationNo] ?? { declarationType: 'Import for Re-Export', depositMethod: 'Alternative Duty' };
 
@@ -781,17 +775,6 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
                 {allItems.length} HS Code{allItems.length !== 1 ? 's' : ''}
               </span>
 
-              <div className="flex items-center gap-[10px] ml-[16px] flex-1">
-                <div style={{ width: 120, height: 6, borderRadius: 6, background: '#e0e6ef', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', borderRadius: 6, transition: 'width 0.3s',
-                    background: prog.done === prog.total ? '#28a745' : '#1360d2',
-                    width: `${prog.total > 0 ? (prog.done / prog.total) * 100 : 0}%` }} />
-                </div>
-                <span className="text-[14px]" style={{ color: prog.done === prog.total ? '#1a7a42' : '#b45309', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: font }}>
-                  {prog.done}/{prog.total} HS Codes completed
-                </span>
-              </div>
-
               <span className="text-[14px] text-[#697498] ml-auto" style={{ fontFamily: font, flexShrink: 0 }}>
                 {invOpen ? 'Collapse' : 'Expand'}
               </span>
@@ -889,13 +872,13 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
                       <th className="text-[16px]" style={{ textAlign: 'center' }}>Invoice Line Item No.</th>
                       <th className="text-[16px]">HS Code</th>
                       <th className="text-[16px]">Goods Description</th>
+                      <th className="text-[16px]">Outbound Declaration No.</th>
                       <th className="text-[16px]" style={{ textAlign: 'right' }}>Statistical Quantity</th>
                       <th className="text-[16px]" style={{ textAlign: 'right' }}>Supplementary Quantity</th>
                       <th className="text-[16px]" style={{ textAlign: 'right' }}>Weight</th>
                       <th className="text-[16px]">Allocation Method</th>
                       <th className="text-[16px]" style={{ textAlign: 'right' }}>Unit Price</th>
                       <th className="text-[16px]">Currency</th>
-                      <th className="text-[16px]">Outbound Declaration No.</th>
                       <th className="text-[16px]" style={{ position: 'sticky', right: 0, zIndex: 2, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>Action</th>
                     </tr>
                   </thead>
@@ -977,12 +960,6 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue }: 
     applyOb(modal.ctx, ob, modal.hsIds);
     setModal(m => m ? { ...m, ctx: { ...m.ctx, editId: undefined }, existing: undefined } : null);
   };
-  const allValid = details.every(d => {
-    if (!d.refundType || (!d.claimAmount.trim() && d.refundType !== 'no' && d.refundType !== 'noRefund')) return false;
-    if (!needsOutbound(d.refundType)) return true;
-    return getInvoices(d.declarationNo).every(inv => inv.hsCodes.every(hs => (obs[obKey(d.declarationNo, hs.id)] ?? []).length > 0));
-  });
-
   const totalClaim = details.reduce((s, d) => s + parseAED(d.claimAmount), 0);
 
   /* Missing/Document Deposit claims skip the document upload step. */
@@ -1063,11 +1040,11 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue }: 
               style={{ border: '1.5px solid #1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500, cursor: 'pointer' }}>
               Save &amp; Exit
             </button>
-            <button disabled={!allValid} onClick={() => allValid && onContinue({ details, outbounds: obs })}
+            <button onClick={() => onContinue({ details, outbounds: obs })}
               className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white"
-              style={{ background: allValid ? '#1360d2' : '#a7c3eb', border: 'none', fontFamily: font, fontWeight: 500,
-                cursor: allValid ? 'pointer' : 'not-allowed',
-                boxShadow: allValid ? '0px 0px 8px rgba(28,72,191,0.16)' : 'none' }}>
+              style={{ background: '#1360d2', border: 'none', fontFamily: font, fontWeight: 500,
+                cursor: 'pointer',
+                boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
               Next
             </button>
           </div>

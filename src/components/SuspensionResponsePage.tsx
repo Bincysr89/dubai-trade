@@ -55,11 +55,59 @@ type Props = {
   onBack: () => void;
   onBackToListing?: () => void;
   onSubmit: () => void;
+  /** Overrides for reuse outside the Cargo Transfer flow (e.g. Refund & Claims). */
+  breadcrumbParent?: string;
+  title?: string;
+  /** When set, submitting shows an internal success screen instead of calling onSubmit directly. */
+  successHeading?: string;
+  successMessage?: string;
+  requestNumber?: string;
 };
 
-export default function SuspensionResponsePage({ onBack, onBackToListing, onSubmit }: Props) {
+export default function SuspensionResponsePage({ onBack, onBackToListing, onSubmit, breadcrumbParent = 'Cargo Transfer', title = 'Suspension Response - CT - 601232423898', successHeading, successMessage, requestNumber = '2588017' }: Props) {
   const [response, setResponse] = useState('');
   const [selectedDoc, setSelectedDoc] = useState(0);
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = () => { if (successHeading) setSubmitted(true); else onSubmit(); };
+
+  if (submitted && successHeading) {
+    return (
+      <div className="flex flex-col h-full bg-[#f8fafd]" style={{ fontFamily: font }}>
+        <div className="flex items-center gap-[6px] px-4 sm:px-10 pt-[16px] pb-[8px]">
+          <span className="text-[16px] text-[#8f94ae]">Home</span>
+          <span className="text-[16px] text-[#dc3545]">/</span>
+          <span className="text-[16px] text-[#8f94ae]">Refund &amp; Claims</span>
+          <span className="text-[16px] text-[#dc3545]">/</span>
+          <span className="text-[16px] text-[#111838]" style={{ fontWeight: 500 }}>Suspension Response</span>
+        </div>
+        <div className="flex-1 overflow-auto px-4 sm:px-10 py-[24px]">
+          <h1 className="text-[32px] text-[#111838] mb-[8px]" style={{ fontWeight: 500 }}>{title}</h1>
+          <div className="bg-white rounded-[8px] flex flex-col items-center gap-[28px] px-[24px] py-[60px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+            <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
+              <circle cx="50" cy="50" r="44" fill="#28A745" />
+              <path d="M30 51 l13 13 27-29" stroke="#FFFFFF" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <p className="text-[24px] text-[#0e1b3d] text-center" style={{ fontWeight: 500 }}>{successHeading}</p>
+            <p className="text-[16px] text-[#696f83] text-center max-w-[640px]" style={{ lineHeight: 1.5 }}>
+              {successMessage ?? 'Your suspension response has been submitted successfully and is currently under processing.'}
+            </p>
+            <div className="border border-[#ebebeb] rounded-[6px] px-[16px] py-[10px] flex items-center gap-[8px]">
+              <span className="text-[16px] text-[#696f83]">Claim Request Number:</span>
+              <span className="text-[16px] text-[#1360d2]" style={{ fontWeight: 600 }}>{requestNumber}</span>
+            </div>
+            <button
+              onClick={onBackToListing ?? onSubmit}
+              className="h-[52px] px-[32px] rounded-[4px] text-[16px] text-white hover:bg-[#0f4fb5] transition-colors"
+              style={{ background: '#1360d2', fontFamily: font, fontWeight: 500 }}
+            >
+              Back to Listing
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full bg-[#f8fafd]">
@@ -78,7 +126,7 @@ export default function SuspensionResponsePage({ onBack, onBackToListing, onSubm
             <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: font }}>/</span>
             <span className="text-[16px] text-[#8f94ae]" style={{ fontFamily: font }}>Integrated Clearance</span>
             <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: font }}>/</span>
-            <span className="text-[16px] text-[#8f94ae]" style={{ fontFamily: font }}>Cargo Transfer</span>
+            <span className="text-[16px] text-[#8f94ae]" style={{ fontFamily: font }}>{breadcrumbParent}</span>
             <span className="text-[16px] text-[#dc3545]" style={{ fontFamily: font }}>/</span>
             <span className="text-[16px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>Suspension Response</span>
           </div>
@@ -93,7 +141,7 @@ export default function SuspensionResponsePage({ onBack, onBackToListing, onSubm
         {/* Page title */}
         <div className="flex items-center gap-[16px] mb-[8px]">
           <h1 style={{ fontSize: 32, fontWeight: 500, color: '#0e1b3d', fontFamily: font }}>
-            Suspension Response - CT - 601232423898
+            {title}
           </h1>
           <span className="text-[16px] font-medium px-[12px] py-[4px] rounded-[4px]" style={{ background: 'rgba(220,53,69,0.10)', color: '#dc3545', fontFamily: font }}>
             Suspended
@@ -262,7 +310,7 @@ export default function SuspensionResponsePage({ onBack, onBackToListing, onSubm
             Back
           </button>
           <button
-            onClick={onSubmit}
+            onClick={handleSubmit}
             className="h-[48px] px-[40px] rounded-[4px] text-[16px] text-white hover:opacity-90 transition-opacity"
             style={{ background: '#1360d2', fontFamily: font }}
           >

@@ -197,11 +197,6 @@ export function RefundTypePage({
     ? allowedTypes.map((id) => ALL_REFUND_OPTIONS.find((o) => o.id === id)!).filter(Boolean)
     : ALL_REFUND_OPTIONS.filter((o) => o.id === 'full' || o.id === 'partial' || o.id === 'no');
 
-  const partialValid = selectedHs.size > 0;
-  const needsOutbound = selected === 'full' || selected === 'partial';
-  const outboundValid = !needsOutbound || outboundRows.length > 0;
-  const valid = selected !== null && outboundValid && (selected !== 'partial' || partialValid);
-
   // Auto-populate eligible HS codes (intersection of inbound invoices + outbound)
   // when an outbound row is added for a partial-export claim.
   useEffect(() => {
@@ -240,17 +235,16 @@ export function RefundTypePage({
       onBackToListing={onBackToListing}
       rightContent={
         <PrimaryBtn
-          disabled={!valid}
           onClick={() => {
-            if (!selected) return;
-            if (selected === 'partial') {
+            const rt = selected ?? 'no';
+            if (rt === 'partial') {
               const chosen = hsEntries.filter((e) => selectedHs.has(`${e.invoiceId}::${e.code}`));
-              onContinue(selected, {
+              onContinue(rt, {
                 invoiceIds: Array.from(new Set(chosen.map((e) => e.invoiceId))),
                 hsCodes: chosen.map((e) => ({ invoiceId: e.invoiceId, code: e.code })),
               });
             } else {
-              onContinue(selected);
+              onContinue(rt);
             }
           }}
         >
@@ -789,15 +783,13 @@ export function OutboundDeclarationPage({
 }) {
   const [v, setV] = useState<OutboundDetails>({ outboundDeclNumber: '', outboundDate: '', portOfDischarge: '', totalQuantity: '', weight: '', remarks: '' });
   const set = <K extends keyof OutboundDetails>(k: K, val: string) => setV((s) => ({ ...s, [k]: val }));
-  const valid = !!v.outboundDeclNumber.trim() && !!v.outboundDate.trim();
-
   return (
     <PageShell
       title="Outbound Declaration Details"
       activeIndex={1}
       onBack={onBack}
       onBackToListing={onBackToListing}
-      rightContent={<PrimaryBtn disabled={!valid} onClick={() => onContinue(v)}>Continue</PrimaryBtn>}
+      rightContent={<PrimaryBtn onClick={() => onContinue(v)}>Continue</PrimaryBtn>}
     >
       <SectionHeader>Outbound Declaration</SectionHeader>
       <Card>
@@ -927,15 +919,13 @@ export function PartialExportPage({
     setExpanded(e);
   };
 
-  const valid = selectedInvoices.size > 0 && selectedHs.size > 0;
-
   return (
     <PageShell
       title="Partial Export — Select Invoices &amp; HS Codes"
       activeIndex={1}
       onBack={onBack}
       onBackToListing={onBackToListing}
-      rightContent={<PrimaryBtn disabled={!valid} onClick={() => onContinue({ invoiceIds: Array.from(selectedInvoices), hsCodes: Array.from(selectedHs).map((k) => { const [invoiceId, code] = k.split('::'); return { invoiceId, code }; }) })}>Continue</PrimaryBtn>}
+      rightContent={<PrimaryBtn onClick={() => onContinue({ invoiceIds: Array.from(selectedInvoices), hsCodes: Array.from(selectedHs).map((k) => { const [invoiceId, code] = k.split('::'); return { invoiceId, code }; }) })}>Continue</PrimaryBtn>}
     >
       <SectionHeader>Invoices &amp; HS Codes</SectionHeader>
       <Card>
@@ -1043,7 +1033,6 @@ export function DocumentUploadPage({
 
   const activeType = REQUIRED_DOC_TYPES.find((t) => t.id === selectedDocType) ?? REQUIRED_DOC_TYPES[0];
   const countByType = (id: string) => docs.filter((d) => d.docType === id).length;
-  const requiredMet = docs.length > 0;
 
   const today = new Date();
   const today_dd_mm_yyyy = `${String(today.getDate()).padStart(2, '0')}-${String(today.getMonth() + 1).padStart(2, '0')}-${today.getFullYear()}`;
@@ -1070,7 +1059,7 @@ export function DocumentUploadPage({
       activeIndex={2}
       onBack={onBack}
       onBackToListing={onBackToListing}
-      rightContent={<div className="flex items-center gap-[12px]"><SaveExitBtn onBackToListing={onBackToListing} /><PrimaryBtn disabled={!requiredMet} onClick={() => onContinue(docs)}>Continue</PrimaryBtn></div>}
+      rightContent={<div className="flex items-center gap-[12px]"><SaveExitBtn onBackToListing={onBackToListing} /><PrimaryBtn onClick={() => onContinue(docs)}>Continue</PrimaryBtn></div>}
     >
       {/* Mandatory Documents table */}
       <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
@@ -1249,7 +1238,6 @@ export function PaymentDetailsPage({
   const [mode, setMode] = useState('');
   const [accountNo, setAccountNo] = useState('');
   const [depositMethodChoice, setDepositMethodChoice] = useState('');
-  const valid = !!mode.trim() && !!accountNo.trim() && !!depositMethodChoice;
 
   const depositMethodField = (
     <div className="max-w-[240px]">
@@ -1283,7 +1271,7 @@ export function PaymentDetailsPage({
       activeIndex={3}
       onBack={onBack}
       onBackToListing={onBackToListing}
-      rightContent={<div className="flex items-center gap-[12px]"><SaveExitBtn onBackToListing={onBackToListing} /><PrimaryBtn disabled={!valid} onClick={() => onContinue({ mode, accountNo })}>Submit Claim</PrimaryBtn></div>}
+      rightContent={<div className="flex items-center gap-[12px]"><SaveExitBtn onBackToListing={onBackToListing} /><PrimaryBtn onClick={() => onContinue({ mode, accountNo })}>Submit Claim</PrimaryBtn></div>}
     >
       <SectionHeader>Claim Summary</SectionHeader>
       <Card>
@@ -1374,15 +1362,13 @@ export function MissingDocDepositPage({
     return () => document.removeEventListener('mousedown', onDoc);
   }, [open2]);
 
-  const valid = refundAmount.trim() && depositMethod;
-
   return (
     <PageShell
       title="Refund Details"
       activeIndex={1}
       onBack={onBack}
       onBackToListing={onBackToListing}
-      rightContent={<PrimaryBtn disabled={!valid} onClick={() => valid && onContinue({ refundAmount, currency, depositMethod: depositMethod as DepositMethod, remarks })}>Continue</PrimaryBtn>}
+      rightContent={<PrimaryBtn onClick={() => onContinue({ refundAmount, currency, depositMethod: (depositMethod || 'cash') as DepositMethod, remarks })}>Continue</PrimaryBtn>}
     >
       <SectionHeader>Refund &amp; Deposit Method</SectionHeader>
       <Card>

@@ -554,22 +554,9 @@ function Step4({ onBack, onSubmit, onViewClaim, reason, reasonDesc }: {
 
       <BottomNav
         onBack={onBack}
-        onProceed={declared ? onSubmit : undefined}
+        onProceed={onSubmit}
         proceedLabel="Submit"
-        extraBtn={
-          <>
-            <OutlineBtn onClick={() => window.print()}>Print Claim</OutlineBtn>
-            {!declared && (
-              <button
-                disabled
-                className="h-[48px] px-[40px] rounded-[4px] flex items-center justify-center text-[16px] text-white"
-                style={{ background: '#a7c3eb', fontFamily: font, fontWeight: 500, cursor: 'not-allowed' }}
-              >
-                Submit
-              </button>
-            )}
-          </>
-        }
+        extraBtn={<OutlineBtn onClick={() => window.print()}>Print Claim</OutlineBtn>}
       />
     </div>
   );

@@ -266,15 +266,14 @@ export default function ClaimTypeEntryPage({ onBack, onContinue }: Props) {
           Back
         </button>
         <button
-          disabled={!selected}
-          onClick={() => { if (selected) onContinue(selected); }}
+          onClick={() => onContinue(selected ?? 'refundDeposit')}
           className="h-[48px] px-[40px] rounded-[4px] text-[16px] text-white transition-colors"
           style={{
-            background: selected ? '#1360d2' : '#a7c3eb',
-            cursor: selected ? 'pointer' : 'not-allowed',
+            background: '#1360d2',
+            cursor: 'pointer',
             fontFamily: font,
             fontWeight: 500,
-            boxShadow: selected ? '0px 0px 8px rgba(28,72,191,0.16)' : 'none',
+            boxShadow: '0px 0px 8px rgba(28,72,191,0.16)',
           }}
         >
           Continue

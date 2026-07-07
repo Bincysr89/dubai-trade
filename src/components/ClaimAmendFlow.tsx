@@ -409,28 +409,14 @@ function Step4({ onBack, onSubmit, onViewClaim, reason, setReason, reasonDesc, s
   reasonDesc: string; setReasonDesc: (v: string) => void;
 }) {
   const [declared, setDeclared] = useState(false);
-  const canSubmit = declared && !!reason;
 
   return (
     <StepShell onBack={onBack} stepIndex={3} bottom={
       <BottomNav
         onBack={onBack}
-        onProceed={canSubmit ? onSubmit : undefined}
+        onProceed={onSubmit}
         proceedLabel="Submit"
-        extraBtn={
-          <>
-            <OutlineBtn onClick={onViewClaim}>View Claim</OutlineBtn>
-            {!canSubmit && (
-              <button
-                disabled
-                className="h-[48px] px-[40px] rounded-[4px] flex items-center justify-center text-[16px] text-white"
-                style={{ background: '#a7c3eb', fontFamily: font, fontWeight: 500, cursor: 'not-allowed' }}
-              >
-                Submit
-              </button>
-            )}
-          </>
-        }
+        extraBtn={<OutlineBtn onClick={onViewClaim}>View Claim</OutlineBtn>}
       />
     }>
       {/* Amendment Detail — first card */}

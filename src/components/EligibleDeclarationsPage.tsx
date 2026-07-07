@@ -1268,8 +1268,10 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
       <BackToListingBar
         onBack={onBack}
         rightContent={(() => {
-          const selectedRows = filtered.filter((r) => selectedDecls.has(r.declarationNo));
-          const enabled = selectedRows.length > 0;
+          const picked = filtered.filter((r) => selectedDecls.has(r.declarationNo));
+          // Prototype: allow proceeding without a selection by defaulting to the first row.
+          const selectedRows = picked.length > 0 ? picked : filtered.slice(0, 1);
+          const enabled = picked.length > 0;
           return (
             <div className="flex items-center gap-[12px]">
               {enabled && (
@@ -1285,15 +1287,14 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
                 Save &amp; Exit
               </button>
               <button
-                disabled={!enabled}
-                onClick={() => { if (enabled && claimType) onProceed?.(selectedRows, claimType); }}
+                onClick={() => { if (claimType) onProceed?.(selectedRows, claimType); }}
                 className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors"
                 style={{
-                  background: enabled ? '#1360d2' : '#a7c3eb',
-                  cursor: enabled ? 'pointer' : 'not-allowed',
+                  background: '#1360d2',
+                  cursor: 'pointer',
                   fontFamily: "'Dubai', sans-serif",
                   fontWeight: 500,
-                  boxShadow: enabled ? '0px 0px 8px rgba(28,72,191,0.16)' : 'none',
+                  boxShadow: '0px 0px 8px rgba(28,72,191,0.16)',
                 }}
               >
                 Next
