@@ -125,14 +125,24 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
               <table style={{ width: '100%', minWidth: 700, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }}>
                 <thead>
                   <tr>
-                    {[
-                      { label: '#',                            w: 48  },
-                      { label: 'Declaration No.',              w: 170 },
-                      { label: 'Declaration Clearance Date',   w: 180 },
-                      { label: typeColumnLabel,                w: 180 },
-                      { label: 'Owner Code',                   w: 260 },
-                      { label: 'Amount',                       w: 140 },
-                    ].map((h, i) => (
+                    {(showChargeType
+                      ? [
+                          { label: '#',                            w: 48  },
+                          { label: 'Declaration No.',              w: 170 },
+                          { label: 'Declaration Clearance Date',   w: 180 },
+                          { label: typeColumnLabel,                w: 180 },
+                          { label: 'Owner Code',                   w: 260 },
+                          { label: 'Amount',                       w: 140 },
+                        ]
+                      : [
+                          { label: '#',                              w: 48  },
+                          { label: 'Declaration No.',                w: 170 },
+                          { label: typeColumnLabel,                  w: 180 },
+                          { label: 'Owner Code',                     w: 240 },
+                          { label: 'Claim Registration Charge',      w: 200 },
+                          { label: 'Knowledge & Innovation Dirham',  w: 240 },
+                        ]
+                    ).map((h, i) => (
                       <th key={h.label} style={{ width: h.w, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, fontSize: 16, color: '#0e1b3d', whiteSpace: 'nowrap', borderTopLeftRadius: i === 0 ? 8 : 0, borderBottomLeftRadius: i === 0 ? 8 : 0 }}>
                         {h.label}
                       </th>
@@ -149,18 +159,35 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
                         <a href="#" onClick={(e) => { e.preventDefault(); onDeclarationOpen?.(row.declarationNo); }}
                           className="text-[16px] whitespace-nowrap hover:underline" style={{ color: '#1360d2', fontWeight: 500 }}>{row.declarationNo}</a>
                       </td>
-                      <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 180 }}>
-                        <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.declarationDate || '—'}</span>
-                      </td>
+                      {showChargeType && (
+                        <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 180 }}>
+                          <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.declarationDate || '—'}</span>
+                        </td>
+                      )}
                       <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 180 }}>
                         <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{showChargeType ? (row.depositType || '—') : (row.declarationCategory ?? 'Freezone Export')}</span>
                       </td>
-                      <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 260 }}>
+                      <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: showChargeType ? 260 : 240 }}>
                         <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.importerCode ? codeWithName(row.importerCode) : '—'}</span>
                       </td>
-                      <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 140 }}>
-                        <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ fontWeight: 500 }}>AED 250.00</span>
-                      </td>
+                      {showChargeType ? (
+                        <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 140 }}>
+                          <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ fontWeight: 500 }}>AED 250.00</span>
+                        </td>
+                      ) : (
+                        <>
+                          <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 200 }}>
+                            <span className="inline-flex items-center gap-[4px] text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ fontWeight: 500 }}>
+                              <DirhamIcon size={13} color="#0e1b3d" />{REG_FEE}.00
+                            </span>
+                          </td>
+                          <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 240 }}>
+                            <span className="inline-flex items-center gap-[4px] text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ fontWeight: 500 }}>
+                              <DirhamIcon size={13} color="#0e1b3d" />{KNOW_FEE}.00
+                            </span>
+                          </td>
+                        </>
+                      )}
                     </tr>
                   ))}
                   {displayRows.length === 0 && (
