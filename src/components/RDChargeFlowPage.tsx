@@ -912,13 +912,15 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
 }
 
 /* ─── Main page ─────────────────────────────────────────────────── */
-export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, title = 'Raise New Claim — Refund of Deposits', breadcrumbLast = 'Raise New Claim', prefill = false }: {
+export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, title = 'Raise New Claim — Refund of Deposits', breadcrumbLast = 'Raise New Claim', prefill = false, hideSaveExit = false }: {
   rows: Row[]; onBack: () => void; onBackToListing?: () => void;
   onContinue: (r: RDFlowResult) => void;
   /** Overrides for reuse in the amend flow. */
   title?: string; breadcrumbLast?: string;
   /** Amend mode: pre-fill refund type, claim amount, allocation and outbound declarations. */
   prefill?: boolean;
+  /** Amend flow: hide the Save & Exit button. */
+  hideSaveExit?: boolean;
 }) {
   const [details, setDetails] = useState<ChargeDetail[]>(() =>
     rows.map(r => {
@@ -1064,11 +1066,13 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
         onBackToListing={onBackToListing ?? (() => {})}
         rightContent={
           <div className="flex gap-[12px] items-center">
-            <button onClick={() => setSaveModal(true)}
-              className="h-[48px] px-[28px] rounded-[4px] text-[16px] bg-white hover:bg-[#f0f4ff]"
-              style={{ border: '1.5px solid #1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500, cursor: 'pointer' }}>
-              Save &amp; Exit
-            </button>
+            {!hideSaveExit && (
+              <button onClick={() => setSaveModal(true)}
+                className="h-[48px] px-[28px] rounded-[4px] text-[16px] bg-white hover:bg-[#f0f4ff]"
+                style={{ border: '1.5px solid #1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500, cursor: 'pointer' }}>
+                Save &amp; Exit
+              </button>
+            )}
             <button onClick={() => onContinue({ details, outbounds: obs })}
               className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white"
               style={{ background: '#1360d2', border: 'none', fontFamily: font, fontWeight: 500,

@@ -64,9 +64,11 @@ type Props = {
   title?: string; steps?: { id: string; label: string }[]; activeIndex?: number;
   /** When set, the "Declaration Type" column is relabelled and shows the deposit/charge type. */
   typeColumnLabel?: string; showChargeType?: boolean;
+  /** Amend flow: hide the Save & Exit button. */
+  hideSaveExit?: boolean;
 };
 
-export default function NonRemittanceChargesPage({ onBack, onBackToListing, onContinue, selectedRows, onDeclarationOpen, title, steps, activeIndex = 2, typeColumnLabel = 'Declaration Type', showChargeType = false }: Props) {
+export default function NonRemittanceChargesPage({ onBack, onBackToListing, onContinue, selectedRows, onDeclarationOpen, title, steps, activeIndex = 2, typeColumnLabel = 'Declaration Type', showChargeType = false, hideSaveExit = false }: Props) {
   const [paymentMode, setPaymentMode] = useState('Credit/Debit Account');
   const [paymentRef,  setPaymentRef]  = useState('Account Number');
   const [showSaveModal, setShowSaveModal] = useState(false);
@@ -202,14 +204,6 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
                 <label className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>Payment Reference</label>
                 <PlainSelect value={paymentRef} onChange={setPaymentRef} options={PAYMENT_REFS} disabled={isEPayment} />
               </div>
-
-              {/* Submit button */}
-              <button
-                onClick={() => onContinue(paymentMode, paymentRef)}
-                className="w-full h-[48px] rounded-[4px] text-[16px] text-white mt-[4px] transition-colors hover:opacity-90"
-                style={{ background: '#1360d2', fontFamily: font, fontWeight: 500 }}>
-                Next
-              </button>
             </div>
           </div>
 
@@ -227,11 +221,20 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
           style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
           Back
         </button>
-        <button onClick={() => setShowSaveModal(true)}
-          className="h-[48px] px-[28px] rounded-[4px] border bg-white text-[16px] hover:bg-[#f0f4ff] transition-colors"
-          style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
-          Save &amp; Exit
-        </button>
+        <div className="flex items-center gap-[12px]">
+          {!hideSaveExit && (
+            <button onClick={() => setShowSaveModal(true)}
+              className="h-[48px] px-[28px] rounded-[4px] border bg-white text-[16px] hover:bg-[#f0f4ff] transition-colors"
+              style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
+              Save &amp; Exit
+            </button>
+          )}
+          <button onClick={() => onContinue(paymentMode, paymentRef)}
+            className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors hover:opacity-90"
+            style={{ background: '#1360d2', fontFamily: font, fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
+            Proceed
+          </button>
+        </div>
       </div>
 
       {showSaveModal && <SaveExitModal onCancel={() => setShowSaveModal(false)} onBackToListing={onBackToListing} />}

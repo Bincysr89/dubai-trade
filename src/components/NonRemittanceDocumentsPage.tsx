@@ -40,6 +40,8 @@ type Props = {
   steps?: { id: string; label: string }[];
   activeIndex?: number;
   initialDocs?: UploadedDoc[];
+  /** Amend flow: hide the Save & Exit button. */
+  hideSaveExit?: boolean;
 };
 
 function formatBytes(bytes: number) {
@@ -79,7 +81,7 @@ function DeclDropdown({ value, options, onChange }: { value: string; options: st
   );
 }
 
-export default function NonRemittanceDocumentsPage({ rows, onBack, onContinue, onBackToListing, onUploadedDocsChange, title, badge, steps, activeIndex = 1, initialDocs }: Props) {
+export default function NonRemittanceDocumentsPage({ rows, onBack, onContinue, onBackToListing, onUploadedDocsChange, title, badge, steps, activeIndex = 1, initialDocs, hideSaveExit = false }: Props) {
   const [selectedDecl, setSelectedDecl] = useState<string>(rows[0]?.declarationNo ?? '');
   const [selectedDocType, setSelectedDocType] = useState<string>('');
   const [remarks, setRemarks] = useState('');
@@ -373,11 +375,13 @@ export default function NonRemittanceDocumentsPage({ rows, onBack, onContinue, o
         onBackToListing={onBackToListing}
         rightContent={
           <div className="flex items-center gap-[12px]">
-            <button onClick={() => setShowSaveModal(true)}
-              className="h-[48px] px-[28px] rounded-[4px] border bg-white text-[16px] hover:bg-[#f0f4ff] transition-colors"
-              style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: FONT, fontWeight: 500 }}>
-              Save &amp; Exit
-            </button>
+            {!hideSaveExit && (
+              <button onClick={() => setShowSaveModal(true)}
+                className="h-[48px] px-[28px] rounded-[4px] border bg-white text-[16px] hover:bg-[#f0f4ff] transition-colors"
+                style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: FONT, fontWeight: 500 }}>
+                Save &amp; Exit
+              </button>
+            )}
             <button onClick={onContinue}
               className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors"
               style={{ background: '#1360d2', fontFamily: FONT, fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>

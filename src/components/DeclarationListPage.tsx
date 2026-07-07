@@ -439,6 +439,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               title={rdChargeTitle}
               breadcrumbLast={rdBreadcrumbLast}
               prefill={rdAmendMode}
+              hideSaveExit={rdAmendMode}
               onBack={() => rdAmendMode ? exitRdAmend() : setClaimStep('eligible')}
               onBackToListing={() => rdAmendMode ? exitRdAmend() : setClaimStep('list')}
               onContinue={({ details }) => {
@@ -457,6 +458,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               steps={REFUND_DEPOSIT_STEPS}
               activeIndex={2}
               initialDocs={rdAmendMode ? RD_AMEND_DOCS : undefined}
+              hideSaveExit={rdAmendMode}
               onBack={() => setClaimStep('chargeDetails')}
               onContinue={() => setClaimStep('rdPayment')}
               onBackToListing={() => rdAmendMode ? exitRdAmend() : setClaimStep('list')}
@@ -469,6 +471,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               title={rdFlowTitle}
               typeColumnLabel="Charge Type"
               showChargeType
+              hideSaveExit={rdAmendMode}
               steps={rdSkipDocs ? REFUND_DEPOSIT_STEPS_NO_DOCS : REFUND_DEPOSIT_STEPS}
               activeIndex={rdSkipDocs ? 2 : 3}
               onBack={() => setClaimStep(rdSkipDocs ? 'chargeDetails' : 'rdDocuments')}

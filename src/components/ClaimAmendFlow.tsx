@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import NonRemittanceClaimViewPage from './NonRemittanceClaimViewPage';
 import NonRemittanceDocumentsPage, { UploadedDoc as NRUploadedDoc } from './NonRemittanceDocumentsPage';
 import NonRemittanceChargesPage from './NonRemittanceChargesPage';
+import ClaimantBrokerDetail from './ClaimantBrokerDetail';
 import ClaimStepper from './ClaimStepper';
 import type { Row } from './EligibleDeclarationsPage';
 
@@ -271,6 +272,9 @@ function Step1({ onBack, onProceed, onViewClaim }: { onBack: () => void; onProce
           </div>
         </Card>
       </div>
+
+      {/* Claimant and Broker Detail — same as the other claim steps */}
+      <ClaimantBrokerDetail />
     </StepShell>
   );
 }
@@ -476,6 +480,7 @@ export default function ClaimAmendFlow({ onBack }: Props) {
           steps={AMEND_STEPS}
           activeIndex={1}
           initialDocs={AMEND_INITIAL_DOCS}
+          hideSaveExit
           onBack={() => setStep(1)}
           onContinue={() => setStep(3)}
           onBackToListing={onBack}
@@ -488,6 +493,7 @@ export default function ClaimAmendFlow({ onBack }: Props) {
           title={CLAIM_TITLE}
           steps={AMEND_STEPS}
           activeIndex={2}
+          hideSaveExit
           onBack={() => setStep(2)}
           onBackToListing={onBack}
           onContinue={() => setStep(4)}
