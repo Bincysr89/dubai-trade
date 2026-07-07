@@ -214,21 +214,21 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
                 <span className="text-[15px] text-[#051937]" style={{ fontFamily: font, fontWeight: 500 }}>{displayRows.length}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[15px] text-[#697498]" style={{ fontFamily: font }}>Registration Fee</span>
+                <span className="text-[15px] text-[#697498]" style={{ fontFamily: font }}>Total Registration Fee</span>
                 <span className="flex items-center gap-[4px] text-[15px] text-[#051937]" style={{ fontFamily: font }}>
-                  <DirhamIcon size={13} color="#051937" />{REG_FEE}
+                  <DirhamIcon size={13} color="#051937" />{(REG_FEE * displayRows.length).toFixed(2)}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[15px] text-[#697498]" style={{ fontFamily: font }}>Knowledge-Innovation Fee</span>
+                <span className="text-[15px] text-[#697498]" style={{ fontFamily: font }}>Total Knowledge-Innovation Fee</span>
                 <span className="flex items-center gap-[4px] text-[15px] text-[#051937]" style={{ fontFamily: font }}>
-                  <DirhamIcon size={13} color="#051937" />{KNOW_FEE}
+                  <DirhamIcon size={13} color="#051937" />{(KNOW_FEE * displayRows.length).toFixed(2)}
                 </span>
               </div>
               <div className="flex items-center justify-between pt-[8px]" style={{ borderTop: '1px solid #eef1f6' }}>
                 <span className="text-[16px] text-[#051937]" style={{ fontFamily: font, fontWeight: 700 }}>Total Amount</span>
                 <span className="flex items-center gap-[4px] text-[18px] text-[#1360d2]" style={{ fontFamily: font, fontWeight: 700 }}>
-                  <DirhamIcon size={15} color="#1360d2" />{TOTAL_AED}
+                  <DirhamIcon size={15} color="#1360d2" />{(TOTAL_AED * displayRows.length).toFixed(2)}
                 </span>
               </div>
 
