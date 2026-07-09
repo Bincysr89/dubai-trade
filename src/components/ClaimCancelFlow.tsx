@@ -299,8 +299,14 @@ const UPLOADED_DOCS = [
   { name: 'BOL123.pdf',         type: 'AWB/BOL',  size: '50 MB', date: '08-12-2024' },
 ];
 
+const DOC_TYPES = [
+  { docName: 'Other Documents', docNature: 'Any', mandatory: true },
+];
+
 function Step2({ onBack, onProceed }: { onBack: () => void; onProceed: () => void }) {
   const [dragging, setDragging] = useState(false);
+  const [selectedDoc, setSelectedDoc] = useState(0);
+  const [otherDocType, setOtherDocType] = useState('');
 
   return (
     <div className="flex flex-col h-full bg-[#f8fafd]">
@@ -312,56 +318,90 @@ function Step2({ onBack, onProceed }: { onBack: () => void; onProceed: () => voi
         </div>
         <div className="flex flex-col gap-[24px]">
 
-          {/* Upload card */}
-          <Card className="p-[24px]">
-            <div className="flex gap-[24px] flex-wrap">
-              {/* Left: doc type selection */}
-              <div className="flex-1" style={{ minWidth: 280 }}>
-                <p className="text-[24px] mb-[8px]" style={{ fontFamily: font, fontWeight: 500, color: '#060c28' }}>Upload Documents</p>
-                <p className="text-[18px] mb-[20px]" style={{ fontFamily: font, color: '#323c64' }}>
-                  Select the document type and upload the file, we will share the documents with authorities
-                </p>
-                <label className="flex items-center gap-[17px] cursor-pointer select-none">
-                  <div className="flex-shrink-0 size-[18px] rounded-full border-[2px] flex items-center justify-center" style={{ borderColor: '#1360d2' }}>
-                    <div className="size-[9px] rounded-full bg-[#1360d2]" />
-                  </div>
-                  <span className="text-[18px]" style={{ fontFamily: font, color: '#060c28' }}>Supporting Documents</span>
-                </label>
-              </div>
+          {/* Upload Documents — same design as the suspension response upload */}
+          <div className="flex gap-[16px] flex-wrap lg:flex-nowrap items-stretch">
 
-              {/* Right: file upload */}
-              <div className="bg-white rounded-[8px] overflow-hidden p-[20px] flex flex-col gap-[12px]" style={{ width: 516, maxWidth: '100%', border: '1px solid #f0f0f5' }}>
-                <p className="text-[20px]" style={{ fontFamily: font, fontWeight: 500, color: '#060c28' }}>Upload File</p>
-                <p className="text-[16px]" style={{ fontFamily: font, color: '#323c64' }}>
-                  *Supported file type of .pdf, .jpg etc, max file size up to 50MB
-                </p>
-                <div
-                  onDragOver={e => { e.preventDefault(); setDragging(true); }}
-                  onDragLeave={() => setDragging(false)}
-                  onDrop={e => { e.preventDefault(); setDragging(false); }}
-                  className="flex-1 min-h-[200px] flex flex-col items-center justify-center gap-[12px] rounded-[4px] transition-colors"
-                  style={{
-                    background: dragging ? '#e2ebf9' : '#f8fafd',
-                    border: `1px dashed ${dragging ? '#1360d2' : '#8f94ae'}`,
-                  }}
-                >
-                  <div className="size-[60px] rounded-full bg-[#dfe5e9] flex items-center justify-center">
-                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#6d707e" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" />
-                      <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
-                    </svg>
-                  </div>
-                  <p className="text-[16px]" style={{ fontFamily: font, color: '#6d707e' }}>Drag and drop or</p>
-                  <button
-                    className="h-[48px] px-[20px] rounded-[4px] text-[16px] hover:bg-[#f0f4ff] transition-colors"
-                    style={{ border: '1px solid #1360d2', color: '#1360d2', fontFamily: font }}
-                  >
-                    Choose File
-                  </button>
+            {/* Left card — Doc type selector */}
+            <div className="bg-white rounded-[8px] px-[24px] py-[22px] flex flex-col gap-[20px]"
+              style={{ flex: '0 0 calc(66% - 8px)', minWidth: 280, boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+              <div className="flex flex-col gap-[4px]">
+                <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Upload Documents</p>
+                <p className="text-[16px] text-[#697498]">Choose the document type and upload the supporting file.</p>
+              </div>
+              <div className="flex flex-col gap-[10px]">
+                <p className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Select Document Type</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-[12px] gap-y-[8px]">
+                  {DOC_TYPES.map((doc, i) => {
+                    const active = selectedDoc === i;
+                    return (
+                      <label key={doc.docName} onClick={() => setSelectedDoc(i)}
+                        className="flex items-start gap-[10px] px-[12px] py-[10px] rounded-[6px] cursor-pointer transition-colors"
+                        style={{ background: active ? '#f0f5ff' : '#f8fafd', border: `1.5px solid ${active ? '#1360d2' : '#e6eaf5'}` }}>
+                        <span className="size-[17px] rounded-full flex-shrink-0 inline-flex items-center justify-center mt-[2px]"
+                          style={{ border: `2px solid ${active ? '#1360d2' : '#a7abb2'}`, background: '#fff' }}>
+                          {active && <span className="size-[7px] rounded-full" style={{ background: '#1360d2' }} />}
+                        </span>
+                        <div className="flex items-center flex-wrap gap-[5px]">
+                          <span className="text-[16px] leading-snug" style={{ color: active ? '#0e1b3d' : '#455174', fontWeight: active ? 500 : 400 }}>
+                            {doc.mandatory && <span style={{ color: '#dc3545', marginRight: 2 }}>*</span>}{doc.docName}
+                          </span>
+                          <span className="text-[14px] px-[6px] py-[1px] rounded-[4px]"
+                            style={{ background: active ? 'rgba(19,96,210,0.10)' : '#eef1f8', color: active ? '#1360d2' : '#697498', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                            {doc.docNature}
+                          </span>
+                        </div>
+                      </label>
+                    );
+                  })}
                 </div>
+                {/* Other Documents — enter custom type */}
+                {selectedDoc === DOC_TYPES.length - 1 && (
+                  <div className="flex flex-col gap-[6px] mt-[4px]" style={{ maxWidth: 420 }}>
+                    <label className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>
+                      <span className="text-[#ea2428]">* </span>Document Type
+                    </label>
+                    <input
+                      type="text"
+                      value={otherDocType}
+                      onChange={(e) => setOtherDocType(e.target.value)}
+                      placeholder="Enter document type"
+                      className="h-[44px] w-full border rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none focus:border-[#1360d2] transition-colors"
+                      style={{ borderColor: '#d5ddfb', fontFamily: font }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
-          </Card>
+
+            {/* Right card — File uploader */}
+            <div className="bg-white rounded-[8px] px-[24px] py-[22px] flex flex-col gap-[16px]"
+              style={{ flex: '0 0 calc(34% - 8px)', minWidth: 220, boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+              <div className="flex flex-col gap-[4px]">
+                <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Upload File</p>
+                <p className="text-[16px] text-[#697498]">* Supported file types: .pdf, .jpg, .png, .xlsx — max file size up to 50 MB</p>
+              </div>
+              <div
+                onDragOver={e => { e.preventDefault(); setDragging(true); }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={e => { e.preventDefault(); setDragging(false); }}
+                className="flex flex-col items-center justify-center gap-[12px] rounded-[8px] py-[32px] px-[16px] flex-1 transition-colors"
+                style={{ border: `1.5px dashed ${dragging ? '#1360d2' : '#b5c8e8'}`, background: dragging ? '#edf3ff' : '#f8fafd' }}
+              >
+                <div className="size-[56px] rounded-full inline-flex items-center justify-center" style={{ background: '#e2ebf9' }}>
+                  <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#6d707e" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" />
+                    <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
+                  </svg>
+                </div>
+                <p className="text-[16px] text-[#697498] text-center">Drag and drop or</p>
+                <button type="button"
+                  className="h-[40px] px-[20px] rounded-[4px] text-[16px]"
+                  style={{ border: '1.5px solid #1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500, background: '#fff' }}>
+                  Choose File
+                </button>
+              </div>
+            </div>
+          </div>
 
           {/* Documents uploaded table */}
           <Card className="p-[20px]">
