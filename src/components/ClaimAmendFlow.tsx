@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import NonRemittanceClaimViewPage from './NonRemittanceClaimViewPage';
 import NonRemittanceDocumentsPage, { UploadedDoc as NRUploadedDoc } from './NonRemittanceDocumentsPage';
-import NonRemittanceChargesPage from './NonRemittanceChargesPage';
+import ClaimDocumentsPage from './ClaimDocumentsPage';
 import ClaimantBrokerDetail from './ClaimantBrokerDetail';
 import ClaimStepper from './ClaimStepper';
 import type { Row } from './EligibleDeclarationsPage';
@@ -11,7 +11,6 @@ const font = "'Dubai', sans-serif";
 const AMEND_STEPS: { id: string; label: string }[] = [
   { id: 'declarations', label: 'Declaration Details' },
   { id: 'documents',    label: 'Upload Documents' },
-  { id: 'payment',      label: 'Payment Details' },
   { id: 'review',       label: 'Review & Submit' },
 ];
 
@@ -110,7 +109,7 @@ function PrimaryBtn({ children, onClick }: { children: React.ReactNode; onClick?
   );
 }
 
-function BottomNav({ onBack, onProceed, proceedLabel = 'Next', extraBtn }: {
+function BottomNav({ onBack, onProceed, proceedLabel = 'Proceed', extraBtn }: {
   onBack: () => void;
   onProceed?: () => void;
   proceedLabel?: string;
@@ -192,15 +191,19 @@ function FlySelect({ value, onChange, options, placeholder, required, width = 39
     return () => document.removeEventListener('mousedown', close);
   }, [open]);
 
+  const floated = open || !!value;
   return (
     <>
       <button ref={btnRef} type="button" onClick={toggle} aria-haspopup="listbox" aria-expanded={open}
-        className="bg-white rounded-[4px] flex items-center px-[16px] gap-[8px] text-left transition-colors"
+        className="bg-white rounded-[4px] flex items-center px-[16px] gap-[8px] text-left transition-colors relative"
         style={{ width, maxWidth: '100%', height: 56, border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}`, fontFamily: font, cursor: 'pointer' }}>
-        <span className="flex-1 text-[16px] whitespace-nowrap" style={{ color: value ? '#0e1b3d' : '#697498' }}>
-          {required && <span style={{ color: '#ea2428' }}>*&nbsp;&nbsp;</span>}
-          {value || placeholder}
+        <span className="absolute pointer-events-none transition-all"
+          style={{ left: floated ? 10 : 16, top: floated ? -9 : '50%', transform: floated ? 'none' : 'translateY(-50%)',
+            background: floated ? '#fff' : 'transparent', padding: floated ? '0 4px' : 0,
+            fontSize: floated ? 12 : 16, color: open ? '#1360d2' : '#697498', fontFamily: font, transitionDuration: '120ms', zIndex: 1 }}>
+          {required && <span style={{ color: '#ea2428' }}>* </span>}{placeholder}
         </span>
+        <span className="flex-1 text-[16px] whitespace-nowrap" style={{ color: '#0e1b3d' }}>{value}</span>
         <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"
           className={`transition-transform flex-shrink-0 ${open ? 'rotate-180' : ''}`}>
           <path d="M5 8l5 5 5-5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -231,6 +234,14 @@ function FlySelect({ value, onChange, options, placeholder, required, width = 39
 // ── Step 1: Declaration Details (read-only) ──────────────────────────────────
 
 function Step1({ onBack, onProceed, onViewClaim }: { onBack: () => void; onProceed: () => void; onViewClaim: () => void }) {
+  const [declarations, setDeclarations] = useState(CLAIM_DECLARATIONS);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+
+  const doDelete = () => {
+    if (confirmDelete) setDeclarations(list => list.filter(d => d.declNo !== confirmDelete));
+    setConfirmDelete(null);
+  };
+
   return (
     <StepShell onBack={onBack} stepIndex={0} bottom={<BottomNav onBack={onBack} onProceed={onProceed} />}>
       <div className="flex flex-col gap-[12px]">
@@ -241,9 +252,6 @@ function Step1({ onBack, onProceed, onViewClaim }: { onBack: () => void; onProce
           </OutlineBtn>
         </div>
         <Card className="p-[20px]">
-          <p className="text-[16px] text-[#455174] mb-[16px]" style={{ fontFamily: font }}>
-            Declarations included in this claim. Declarations cannot be added or removed during amendment.
-          </p>
           <div className="overflow-x-auto">
             <table className="dt-table dt-table--lined" style={{ minWidth: 900 }}>
               <thead>
@@ -254,10 +262,11 @@ function Step1({ onBack, onProceed, onViewClaim }: { onBack: () => void; onProce
                   <th className="text-[16px]">Owner Code</th>
                   <th className="text-[16px]">Claim Expiry</th>
                   <th className="text-[16px]">Export Expiry</th>
+                  <th className="text-[16px]">Action</th>
                 </tr>
               </thead>
               <tbody>
-                {CLAIM_DECLARATIONS.map(d => (
+                {declarations.map(d => (
                   <tr key={d.declNo}>
                     <td className="text-[16px]" style={{ color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: font }}>{d.declNo}</td>
                     <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap', fontFamily: font }}>{d.date}</td>
@@ -265,6 +274,14 @@ function Step1({ onBack, onProceed, onViewClaim }: { onBack: () => void; onProce
                     <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap', fontFamily: font }}>{d.ownerCode}</td>
                     <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap', fontFamily: font }}>{d.claimExpiry}</td>
                     <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap', fontFamily: font }}>{d.exportExpiry}</td>
+                    <td>
+                      <button type="button" onClick={() => setConfirmDelete(d.declNo)} aria-label="Delete"
+                        className="size-[32px] inline-flex items-center justify-center rounded hover:bg-[#fef2f2] transition-colors" style={{ color: '#dc3545' }}>
+                        <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                          <path d="M3 5h14M8 5V3h4v2M17 5l-1 13H4L3 5" /><path d="M8 9v5M12 9v5" />
+                        </svg>
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -275,6 +292,38 @@ function Step1({ onBack, onProceed, onViewClaim }: { onBack: () => void; onProce
 
       {/* Claimant and Broker Detail — same as the other claim steps */}
       <ClaimantBrokerDetail />
+
+      {/* Delete confirmation dialog */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/50" onClick={() => setConfirmDelete(null)}>
+          <div onClick={e => e.stopPropagation()} className="bg-white rounded-[10px] flex flex-col items-center gap-[20px] px-[40px] py-[36px] max-w-[460px] mx-[16px]"
+            style={{ boxShadow: '0 8px 40px rgba(0,0,0,0.18)', fontFamily: font }}>
+            <div className="size-[64px] rounded-full flex items-center justify-center" style={{ background: '#fff8e6' }}>
+              <svg viewBox="0 0 96 96" fill="none" width="34" height="34">
+                <circle cx="48" cy="48" r="42" fill="none" stroke="#FFC020" strokeWidth="7" />
+                <rect x="44.5" y="22" width="7" height="32" rx="3.5" fill="#FFC020" />
+                <circle cx="48" cy="68" r="4.5" fill="#FFC020" />
+              </svg>
+            </div>
+            <div className="text-center flex flex-col gap-[8px]">
+              <p className="text-[20px] text-[#0e1b3d]" style={{ fontWeight: 700 }}>Are you sure to delete?</p>
+              <p className="text-[16px] text-[#697498]" style={{ lineHeight: 1.4 }}>Please note, registration fee paid will not be refunded.</p>
+            </div>
+            <div className="flex gap-[12px]">
+              <button onClick={() => setConfirmDelete(null)}
+                className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors"
+                style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>
+                No
+              </button>
+              <button onClick={doDelete}
+                className="h-[48px] px-[36px] rounded-[4px] text-[16px] text-white transition-colors"
+                style={{ background: '#1360d2', fontWeight: 500 }}>
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </StepShell>
   );
 }
@@ -289,7 +338,7 @@ function Step4({ onBack, onSubmit, onViewClaim, reason, setReason, reasonDesc, s
   const [declared, setDeclared] = useState(false);
 
   return (
-    <StepShell onBack={onBack} stepIndex={3} bottom={
+    <StepShell onBack={onBack} stepIndex={2} bottom={
       <BottomNav
         onBack={onBack}
         onProceed={onSubmit}
@@ -363,7 +412,7 @@ function Step4({ onBack, onSubmit, onViewClaim, reason, setReason, reasonDesc, s
 
 // ── Success Page (full page, like the Cargo Transfer amend flow) ──────────────
 
-function SuccessPage({ onBackToListing, onViewClaim }: { onBackToListing: () => void; onViewClaim: () => void }) {
+function SuccessPage({ onBackToListing, onViewClaim, onViewDocs }: { onBackToListing: () => void; onViewClaim: () => void; onViewDocs: () => void }) {
   return (
     <div className="flex flex-col h-full bg-[#f8fafd]">
       <Breadcrumb onBack={onBackToListing} />
@@ -415,13 +464,27 @@ function SuccessPage({ onBackToListing, onViewClaim }: { onBackToListing: () => 
             </div>
           </div>
 
-          <div className="flex items-center gap-[16px]">
+          <div className="flex items-center gap-[16px] flex-wrap justify-center">
             <button
               onClick={onBackToListing}
               className="h-[52px] px-[40px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
               style={{ fontFamily: font, fontWeight: 500 }}
             >
               Back to Listing
+            </button>
+            <button
+              onClick={() => window.print()}
+              className="h-[52px] px-[40px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
+              style={{ fontFamily: font, fontWeight: 500 }}
+            >
+              Print Acknowledgement Receipt
+            </button>
+            <button
+              onClick={onViewDocs}
+              className="h-[52px] px-[40px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
+              style={{ fontFamily: font, fontWeight: 500 }}
+            >
+              View Documents to be Submitted
             </button>
             <button
               onClick={onViewClaim}
@@ -447,6 +510,7 @@ export default function ClaimAmendFlow({ onBack }: Props) {
   const [step, setStep] = useState<Step>(1);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showViewClaim, setShowViewClaim] = useState(false);
+  const [showDocs, setShowDocs] = useState(false);
   const [reason, setReason] = useState('');
   const [reasonDesc, setReasonDesc] = useState('');
 
@@ -462,10 +526,18 @@ export default function ClaimAmendFlow({ onBack }: Props) {
     );
   }
 
+  if (showDocs) {
+    return (
+      <div className="flex flex-col h-full">
+        <ClaimDocumentsPage onBack={() => setShowDocs(false)} />
+      </div>
+    );
+  }
+
   if (showSuccess) {
     return (
       <div className="flex flex-col h-full">
-        <SuccessPage onBackToListing={onBack} onViewClaim={openViewClaim} />
+        <SuccessPage onBackToListing={onBack} onViewClaim={openViewClaim} onViewDocs={() => setShowDocs(true)} />
       </div>
     );
   }
@@ -487,21 +559,7 @@ export default function ClaimAmendFlow({ onBack }: Props) {
         />
       )}
       {step === 3 && (
-        /* Payment step uses the same design as the NR / new claim flow. */
-        <NonRemittanceChargesPage
-          selectedRows={AMEND_ROWS}
-          title={CLAIM_TITLE}
-          steps={AMEND_STEPS}
-          activeIndex={2}
-          hideSaveExit
-          chargesNote="Charges not applicable for NR Claim"
-          onBack={() => setStep(2)}
-          onBackToListing={onBack}
-          onContinue={() => setStep(4)}
-        />
-      )}
-      {step === 4 && (
-        <Step4 onBack={() => setStep(3)} onSubmit={handleSuccess} onViewClaim={openViewClaim}
+        <Step4 onBack={() => setStep(2)} onSubmit={handleSuccess} onViewClaim={openViewClaim}
           reason={reason} setReason={setReason} reasonDesc={reasonDesc} setReasonDesc={setReasonDesc} />
       )}
     </div>

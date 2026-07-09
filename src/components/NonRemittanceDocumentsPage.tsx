@@ -385,7 +385,7 @@ export default function NonRemittanceDocumentsPage({ rows, onBack, onContinue, o
             <button onClick={onContinue}
               className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors"
               style={{ background: '#1360d2', fontFamily: FONT, fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
-              Next
+              Proceed
             </button>
           </div>
         }

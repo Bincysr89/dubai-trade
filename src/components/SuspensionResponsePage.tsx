@@ -35,7 +35,7 @@ function CloudUploadIcon() {
 
 function InfoCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col gap-[12px] py-[12px] px-[12px]" style={{ width: 307, minWidth: 200 }}>
+    <div className="flex flex-col gap-[12px] py-[12px] px-[12px]" style={{ flex: '1 1 260px', minWidth: 220 }}>
       <span className="text-[16px]" style={{ color: '#696f83', fontFamily: font }}>{label}</span>
       <span className="text-[16px] font-semibold" style={{ color: '#051937', fontFamily: font }}>{value}</span>
     </div>
@@ -49,7 +49,20 @@ const DOC_ROWS = [
   { name: 'Invoice.xls',         type: 'Invoice',               size: '50 MB', date: '08-12-2024', canDelete: false },
 ];
 
-const DOC_TYPES = ['*Doc 1', 'Doc 2', 'Doc 3', 'Doc 4'];
+const DOC_TYPES = [
+  { docName: 'Packing List',    docNature: 'Copy', mandatory: true  },
+  { docName: 'BOL',             docNature: 'Copy', mandatory: false },
+  { docName: 'Other Documents', docNature: 'Any',  mandatory: false },
+];
+
+const REQUEST_DETAILS = [
+  { label: 'Request Date',             value: '08/07/2026' },
+  { label: 'Request Status',           value: 'Suspended' },
+  { label: 'Requesting Business Unit', value: 'Refund and claim' },
+  { label: 'Requested By',             value: 'RNSMANAGER1' },
+  { label: 'Doc Delivery Method',      value: 'Uploading' },
+  { label: 'Requested Notes',          value: 'additional information request' },
+];
 
 type Props = {
   onBack: () => void;
@@ -67,6 +80,7 @@ type Props = {
 export default function SuspensionResponsePage({ onBack, onBackToListing, onSubmit, breadcrumbParent = 'Cargo Transfer', title = 'Suspension Response - CT - 601232423898', successHeading, successMessage, requestNumber = '2588017' }: Props) {
   const [response, setResponse] = useState('');
   const [selectedDoc, setSelectedDoc] = useState(0);
+  const [otherDocType, setOtherDocType] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = () => { if (successHeading) setSubmitted(true); else onSubmit(); };
@@ -149,78 +163,112 @@ export default function SuspensionResponsePage({ onBack, onBackToListing, onSubm
         </div>
         <div className="flex flex-col gap-[24px]">
 
-          {/* Request Details */}
+          {/* Additional Information Request Details */}
           <div className="flex flex-col gap-[14px]">
-            <h2 className="text-[24px] font-medium text-[#051937]" style={{ fontFamily: font }}>Request Details</h2>
+            <h2 className="text-[24px] font-medium text-[#051937]" style={{ fontFamily: font }}>Additional Information Request Details</h2>
             <div className="bg-white rounded-[8px] px-[20px] py-[32px]" style={{ boxShadow: '1px 2px 12px rgba(0,0,0,0.06)' }}>
               <div className="flex flex-wrap gap-[20px]">
-                <InfoCard label="To" value="AE123 Companies" />
-                <InfoCard label="Comments" value="Please upload Documents" />
-                <div className="flex flex-col gap-[12px] py-[12px] px-[12px]" style={{ width: 600, minWidth: 200, flex: 1 }}>
-                  <span className="text-[16px]" style={{ color: '#696f83', fontFamily: font }}>Response</span>
-                  <input
-                    type="text"
-                    value={response}
-                    onChange={(e) => setResponse(e.target.value)}
-                    placeholder="Enter Text"
-                    className="h-[56px] w-full border rounded-[4px] px-[16px] text-[16px] text-[#0e1b3d] focus:outline-none transition-colors"
-                    style={{ borderColor: '#d5ddfb', fontFamily: font }}
-                    onFocus={(e) => { e.currentTarget.style.borderColor = '#1360d2'; }}
-                    onBlur={(e) => { e.currentTarget.style.borderColor = '#d5ddfb'; }}
-                  />
-                </div>
+                {REQUEST_DETAILS.map(f => <InfoCard key={f.label} label={f.label} value={f.value} />)}
               </div>
             </div>
           </div>
 
-          {/* Upload Documents */}
-          <div className="bg-white rounded-[8px] px-[14px] py-[24px]" style={{ boxShadow: '1px 2px 12px rgba(0,0,0,0.06)' }}>
-            <div className="flex gap-[40px]">
-              {/* Left: doc type selector */}
-              <div className="flex flex-col gap-[16px]" style={{ flex: 1, minWidth: 0 }}>
-                <div>
-                  <h3 className="text-[24px] font-medium text-[#060c28]" style={{ fontFamily: font }}>Upload Documents</h3>
-                  <p className="text-[18px] text-[#323c64] mt-[8px]" style={{ fontFamily: font }}>Select the document type and upload the file</p>
-                </div>
-                <div className="flex flex-wrap gap-[30px] mt-[16px]">
-                  {DOC_TYPES.map((doc, i) => (
-                    <label key={i} className="flex items-center gap-[8px] cursor-pointer">
-                      <div
-                        className="size-[16px] rounded-full border-2 flex items-center justify-center transition-colors"
-                        style={{ borderColor: selectedDoc === i ? '#1360d2' : '#aaa', background: selectedDoc === i ? '#1360d2' : 'transparent' }}
-                        onClick={() => setSelectedDoc(i)}
-                      >
-                        {selectedDoc === i && <div className="size-[6px] rounded-full bg-white" />}
-                      </div>
-                      <span className="text-[18px] text-[#060c28]" style={{ fontFamily: font }}>
-                        {i === 0 && <span className="text-[#ea2428]">*</span>}{doc.replace('*', '')}
-                      </span>
-                    </label>
-                  ))}
-                </div>
+          {/* Response */}
+          <div className="flex flex-col gap-[14px]">
+            <h2 className="text-[24px] font-medium text-[#051937]" style={{ fontFamily: font }}>Response</h2>
+            <div className="bg-white rounded-[8px] px-[20px] py-[24px]" style={{ boxShadow: '1px 2px 12px rgba(0,0,0,0.06)' }}>
+              <label className="text-[16px] mb-[8px] block" style={{ color: '#696f83', fontFamily: font }}>
+                <span className="text-[#ea2428]">* </span>Response Description
+              </label>
+              <textarea
+                value={response}
+                onChange={(e) => setResponse(e.target.value)}
+                rows={3}
+                placeholder="Enter Response Description"
+                className="w-full border rounded-[4px] px-[16px] py-[12px] text-[16px] text-[#0e1b3d] resize-none focus:outline-none transition-colors"
+                style={{ borderColor: '#d5ddfb', fontFamily: font, maxWidth: 720 }}
+                onFocus={(e) => { e.currentTarget.style.borderColor = '#1360d2'; }}
+                onBlur={(e) => { e.currentTarget.style.borderColor = '#d5ddfb'; }}
+              />
+            </div>
+          </div>
+
+          {/* Upload Documents — same design as the new claim upload flow */}
+          <div className="flex gap-[16px] flex-wrap lg:flex-nowrap items-stretch">
+
+            {/* Left card — Doc type + Remarks */}
+            <div className="bg-white rounded-[8px] px-[24px] py-[22px] flex flex-col gap-[20px]"
+              style={{ flex: '0 0 calc(66% - 8px)', minWidth: 280, boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+
+              <div className="flex flex-col gap-[4px]">
+                <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Upload Documents</p>
+                <p className="text-[16px] text-[#697498]">Choose the document type and upload the supporting file.</p>
               </div>
 
-              {/* Right: upload area */}
-              <div className="bg-white rounded-[8px] flex flex-col" style={{ width: 516, flexShrink: 0 }}>
-                <h4 className="text-[20px] font-medium text-[#060c28] mb-[4px]" style={{ fontFamily: font }}>Upload File</h4>
-                <p className="text-[16px] text-[#323c64] mb-[12px]" style={{ fontFamily: font }}>
-                  *Supported file type of .pdf, .jpg etc, max file size up to 50MB
-                </p>
-                <div
-                  className="flex flex-col items-center justify-center gap-[12px] rounded-[4px]"
-                  style={{ border: '1px dashed #8f94ae', background: '#f8fafd', height: 200, padding: '20px' }}
-                >
-                  <div className="size-[60px] rounded-full flex items-center justify-center" style={{ background: '#dfe5e9' }}>
-                    <CloudUploadIcon />
-                  </div>
-                  <p className="text-[16px] text-[#6d707e] font-medium" style={{ fontFamily: font }}>Drag and drop or</p>
-                  <button
-                    className="h-[48px] px-[20px] rounded-[4px] text-[16px] text-[#1360d2] border border-[#1360d2] hover:bg-[#f0f4ff] transition-colors"
-                    style={{ fontFamily: font }}
-                  >
-                    Choose File
-                  </button>
+              {/* Document types — bordered radio cards */}
+              <div className="flex flex-col gap-[10px]">
+                <p className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Select Document Type</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-[12px] gap-y-[8px]">
+                  {DOC_TYPES.map((doc, i) => {
+                    const active = selectedDoc === i;
+                    return (
+                      <label key={doc.docName} onClick={() => setSelectedDoc(i)}
+                        className="flex items-start gap-[10px] px-[12px] py-[10px] rounded-[6px] cursor-pointer transition-colors"
+                        style={{ background: active ? '#f0f5ff' : '#f8fafd', border: `1.5px solid ${active ? '#1360d2' : '#e6eaf5'}` }}>
+                        <span className="size-[17px] rounded-full flex-shrink-0 inline-flex items-center justify-center mt-[2px]"
+                          style={{ border: `2px solid ${active ? '#1360d2' : '#a7abb2'}`, background: '#fff' }}>
+                          {active && <span className="size-[7px] rounded-full" style={{ background: '#1360d2' }} />}
+                        </span>
+                        <div className="flex items-center flex-wrap gap-[5px]">
+                          <span className="text-[16px] leading-snug" style={{ color: active ? '#0e1b3d' : '#455174', fontWeight: active ? 500 : 400 }}>
+                            {doc.mandatory && <span style={{ color: '#dc3545', marginRight: 2 }}>*</span>}{doc.docName}
+                          </span>
+                          <span className="text-[14px] px-[6px] py-[1px] rounded-[4px]"
+                            style={{ background: active ? 'rgba(19,96,210,0.10)' : '#eef1f8', color: active ? '#1360d2' : '#697498', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                            {doc.docNature}
+                          </span>
+                        </div>
+                      </label>
+                    );
+                  })}
                 </div>
+                {/* Other Documents — enter custom type */}
+                {selectedDoc === DOC_TYPES.length - 1 && (
+                  <div className="flex flex-col gap-[6px] mt-[4px]" style={{ maxWidth: 420 }}>
+                    <label className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>
+                      <span className="text-[#ea2428]">* </span>Document Type
+                    </label>
+                    <input
+                      type="text"
+                      value={otherDocType}
+                      onChange={(e) => setOtherDocType(e.target.value)}
+                      placeholder="Enter document type"
+                      className="h-[44px] w-full border rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none focus:border-[#1360d2] transition-colors"
+                      style={{ borderColor: '#d5ddfb', fontFamily: font }}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Right card — File uploader */}
+            <div className="bg-white rounded-[8px] px-[24px] py-[22px] flex flex-col gap-[16px]"
+              style={{ flex: '0 0 calc(34% - 8px)', minWidth: 220, boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+              <div className="flex flex-col gap-[4px]">
+                <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Upload File</p>
+                <p className="text-[16px] text-[#697498]">* Supported file types: .pdf, .jpg, .png, .xlsx — max file size up to 50 MB</p>
+              </div>
+              <div className="flex flex-col items-center justify-center gap-[12px] rounded-[8px] py-[32px] px-[16px] flex-1"
+                style={{ border: '1.5px dashed #b5c8e8', background: '#f8fafd' }}>
+                <div className="size-[56px] rounded-full inline-flex items-center justify-center" style={{ background: '#e2ebf9' }}>
+                  <CloudUploadIcon />
+                </div>
+                <p className="text-[16px] text-[#697498] text-center">Drag and drop or</p>
+                <button type="button"
+                  className="h-[40px] px-[20px] rounded-[4px] text-[16px]"
+                  style={{ border: '1.5px solid #1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500, background: '#fff' }}>
+                  Choose File
+                </button>
               </div>
             </div>
           </div>
@@ -278,21 +326,6 @@ export default function SuspensionResponsePage({ onBack, onBackToListing, onSubm
                   ))}
                 </tbody>
               </table>
-            </div>
-          </div>
-
-          {/* CDM Contact Details */}
-          <div className="flex flex-col gap-[14px]">
-            <h2 className="text-[24px] font-medium text-[#051937]" style={{ fontFamily: font }}>CDM Contact Details</h2>
-            <div className="bg-white rounded-[8px] px-[20px] py-[32px]" style={{ boxShadow: '1px 2px 12px rgba(0,0,0,0.06)' }}>
-              <div className="flex flex-wrap gap-[20px]">
-                <InfoCard label="Contact Section Name" value="Customs Declaration Management" />
-                <InfoCard label="Phone Number" value="04-34567890" />
-                <InfoCard label="Fax Number" value="04-5876888" />
-                <InfoCard label="Contact Time" value="08:00 - 14:00" />
-                <InfoCard label="Contact Location" value="Dubai Customs HQ, Port Rashid, Dubai" />
-                <InfoCard label="Contact Department" value="Customs Declaration Management" />
-              </div>
             </div>
           </div>
 

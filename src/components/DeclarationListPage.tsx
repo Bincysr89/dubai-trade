@@ -27,7 +27,7 @@ import RaiseClaimRequestPage from './RaiseClaimRequestPage';
 import type { ClaimType } from './ClaimTypeSelectionPage';
 import { RefundTypePage, OutboundDeclarationPage, MissingDocDepositPage, DocumentUploadPage, PaymentDetailsPage, REFUND_TYPE_LABEL, type RefundType, type ChargeDetail } from './ClaimSubPages';
 import { RDChargeFlowPage, isMissingDocCharge } from './RDChargeFlowPage';
-import { REFUND_DEPOSIT_STEPS, REFUND_DEPOSIT_STEPS_NO_DOCS } from './ClaimStepper';
+import { REFUND_DEPOSIT_STEPS, REFUND_DEPOSIT_STEPS_NO_DOCS, REFUND_DEPOSIT_AMEND_STEPS } from './ClaimStepper';
 import CargoTransferPrePage from './CargoTransferPrePage';
 import CargoTransferRequestPage from './CargoTransferRequestPage';
 import CargoTransferNewRequestPage from './CargoTransferNewRequestPage';
@@ -440,6 +440,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               breadcrumbLast={rdBreadcrumbLast}
               prefill={rdAmendMode}
               hideSaveExit={rdAmendMode}
+              steps={rdAmendMode ? REFUND_DEPOSIT_AMEND_STEPS : undefined}
               onBack={() => rdAmendMode ? exitRdAmend() : setClaimStep('eligible')}
               onBackToListing={() => rdAmendMode ? exitRdAmend() : setClaimStep('list')}
               onContinue={({ details }) => {
@@ -455,12 +456,12 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               rows={claimSelectedRows}
               title={rdFlowTitle}
               badge="Refund of Deposits"
-              steps={REFUND_DEPOSIT_STEPS}
+              steps={rdAmendMode ? REFUND_DEPOSIT_AMEND_STEPS : REFUND_DEPOSIT_STEPS}
               activeIndex={2}
               initialDocs={rdAmendMode ? RD_AMEND_DOCS : undefined}
               hideSaveExit={rdAmendMode}
               onBack={() => setClaimStep('chargeDetails')}
-              onContinue={() => setClaimStep('rdPayment')}
+              onContinue={() => setClaimStep(rdAmendMode ? 'rdReview' : 'rdPayment')}
               onBackToListing={() => rdAmendMode ? exitRdAmend() : setClaimStep('list')}
             />
           )}
@@ -488,11 +489,11 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
               paymentMode={nonRemittancePaymentMode}
               accountNo={nonRemittanceAccountNo}
               title={rdFlowTitle}
-              steps={rdSkipDocs ? REFUND_DEPOSIT_STEPS_NO_DOCS : REFUND_DEPOSIT_STEPS}
-              activeIndex={rdSkipDocs ? 3 : 4}
+              steps={rdAmendMode ? REFUND_DEPOSIT_AMEND_STEPS : (rdSkipDocs ? REFUND_DEPOSIT_STEPS_NO_DOCS : REFUND_DEPOSIT_STEPS)}
+              activeIndex={rdAmendMode ? 3 : (rdSkipDocs ? 3 : 4)}
               claimType="Refund of Deposits"
               showAmendment={rdAmendMode}
-              onBack={() => setClaimStep('rdPayment')}
+              onBack={() => setClaimStep(rdAmendMode ? 'rdDocuments' : 'rdPayment')}
               onSubmit={() => nonRemittancePaymentMode === 'E-Payment' ? setClaimStep('rdPaymentPending') : setClaimStep('rdNrSuccess')}
               onViewClaim={() => { setClaimViewReturnStep('rdReview'); setClaimStep('nonRemittanceClaimView'); }}
             />
@@ -507,6 +508,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                 : 'Your Refund of Deposits Claim has been submitted successfully and is currently under processing. Please click on View Claim button for the details.'}
               onBack={exitRdAmend}
               onViewAck={() => { setAckReturnStep('list'); setClaimStep('nonRemittanceAck'); }}
+              onViewDocs={() => setClaimStep('claimDocs')}
               onViewClaim={() => { setClaimViewReturnStep('list'); setClaimStep('nonRemittanceClaimView'); }}
             />
           )}
@@ -635,6 +637,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             <NonRemittanceSuccessPage
               onBack={() => { setClaimStep('list'); resetNRClaim(); }}
               onViewAck={() => { setAckReturnStep('nonRemittanceSuccess'); setClaimStep('nonRemittanceAck'); }}
+              onViewDocs={() => setClaimStep('claimDocs')}
               onViewClaim={() => { setClaimViewReturnStep('nonRemittanceSuccess'); setClaimStep('nonRemittanceClaimView'); }}
             />
           )}

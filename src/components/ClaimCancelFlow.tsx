@@ -221,13 +221,16 @@ function Step1({ onBack, onProceed, onViewClaim, reason, setReason, reasonDesc, 
                   ref={reasonBtnRef}
                   type="button"
                   onClick={toggleReason}
-                  className="w-full bg-white rounded-[4px] h-[56px] flex items-center px-[16px] gap-[8px] cursor-pointer text-left"
+                  className="w-full bg-white rounded-[4px] h-[56px] flex items-center px-[16px] gap-[8px] cursor-pointer text-left relative"
                   style={{ border: `1px solid ${reasonOpen ? '#1360d2' : '#d5ddfb'}` }}
                 >
-                  <span className="flex-1 text-[16px] whitespace-nowrap" style={{ fontFamily: font, color: reason ? '#0e1b3d' : '#697498' }}>
-                    <span style={{ color: '#ea2428' }}>*&nbsp;&nbsp;</span>
-                    {reason || 'Cancellation Reason'}
+                  <span className="absolute pointer-events-none transition-all"
+                    style={{ left: (reasonOpen || reason) ? 10 : 16, top: (reasonOpen || reason) ? -9 : '50%', transform: (reasonOpen || reason) ? 'none' : 'translateY(-50%)',
+                      background: (reasonOpen || reason) ? '#fff' : 'transparent', padding: (reasonOpen || reason) ? '0 4px' : 0,
+                      fontSize: (reasonOpen || reason) ? 12 : 16, color: reasonOpen ? '#1360d2' : '#697498', fontFamily: font, transitionDuration: '120ms', zIndex: 1 }}>
+                    <span style={{ color: '#ea2428' }}>* </span>Cancellation Reason
                   </span>
+                  <span className="flex-1 text-[16px] whitespace-nowrap" style={{ fontFamily: font, color: '#0e1b3d' }}>{reason}</span>
                   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" className={`transition-transform ${reasonOpen ? 'rotate-180' : ''}`}>
                     <path d="M6 9l6 6 6-6" stroke="#697498" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
@@ -508,6 +511,7 @@ function Step4({ onBack, onSubmit, onViewClaim, reason, reasonDesc }: {
   reason: string; reasonDesc: string;
 }) {
   const [declared, setDeclared] = useState(false);
+  const [confirmCancel, setConfirmCancel] = useState(false);
 
   return (
     <div className="flex flex-col h-full bg-[#f8fafd]">
@@ -572,10 +576,42 @@ function Step4({ onBack, onSubmit, onViewClaim, reason, reasonDesc }: {
 
       <BottomNav
         onBack={onBack}
-        onProceed={onSubmit}
+        onProceed={() => setConfirmCancel(true)}
         proceedLabel="Submit"
-        extraBtn={<OutlineBtn onClick={() => window.print()}>Print Claim</OutlineBtn>}
+        extraBtn={<OutlineBtn onClick={onViewClaim}>View Claim</OutlineBtn>}
       />
+
+      {/* Cancel confirmation dialog */}
+      {confirmCancel && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/50" onClick={() => setConfirmCancel(false)}>
+          <div onClick={e => e.stopPropagation()} className="bg-white rounded-[10px] flex flex-col items-center gap-[20px] px-[40px] py-[36px] max-w-[480px] mx-[16px]"
+            style={{ boxShadow: '0 8px 40px rgba(0,0,0,0.18)', fontFamily: font }}>
+            <div className="size-[64px] rounded-full flex items-center justify-center" style={{ background: '#fff8e6' }}>
+              <svg viewBox="0 0 96 96" fill="none" width="34" height="34">
+                <circle cx="48" cy="48" r="42" fill="none" stroke="#FFC020" strokeWidth="7" />
+                <rect x="44.5" y="22" width="7" height="32" rx="3.5" fill="#FFC020" />
+                <circle cx="48" cy="68" r="4.5" fill="#FFC020" />
+              </svg>
+            </div>
+            <div className="text-center flex flex-col gap-[8px]">
+              <p className="text-[20px] text-[#0e1b3d]" style={{ fontWeight: 700 }}>Are you sure to Cancel Claim?</p>
+              <p className="text-[16px] text-[#697498]" style={{ lineHeight: 1.4 }}>Please note, the registration charges paid for this claim will not be refunded.</p>
+            </div>
+            <div className="flex gap-[12px]">
+              <button onClick={() => setConfirmCancel(false)}
+                className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors"
+                style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>
+                No
+              </button>
+              <button onClick={() => { setConfirmCancel(false); onSubmit(); }}
+                className="h-[48px] px-[36px] rounded-[4px] text-[16px] text-white transition-colors"
+                style={{ background: '#1360d2', fontWeight: 500 }}>
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -662,10 +698,9 @@ export default function ClaimCancelFlow({ onBack }: Props) {
           <Step1 onBack={onBack} onProceed={() => setStep(2)} onViewClaim={openViewClaim}
             reason={reason} setReason={setReason} reasonDesc={reasonDesc} setReasonDesc={setReasonDesc} />
         )}
-        {step === 2 && <Step2 onBack={() => setStep(1)} onProceed={() => setStep(3)} />}
-        {step === 3 && <Step3 onBack={() => setStep(2)} onProceed={() => setStep(4)} onViewClaim={openViewClaim} />}
+        {step === 2 && <Step2 onBack={() => setStep(1)} onProceed={() => setStep(4)} />}
         {step === 4 && (
-          <Step4 onBack={() => setStep(3)} onSubmit={handleSuccess} onViewClaim={openViewClaim}
+          <Step4 onBack={() => setStep(2)} onSubmit={handleSuccess} onViewClaim={openViewClaim}
             reason={reason} reasonDesc={reasonDesc} />
         )}
       </div>

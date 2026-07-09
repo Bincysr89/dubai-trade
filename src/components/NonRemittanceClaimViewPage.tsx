@@ -1,9 +1,24 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import type { Row } from './EligibleDeclarationsPage';
 import type { UploadedDoc } from './NonRemittanceDocumentsPage';
 import Dh from './Dh';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
+
+/* Sample declarations + uploaded documents shown when the claim is opened
+   from the listing (no rows/docs passed in). */
+const DEFAULT_DECLS: Row[] = [
+  { declarationNo: '305-08812345-24', declarationDate: '11/12/2024', depositType: 'Non Remittance Claim', declarationCategory: 'Freezone Export', depositAmount: 'N/A', depositMethod: 'N/A', claimExpiry: '', exportExpiry: '', remarks: '—', kind: 'request', importerCode: 'A180' },
+  { declarationNo: '305-08812346-24', declarationDate: '11/14/2024', depositType: 'Non Remittance Claim', declarationCategory: 'Freezone Export', depositAmount: 'N/A', depositMethod: 'N/A', claimExpiry: '', exportExpiry: '', remarks: '—', kind: 'request', importerCode: 'A180' },
+  { declarationNo: '305-08812347-24', declarationDate: '11/20/2024', depositType: 'Non Remittance Claim', declarationCategory: 'Freezone Export', depositAmount: 'N/A', depositMethod: 'N/A', claimExpiry: '', exportExpiry: '', remarks: '—', kind: 'request', importerCode: 'A180' },
+];
+
+const DEFAULT_DOCS: UploadedDoc[] = [
+  { id: 'vd-1', declNo: '305-08812345-24', docType: 'Export Bill',              fileName: 'Export-Bill-305-45.pdf',  fileSize: 2_400_000, uploadedOn: '12/12/2024', remarks: '' },
+  { id: 'vd-2', declNo: '305-08812345-24', docType: 'Exit / Entry Certificate', fileName: 'Exit-Cert-305-45.pdf',    fileSize: 1_100_000, uploadedOn: '12/12/2024', remarks: '' },
+  { id: 'vd-3', declNo: '305-08812346-24', docType: 'Bill of Entry',            fileName: 'Bill-Entry-305-46.pdf',   fileSize: 900_000,   uploadedOn: '12/12/2024', remarks: '' },
+  { id: 'vd-4', declNo: '305-08812347-24', docType: 'Export Manifest',          fileName: 'Manifest-305-47.pdf',     fileSize: 3_200_000, uploadedOn: '08/12/2024', remarks: '' },
+];
 
 function FieldItem({ label, value }: { label: string; value: string }) {
   return (
@@ -36,9 +51,11 @@ const versionRows = [
 type Props = { onBack: () => void; selectedRows: Row[]; uploadedDocs?: UploadedDoc[] };
 
 export default function NonRemittanceClaimViewPage({ onBack, selectedRows, uploadedDocs = [] }: Props) {
-  const displayRows = selectedRows.length > 0 ? selectedRows : [
-    { declarationNo: '3030004738426', declarationDate: '01/01/2026', depositType: 'Non Remittance Claim', declarationCategory: null, depositAmount: 'N/A', depositMethod: 'N/A', claimExpiry: '', exportExpiry: '', remarks: 'Sample remark', kind: 'request' as const },
-  ];
+  const displayRows = selectedRows.length > 0 ? selectedRows : DEFAULT_DECLS;
+  const allDocs = uploadedDocs.length > 0 ? uploadedDocs : DEFAULT_DOCS;
+  // Filter the uploaded-documents table by a declaration (View Attachments action).
+  const [docFilter, setDocFilter] = useState<string | null>(null);
+  const filteredDocs = docFilter ? allDocs.filter(d => d.declNo === docFilter) : allDocs;
 
   return (
     <div className="flex flex-col h-full bg-[#f8fafd]">
@@ -94,7 +111,7 @@ export default function NonRemittanceClaimViewPage({ onBack, selectedRows, uploa
                 <tbody>
                   {[
                     { type: 'Claim Registration Charge', amt: '50.00', receipt: 'A-100650705' },
-                    { type: 'Knowledge-Innovation Dirham', amt: '20.00', receipt: 'A-100650706' },
+                    { type: 'Knowledge & Innovation Dirham', amt: '20.00', receipt: 'A-100650706' },
                   ].map((row) => (
                     <tr key={row.type} style={{ borderBottom: '1px solid #f0f3fa' }}>
                       <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.type}</span></td>
@@ -120,7 +137,7 @@ export default function NonRemittanceClaimViewPage({ onBack, selectedRows, uploa
               <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontFamily: font }}>
                 <thead>
                   <tr>
-                    {['S.No', 'Declaration No.', 'Declaration Date', 'Declaration Category', 'Claim Type', 'Remarks', 'Attached Document'].map((h) => (
+                    {['S.No', 'Declaration No.', 'Declaration Date', 'Declaration Category', 'Claim Type', 'Remarks', 'Action'].map((h) => (
                       <th key={h} style={{ background: '#a6c2e9', padding: '10px 14px', textAlign: 'left', borderBottom: '1px solid #e8edf5', whiteSpace: 'nowrap' }}>
                         <span className="text-[16px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>{h}</span>
                       </th>
@@ -136,7 +153,13 @@ export default function NonRemittanceClaimViewPage({ onBack, selectedRows, uploa
                       <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.declarationCategory ?? 'Freezone Export'}</span></td>
                       <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>Non Remittance Claim</span></td>
                       <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#697498', fontFamily: font }}>{row.remarks || '—'}</span></td>
-                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#697498', fontFamily: font }}>—</span></td>
+                      <td style={{ padding: '10px 14px' }}>
+                        <button type="button"
+                          onClick={() => { setDocFilter(row.declarationNo); document.getElementById('uploaded-docs-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
+                          className="text-[16px] hover:underline" style={{ color: '#1360d2', fontWeight: 500, fontFamily: font, background: 'none', border: 'none', padding: 0, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                          View Attachments
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -145,9 +168,20 @@ export default function NonRemittanceClaimViewPage({ onBack, selectedRows, uploa
           </Section>
 
           {/* Uploaded Documents */}
+          <div id="uploaded-docs-section">
           <Section title="Uploaded Documents">
+            {docFilter && (
+              <div className="px-[16px] pt-[12px] flex items-center gap-[10px] flex-wrap">
+                <span className="inline-flex items-center gap-[8px] text-[14px] px-[12px] py-[5px] rounded-[16px]" style={{ background: '#e2ebf9', color: '#1360d2', fontWeight: 500, fontFamily: font }}>
+                  Filtered by: {docFilter}
+                  <button type="button" onClick={() => setDocFilter(null)} aria-label="Clear filter" style={{ background: 'none', border: 'none', color: '#1360d2', cursor: 'pointer', padding: 0, display: 'inline-flex' }}>
+                    <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 4l8 8M12 4l-8 8" /></svg>
+                  </button>
+                </span>
+              </div>
+            )}
             <div className="px-[16px] py-[12px] overflow-x-auto">
-              {uploadedDocs.length === 0 ? (
+              {filteredDocs.length === 0 ? (
                 <p className="text-[16px] py-[8px]" style={{ color: '#697498', fontFamily: font }}>No documents uploaded.</p>
               ) : (
                 <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontFamily: font, minWidth: 700 }}>
@@ -161,7 +195,7 @@ export default function NonRemittanceClaimViewPage({ onBack, selectedRows, uploa
                     </tr>
                   </thead>
                   <tbody>
-                    {uploadedDocs.map((doc, i) => (
+                    {filteredDocs.map((doc, i) => (
                       <tr key={doc.id} style={{ borderBottom: '1px solid #f0f3fa' }}>
                         <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{i + 1}</span></td>
                         <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#1360d2', fontFamily: font, fontWeight: 500 }}>{doc.declNo}</span></td>
@@ -193,6 +227,7 @@ export default function NonRemittanceClaimViewPage({ onBack, selectedRows, uploa
               )}
             </div>
           </Section>
+          </div>
 
           {/* Claim Request Versions */}
           <Section title="Claim Request Versions">

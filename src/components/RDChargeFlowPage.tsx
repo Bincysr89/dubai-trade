@@ -912,7 +912,7 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
 }
 
 /* ─── Main page ─────────────────────────────────────────────────── */
-export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, title = 'Raise New Claim — Refund of Deposits', breadcrumbLast = 'Raise New Claim', prefill = false, hideSaveExit = false }: {
+export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, title = 'Raise New Claim — Refund of Deposits', breadcrumbLast = 'Raise New Claim', prefill = false, hideSaveExit = false, steps }: {
   rows: Row[]; onBack: () => void; onBackToListing?: () => void;
   onContinue: (r: RDFlowResult) => void;
   /** Overrides for reuse in the amend flow. */
@@ -921,6 +921,8 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
   prefill?: boolean;
   /** Amend flow: hide the Save & Exit button. */
   hideSaveExit?: boolean;
+  /** Override the stepper steps (e.g. amend flow without payment). */
+  steps?: { id: string; label: string }[];
 }) {
   const [details, setDetails] = useState<ChargeDetail[]>(() =>
     rows.map(r => {
@@ -1016,7 +1018,7 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
 
       {/* Stepper */}
       <div className="px-4 sm:px-10 pb-[20px] flex-shrink-0">
-        <ClaimStepper activeIndex={1} steps={allMissingDoc ? REFUND_DEPOSIT_STEPS_NO_DOCS : REFUND_DEPOSIT_STEPS} />
+        <ClaimStepper activeIndex={1} steps={steps ?? (allMissingDoc ? REFUND_DEPOSIT_STEPS_NO_DOCS : REFUND_DEPOSIT_STEPS)} />
       </div>
 
       {/* Scrollable body */}
@@ -1078,7 +1080,7 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
               style={{ background: '#1360d2', border: 'none', fontFamily: font, fontWeight: 500,
                 cursor: 'pointer',
                 boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
-              Next
+              Proceed
             </button>
           </div>
         }

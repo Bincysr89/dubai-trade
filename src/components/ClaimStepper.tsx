@@ -12,6 +12,10 @@ export const REFUND_DEPOSIT_STEPS: { id: string; label: string }[] = [
 export const REFUND_DEPOSIT_STEPS_NO_DOCS: { id: string; label: string }[] =
   REFUND_DEPOSIT_STEPS.filter(s => s.id !== 'documents');
 
+/* Amend flow has no payment step. */
+export const REFUND_DEPOSIT_AMEND_STEPS: { id: string; label: string }[] =
+  REFUND_DEPOSIT_STEPS.filter(s => s.id !== 'payment');
+
 export const CLAIM_STEPS: { id: string; label: string }[] = [
   { id: 'claim',     label: 'Claim Details' },
   { id: 'invoice',   label: 'Invoice & HS Code Details' },

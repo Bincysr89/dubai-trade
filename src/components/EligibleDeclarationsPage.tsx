@@ -1297,7 +1297,7 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
                   boxShadow: '0px 0px 8px rgba(28,72,191,0.16)',
                 }}
               >
-                Next
+                Proceed
               </button>
             </div>
           );

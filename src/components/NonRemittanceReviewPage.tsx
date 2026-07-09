@@ -25,11 +25,15 @@ function AmendReasonSelect({ value, onChange }: { value: string; onChange: (v: s
   return (
     <>
       <button ref={btnRef} type="button" onClick={toggle} aria-haspopup="listbox" aria-expanded={open}
-        className="bg-white rounded-[4px] flex items-center px-[16px] gap-[8px] text-left transition-colors"
+        className="bg-white rounded-[4px] flex items-center px-[16px] gap-[8px] text-left transition-colors relative"
         style={{ width: 390, maxWidth: '100%', height: 56, border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}`, fontFamily: font, cursor: 'pointer' }}>
-        <span className="flex-1 text-[16px] whitespace-nowrap" style={{ color: value ? '#0e1b3d' : '#697498' }}>
-          <span style={{ color: '#ea2428' }}>*&nbsp;&nbsp;</span>{value || 'Amendment Reason'}
+        <span className="absolute pointer-events-none transition-all"
+          style={{ left: (open || value) ? 10 : 16, top: (open || value) ? -9 : '50%', transform: (open || value) ? 'none' : 'translateY(-50%)',
+            background: (open || value) ? '#fff' : 'transparent', padding: (open || value) ? '0 4px' : 0,
+            fontSize: (open || value) ? 12 : 16, color: open ? '#1360d2' : '#697498', fontFamily: font, transitionDuration: '120ms', zIndex: 1 }}>
+          <span style={{ color: '#ea2428' }}>* </span>Amendment Reason
         </span>
+        <span className="flex-1 text-[16px] whitespace-nowrap" style={{ color: '#0e1b3d' }}>{value}</span>
         <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"
           className={`transition-transform flex-shrink-0 ${open ? 'rotate-180' : ''}`}>
           <path d="M5 8l5 5 5-5" strokeLinecap="round" strokeLinejoin="round"/>
