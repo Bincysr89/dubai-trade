@@ -273,6 +273,28 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
   const [panelCollapsed, setPanelCollapsed] = useState(false);
   const [activeMenu, setActiveMenu] = useState<'Declaration' | 'Acknowledgement' | 'VCC' | 'Refund & Claims' | 'Cargo Transfer' | 'E-Payment'>('Declaration');
 
+  // Journey stepper horizontal scroll (responsive — arrows appear when steps overflow the card)
+  const stepperScrollRef = useRef<HTMLDivElement>(null);
+  const [stepperArrows, setStepperArrows] = useState({ left: false, right: false });
+  const updateStepperArrows = () => {
+    const el = stepperScrollRef.current;
+    if (!el) return;
+    const overflow = el.scrollWidth > el.clientWidth + 2;
+    setStepperArrows({
+      left: overflow && el.scrollLeft > 2,
+      right: overflow && el.scrollLeft < el.scrollWidth - el.clientWidth - 2,
+    });
+  };
+  const scrollStepper = (dir: number) => {
+    stepperScrollRef.current?.scrollBy({ left: dir * 240, behavior: 'smooth' });
+  };
+  useEffect(() => {
+    updateStepperArrows();
+    const t = setTimeout(updateStepperArrows, 120);
+    window.addEventListener('resize', updateStepperArrows);
+    return () => { clearTimeout(t); window.removeEventListener('resize', updateStepperArrows); };
+  }, []);
+
   // Status options per menu — defined here so it can reference `activeMenu`.
   const TOOLBAR_STATUS_OPTIONS: Record<typeof activeMenu, string[]> = {
     'Declaration':       ['Completed', 'Submitted', 'Payment Pending', 'VAT Payment Pending', 'Declined', 'Cancelled', 'Clearance Inspection'],
@@ -1026,116 +1048,10 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
         </svg>
       </button>
 
-      {/* Breadcrumb + Journey stepper — full width, fixed */}
-      <div className="flex-shrink-0">
-        {/* Breadcrumb + Agent banner */}
-        <div className="flex items-center justify-between px-4 md:px-10 pt-[14px] pb-[10px] flex-wrap gap-y-[6px]">
-          <div className="flex items-center gap-[6px]">
-            <span
-              className="text-[#8f94ae] text-[16px] cursor-pointer hover:text-[#1360d2] transition-colors"
-              style={{ fontFamily: "'Dubai', sans-serif" }}
-              onClick={onClose}
-            >Home</span>
-            <span className="text-[#dc3545] text-[15px] leading-none">/</span>
-            <span className="text-[#8f94ae] text-[16px]" style={{ fontFamily: "'Dubai', sans-serif" }}>Service Catalog</span>
-            <span className="text-[#dc3545] text-[15px] leading-none">/</span>
-            <span className="text-[#111838] text-[16px] font-medium" style={{ fontFamily: "'Dubai', sans-serif" }}>Integrated Clearance</span>
-          </div>
-          {/* Agent banner */}
-          <div
-            className="px-[16px] py-[4px] rounded-[4px] text-[16px] text-[#0e1b3d]"
-            style={{ background: '#e2ebf9', fontFamily: "'Dubai', sans-serif" }}
-          >
-            AE-1019056 — Dubai Customs - Test LLC
-          </div>
-        </div>
+      {/* Body: side panel (starts at the breadcrumb line, full screen height) + right content column */}
+      <div className="flex flex-1 px-4 md:px-10 pt-[14px] pb-[20px] gap-[12px] items-stretch">
 
-        {/* Journey stepper bar */}
-        <div className="px-4 md:px-10 pt-[20px] pb-[40px] overflow-x-auto flex justify-center">
-          <div
-            className="bg-white rounded-[8px] px-[20px] py-[10px] inline-flex items-center flex-shrink-0"
-            style={{ boxShadow: '0px 5px 32px 0px rgba(143,155,186,0.16)' }}
-          >
-            {/* Import by Sea label */}
-            <div className="flex items-center gap-[10px] flex-shrink-0">
-              <img src={importBySeaSrc} alt="Import by Sea" className="h-[30px] w-auto flex-shrink-0" />
-              <span className="text-[16px] font-medium text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>
-                Import by Sea
-              </span>
-            </div>
-
-            {/* Red ) arc separator */}
-            <div className="flex items-center flex-shrink-0 mx-[10px]">
-              <svg viewBox="0 0 14 46" width="14" height="46" fill="none">
-                <path d="M 3 2 Q 13 23 3 44" stroke="#e8212e" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-              </svg>
-            </div>
-
-            {/* Step: Trade + */}
-            <div className="flex items-center gap-[8px] flex-shrink-0">
-              <div className="size-[34px] rounded-full border-[1.5px] border-[#c5cef7] flex items-center justify-center flex-shrink-0 bg-white">
-                <img src={tradePlusSrc} alt="Trade +" className="size-[18px] object-contain" style={{ filter: 'opacity(0.55)' }} />
-              </div>
-              <span className="text-[12px] text-[#5a6282] whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>Trade +</span>
-            </div>
-
-            {/* Blue line connector */}
-            <div className="mx-[10px] h-[1.5px] rounded-full" style={{ background: '#c5cef7', width: 130 }} />
-
-            {/* Step: Integrated Clearance (active) */}
-            <div
-              className="flex items-center gap-[8px] flex-shrink-0 px-[10px] py-[5px] rounded-[22px]"
-              style={{ border: '2px solid #28a745', boxShadow: '0 0 18px 0 rgba(40,167,69,0.25)', background: '#fff' }}
-            >
-              <div className="size-[36px] rounded-full border-2 border-[#28a745] flex items-center justify-center flex-shrink-0 bg-white">
-                <img src={integratedClearanceSrc} alt="Integrated Clearance" className="size-[20px] object-contain" />
-              </div>
-              <span className="text-[18px] font-semibold text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>
-                Integrated Clearance
-              </span>
-            </div>
-
-            {/* Green wave connector (wave.svg) */}
-            <div className="mx-[10px] flex items-center" style={{ width: 130 }}>
-              <img src={waveSrc} alt="" style={{ width: 130, height: 16 }} />
-            </div>
-
-            {/* Step: Payments */}
-            <div className="flex items-center gap-[8px] flex-shrink-0">
-              <div className="size-[34px] rounded-full border-[1.5px] border-[#c5cef7] flex items-center justify-center flex-shrink-0 bg-white">
-                <img src={paymentsSrc} alt="Payments" className="size-[18px] object-contain" style={{ filter: 'opacity(0.55)' }} />
-              </div>
-              <span className="text-[12px] text-[#5a6282] whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>Payments</span>
-            </div>
-
-            {/* Blue line connector */}
-            <div className="mx-[10px] h-[1.5px] rounded-full" style={{ background: '#c5cef7', width: 130 }} />
-
-            {/* Step: Cargo Waves */}
-            <div className="flex items-center gap-[8px] flex-shrink-0">
-              <div className="size-[34px] rounded-full border-[1.5px] border-[#c5cef7] flex items-center justify-center flex-shrink-0 bg-white">
-                <img src={cargoWavesSrc} alt="Cargo Waves" className="size-[18px] object-contain" style={{ filter: 'opacity(0.55)' }} />
-              </div>
-              <span className="text-[12px] text-[#5a6282] whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>Cargo Waves</span>
-            </div>
-
-            {/* Close button */}
-            <button
-              onClick={onClose}
-              className="flex-shrink-0 ml-[14px] size-[28px] rounded-full border border-[#d5ddfb] flex items-center justify-center text-[#8f94ae] hover:text-[#0e1b3d] hover:border-[#0e1b3d] transition-colors"
-            >
-              <svg viewBox="0 0 24 24" className="size-[14px]" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M18 6L6 18M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>{/* end breadcrumb+stepper */}
-
-      {/* Main layout: left panel + right scrollable content */}
-      <div className="flex flex-1 px-4 md:px-10 pb-[20px] pt-[4px] gap-[12px]">
-
-        {/* Left action panel — full height sidebar */}
+        {/* Left action panel — same panel, moved up to start at the breadcrumb line */}
         <div
           className="flex-shrink-0 rounded-[12px] overflow-hidden flex flex-col transition-all duration-300 max-md:!w-16"
           style={{
@@ -1144,16 +1060,21 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
             border: '1px solid #a6c2e9',
           }}
         >
-          {/* Collapse / expand button */}
+          {/* Collapse / expand button — white circle with blue border */}
           <button
             onClick={() => setPanelCollapsed(c => !c)}
-            className="flex items-center justify-center py-[12px] border-b border-[#a6c2e9] hover:bg-[#dde2f0] transition-colors w-full flex-shrink-0"
+            className="flex items-center justify-center py-[12px] border-b border-[#a6c2e9] w-full flex-shrink-0"
             title={panelCollapsed ? 'Expand panel' : 'Collapse panel'}
           >
-            <svg viewBox="0 0 20 20" className="size-[17px] transition-transform duration-300" style={{ transform: panelCollapsed ? 'rotate(180deg)' : 'none' }} fill="none" stroke="#0e1b3d" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M13 15l-5-5 5-5" />
-              <path d="M8 15l-5-5 5-5" />
-            </svg>
+            <span
+              className="size-[32px] rounded-full flex items-center justify-center bg-white transition-colors hover:bg-[#eef4ff]"
+              style={{ border: '1.5px solid #a6c2e9' }}
+            >
+              <svg viewBox="0 0 20 20" className="size-[16px] transition-transform duration-300" style={{ transform: panelCollapsed ? 'rotate(180deg)' : 'none' }} fill="none" stroke="#1360d2" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M13 15l-5-5 5-5" />
+                <path d="M8 15l-5-5 5-5" />
+              </svg>
+            </span>
           </button>
           {/* Items */}
           {([
@@ -1199,7 +1120,154 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           })}
         </div>
 
-        {/* Right scrollable content */}
+        {/* Right column: breadcrumb + stepper + content */}
+        <div className="flex-1 flex flex-col min-w-0">
+
+      {/* Breadcrumb + Journey stepper */}
+      <div className="flex-shrink-0">
+        {/* Breadcrumb + Agent banner */}
+        <div className="flex items-center justify-between pb-[10px] flex-wrap gap-y-[6px]">
+          <div className="flex items-center gap-[6px]">
+            <span
+              className="text-[#8f94ae] text-[16px] cursor-pointer hover:text-[#1360d2] transition-colors"
+              style={{ fontFamily: "'Dubai', sans-serif" }}
+              onClick={onClose}
+            >Home</span>
+            <span className="text-[#dc3545] text-[15px] leading-none">/</span>
+            <span className="text-[#8f94ae] text-[16px]" style={{ fontFamily: "'Dubai', sans-serif" }}>Service Catalog</span>
+            <span className="text-[#dc3545] text-[15px] leading-none">/</span>
+            <span className="text-[#111838] text-[16px] font-medium" style={{ fontFamily: "'Dubai', sans-serif" }}>Integrated Clearance</span>
+          </div>
+          {/* Agent banner */}
+          <div
+            className="px-[16px] py-[4px] rounded-[4px] text-[16px] text-[#0e1b3d]"
+            style={{ background: '#e2ebf9', fontFamily: "'Dubai', sans-serif" }}
+          >
+            AE-1019056 — Dubai Customs - Test LLC
+          </div>
+        </div>
+
+        {/* Journey stepper bar */}
+        <div className="pt-[20px] pb-[40px] flex justify-center">
+          <div
+            className="bg-white rounded-[8px] pl-[16px] pr-[10px] py-[10px] flex items-center gap-[4px] w-full max-w-[1240px]"
+            style={{ boxShadow: '0px 5px 32px 0px rgba(143,155,186,0.16)' }}
+          >
+            {/* Left scroll arrow — shown when steps overflow to the left */}
+            {stepperArrows.left && (
+              <button
+                onClick={() => scrollStepper(-1)}
+                aria-label="Scroll steps left"
+                className="flex-shrink-0 size-[30px] rounded-full border border-[#d5ddfb] bg-white flex items-center justify-center text-[#1360d2] hover:bg-[#eef4ff] transition-colors"
+              >
+                <svg viewBox="0 0 24 24" className="size-[16px]" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M15 6l-6 6 6 6" />
+                </svg>
+              </button>
+            )}
+
+            {/* Scrollable steps track */}
+            <div
+              ref={stepperScrollRef}
+              onScroll={updateStepperArrows}
+              className="flex-1 min-w-0 overflow-x-auto no-scrollbar"
+            >
+              <div className="flex items-center w-max mx-auto">
+            {/* Import by Sea label */}
+            <div className="flex items-center gap-[10px] flex-shrink-0">
+              <img src={importBySeaSrc} alt="Import by Sea" className="h-[30px] w-auto flex-shrink-0" />
+              <span className="text-[16px] font-medium text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>
+                Import by Sea
+              </span>
+            </div>
+
+            {/* Red ) arc separator */}
+            <div className="flex items-center flex-shrink-0 mx-[10px]">
+              <svg viewBox="0 0 14 46" width="14" height="46" fill="none">
+                <path d="M 3 2 Q 13 23 3 44" stroke="#e8212e" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+              </svg>
+            </div>
+
+            {/* Step: Trade + */}
+            <div className="flex items-center gap-[8px] flex-shrink-0">
+              <div className="size-[34px] rounded-full border-[1.5px] border-[#c5cef7] flex items-center justify-center flex-shrink-0 bg-white">
+                <img src={tradePlusSrc} alt="Trade +" className="size-[18px] object-contain" style={{ filter: 'opacity(0.55)' }} />
+              </div>
+              <span className="text-[12px] text-[#5a6282] whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>Trade +</span>
+            </div>
+
+            {/* Blue line connector */}
+            <div className="mx-[10px] h-[1.5px] rounded-full" style={{ background: '#c5cef7', width: 100 }} />
+
+            {/* Step: Integrated Clearance (active) */}
+            <div
+              className="flex items-center gap-[8px] flex-shrink-0 px-[10px] py-[5px] rounded-[22px]"
+              style={{ border: '2px solid #28a745', boxShadow: '0 0 18px 0 rgba(40,167,69,0.25)', background: '#fff' }}
+            >
+              <div className="size-[36px] rounded-full border-2 border-[#28a745] flex items-center justify-center flex-shrink-0 bg-white">
+                <img src={integratedClearanceSrc} alt="Integrated Clearance" className="size-[20px] object-contain" />
+              </div>
+              <span className="text-[18px] font-semibold text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>
+                Integrated Clearance
+              </span>
+            </div>
+
+            {/* Green wave connector (wave.svg) */}
+            <div className="mx-[10px] flex items-center" style={{ width: 100 }}>
+              <img src={waveSrc} alt="" style={{ width: 100, height: 16 }} />
+            </div>
+
+            {/* Step: Payments */}
+            <div className="flex items-center gap-[8px] flex-shrink-0">
+              <div className="size-[34px] rounded-full border-[1.5px] border-[#c5cef7] flex items-center justify-center flex-shrink-0 bg-white">
+                <img src={paymentsSrc} alt="Payments" className="size-[18px] object-contain" style={{ filter: 'opacity(0.55)' }} />
+              </div>
+              <span className="text-[12px] text-[#5a6282] whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>Payments</span>
+            </div>
+
+            {/* Blue line connector */}
+            <div className="mx-[10px] h-[1.5px] rounded-full" style={{ background: '#c5cef7', width: 100 }} />
+
+            {/* Step: Cargo Waves */}
+            <div className="flex items-center gap-[8px] flex-shrink-0">
+              <div className="size-[34px] rounded-full border-[1.5px] border-[#c5cef7] flex items-center justify-center flex-shrink-0 bg-white">
+                <img src={cargoWavesSrc} alt="Cargo Waves" className="size-[18px] object-contain" style={{ filter: 'opacity(0.55)' }} />
+              </div>
+              <span className="text-[12px] text-[#5a6282] whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>Cargo Waves</span>
+            </div>
+              </div>{/* end steps track */}
+            </div>{/* end scroll container */}
+
+            {/* Right scroll arrow — shown when steps overflow to the right */}
+            {stepperArrows.right && (
+              <button
+                onClick={() => scrollStepper(1)}
+                aria-label="Scroll steps right"
+                className="flex-shrink-0 size-[30px] rounded-full border border-[#d5ddfb] bg-white flex items-center justify-center text-[#1360d2] hover:bg-[#eef4ff] transition-colors"
+              >
+                <svg viewBox="0 0 24 24" className="size-[16px]" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 6l6 6-6 6" />
+                </svg>
+              </button>
+            )}
+
+            {/* Close button */}
+            <button
+              onClick={onClose}
+              className="flex-shrink-0 ml-[6px] size-[28px] rounded-full border border-[#d5ddfb] flex items-center justify-center text-[#8f94ae] hover:text-[#0e1b3d] hover:border-[#0e1b3d] transition-colors"
+            >
+              <svg viewBox="0 0 24 24" className="size-[14px]" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>{/* end breadcrumb+stepper */}
+
+      {/* Main content */}
+      <div className="flex flex-1 pt-[4px]">
+
+        {/* Content */}
         <div className="flex-1 flex flex-col min-w-0">
 
         {/* Controls row */}
@@ -2486,6 +2554,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
         )}
         </div>
       </div>
+        </div>{/* end right content column */}
+      </div>{/* end body row */}
 
       {/* Acknowledgement Accept confirm */}
       <AckAcceptConfirmModal

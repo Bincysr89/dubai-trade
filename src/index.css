@@ -28,6 +28,10 @@ label {
 .scrollbar-thin::-webkit-scrollbar-thumb { background: #d0d5e8; border-radius: 4px; }
 .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #aab0c8; }
 
+/* Hidden scrollbar (still scrollable) — used by the responsive journey stepper */
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
 /* Dubai Trade-style input/dropdown containers — white background with a subtle
    elevation shadow. Targets the canonical DT control pattern: a 44/48/56px-tall
    box with the standard #d5ddfb border (declared either via Tailwind class or
