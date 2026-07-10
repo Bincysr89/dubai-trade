@@ -1,21 +1,37 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import Logo from './Logo';
+import ServiceCatalogueModal from './ServiceCatalogueModal';
 import homeIconSrc from '../assets/icon-home.svg';
 import { setAuthenticated } from '../auth';
 
-type Props = { onServiceCatalogue?: () => void; onHome?: () => void };
+type Props = {
+  onServiceCatalogue?: () => void;
+  onHome?: () => void;
+  /** Set when this Header is inside the Service Catalogue itself — the button then
+   *  closes the catalogue (via onServiceCatalogue) instead of opening a new one. */
+  catalogueClosesOnClick?: boolean;
+};
 
-export default function Header({ onServiceCatalogue, onHome }: Props) {
+export default function Header({ onServiceCatalogue, onHome, catalogueClosesOnClick }: Props) {
   const navigate = useNavigate();
   const { agent } = useParams<{ agent?: string }>();
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [catalogueOpen, setCatalogueOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 
   const goHome = () => {
     if (onHome) onHome();
     else navigate(`/landing/${agent ?? 'trader'}`);
+  };
+
+  // "Service Catalogue" opens the catalogue overlay from any page. Inside the
+  // catalogue itself it closes instead (so it doesn't stack another copy).
+  const openServiceCatalogue = () => {
+    if (catalogueClosesOnClick) onServiceCatalogue?.();
+    else setCatalogueOpen(true);
   };
 
   useEffect(() => {
@@ -44,7 +60,7 @@ export default function Header({ onServiceCatalogue, onHome }: Props) {
           <button onClick={goHome} className="hover:opacity-80 size-[24px]" aria-label="Home">
             <img src={homeIconSrc} alt="Home" className="size-[24px]" />
           </button>
-          <button className="hover:opacity-80" onClick={onServiceCatalogue}>Service Catalogue</button>
+          <button className="hover:opacity-80" onClick={openServiceCatalogue}>Service Catalogue</button>
           <button className="hover:opacity-80 flex items-center gap-1">
             Trade Service Providers
             <svg viewBox="0 0 16 16" className="size-[14px]" fill="currentColor"><path d="M4 6l4 4 4-4z" /></svg>
@@ -116,7 +132,7 @@ export default function Header({ onServiceCatalogue, onHome }: Props) {
             <img src={homeIconSrc} alt="Home" className="size-[20px]" />
             Home
           </button>
-          <button className="text-white text-[15px] hover:opacity-80 text-left" onClick={() => { onServiceCatalogue?.(); setMobileOpen(false); }}>Service Catalogue</button>
+          <button className="text-white text-[15px] hover:opacity-80 text-left" onClick={() => { openServiceCatalogue(); setMobileOpen(false); }}>Service Catalogue</button>
           <button className="text-white text-[15px] hover:opacity-80 text-left flex items-center gap-1">
             Trade Service Providers
             <svg viewBox="0 0 16 16" className="size-[14px]" fill="currentColor"><path d="M4 6l4 4 4-4z" /></svg>
@@ -124,6 +140,13 @@ export default function Header({ onServiceCatalogue, onHome }: Props) {
           <button className="text-white text-[15px] hover:opacity-80 text-left">Take a Tour</button>
           <button className="text-white text-[15px] hover:opacity-80 text-left">Knowledge Hub</button>
         </nav>
+      )}
+
+      {/* Service Catalogue overlay — opened from any page's header. Portaled to
+          <body> so it escapes the header's z-40 sticky stacking context. */}
+      {catalogueOpen && createPortal(
+        <ServiceCatalogueModal onClose={() => setCatalogueOpen(false)} />,
+        document.body,
       )}
     </header>
   );

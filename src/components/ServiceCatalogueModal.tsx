@@ -55,7 +55,7 @@ export default function ServiceCatalogueModal({ onClose }: Props) {
 
       {/* Navigation header */}
       <div className="relative z-10 flex-shrink-0">
-        <Header onServiceCatalogue={onClose} />
+        <Header onServiceCatalogue={onClose} catalogueClosesOnClick />
       </div>
 
       {/* Page title */}

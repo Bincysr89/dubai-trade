@@ -40,6 +40,7 @@ import CargoTransferCancelFlow from './CargoTransferCancelFlow';
 import ClaimCancelFlow from './ClaimCancelFlow';
 import ClaimAmendFlow from './ClaimAmendFlow';
 import ClaimDocumentsPage from './ClaimDocumentsPage';
+import PermitsCreatePage from './PermitsCreatePage';
 import CargoTransferReceiptReleasePage from './CargoTransferReceiptReleasePage';
 import CargoTransferHistoryPage from './CargoTransferHistoryPage';
 import SuspensionHistoryPage from './SuspensionHistoryPage';
@@ -271,6 +272,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
     return [];
   })();
   const [panelCollapsed, setPanelCollapsed] = useState(false);
+  const [permitCreateOpen, setPermitCreateOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState<'Declaration' | 'Acknowledgement' | 'VCC' | 'Refund & Claims' | 'Cargo Transfer' | 'E-Payment'>('Declaration');
 
   // Journey stepper horizontal scroll (responsive — arrows appear when steps overflow the card)
@@ -2523,7 +2525,10 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                                   <button
                                     key={item.label}
                                     className="flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left group hover:bg-[#1360d2] transition-colors"
-                                    onClick={() => setOpenFlyout(null)}
+                                    onClick={() => {
+                                      setOpenFlyout(null);
+                                      if (item.label === 'Apply for Permit') setPermitCreateOpen(true);
+                                    }}
                                   >
                                     <img src={item.icon} alt="" className="size-[20px] object-contain flex-shrink-0 group-hover:brightness-0 group-hover:invert" />
                                     <span
@@ -2556,6 +2561,11 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
       </div>
         </div>{/* end right content column */}
       </div>{/* end body row */}
+
+      {/* Apply for Permit — opens the permit assistant chatbot at the consignment-type question */}
+      {permitCreateOpen && (
+        <PermitsCreatePage initialStep="cargo" onClose={() => setPermitCreateOpen(false)} />
+      )}
 
       {/* Acknowledgement Accept confirm */}
       <AckAcceptConfirmModal

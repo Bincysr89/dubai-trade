@@ -208,26 +208,26 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
               <p className="text-[18px] text-[#051937]" style={{ fontWeight: 700 }}>Payment Summary</p>
             </div>
             <div className="px-[20px] py-[16px] flex flex-col gap-[12px]">
-              {/* Line items — long label wraps on the left, amount stays right */}
-              <div className="flex items-start justify-between gap-[16px]">
-                <span className="text-[15px] text-[#697498] flex-1" style={{ fontFamily: font, lineHeight: 1.4 }}>No. of Declarations applicable for registration fee</span>
-                <span className="text-[15px] text-[#051937] flex-shrink-0" style={{ fontFamily: font, fontWeight: 500 }}>{displayRows.length}</span>
+              {/* Line items — label left-aligned (60%), fee right-aligned (40%) */}
+              <div className="flex items-start">
+                <span className="text-[15px] text-[#697498] w-[60%] pr-[12px] text-left" style={{ fontFamily: font, lineHeight: 1.4 }}>No. of Declarations applicable for registration fee</span>
+                <span className="text-[15px] text-[#051937] w-[40%] text-right" style={{ fontFamily: font, fontWeight: 500 }}>{displayRows.length}</span>
               </div>
-              <div className="flex items-start justify-between gap-[16px]">
-                <span className="text-[15px] text-[#697498] flex-1" style={{ fontFamily: font, lineHeight: 1.4 }}>Sub Total of Registration Fee</span>
-                <span className="flex items-center gap-[4px] text-[15px] text-[#051937] flex-shrink-0" style={{ fontFamily: font }}>
+              <div className="flex items-start">
+                <span className="text-[15px] text-[#697498] w-[60%] pr-[12px] text-left" style={{ fontFamily: font, lineHeight: 1.4 }}>Sub Total of Registration Fee</span>
+                <span className="flex items-center justify-end gap-[4px] text-[15px] text-[#051937] w-[40%]" style={{ fontFamily: font }}>
                   <DirhamIcon size={13} color="#051937" />{(REG_FEE * displayRows.length).toFixed(2)}
                 </span>
               </div>
-              <div className="flex items-start justify-between gap-[16px]">
-                <span className="text-[15px] text-[#697498] flex-1" style={{ fontFamily: font, lineHeight: 1.4 }}>Sub Total of Knowledge-Innovation Fee</span>
-                <span className="flex items-center gap-[4px] text-[15px] text-[#051937] flex-shrink-0" style={{ fontFamily: font }}>
+              <div className="flex items-start">
+                <span className="text-[15px] text-[#697498] w-[60%] pr-[12px] text-left" style={{ fontFamily: font, lineHeight: 1.4 }}>Sub Total of Knowledge-Innovation Fee</span>
+                <span className="flex items-center justify-end gap-[4px] text-[15px] text-[#051937] w-[40%]" style={{ fontFamily: font }}>
                   <DirhamIcon size={13} color="#051937" />{(KNOW_FEE * displayRows.length).toFixed(2)}
                 </span>
               </div>
-              <div className="flex items-start justify-between gap-[16px] pt-[8px]" style={{ borderTop: '1px solid #eef1f6' }}>
-                <span className="text-[16px] text-[#051937] flex-1" style={{ fontFamily: font, fontWeight: 700, lineHeight: 1.4 }}>Grand Total Amount</span>
-                <span className="flex items-center gap-[4px] text-[18px] text-[#1360d2] flex-shrink-0" style={{ fontFamily: font, fontWeight: 700 }}>
+              <div className="flex items-start pt-[8px]" style={{ borderTop: '1px solid #eef1f6' }}>
+                <span className="text-[16px] text-[#051937] w-[60%] pr-[12px] text-left" style={{ fontFamily: font, fontWeight: 700, lineHeight: 1.4 }}>Grand Total Amount</span>
+                <span className="flex items-center justify-end gap-[4px] text-[18px] text-[#1360d2] w-[40%]" style={{ fontFamily: font, fontWeight: 700 }}>
                   <DirhamIcon size={15} color="#1360d2" />{(TOTAL_AED * displayRows.length).toFixed(2)}
                 </span>
               </div>
