@@ -43,6 +43,7 @@ import ClaimDocumentsPage from './ClaimDocumentsPage';
 import PermitsCreatePage from './PermitsCreatePage';
 import ClearanceJourneyPage from './ClearanceJourneyPage';
 import CompleteJourneyPage from './CompleteJourneyPage';
+import SiraFlowPage from './SiraFlowPage';
 import PermitServiceFlow from './PermitServiceFlow';
 import { PERMIT_SERVICE_CONFIGS } from './permitServiceConfigs';
 import CargoTransferReceiptReleasePage from './CargoTransferReceiptReleasePage';
@@ -110,6 +111,8 @@ const RD_AMEND_DOCS: NRUploadedDoc[] = [
 type Props = {
   onClose: () => void;
   onServiceCatalogue?: () => void;
+  /** Skip the listing and open the Integrated Clearance journey directly (from Trade+ continue). */
+  autoStartJourney?: boolean;
 };
 
 
@@ -168,7 +171,7 @@ const DECLARATIONS: {
 ];
 
 
-export default function DeclarationListPage({ onClose, onServiceCatalogue }: Props) {
+export default function DeclarationListPage({ onClose, onServiceCatalogue, autoStartJourney }: Props) {
   const [activeTab, setActiveTab] = useState<'all' | 'epay'>('all');
   const [ePayVccFilter, setEPayVccFilter] = useState<string>('');
   const [showFilters, setShowFilters] = useState(false);
@@ -279,8 +282,10 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
   const [permitCreateOpen, setPermitCreateOpen] = useState(false);
   const [permitPrefill, setPermitPrefill] = useState<{ activity?: string; mode?: string; cargo?: string } | undefined>(undefined);
   const [permitFromJourney, setPermitFromJourney] = useState(false);
-  const [clearanceJourneyOpen, setClearanceJourneyOpen] = useState(false);
+  const [clearanceJourneyOpen, setClearanceJourneyOpen] = useState(!!autoStartJourney);
   const [completeJourneyOpen, setCompleteJourneyOpen] = useState(false);
+  const [completeJourneyStart, setCompleteJourneyStart] = useState<'permits' | 'declInfo'>('permits');
+  const [siraFlowOpen, setSiraFlowOpen] = useState(false);
   const [permitServiceKey, setPermitServiceKey] = useState<string | null>(null);
   const [activeMenu, setActiveMenu] = useState<'Declaration' | 'Acknowledgement' | 'VCC' | 'Refund & Claims' | 'Cargo Transfer' | 'E-Payment'>('Declaration');
 
@@ -2580,7 +2585,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
           onClose={() => { setPermitCreateOpen(false); setPermitPrefill(undefined); setPermitFromJourney(false); }}
           onOpenService={(svc) => {
             setPermitCreateOpen(false); setPermitPrefill(undefined);
-            if (permitFromJourney) { setPermitFromJourney(false); setCompleteJourneyOpen(true); }
+            if (svc.includes('SIRA')) { setPermitFromJourney(false); setSiraFlowOpen(true); }
+            else if (permitFromJourney) { setPermitFromJourney(false); setCompleteJourneyStart('permits'); setCompleteJourneyOpen(true); }
             else if (PERMIT_SERVICE_CONFIGS[svc]) setPermitServiceKey(svc);
           }}
         />
@@ -2599,13 +2605,22 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
       {clearanceJourneyOpen && (
         <ClearanceJourneyPage
           onClose={() => setClearanceJourneyOpen(false)}
-          onApplyPermits={() => { setPermitPrefill({ activity: 'Import', mode: 'Sea', cargo: 'Food Consignment' }); setPermitFromJourney(true); setPermitCreateOpen(true); }}
+          onApplyPermits={() => { setPermitPrefill({ activity: 'Import', mode: 'Sea', cargo: 'Food & Hazardous Goods Consignment' }); setPermitFromJourney(true); setPermitCreateOpen(true); }}
+        />
+      )}
+
+      {/* SIRA — Hazardous Goods Import NOC flow → continues to customs declaration */}
+      {siraFlowOpen && (
+        <SiraFlowPage
+          onClose={() => setSiraFlowOpen(false)}
+          onProceedToDeclaration={() => { setSiraFlowOpen(false); setCompleteJourneyStart('declInfo'); setCompleteJourneyOpen(true); }}
         />
       )}
 
       {/* Complete journey — Permits → Declaration → Payments → Cargo Waves */}
       {completeJourneyOpen && (
         <CompleteJourneyPage
+          initialStep={completeJourneyStart}
           onClose={() => setCompleteJourneyOpen(false)}
           onBackToHome={() => { setCompleteJourneyOpen(false); setClearanceJourneyOpen(false); onClose(); }}
         />

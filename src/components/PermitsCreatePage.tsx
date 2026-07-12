@@ -64,6 +64,14 @@ const PERMITS_MAP: Record<string, { label: string; authority: string; prerequisi
     { label: 'Approval of Animal Food Identification Label',             authority: 'Dubai Municipality', prerequisite: true },
     { label: 'Permit to Release Importer Veterinary Consignments',      authority: 'Dubai Municipality' },
   ],
+  // Combined multi-consignment (Food + Hazardous) shown when entering permits from the journey
+  'Food & Hazardous Goods Consignment': [
+    { label: 'Product Registration',                                                 authority: 'Dubai Municipality', prerequisite: true },
+    { label: 'Register and Access a Food Item',                                      authority: 'Dubai Municipality' },
+    { label: 'Request to Transfer Food Consignment from and to Dubai',              authority: 'Dubai Municipality' },
+    { label: 'Release of Importer Food Consignments for Local Market',              authority: 'Dubai Municipality' },
+    { label: 'Hazardous Goods - Chemical Materials - Import NOC Request from Authority SIRA', authority: 'SIRA' },
+  ],
   'Consumer Goods': [
     { label: 'Product Conformity Certificate',                           authority: 'Dubai Municipality', prerequisite: true },
     { label: 'Release of Importer Consignments for Local Market',        authority: 'Dubai Customs' },

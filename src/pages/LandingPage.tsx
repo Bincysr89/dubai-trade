@@ -6,6 +6,7 @@ import IntegratedClearanceModal from '../components/IntegratedClearanceModal';
 import PermitsCertificatesPage from '../components/PermitsCertificatesPage';
 import PermitsCreatePage from '../components/PermitsCreatePage';
 import TradePlusJourneyPage from '../components/TradePlusJourneyPage';
+import BookingExecutionPage from '../components/BookingExecutionPage';
 import DeclarationListPage from '../components/DeclarationListPage';
 import DdoFlow from '../components/ddo/DdoFlow';
 import DdoRecordsPage, { type DdoRecordStatus } from '../components/ddo/DdoRecordsPage';
@@ -180,8 +181,8 @@ const AIR_JOURNEYS: JourneyMap = {
       { step: 3, title: 'Payments', icon: <PaymentsIcon size={ICON} />, desc: CARD_DESC['Payments'] },
     ],
     export: [
-      { step: 1, title: 'Integrated Clearance', icon: <IntegratedClearanceIcon size={ICON} />, desc: CARD_DESC['Integrated Clearance'] },
-      { step: 2, title: 'Payments', icon: <PaymentsIcon size={ICON} />, desc: CARD_DESC['Payments'] },
+      { step: 1, title: 'Booking & Execution', icon: <BookingExecutionIcon size={ICON} />, desc: CARD_DESC['Booking & Execution'] },
+      { step: 2, title: 'Integrated Clearance', icon: <IntegratedClearanceIcon size={ICON} />, desc: CARD_DESC['Integrated Clearance'] },
     ],
   },
 };
@@ -224,6 +225,8 @@ export default function LandingPage() {
   const [showPermits, setShowPermits] = useState(false);
   const [showPermitsCreate, setShowPermitsCreate] = useState(false);
   const [showTradePlus, setShowTradePlus] = useState(false);
+  const [showBookingExecution, setShowBookingExecution] = useState(false);
+  const [declAutoStart, setDeclAutoStart] = useState(false);
   const [showDeclarationList, setShowDeclarationList] = useState(false);
   const [showDdoFlow, setShowDdoFlow] = useState(false);
   const [showDdoRecords, setShowDdoRecords] = useState(false);
@@ -409,6 +412,7 @@ export default function LandingPage() {
                     if (card.title === 'Integrated Clearance') { setShowIntegratedClearance(false); setShowDeclarationList(true); }
                     if (card.title === 'Permits & Certificates') setShowPermits(true);
                     if (card.title === 'Trade +') setShowTradePlus(true);
+                    if (card.title === 'Booking & Execution') setShowBookingExecution(true);
                   }}
                 >
                   {/* Icon circle — z-20 stays above rising card */}
@@ -458,7 +462,13 @@ export default function LandingPage() {
       {showTradePlus && (
         <TradePlusJourneyPage
           onClose={() => setShowTradePlus(false)}
-          onContinueToClearance={() => { setShowTradePlus(false); setShowDeclarationList(true); }}
+          onContinueToClearance={() => { setShowTradePlus(false); setDeclAutoStart(true); setShowDeclarationList(true); }}
+        />
+      )}
+      {showBookingExecution && (
+        <BookingExecutionPage
+          onClose={() => setShowBookingExecution(false)}
+          onBackToHome={() => setShowBookingExecution(false)}
         />
       )}
       {showPermitsCreate && <PermitsCreatePage onClose={() => setShowPermitsCreate(false)} />}
@@ -466,8 +476,9 @@ export default function LandingPage() {
 
       {showDeclarationList && (
         <DeclarationListPage
-          onClose={() => setShowDeclarationList(false)}
-          onServiceCatalogue={() => { setShowDeclarationList(false); setShowServiceCatalogue(true); }}
+          onClose={() => { setShowDeclarationList(false); setDeclAutoStart(false); }}
+          onServiceCatalogue={() => { setShowDeclarationList(false); setDeclAutoStart(false); setShowServiceCatalogue(true); }}
+          autoStartJourney={declAutoStart}
         />
       )}
 

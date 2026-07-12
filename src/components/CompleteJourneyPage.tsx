@@ -4,7 +4,7 @@ import JourneyProgress from './JourneyBanner';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
 
-type Props = { onClose: () => void; onBackToHome: () => void };
+type Props = { onClose: () => void; onBackToHome: () => void; initialStep?: Step };
 type Step =
   | 'permits' | 'permitsSuccess'
   | 'declInfo' | 'declSuccess'
@@ -70,8 +70,8 @@ const FillBtn = ({ children, onClick }: { children: React.ReactNode; onClick?: (
   <button onClick={onClick} className="h-[46px] px-[26px] rounded-[4px] text-[15px] text-white hover:bg-[#0f4fb5]" style={{ background: '#1360d2', fontWeight: 500 }}>{children}</button>
 );
 
-export default function CompleteJourneyPage({ onClose, onBackToHome }: Props) {
-  const [step, setStep] = useState<Step>('permits');
+export default function CompleteJourneyPage({ onClose, onBackToHome, initialStep }: Props) {
+  const [step, setStep] = useState<Step>(initialStep ?? 'permits');
   const breadcrumbLast =
     step.startsWith('cargo') ? 'Cargo Waves' : step.startsWith('pay') || step === 'payments' ? 'Payments' : step.startsWith('decl') ? 'Clearance' : 'Integrated Clearance';
 
