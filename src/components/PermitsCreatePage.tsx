@@ -5,7 +5,15 @@ import seaIconSrc from '../assets/icon-sea.svg';
 import airIconSrc from '../assets/icon-air.svg';
 import truckIconSrc from '../assets/External Truck.svg';
 
-type Props = { onClose: () => void; initialStep?: Step };
+type Props = {
+  onClose: () => void;
+  initialStep?: Step;
+  /** Pre-answer earlier questions (shown as chat history) before the initial step.
+   *  When `cargo` is given, the assistant lands straight on the services result. */
+  prefill?: { activity?: string; mode?: string; cargo?: string };
+  /** Open a specific permit service listing flow from a result row. */
+  onOpenService?: (service: string) => void;
+};
 const font = "'Dubai', sans-serif";
 
 /* ── Data ── */
@@ -53,9 +61,8 @@ const PERMITS_MAP: Record<string, { label: string; authority: string; prerequisi
     { label: 'Request for Food Export / Food Health Certificate',        authority: 'Dubai Municipality' },
   ],
   'Veterinary Consignments': [
-    { label: 'Veterinary Import Permit',                                 authority: 'MOCCAE', prerequisite: true },
-    { label: 'Veterinary Health Certificate',                            authority: 'MOCCAE' },
-    { label: 'Release of Imported Consignments for Re-Export',           authority: 'Dubai Municipality' },
+    { label: 'Approval of Animal Food Identification Label',             authority: 'Dubai Municipality', prerequisite: true },
+    { label: 'Permit to Release Importer Veterinary Consignments',      authority: 'Dubai Municipality' },
   ],
   'Consumer Goods': [
     { label: 'Product Conformity Certificate',                           authority: 'Dubai Municipality', prerequisite: true },
@@ -622,7 +629,7 @@ function SearchResults({ q, onSelect }: { q: string; onSelect: (label: string) =
 }
 
 /* ── Unified journey steps: numbered list with prerequisite chips + action buttons ── */
-function DoneWithPrepare({ answers, onRestart }: { answers: Record<string,string>; onRestart: () => void }) {
+function DoneWithPrepare({ answers, onRestart, onOpenService }: { answers: Record<string,string>; onRestart: () => void; onOpenService?: (service: string) => void }) {
   const cargo = answers['cargo'] ?? 'Other Goods';
   const permits = PERMITS_MAP[cargo] ?? [];
   const ACTION_BTNS = [
@@ -681,7 +688,7 @@ function DoneWithPrepare({ answers, onRestart }: { answers: Record<string,string
               {/* Left: name + badge + prerequisite */}
               <div style={{ flex:1, minWidth:0 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap', marginBottom:5 }}>
-                  <span style={{ fontFamily:font, fontSize:13, fontWeight:700, color:'#111838' }}>{p.label}</span>
+                  <span onClick={() => onOpenService?.(p.label)} style={{ fontFamily:font, fontSize:13, fontWeight:700, color:'#111838', cursor: onOpenService ? 'pointer' : 'default' }}>{p.label}</span>
                   {p.prerequisite && (
                     <span style={{ display:'inline-flex', alignItems:'center', gap:3, background:'#fff8e6', border:'1px solid #f5c842', borderRadius:20, padding:'2px 8px', fontSize:10, fontWeight:700, color:'#a16400', whiteSpace:'nowrap' }}>
                       <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
@@ -698,6 +705,7 @@ function DoneWithPrepare({ answers, onRestart }: { answers: Record<string,string
               <div style={{ display:'flex', gap:6, flexShrink:0 }}>
                 {ACTION_BTNS.map(a => (
                   <button key={a.label}
+                    onClick={() => { if (a.label === 'Start Journey' || a.label === 'View Requests') onOpenService?.(p.label); }}
                     style={{ display:'flex', alignItems:'center', gap:4, padding:'5px 10px', borderRadius:6, background:a.bg, border:a.border, color:a.color, fontFamily:font, fontSize:11, fontWeight:600, cursor:'pointer', whiteSpace:'nowrap', boxShadow:a.shadow, transition:'opacity 0.15s' }}
                     onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.opacity='0.8'}
                     onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.opacity='1'}>
@@ -714,9 +722,17 @@ function DoneWithPrepare({ answers, onRestart }: { answers: Record<string,string
 }
 
 /* ── Main ── */
-export default function PermitsCreatePage({ onClose, initialStep }: Props) {
+export default function PermitsCreatePage({ onClose, initialStep, prefill, onOpenService }: Props) {
+  const buildPrefillHistory = (): { step: Step; answer: string; opt: any }[] => {
+    if (!prefill) return [];
+    const h: { step: Step; answer: string; opt: any }[] = [];
+    if (prefill.activity) h.push({ step: 'activity', answer: prefill.activity, opt: TRADE_OPTIONS.find(o => o.label === prefill.activity) });
+    if (prefill.mode) h.push({ step: 'mode', answer: prefill.mode, opt: MODE_OPTIONS.find(o => o.label === prefill.mode) });
+    if (prefill.cargo) h.push({ step: 'cargo', answer: prefill.cargo, opt: CARGO_OPTIONS.find(o => o.label === prefill.cargo) });
+    return h;
+  };
   const [step, setStep] = useState<Step>(initialStep ?? 'welcome');
-  const [history, setHistory] = useState<{ step: Step; answer: string; opt: any }[]>([]);
+  const [history, setHistory] = useState<{ step: Step; answer: string; opt: any }[]>(buildPrefillHistory());
   const [isTyping, setIsTyping] = useState(true);
   const [showOptions, setShowOptions] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -747,7 +763,10 @@ export default function PermitsCreatePage({ onClose, initialStep }: Props) {
     }
   };
 
-  useEffect(()=>{showStep(initialStep ?? 'welcome');},[]);
+  useEffect(()=>{
+    if (prefill?.cargo) { setIsTyping(false); setStep('done'); scrollDown(); return; }
+    showStep(initialStep ?? 'welcome');
+  },[]);
 
   const pick = (curr: Step, next: Step, opt: any) => {
     setShowOptions(false);
@@ -922,7 +941,7 @@ export default function PermitsCreatePage({ onClose, initialStep }: Props) {
                   {step === 'done' ? (
                     searchPermit
                       ? <SearchServiceCard permit={searchPermit} onRestart={restart} />
-                      : <DoneWithPrepare answers={answers} onRestart={restart} />
+                      : <DoneWithPrepare answers={answers} onRestart={restart} onOpenService={onOpenService} />
                   ) : isTyping ? (
                     <ThinkingState />
                   ) : (

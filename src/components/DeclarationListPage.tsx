@@ -41,6 +41,10 @@ import ClaimCancelFlow from './ClaimCancelFlow';
 import ClaimAmendFlow from './ClaimAmendFlow';
 import ClaimDocumentsPage from './ClaimDocumentsPage';
 import PermitsCreatePage from './PermitsCreatePage';
+import ClearanceJourneyPage from './ClearanceJourneyPage';
+import CompleteJourneyPage from './CompleteJourneyPage';
+import PermitServiceFlow from './PermitServiceFlow';
+import { PERMIT_SERVICE_CONFIGS } from './permitServiceConfigs';
 import CargoTransferReceiptReleasePage from './CargoTransferReceiptReleasePage';
 import CargoTransferHistoryPage from './CargoTransferHistoryPage';
 import SuspensionHistoryPage from './SuspensionHistoryPage';
@@ -273,6 +277,11 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
   })();
   const [panelCollapsed, setPanelCollapsed] = useState(false);
   const [permitCreateOpen, setPermitCreateOpen] = useState(false);
+  const [permitPrefill, setPermitPrefill] = useState<{ activity?: string; mode?: string; cargo?: string } | undefined>(undefined);
+  const [permitFromJourney, setPermitFromJourney] = useState(false);
+  const [clearanceJourneyOpen, setClearanceJourneyOpen] = useState(false);
+  const [completeJourneyOpen, setCompleteJourneyOpen] = useState(false);
+  const [permitServiceKey, setPermitServiceKey] = useState<string | null>(null);
   const [activeMenu, setActiveMenu] = useState<'Declaration' | 'Acknowledgement' | 'VCC' | 'Refund & Claims' | 'Cargo Transfer' | 'E-Payment'>('Declaration');
 
   // Journey stepper horizontal scroll (responsive — arrows appear when steps overflow the card)
@@ -1474,6 +1483,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
                 <button
                   disabled={ackDisabled}
                   onClick={() => {
+                    if (activeMenu === 'Declaration') setClearanceJourneyOpen(true);
                     if (activeMenu === 'VCC') setVccStep('create');
                     if (activeMenu === 'Cargo Transfer') { setCargoFlowMode('create'); setCargoStep('pre'); }
                     if (activeMenu === 'Refund & Claims') setClaimStep('claimTypeEntry');
@@ -2564,7 +2574,41 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue }: Pro
 
       {/* Apply for Permit — opens the permit assistant chatbot at the consignment-type question */}
       {permitCreateOpen && (
-        <PermitsCreatePage initialStep="cargo" onClose={() => setPermitCreateOpen(false)} />
+        <PermitsCreatePage
+          initialStep="cargo"
+          prefill={permitPrefill}
+          onClose={() => { setPermitCreateOpen(false); setPermitPrefill(undefined); setPermitFromJourney(false); }}
+          onOpenService={(svc) => {
+            setPermitCreateOpen(false); setPermitPrefill(undefined);
+            if (permitFromJourney) { setPermitFromJourney(false); setCompleteJourneyOpen(true); }
+            else if (PERMIT_SERVICE_CONFIGS[svc]) setPermitServiceKey(svc);
+          }}
+        />
+      )}
+
+      {/* Permit service listing → form → proceed → success flow */}
+      {permitServiceKey && PERMIT_SERVICE_CONFIGS[permitServiceKey] && (
+        <PermitServiceFlow
+          config={PERMIT_SERVICE_CONFIGS[permitServiceKey]}
+          onClose={() => setPermitServiceKey(null)}
+          onBackToPermits={() => setPermitServiceKey(null)}
+        />
+      )}
+
+      {/* Start Journey — Integrated Clearance journey (start → carrier → invoice → line items) */}
+      {clearanceJourneyOpen && (
+        <ClearanceJourneyPage
+          onClose={() => setClearanceJourneyOpen(false)}
+          onApplyPermits={() => { setPermitPrefill({ activity: 'Import', mode: 'Sea', cargo: 'Food Consignment' }); setPermitFromJourney(true); setPermitCreateOpen(true); }}
+        />
+      )}
+
+      {/* Complete journey — Permits → Declaration → Payments → Cargo Waves */}
+      {completeJourneyOpen && (
+        <CompleteJourneyPage
+          onClose={() => setCompleteJourneyOpen(false)}
+          onBackToHome={() => { setCompleteJourneyOpen(false); setClearanceJourneyOpen(false); onClose(); }}
+        />
       )}
 
       {/* Acknowledgement Accept confirm */}

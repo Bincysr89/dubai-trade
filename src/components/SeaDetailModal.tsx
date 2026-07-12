@@ -19,10 +19,48 @@ import GoodsLandingCertPage from './GoodsLandingCertPage';
 
 type Props = { onClose: () => void };
 
+// DCAA/SIRA priority services shown first (and highlighted) in the Cargo Clearance column
+const DCAA_SIRA_SERVICES = [
+  'DCAA - NOC - Dangerous Goods',
+  'DCAA - Inspect Suspicious Goods',
+  'DCAA - NOC - Firearms and Ammunition by Air',
+  'SIRA - Goods Control Permit',
+];
+
+// DM priority services shown first (and highlighted) in the Cargo Management column
+const DM_CARGO_SERVICES = [
+  'DM - Approval of Animal Food Identification Label',
+  'DM - Permit to Release Importer Veterinary Consignments',
+  'DM- Permit to Admit Animals or Veterinary Products to Market',
+  'DM - Health Certificate for Animals and Veterinary Products',
+  'DM - Permits to Release Imported Consumer Products Consignments',
+  'DM - Register Consumer Products',
+  'DM - Free Sale Certificate for Consumer Products',
+  'DM - Health Certificate to Export Consumer Products',
+  'DM - Permit to advertise Consumer Producst',
+  'DM -Register and Access a Food Item',
+  'DM - Request to Transfer food consignment from and to Dubai',
+  'DM - Release of Importer Food Consignments for Local Market',
+  'DM - Release of Imported Food Consignments for Re-Export',
+  'DM - Request for Food Export/Food Health Certificate',
+];
+
 const SEA_COLUMNS: { title: string; items: string[] }[] = [
+  {
+    title: 'Registration',
+    items: [
+      'AEO Program', 'Client Accreditation', 'DC - Manage Services',
+      'Case Registration', 'Register shipping line', 'Shipping Line Master',
+    ],
+  },
   {
     title: 'Carrier Management',
     items: [
+      'DPA - Pre-qualification', 'DPA - PAN,PDN,PC', 'DPA - NOC Certificates',
+      'DPA - ePermit', 'DPA - License Activity Approval',
+      'DMA- Provider Registration (3)', 'DMA- NOC Certificates',
+      'DMA - Operating Permit (2)',
+      'DMA- Vessel Anchorage Permit in the Emirates water',
       'Berth Booking', 'Tanker Berth Booking', 'Rotation Enquiry',
       'Shipping Service Schedule', 'Vessel Line Change',
       'Vessel Registration Request', 'Water Reading',
@@ -31,6 +69,7 @@ const SEA_COLUMNS: { title: string; items: string[] }[] = [
   {
     title: 'Cargo Management',
     items: [
+      ...DM_CARGO_SERVICES,
       'Bill of Lading', 'Container Request', 'DDO', 'Discharge /Load List',
       'DNOC', 'Export Manifest', 'Manage DDO/DNOC', 'Manifest',
       'NOC Linking', 'Trade +', 'Voyage', 'Voyage NOC',
@@ -48,16 +87,9 @@ const SEA_COLUMNS: { title: string; items: string[] }[] = [
     ],
   },
   {
-    title: 'Gate Management',
-    items: [
-      'Cargo Waves', 'E-Gate Pass', 'EGP Services', 'LGP Services',
-      'Other Emirates Bill', 'Request', 'Token Services',
-      'Truck Registration', 'VGM Certificate', 'Visitor Gate Pass - PCFC',
-    ],
-  },
-  {
     title: 'Cargo Clearance',
     items: [
+      ...DCAA_SIRA_SERVICES,
       'Integrated Clearance',
       'Bill Payment',
       'DC - Service Request',
@@ -82,10 +114,11 @@ const SEA_COLUMNS: { title: string; items: string[] }[] = [
     ],
   },
   {
-    title: 'Registration',
+    title: 'Gate Management',
     items: [
-      'AEO Program', 'Client Accreditation', 'DC - Manage Services',
-      'Case Registration', 'Register shipping line', 'Shipping Line Master',
+      'Cargo Waves', 'E-Gate Pass', 'EGP Services', 'LGP Services',
+      'Other Emirates Bill', 'Request', 'Token Services',
+      'Truck Registration', 'VGM Certificate', 'Visitor Gate Pass - PCFC',
     ],
   },
   {
@@ -672,7 +705,16 @@ export default function SeaDetailModal({ onClose }: Props) {
                       const TALL_ITEMS = new Set([
                         'Request Goods Landing Certificate',
                       ]);
+                      // DPA/DMA priority services — pinned to the top and shown with a soft lighter tint
+                      const DPA_DMA = new Set([
+                        'DPA - Pre-qualification', 'DPA - PAN,PDN,PC', 'DPA - NOC Certificates',
+                        'DPA - ePermit', 'DPA - License Activity Approval',
+                        'DMA- Provider Registration (3)', 'DMA- NOC Certificates',
+                        'DMA - Operating Permit (2)',
+                        'DMA- Vessel Anchorage Permit in the Emirates water',
+                      ]);
                       const isHighlighted = HIGHLIGHTED.has(item);
+                      const isDpaDma      = DPA_DMA.has(item) || DM_CARGO_SERVICES.includes(item) || DCAA_SIRA_SERVICES.includes(item);
                       const isTall        = TALL_ITEMS.has(item);
                       return (
                         <button
@@ -681,6 +723,8 @@ export default function SeaDetailModal({ onClose }: Props) {
                           className={`text-left px-[10px] rounded-[4px] text-[16px] transition-colors ${
                             isHighlighted
                               ? 'bg-[#dce9ff] border border-[#1360d2] text-[#1360d2] hover:bg-[#c5d9ff] font-medium'
+                              : isDpaDma
+                              ? 'bg-[#eef1fc] border border-[#c7d0f2] text-[#3a4a86] hover:bg-[#e2e7fb] font-medium'
                               : 'bg-[#f7faff] text-[#0e1b3d] hover:bg-[#d6e6ff]'
                           }`}
                           style={{

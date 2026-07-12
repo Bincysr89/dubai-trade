@@ -5,6 +5,7 @@ import ServiceCatalogueModal from '../components/ServiceCatalogueModal';
 import IntegratedClearanceModal from '../components/IntegratedClearanceModal';
 import PermitsCertificatesPage from '../components/PermitsCertificatesPage';
 import PermitsCreatePage from '../components/PermitsCreatePage';
+import TradePlusJourneyPage from '../components/TradePlusJourneyPage';
 import DeclarationListPage from '../components/DeclarationListPage';
 import DdoFlow from '../components/ddo/DdoFlow';
 import DdoRecordsPage, { type DdoRecordStatus } from '../components/ddo/DdoRecordsPage';
@@ -222,6 +223,7 @@ export default function LandingPage() {
   const [showIntegratedClearance, setShowIntegratedClearance] = useState(false);
   const [showPermits, setShowPermits] = useState(false);
   const [showPermitsCreate, setShowPermitsCreate] = useState(false);
+  const [showTradePlus, setShowTradePlus] = useState(false);
   const [showDeclarationList, setShowDeclarationList] = useState(false);
   const [showDdoFlow, setShowDdoFlow] = useState(false);
   const [showDdoRecords, setShowDdoRecords] = useState(false);
@@ -406,6 +408,7 @@ export default function LandingPage() {
                   onClick={() => {
                     if (card.title === 'Integrated Clearance') { setShowIntegratedClearance(false); setShowDeclarationList(true); }
                     if (card.title === 'Permits & Certificates') setShowPermits(true);
+                    if (card.title === 'Trade +') setShowTradePlus(true);
                   }}
                 >
                   {/* Icon circle — z-20 stays above rising card */}
@@ -452,6 +455,12 @@ export default function LandingPage() {
       )}
 
       {showPermits && <PermitsCertificatesPage onClose={() => setShowPermits(false)} />}
+      {showTradePlus && (
+        <TradePlusJourneyPage
+          onClose={() => setShowTradePlus(false)}
+          onContinueToClearance={() => { setShowTradePlus(false); setShowDeclarationList(true); }}
+        />
+      )}
       {showPermitsCreate && <PermitsCreatePage onClose={() => setShowPermitsCreate(false)} />}
       {showServiceCatalogue && <ServiceCatalogueModal onClose={() => setShowServiceCatalogue(false)} />}
 
