@@ -6,7 +6,7 @@ import tradePlusSrc from '../assets/trade+.svg';
 import integratedClearanceSrc from '../assets/integratedclearance.svg';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
-type Props = { onClose: () => void; onBackToHome: () => void };
+type Props = { onClose: () => void; onBackToHome: () => void; onContinueToClearance?: () => void };
 type Step = 'list' | 'details' | 'create' | 'directBooking' | 'awbSuccess' | 'declaration' | 'permitSuccess' | 'customsSuccess';
 
 const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
@@ -77,7 +77,7 @@ function SuccessCard({ heading, lines, refNo, rows }: { heading: string; lines: 
   </div></Card>);
 }
 
-export default function BookingExecutionPage({ onClose, onBackToHome }: Props) {
+export default function BookingExecutionPage({ onClose, onBackToHome, onContinueToClearance }: Props) {
   const [step, setStep] = useState<Step>('list');
   return (
     <div className="fixed inset-0 flex flex-col bg-[#f8fafd]" style={{ fontFamily: font, zIndex: 75 }}>
@@ -91,7 +91,7 @@ export default function BookingExecutionPage({ onClose, onBackToHome }: Props) {
       {step === 'details' && <DetailsStep onBack={onClose} onProceed={() => setStep('create')} />}
       {step === 'create' && <CreateStep onBack={() => setStep('details')} onDirectBooking={() => setStep('directBooking')} />}
       {step === 'directBooking' && <DirectBookingStep onBack={() => setStep('create')} onSubmit={() => setStep('awbSuccess')} />}
-      {step === 'awbSuccess' && <AwbSuccess onBack={onClose} onContinue={() => setStep('declaration')} />}
+      {step === 'awbSuccess' && <AwbSuccess onBack={onClose} onContinue={() => { if (onContinueToClearance) onContinueToClearance(); else setStep('declaration'); }} />}
       {step === 'declaration' && <DeclarationStep onBack={() => setStep('awbSuccess')} onProceed={() => setStep('permitSuccess')} />}
       {step === 'permitSuccess' && <PermitSuccess onBack={onClose} onProceed={() => setStep('customsSuccess')} />}
       {step === 'customsSuccess' && <CustomsSuccess onBack={onClose} onBackToHome={onBackToHome} />}

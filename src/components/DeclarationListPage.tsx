@@ -113,6 +113,10 @@ type Props = {
   onServiceCatalogue?: () => void;
   /** Skip the listing and open the Integrated Clearance journey directly (from Trade+ continue). */
   autoStartJourney?: boolean;
+  /** Default Cargo Channel / Regime Type for the declaration form. */
+  journeyDefaults?: { cargoChannel?: string; regimeType?: string };
+  /** Export context (Booking & Execution) — prefills the permit chatbot with Export / Air. */
+  journeyExport?: boolean;
 };
 
 
@@ -171,7 +175,7 @@ const DECLARATIONS: {
 ];
 
 
-export default function DeclarationListPage({ onClose, onServiceCatalogue, autoStartJourney }: Props) {
+export default function DeclarationListPage({ onClose, onServiceCatalogue, autoStartJourney, journeyDefaults, journeyExport }: Props) {
   const [activeTab, setActiveTab] = useState<'all' | 'epay'>('all');
   const [ePayVccFilter, setEPayVccFilter] = useState<string>('');
   const [showFilters, setShowFilters] = useState(false);
@@ -2605,7 +2609,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
       {clearanceJourneyOpen && (
         <ClearanceJourneyPage
           onClose={() => setClearanceJourneyOpen(false)}
-          onApplyPermits={() => { setPermitPrefill({ activity: 'Import', mode: 'Sea', cargo: 'Food & Hazardous Goods Consignment' }); setPermitFromJourney(true); setPermitCreateOpen(true); }}
+          defaults={journeyDefaults}
+          onApplyPermits={() => { setPermitPrefill({ activity: journeyExport ? 'Export' : 'Import', mode: journeyExport ? 'Air' : 'Sea', cargo: 'Food & Hazardous Goods Consignment' }); setPermitFromJourney(true); setPermitCreateOpen(true); }}
         />
       )}
 

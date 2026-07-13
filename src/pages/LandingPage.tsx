@@ -227,6 +227,7 @@ export default function LandingPage() {
   const [showTradePlus, setShowTradePlus] = useState(false);
   const [showBookingExecution, setShowBookingExecution] = useState(false);
   const [declAutoStart, setDeclAutoStart] = useState(false);
+  const [declExport, setDeclExport] = useState(false);
   const [showDeclarationList, setShowDeclarationList] = useState(false);
   const [showDdoFlow, setShowDdoFlow] = useState(false);
   const [showDdoRecords, setShowDdoRecords] = useState(false);
@@ -469,6 +470,7 @@ export default function LandingPage() {
         <BookingExecutionPage
           onClose={() => setShowBookingExecution(false)}
           onBackToHome={() => setShowBookingExecution(false)}
+          onContinueToClearance={() => { setShowBookingExecution(false); setDeclAutoStart(true); setDeclExport(true); setShowDeclarationList(true); }}
         />
       )}
       {showPermitsCreate && <PermitsCreatePage onClose={() => setShowPermitsCreate(false)} />}
@@ -476,9 +478,11 @@ export default function LandingPage() {
 
       {showDeclarationList && (
         <DeclarationListPage
-          onClose={() => { setShowDeclarationList(false); setDeclAutoStart(false); }}
-          onServiceCatalogue={() => { setShowDeclarationList(false); setDeclAutoStart(false); setShowServiceCatalogue(true); }}
+          onClose={() => { setShowDeclarationList(false); setDeclAutoStart(false); setDeclExport(false); }}
+          onServiceCatalogue={() => { setShowDeclarationList(false); setDeclAutoStart(false); setDeclExport(false); setShowServiceCatalogue(true); }}
           autoStartJourney={declAutoStart}
+          journeyExport={declExport}
+          journeyDefaults={declExport ? { cargoChannel: 'Air', regimeType: 'Export' } : undefined}
         />
       )}
 
