@@ -134,22 +134,53 @@ function ListStep({ onStart }: { onStart: () => void }) {
 
 function DetailsStep({ onBack, onProceed }: { onBack: () => void; onProceed: () => void }) {
   const [carrier, setCarrier] = useState<'emirates' | 'dnata'>('emirates');
+  const help = ['Provide details about Clearance', 'Provide details about terminal visits', 'Provide details about your cargo (General Cargo)', 'The Booking gets approved automatically and rotational number will be generated'];
+  const releases = ['A new version of a Booking & Execution has been released.', 'A new version of a Berth booking has been released.', 'A new version of a Berth booking has been released.'];
   return (
-    <div className="flex-1 overflow-y-auto px-4 md:px-10 pb-[20px]">
-      <ExportStepper active={0} />
-      <h1 className="text-[26px] text-[#0e1b3d] mb-[16px]" style={{ fontWeight: 700 }}>Booking &amp; Execution <span className="text-[15px] text-[#1360d2] font-normal">Need Help ⓘ</span></h1>
-      <Card className="p-[22px] mb-[24px]">
-        <p className="text-[15px] text-[#0e1b3d] mb-[16px]">Enter the required details to begin your air cargo export process.</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-[16px] mb-[18px]"><Field label="Origin" onChange={() => {}} /><Field label="Destination" onChange={() => {}} /><Field label="Flight Date" value="Wed, 26 Jul 2024" onChange={() => {}} /></div>
-        <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-[16px] items-stretch">
-          <button onClick={() => setCarrier('emirates')} className="flex items-center gap-[12px] px-[16px] py-[12px] rounded-[6px] text-left" style={{ border: `1.5px solid ${carrier === 'emirates' ? '#1360d2' : '#e6eaf2'}`, background: '#fff' }}><img src={emiratesLogoSrc} alt="Emirates SkyCargo" className="h-[40px] w-auto flex-shrink-0 object-contain" /><span className="text-[13px] text-[#5a6282]">If to get instant rates, capacity checks, and eBooking for freight forwarders.</span></button>
-          <button onClick={() => setCarrier('dnata')} className="flex items-center gap-[12px] px-[16px] py-[12px] rounded-[6px] text-left" style={{ border: `1.5px solid ${carrier === 'dnata' ? '#1360d2' : '#e6eaf2'}`, background: '#fff' }}><img src={dnataLogoSrc} alt="dnata" className="h-[24px] w-auto flex-shrink-0 object-contain" /><span className="text-[13px] text-[#5a6282]">If to search for rates for an optimal flight options for their operational needs</span></button>
-          <div className="flex items-stretch"><button onClick={onProceed} className="rounded-[4px] px-[36px] text-[15px] text-white hover:bg-[#0f4fb5] w-full" style={{ background: '#1360d2', fontWeight: 500 }}>Proceed</button></div>
+    <>
+      <div className="flex-1 overflow-y-auto px-4 md:px-10 pb-[20px]">
+        <ExportStepper active={0} />
+        <h1 className="text-[26px] text-[#0e1b3d] mb-[16px]" style={{ fontWeight: 700 }}>Booking &amp; Execution <span className="text-[15px] text-[#1360d2] font-normal">Need Help ⓘ</span></h1>
+        <Card className="p-[22px] mb-[24px]">
+          <p className="text-[15px] text-[#0e1b3d] mb-[16px]">Enter the required details to begin your air cargo export process.</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-[16px] mb-[18px]"><Field label="Origin" onChange={() => {}} /><Field label="Destination" onChange={() => {}} /><Field label="Flight Date" value="Wed, 26 Jul 2024" onChange={() => {}} /></div>
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-[16px] items-stretch">
+            <button onClick={() => setCarrier('emirates')} className="flex items-center gap-[12px] px-[16px] py-[12px] rounded-[6px] text-left" style={{ border: `1.5px solid ${carrier === 'emirates' ? '#1360d2' : '#e6eaf2'}`, background: '#fff' }}><img src={emiratesLogoSrc} alt="Emirates SkyCargo" className="h-[40px] w-auto flex-shrink-0 object-contain" /><span className="text-[13px] text-[#5a6282]">If to get instant rates, capacity checks, and eBooking for freight forwarders.</span></button>
+            <button onClick={() => setCarrier('dnata')} className="flex items-center gap-[12px] px-[16px] py-[12px] rounded-[6px] text-left" style={{ border: `1.5px solid ${carrier === 'dnata' ? '#1360d2' : '#e6eaf2'}`, background: '#fff' }}><img src={dnataLogoSrc} alt="dnata" className="h-[24px] w-auto flex-shrink-0 object-contain" /><span className="text-[13px] text-[#5a6282]">If to search for rates for an optimal flight options for their operational needs</span></button>
+            <div className="flex items-stretch"><button onClick={onProceed} className="rounded-[4px] px-[36px] text-[15px] text-white hover:bg-[#0f4fb5] w-full" style={{ background: '#1360d2', fontWeight: 500 }}>Proceed</button></div>
+          </div>
+        </Card>
+
+        <h2 className="text-[20px] text-[#0e1b3d] mb-[16px]" style={{ fontWeight: 700 }}>Help and Guides</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-[24px]">
+          <div>
+            {help.map((h, i) => (
+              <div key={i} className="flex items-start gap-[14px] pb-[22px] relative">
+                {i < help.length - 1 && <div className="absolute left-[13px] top-[28px] bottom-0 w-[2px] bg-[#28a745]" />}
+                <div className="size-[26px] rounded-full bg-[#28a745] text-white text-[13px] flex items-center justify-center flex-shrink-0 z-[1]" style={{ fontWeight: 600 }}>{i < help.length - 1 ? i + 1 : '✓'}</div>
+                <p className="text-[15px] text-[#0e1b3d] pt-[2px]">{h}</p>
+              </div>
+            ))}
+            <Card className="p-[18px] mt-[6px]">
+              <p className="text-[15px] text-[#0e1b3d] mb-[6px]" style={{ fontWeight: 600 }}>About This Service</p>
+              <p className="text-[14px] text-[#5a6282]">Standard air cargo export booking &amp; execution service. Register your shipment, choose a carrier, and generate your booking. <span className="text-[#1360d2]">Click Here</span></p>
+            </Card>
+          </div>
+          <Card className="p-[18px]">
+            <div className="flex items-center gap-[6px] mb-[14px]">{['Information', 'Tutorials', 'Common FAQ\'s', 'Updates', 'Downloads'].map((t, i) => (<span key={t} className="text-[14px] px-[12px] py-[7px] rounded-[4px]" style={i === 0 ? { background: '#1360d2', color: '#fff', fontWeight: 500 } : { color: '#5a6282' }}>{t}</span>))}</div>
+            <p className="text-[13px] text-[#8f94ae] mb-[10px]">Last updated on 12th march 2024 at 13:45:00</p>
+            {releases.map((r, i) => (
+              <div key={i} className="flex items-start gap-[10px] border border-[#eef1f6] rounded-[6px] p-[12px] mb-[10px]">
+                <div className="size-[34px] rounded bg-[#eef2fb] flex-shrink-0" />
+                <div className="flex-1"><p className="text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{r}</p><p className="text-[13px] text-[#1360d2]">See what's new</p></div>
+                <span className="text-[12px] text-[#8f94ae]">Jan 20, 2023</span>
+              </div>
+            ))}
+          </Card>
         </div>
-      </Card>
-      <div className="flex items-center gap-[10px] mb-[8px]"><h2 className="text-[20px] text-[#0e1b3d]" style={{ fontWeight: 700 }}>Help and Guides</h2></div>
-      <div className="mt-[10px]"><Out onClick={onBack}>Back To Listing</Out></div>
-    </div>
+      </div>
+      <div className="flex-shrink-0 bg-white px-4 md:px-10 py-[16px]" style={{ boxShadow: '0px -2px 8px rgba(0,0,0,0.06)' }}><Out onClick={onBack}>Back To Listing</Out></div>
+    </>
   );
 }
 

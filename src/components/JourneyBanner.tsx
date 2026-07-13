@@ -6,22 +6,27 @@ import paymentsSrc from '../assets/payments.svg';
 import cargoWavesSrc from '../assets/cargowaves.svg';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
-const STEPS = [
+const IMPORT_STEPS = [
   { src: tradePlusSrc, label: 'Trade +' },
   { src: integratedClearanceSrc, label: 'Integrated Clearance' },
   { src: paymentsSrc, label: 'Payments' },
   { src: cargoWavesSrc, label: 'Cargo Waves' },
 ];
+const EXPORT_STEPS = [
+  { src: tradePlusSrc, label: 'Booking and Execution' },
+  { src: integratedClearanceSrc, label: 'Integrated Clearance' },
+];
 
-/* Full Import-by-Sea journey stepper with completed / active states. active = 0..3 */
-export function JourneyStepper({ active }: { active: number }) {
+/* Journey stepper with completed / active states. exportVariant → Export by Air (2 steps). */
+export function JourneyStepper({ active, exportVariant }: { active: number; exportVariant?: boolean }) {
+  const STEPS = exportVariant ? EXPORT_STEPS : IMPORT_STEPS;
   return (
     <div className="bg-white rounded-[8px] px-[16px] py-[10px] flex items-center gap-[6px] w-full mb-[16px]" style={{ boxShadow: '0px 5px 32px 0px rgba(143,155,186,0.16)' }}>
       <div className="flex-1 min-w-0 overflow-x-auto no-scrollbar">
         <div className="flex items-center w-max mx-auto">
           <div className="flex items-center gap-[10px] flex-shrink-0">
             <img src={importBySeaSrc} alt="" className="h-[28px] w-auto" />
-            <span className="text-[15px] font-medium text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: font }}>Import by Sea</span>
+            <span className="text-[15px] font-medium text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: font }}>{exportVariant ? 'Export by Air' : 'Import by Sea'}</span>
           </div>
           <div className="flex items-center flex-shrink-0 mx-[10px]"><svg viewBox="0 0 14 46" width="13" height="42" fill="none"><path d="M 3 2 Q 13 23 3 44" stroke="#e8212e" strokeWidth="1.5" strokeLinecap="round" fill="none" /></svg></div>
           {STEPS.map((s, i) => {
@@ -72,12 +77,12 @@ function Ring({ percent }: { percent: number }) {
 }
 
 /* Combined stepper + ring banner shown at the top of every journey success screen */
-export default function JourneyProgress({ active, percent, title, subtitle, button }: {
-  active: number; percent: number; title: string; subtitle: string; button: React.ReactNode;
+export default function JourneyProgress({ active, percent, title, subtitle, button, exportVariant }: {
+  active: number; percent: number; title: string; subtitle: string; button: React.ReactNode; exportVariant?: boolean;
 }) {
   return (
     <div>
-      <JourneyStepper active={active} />
+      <JourneyStepper active={active} exportVariant={exportVariant} />
       <div className="bg-white rounded-[8px] px-[24px] py-[16px] flex items-center justify-between gap-[16px] flex-wrap mb-[20px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.10)' }}>
         <div className="flex items-center gap-[16px]">
           <Ring percent={percent} />

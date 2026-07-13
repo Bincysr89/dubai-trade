@@ -182,7 +182,7 @@ function DeclSuccess({ onBack, onContinuePayments, exportFinal, onBackToHome }: 
     // Export by Air journey is 100% complete at customs declaration — only "Back To Home".
     return (
       <div className="flex-1 overflow-y-auto px-4 md:px-10 py-[8px] flex flex-col">
-        <JourneyProgress active={1} percent={100} title="Export by Air flow has been completed" subtitle="Declaration Created - Integrated Clearance Process Completed" button={<FillBtn onClick={onBackToHome}>Back To Home</FillBtn>} />
+        <JourneyProgress active={1} percent={100} exportVariant title="Export by Air flow has been completed" subtitle="Declaration Created - Integrated Clearance Process Completed" button={<FillBtn onClick={onBackToHome}>Back To Home</FillBtn>} />
         <Card className="flex-1"><SuccessBody heading="Declaration Request Created Successfully" lines={['Dear Customer Thank You For Using Service Request Web Application.', 'Your Request For Customs Declaration Amendment Will Be Sent For Approval.', 'Please Find Below Details For Future Reference']} refNo="Request Number: 560010545" rows={[]} /></Card>
         <div className="flex items-center justify-between gap-[12px] bg-white px-4 md:px-6 py-[16px] rounded-[8px] mt-[16px]" style={{ boxShadow: '0px -2px 8px rgba(0,0,0,0.06)' }}>
           <OutlineBtn onClick={onBack}>Back To Listing</OutlineBtn>

@@ -172,6 +172,7 @@ const AIR_JOURNEYS: JourneyMap = {
     export: [
       { step: 1, title: 'Booking & Execution', icon: <BookingExecutionIcon size={ICON} />, desc: CARD_DESC['Booking & Execution'] },
       { step: 2, title: 'Integrated Clearance', icon: <IntegratedClearanceIcon size={ICON} />, desc: CARD_DESC['Integrated Clearance'] },
+      { step: 3, title: 'Permits & Certificates', icon: <PermitsIcon />, desc: CARD_DESC['Permits & Certificates'] },
     ],
   },
   bco: {
@@ -183,6 +184,7 @@ const AIR_JOURNEYS: JourneyMap = {
     export: [
       { step: 1, title: 'Booking & Execution', icon: <BookingExecutionIcon size={ICON} />, desc: CARD_DESC['Booking & Execution'] },
       { step: 2, title: 'Integrated Clearance', icon: <IntegratedClearanceIcon size={ICON} />, desc: CARD_DESC['Integrated Clearance'] },
+      { step: 3, title: 'Permits & Certificates', icon: <PermitsIcon />, desc: CARD_DESC['Permits & Certificates'] },
     ],
   },
 };
@@ -228,6 +230,7 @@ export default function LandingPage() {
   const [showBookingExecution, setShowBookingExecution] = useState(false);
   const [declAutoStart, setDeclAutoStart] = useState(false);
   const [declExport, setDeclExport] = useState(false);
+  const [declPermitChat, setDeclPermitChat] = useState(false);
   const [showDeclarationList, setShowDeclarationList] = useState(false);
   const [showDdoFlow, setShowDdoFlow] = useState(false);
   const [showDdoRecords, setShowDdoRecords] = useState(false);
@@ -411,7 +414,10 @@ export default function LandingPage() {
                   className="group relative flex flex-col items-center flex-1 min-w-[120px] cursor-pointer z-[2]"
                   onClick={() => {
                     if (card.title === 'Integrated Clearance') { setShowIntegratedClearance(false); setShowDeclarationList(true); }
-                    if (card.title === 'Permits & Certificates') setShowPermits(true);
+                    if (card.title === 'Permits & Certificates') {
+                      if (isAirMode && tradeMode === 'export') { setDeclExport(true); setDeclPermitChat(true); setShowDeclarationList(true); }
+                      else setShowPermits(true);
+                    }
                     if (card.title === 'Trade +') setShowTradePlus(true);
                     if (card.title === 'Booking & Execution') setShowBookingExecution(true);
                   }}
@@ -478,11 +484,12 @@ export default function LandingPage() {
 
       {showDeclarationList && (
         <DeclarationListPage
-          onClose={() => { setShowDeclarationList(false); setDeclAutoStart(false); setDeclExport(false); }}
-          onServiceCatalogue={() => { setShowDeclarationList(false); setDeclAutoStart(false); setDeclExport(false); setShowServiceCatalogue(true); }}
+          onClose={() => { setShowDeclarationList(false); setDeclAutoStart(false); setDeclExport(false); setDeclPermitChat(false); }}
+          onServiceCatalogue={() => { setShowDeclarationList(false); setDeclAutoStart(false); setDeclExport(false); setDeclPermitChat(false); setShowServiceCatalogue(true); }}
           autoStartJourney={declAutoStart}
           journeyExport={declExport}
           journeyDefaults={declExport ? { cargoChannel: 'Air', regimeType: 'Export' } : undefined}
+          autoPermitChat={declPermitChat}
         />
       )}
 

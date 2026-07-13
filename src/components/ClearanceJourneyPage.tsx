@@ -404,6 +404,8 @@ function InvoiceStep({ tab, setTab, dragging, setDragging, onUpload }: {
   tab: 'upload' | 'manual'; setTab: (t: 'upload' | 'manual') => void;
   dragging: boolean; setDragging: (b: boolean) => void; onUpload: () => void;
 }) {
+  const [addLine, setAddLine] = useState(false);
+  if (addLine) return <AddLineItem onBack={() => setAddLine(false)} onSave={() => { setAddLine(false); onUpload(); }} />;
   return (
     <>
       <ReadOnlyForm channel="Air" regime="Export" third={['AWB Number', 'AWB1234567']} fourth={['Flight Information', 'EK1234']} />
@@ -446,15 +448,13 @@ function InvoiceStep({ tab, setTab, dragging, setDragging, onUpload }: {
         </Card>
       )}
 
-      {tab === 'manual' && <ManualInvoice onSave={onUpload} />}
+      {tab === 'manual' && <ManualInvoice onSave={onUpload} onAddLineItem={() => setAddLine(true)} />}
     </>
   );
 }
 
-/* ── Add Manually: Invoice Header → Add Line Item ── */
-function ManualInvoice({ onSave }: { onSave: () => void }) {
-  const [view, setView] = useState<'header' | 'lineItem'>('header');
-  if (view === 'lineItem') return <AddLineItem onBack={() => setView('header')} onSave={onSave} />;
+/* ── Add Manually: Invoice Header (Add Line Item opens as a full page from InvoiceStep) ── */
+function ManualInvoice({ onSave, onAddLineItem }: { onSave: () => void; onAddLineItem: () => void }) {
   const sel = ['Select', ''];
   return (
     <Card className="p-[24px]">
@@ -478,7 +478,7 @@ function ManualInvoice({ onSave }: { onSave: () => void }) {
         <p className="text-[15px] text-[#0e1b3d]" style={{ fontWeight: 600 }}>CIF Value</p>
         <div className="flex items-center gap-[12px] flex-wrap">
           <button className="h-[44px] px-[22px] rounded-[4px] border text-[15px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Close</button>
-          <button onClick={() => setView('lineItem')} className="h-[44px] px-[22px] rounded-[4px] border text-[15px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Save &amp; Add Line Item</button>
+          <button onClick={onAddLineItem} className="h-[44px] px-[22px] rounded-[4px] border text-[15px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Save &amp; Add Line Item</button>
           <button className="h-[44px] px-[22px] rounded-[4px] border text-[15px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Save &amp; Add Another Invoice</button>
           <button onClick={onSave} className="h-[44px] px-[30px] rounded-[4px] text-[15px] text-white hover:bg-[#0f4fb5]" style={{ background: '#1360d2', fontWeight: 500 }}>Save</button>
         </div>
@@ -509,6 +509,47 @@ function AddLineItem({ onBack, onSave }: { onBack: () => void; onSave: () => voi
       <Section title="IHC Details" fields={[['Item quantity', 'Quantity'], ['Item volume', 'Volume'], ['Classification of goods', 'Quantity', ['Quantity', 'Weight']]]} />
       <Section title="Exemption/Reference Declaration" fields={[['Exemption Type', 'Aircraft', ['Aircraft', 'Vessel']], ['Exemption reference No.', 'R12344667798989'], ['Previous Declaration No.', 'D1234545']]} />
       <Section title="Anti Dumping Details" fields={[['Manufacturer/Exporter', 'OVZ12123 -'], ['Anti Dumping Applicability', 'Not Applicable', ['Not Applicable', 'Applicable']], ['Anti Dumping Exemption Reference No.', 'Reference No'], ['Reason for not- Applicable', '']]} />
+
+      {/* Vehicle Details */}
+      <div className="mb-[20px]">
+        <p className="text-[16px] text-[#0e1b3d] mb-[12px]" style={{ fontWeight: 700 }}>Vehicle Details</p>
+        <Card className="p-[20px]">
+          <div className="flex items-center gap-[8px] mb-[16px] bg-white rounded-[6px] p-[4px] w-max" style={{ boxShadow: '0px 2px 12px rgba(143,155,186,0.12)' }}>
+            <button className="text-[14px] px-[16px] py-[8px] rounded-[4px] text-[#5a6282]">Upload Text File</button>
+            <button className="text-[14px] px-[16px] py-[8px] rounded-[4px]" style={{ background: '#1360d2', color: '#fff', fontWeight: 500 }}>Add Manually</button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[16px]">
+            {([['Vehicle Brand', 'Honda'], ['Model', 'D12243545'], ['Type', '2WD', ['2WD', '4WD']], ['Drive', 'Right Hand Drive', ['Right Hand Drive', 'Left Hand Drive']], ['Color 1', 'White', ['White', 'Black']], ['Color 2', 'White', ['White', 'Black']], ['Color 3', 'White', ['White', 'Black']], ['Vehicle Color', 'White'], ['Specification std', 'GCC Standard', ['GCC Standard', 'US Standard']], ['Condition', 'New', ['New', 'Used']], ['Chassis No.', 'A234465787B'], ['Engine No.', 'C234465787B'], ['Year Build', 'Year'], ['Engine Capacity', '4 ltr'], ['Passenger Capacity', '5'], ['Carriage Capacity', '5']] as [string, string, string[]?][]).map(([l, v, opts]) => <Field key={l} label={l} value={v} onChange={() => {}} required select={!!opts} options={opts} />)}
+          </div>
+          <div className="flex items-center gap-[12px] mt-[16px]">
+            <button className="h-[42px] px-[26px] rounded-[4px] text-[15px] text-white" style={{ background: '#1360d2', fontWeight: 500 }}>Save</button>
+            <button className="h-[42px] px-[22px] rounded-[4px] border text-[15px] bg-white" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Save &amp; Add Another Vehicle Item</button>
+            <button className="h-[42px] px-[22px] rounded-[4px] border text-[15px] bg-white" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Cancel</button>
+          </div>
+        </Card>
+      </div>
+
+      {/* Permit Details */}
+      <div className="mb-[20px]">
+        <p className="text-[16px] text-[#0e1b3d] mb-[2px]" style={{ fontWeight: 700 }}>Permit Details</p>
+        <p className="text-[13px] text-[#5a6282] mb-[12px]">As per your HS code we have found below required permits required for Declaration.</p>
+        <Card className="p-[6px]">
+          <div className="overflow-x-auto rounded-[8px]"><table className="w-full border-collapse" style={{ minWidth: 640 }}>
+            <thead><tr style={{ background: '#eaf1fb' }}>{['Permit Authority', 'Permit Reference No.', 'Permit Not Required', 'Permit Granted'].map(c => <th key={c} className="text-left text-[13px] text-[#455174] px-[16px] py-[12px] whitespace-nowrap" style={{ fontWeight: 600 }}>{c}</th>)}</tr></thead>
+            <tbody>
+              {[['Dubai Municipality', 'P12345678', true, 'Yes'], ['TDRA', 'P12345678', false, 'No']].map((r, i) => (
+                <tr key={i} className="border-t border-[#eef1f6]">
+                  <td className="text-[14px] text-[#0e1b3d] px-[16px] py-[14px]">{r[0]}</td>
+                  <td className="px-[16px] py-[14px]"><span className="text-[14px] text-[#0e1b3d] px-[10px] py-[6px] rounded-[4px]" style={{ background: '#f4f6fa' }}>{r[1]}</span></td>
+                  <td className="px-[16px] py-[14px]"><span className="size-[18px] rounded-[4px] inline-flex items-center justify-center" style={ r[2] ? { background: '#1360d2' } : { border: '1.5px solid #c3cbe0' }}>{r[2] && <svg viewBox="0 0 16 16" className="size-[11px]" fill="none" stroke="#fff" strokeWidth="2.4"><path d="M3 8l3.5 3.5L13 5" /></svg>}</span></td>
+                  <td className="text-[14px] text-[#0e1b3d] px-[16px] py-[14px]">{r[3]}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table></div>
+        </Card>
+      </div>
+
       <div className="flex items-center justify-between gap-[12px] bg-white px-[20px] py-[16px] rounded-[8px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.06)' }}>
         <button onClick={onBack} className="h-[44px] px-[26px] rounded-[4px] border text-[15px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Back</button>
         <div className="flex items-center gap-[12px]">

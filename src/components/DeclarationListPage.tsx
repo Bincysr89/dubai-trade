@@ -118,6 +118,8 @@ type Props = {
   journeyDefaults?: { cargoChannel?: string; regimeType?: string };
   /** Export context (Booking & Execution) — prefills the permit chatbot with Export / Air. */
   journeyExport?: boolean;
+  /** Open the permit assistant chatbot directly (Export/Air preselected, choose consignment). */
+  autoPermitChat?: boolean;
 };
 
 
@@ -176,7 +178,7 @@ const DECLARATIONS: {
 ];
 
 
-export default function DeclarationListPage({ onClose, onServiceCatalogue, autoStartJourney, journeyDefaults, journeyExport }: Props) {
+export default function DeclarationListPage({ onClose, onServiceCatalogue, autoStartJourney, journeyDefaults, journeyExport, autoPermitChat }: Props) {
   const [activeTab, setActiveTab] = useState<'all' | 'epay'>('all');
   const [ePayVccFilter, setEPayVccFilter] = useState<string>('');
   const [showFilters, setShowFilters] = useState(false);
@@ -284,9 +286,11 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
     return [];
   })();
   const [panelCollapsed, setPanelCollapsed] = useState(false);
-  const [permitCreateOpen, setPermitCreateOpen] = useState(false);
-  const [permitPrefill, setPermitPrefill] = useState<{ activity?: string; mode?: string; cargo?: string } | undefined>(undefined);
-  const [permitFromJourney, setPermitFromJourney] = useState(false);
+  const [permitCreateOpen, setPermitCreateOpen] = useState(!!autoPermitChat);
+  const [permitPrefill, setPermitPrefill] = useState<{ activity?: string; mode?: string; cargo?: string } | undefined>(
+    autoPermitChat ? { activity: journeyExport ? 'Export' : 'Import', mode: journeyExport ? 'Air' : 'Sea' } : undefined
+  );
+  const [permitFromJourney, setPermitFromJourney] = useState(!!autoPermitChat);
   const [clearanceJourneyOpen, setClearanceJourneyOpen] = useState(!!autoStartJourney);
   const [completeJourneyOpen, setCompleteJourneyOpen] = useState(false);
   const [completeJourneyStart, setCompleteJourneyStart] = useState<'permits' | 'declInfo'>('permits');
