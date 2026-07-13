@@ -44,6 +44,7 @@ import PermitsCreatePage from './PermitsCreatePage';
 import ClearanceJourneyPage from './ClearanceJourneyPage';
 import CompleteJourneyPage from './CompleteJourneyPage';
 import SiraFlowPage from './SiraFlowPage';
+import DcaaFlowPage from './DcaaFlowPage';
 import PermitServiceFlow from './PermitServiceFlow';
 import { PERMIT_SERVICE_CONFIGS } from './permitServiceConfigs';
 import CargoTransferReceiptReleasePage from './CargoTransferReceiptReleasePage';
@@ -290,6 +291,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
   const [completeJourneyOpen, setCompleteJourneyOpen] = useState(false);
   const [completeJourneyStart, setCompleteJourneyStart] = useState<'permits' | 'declInfo'>('permits');
   const [siraFlowOpen, setSiraFlowOpen] = useState(false);
+  const [dcaaFlow, setDcaaFlow] = useState<{ variant: 'dangerous' | 'suspicious'; title: string } | null>(null);
   const [permitServiceKey, setPermitServiceKey] = useState<string | null>(null);
   const [activeMenu, setActiveMenu] = useState<'Declaration' | 'Acknowledgement' | 'VCC' | 'Refund & Claims' | 'Cargo Transfer' | 'E-Payment'>('Declaration');
 
@@ -2590,6 +2592,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
           onOpenService={(svc) => {
             setPermitCreateOpen(false); setPermitPrefill(undefined);
             if (svc.includes('SIRA')) { setPermitFromJourney(false); setSiraFlowOpen(true); }
+            else if (svc.startsWith('DCAA')) { setPermitFromJourney(false); setDcaaFlow({ variant: svc.includes('Suspicious') ? 'suspicious' : 'dangerous', title: svc }); }
             else if (permitFromJourney) { setPermitFromJourney(false); setCompleteJourneyStart('permits'); setCompleteJourneyOpen(true); }
             else if (PERMIT_SERVICE_CONFIGS[svc]) setPermitServiceKey(svc);
           }}
@@ -2610,7 +2613,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
         <ClearanceJourneyPage
           onClose={() => setClearanceJourneyOpen(false)}
           defaults={journeyDefaults}
-          onApplyPermits={() => { setPermitPrefill({ activity: journeyExport ? 'Export' : 'Import', mode: journeyExport ? 'Air' : 'Sea', cargo: 'Food & Hazardous Goods Consignment' }); setPermitFromJourney(true); setPermitCreateOpen(true); }}
+          onApplyPermits={() => { setPermitPrefill({ activity: journeyExport ? 'Export' : 'Import', mode: journeyExport ? 'Air' : 'Sea', cargo: journeyExport ? 'Dangerous Goods & Firearms' : 'Food & Hazardous Goods Consignment' }); setPermitFromJourney(true); setPermitCreateOpen(true); }}
         />
       )}
 
@@ -2619,6 +2622,16 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
         <SiraFlowPage
           onClose={() => setSiraFlowOpen(false)}
           onProceedToDeclaration={() => { setSiraFlowOpen(false); setCompleteJourneyStart('declInfo'); setCompleteJourneyOpen(true); }}
+        />
+      )}
+
+      {/* DCAA — Dangerous Goods NOC / Inspect Suspicious Goods → continues to customs declaration */}
+      {dcaaFlow && (
+        <DcaaFlowPage
+          variant={dcaaFlow.variant}
+          title={dcaaFlow.title}
+          onClose={() => setDcaaFlow(null)}
+          onProceedToDeclaration={() => { setDcaaFlow(null); setCompleteJourneyStart('declInfo'); setCompleteJourneyOpen(true); }}
         />
       )}
 

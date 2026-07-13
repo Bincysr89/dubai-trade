@@ -64,6 +64,12 @@ const PERMITS_MAP: Record<string, { label: string; authority: string; prerequisi
     { label: 'Approval of Animal Food Identification Label',             authority: 'Dubai Municipality', prerequisite: true },
     { label: 'Permit to Release Importer Veterinary Consignments',      authority: 'Dubai Municipality' },
   ],
+  // Export via air — Dangerous Goods + Firearms consignments (DCAA services)
+  'Dangerous Goods & Firearms': [
+    { label: 'DCAA - NOC - Dangerous Goods by Air',                authority: 'DCAA', prerequisite: true },
+    { label: 'DCAA - Inspect Suspicious Goods',                    authority: 'DCAA' },
+    { label: 'DCAA - NOC - Firearms and Ammunition by Air',        authority: 'DCAA' },
+  ],
   // Combined multi-consignment (Food + Hazardous) shown when entering permits from the journey
   'Food & Hazardous Goods Consignment': [
     { label: 'Product Registration',                                                 authority: 'Dubai Municipality', prerequisite: true },
