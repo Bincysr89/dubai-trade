@@ -8,7 +8,7 @@ import { ColumnFilter } from './ColumnFilter';
 import StatusFilterHeader from './StatusFilterHeader';
 import { useTableBehaviors, DragDots, ScrollArrows } from '../hooks/useTableBehaviors';
 
-type Props = { onClose: () => void };
+type Props = { onClose: () => void; createPrefill?: { activity?: string; mode?: string } };
 
 const font = "'Dubai', sans-serif";
 
@@ -211,7 +211,7 @@ const SEARCH_FIELDS = ['Application Ref No', 'Service Req Name', 'BOL / AWB', 'D
 /* Sticky = App Status (163) + Pay Status (150) + Actions (72) */
 const STICKY_W = 362; // Pay(150) + App(140) + Actions(72)
 
-export default function PermitsCertificatesPage({ onClose }: Props) {
+export default function PermitsCertificatesPage({ onClose, createPrefill }: Props) {
   const [showCreate, setShowCreate]         = useState(false);
   const [activeTab, setActiveTab]           = useState<'permits' | 'certificates'>('permits');
   const [page, setPage]                     = useState(1);
@@ -274,7 +274,7 @@ export default function PermitsCertificatesPage({ onClose }: Props) {
 
   return (
     <>
-      {showCreate && <PermitsCreatePage onClose={() => setShowCreate(false)} />}
+      {showCreate && <PermitsCreatePage onClose={() => setShowCreate(false)} prefill={createPrefill} initialStep={createPrefill ? 'cargo' : undefined} />}
       {showColModal && (
         <ManageColumnsModal
           columns={COL_DEFS}

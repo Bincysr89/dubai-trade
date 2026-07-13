@@ -231,6 +231,7 @@ export default function LandingPage() {
   const [declAutoStart, setDeclAutoStart] = useState(false);
   const [declExport, setDeclExport] = useState(false);
   const [declPermitChat, setDeclPermitChat] = useState(false);
+  const [permitsExport, setPermitsExport] = useState(false);
   const [showDeclarationList, setShowDeclarationList] = useState(false);
   const [showDdoFlow, setShowDdoFlow] = useState(false);
   const [showDdoRecords, setShowDdoRecords] = useState(false);
@@ -415,8 +416,8 @@ export default function LandingPage() {
                   onClick={() => {
                     if (card.title === 'Integrated Clearance') { setShowIntegratedClearance(false); setShowDeclarationList(true); }
                     if (card.title === 'Permits & Certificates') {
-                      if (isAirMode && tradeMode === 'export') { setDeclExport(true); setDeclPermitChat(true); setShowDeclarationList(true); }
-                      else setShowPermits(true);
+                      setPermitsExport(isAirMode && tradeMode === 'export');
+                      setShowPermits(true);
                     }
                     if (card.title === 'Trade +') setShowTradePlus(true);
                     if (card.title === 'Booking & Execution') setShowBookingExecution(true);
@@ -465,7 +466,7 @@ export default function LandingPage() {
         <DdoRecordsPage status={ddoRecordStatus} onClose={() => setShowDdoRecords(false)} />
       )}
 
-      {showPermits && <PermitsCertificatesPage onClose={() => setShowPermits(false)} />}
+      {showPermits && <PermitsCertificatesPage onClose={() => setShowPermits(false)} createPrefill={permitsExport ? { activity: 'Export', mode: 'Air' } : undefined} />}
       {showTradePlus && (
         <TradePlusJourneyPage
           onClose={() => setShowTradePlus(false)}
