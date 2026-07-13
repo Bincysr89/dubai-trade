@@ -2639,6 +2639,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
       {completeJourneyOpen && (
         <CompleteJourneyPage
           initialStep={completeJourneyStart}
+          exportFinal={!!journeyExport}
           onClose={() => setCompleteJourneyOpen(false)}
           onBackToHome={() => { setCompleteJourneyOpen(false); setClearanceJourneyOpen(false); onClose(); }}
         />

@@ -587,8 +587,10 @@ function DocumentsStep() {
 /* ── Step 4: Invoices added + line items ── */
 function InvoiceListStep() {
   const [expanded, setExpanded] = useState(true);
+  const [addLineItem, setAddLineItem] = useState(false);
   const cols = ['HS Code', 'Goods Description', 'Condition', 'Country of origin', 'Weight', 'Value of Goods', 'Statistical Quantity - Unit', 'Supplementary Quantity/Units', 'Item Quantity', 'Action'];
   const row = ['AX1234567', 'Spare parts', 'New', 'India', '100 kg', 'AED 1500', '100 - Unit', '100', '100 - Unit'];
+  if (addLineItem) return <AddLineItem onBack={() => setAddLineItem(false)} onSave={() => setAddLineItem(false)} />;
   return (
     <>
       <ReadOnlyForm channel="Air" regime="Export" third={['AWB Number', 'AWB1234567']} fourth={['Flight Information', 'EK1234']} />
@@ -613,7 +615,7 @@ function InvoiceListStep() {
             <svg viewBox="0 0 24 24" className="size-[22px] text-[#1360d2]" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="4" y="3" width="16" height="18" rx="2" /><path d="M8 8h8M8 12h8M8 16h5" strokeLinecap="round" /></svg>
             <span className="text-[17px] text-[#0e1b3d]" style={{ fontWeight: 700 }}>Invoice 1</span>
           </div>
-          <button className="h-[38px] px-[16px] rounded-[4px] border text-[14px] bg-white hover:bg-[#f0f4ff] transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Add Line Item</button>
+          <button onClick={() => setAddLineItem(true)} className="h-[38px] px-[16px] rounded-[4px] border text-[14px] bg-white hover:bg-[#f0f4ff] transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Add Line Item</button>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-y-[14px] gap-x-[16px] mb-[8px]">

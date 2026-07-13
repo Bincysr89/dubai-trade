@@ -4,6 +4,8 @@ import importBySeaSrc from '../assets/importbysea.svg';
 // @ts-ignore
 import tradePlusSrc from '../assets/trade+.svg';
 import integratedClearanceSrc from '../assets/integratedclearance.svg';
+import emiratesLogoSrc from '../assets/emirates-skycargo-logo.png';
+import dnataLogoSrc from '../assets/dnata-logo.png';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
 type Props = { onClose: () => void; onBackToHome: () => void; onContinueToClearance?: () => void };
@@ -140,8 +142,8 @@ function DetailsStep({ onBack, onProceed }: { onBack: () => void; onProceed: () 
         <p className="text-[15px] text-[#0e1b3d] mb-[16px]">Enter the required details to begin your air cargo export process.</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-[16px] mb-[18px]"><Field label="Origin" onChange={() => {}} /><Field label="Destination" onChange={() => {}} /><Field label="Flight Date" value="Wed, 26 Jul 2024" onChange={() => {}} /></div>
         <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-[16px] items-stretch">
-          <button onClick={() => setCarrier('emirates')} className="flex items-center gap-[12px] px-[16px] py-[12px] rounded-[6px] text-left" style={{ border: `1.5px solid ${carrier === 'emirates' ? '#1360d2' : '#e6eaf2'}`, background: '#fff' }}><span className="h-[36px] w-[52px] rounded bg-[#d71920] flex items-center justify-center text-white text-[9px] font-bold text-center leading-tight">Emirates<br />SkyCargo</span><span className="text-[13px] text-[#5a6282]">If to get instant rates, capacity checks, and eBooking for freight forwarders.</span></button>
-          <button onClick={() => setCarrier('dnata')} className="flex items-center gap-[12px] px-[16px] py-[12px] rounded-[6px] text-left" style={{ border: `1.5px solid ${carrier === 'dnata' ? '#1360d2' : '#e6eaf2'}`, background: '#fff' }}><span className="text-[18px] font-bold text-[#e4002b] italic">dnata</span><span className="text-[13px] text-[#5a6282]">If to search for rates for an optimal flight options for their operational needs</span></button>
+          <button onClick={() => setCarrier('emirates')} className="flex items-center gap-[12px] px-[16px] py-[12px] rounded-[6px] text-left" style={{ border: `1.5px solid ${carrier === 'emirates' ? '#1360d2' : '#e6eaf2'}`, background: '#fff' }}><img src={emiratesLogoSrc} alt="Emirates SkyCargo" className="h-[40px] w-auto flex-shrink-0 object-contain" /><span className="text-[13px] text-[#5a6282]">If to get instant rates, capacity checks, and eBooking for freight forwarders.</span></button>
+          <button onClick={() => setCarrier('dnata')} className="flex items-center gap-[12px] px-[16px] py-[12px] rounded-[6px] text-left" style={{ border: `1.5px solid ${carrier === 'dnata' ? '#1360d2' : '#e6eaf2'}`, background: '#fff' }}><img src={dnataLogoSrc} alt="dnata" className="h-[24px] w-auto flex-shrink-0 object-contain" /><span className="text-[13px] text-[#5a6282]">If to search for rates for an optimal flight options for their operational needs</span></button>
           <div className="flex items-stretch"><button onClick={onProceed} className="rounded-[4px] px-[36px] text-[15px] text-white hover:bg-[#0f4fb5] w-full" style={{ background: '#1360d2', fontWeight: 500 }}>Proceed</button></div>
         </div>
       </Card>

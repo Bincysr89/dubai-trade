@@ -4,7 +4,7 @@ import JourneyProgress from './JourneyBanner';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
 
-type Props = { onClose: () => void; onBackToHome: () => void; initialStep?: Step };
+type Props = { onClose: () => void; onBackToHome: () => void; initialStep?: Step; exportFinal?: boolean };
 type Step =
   | 'permits' | 'permitsSuccess'
   | 'declInfo' | 'declSuccess'
@@ -70,7 +70,7 @@ const FillBtn = ({ children, onClick }: { children: React.ReactNode; onClick?: (
   <button onClick={onClick} className="h-[46px] px-[26px] rounded-[4px] text-[15px] text-white hover:bg-[#0f4fb5]" style={{ background: '#1360d2', fontWeight: 500 }}>{children}</button>
 );
 
-export default function CompleteJourneyPage({ onClose, onBackToHome, initialStep }: Props) {
+export default function CompleteJourneyPage({ onClose, onBackToHome, initialStep, exportFinal }: Props) {
   const [step, setStep] = useState<Step>(initialStep ?? 'permits');
   const breadcrumbLast =
     step.startsWith('cargo') ? 'Cargo Waves' : step.startsWith('pay') || step === 'payments' ? 'Payments' : step.startsWith('decl') ? 'Clearance' : 'Integrated Clearance';
@@ -90,7 +90,7 @@ export default function CompleteJourneyPage({ onClose, onBackToHome, initialStep
       {step === 'permits' && <PermitsStep onBack={onClose} onProceed={() => setStep('permitsSuccess')} />}
       {step === 'permitsSuccess' && <PermitsSuccess onBack={onClose} onSubmitDeclaration={() => setStep('declInfo')} />}
       {step === 'declInfo' && <DeclInfoStep onBack={onClose} onSubmit={() => setStep('declSuccess')} />}
-      {step === 'declSuccess' && <DeclSuccess onBack={onClose} onContinuePayments={() => setStep('payments')} />}
+      {step === 'declSuccess' && <DeclSuccess onBack={onClose} onContinuePayments={() => setStep('payments')} exportFinal={exportFinal} onBackToHome={onBackToHome} />}
       {step === 'payments' && <PaymentsStep onBack={onClose} onProceed={() => setStep('pay')} />}
       {step === 'pay' && <PayStep onCancel={() => setStep('payments')} onPay={() => setStep('paySuccess')} />}
       {step === 'paySuccess' && <PaySuccess onBack={onClose} onCargoWaves={() => setStep('cargoOrders')} />}
@@ -177,7 +177,20 @@ function DeclInfoStep({ onBack, onSubmit }: { onBack: () => void; onSubmit: () =
   );
 }
 
-function DeclSuccess({ onBack, onContinuePayments }: { onBack: () => void; onContinuePayments: () => void }) {
+function DeclSuccess({ onBack, onContinuePayments, exportFinal, onBackToHome }: { onBack: () => void; onContinuePayments: () => void; exportFinal?: boolean; onBackToHome: () => void }) {
+  if (exportFinal) {
+    // Export by Air journey is 100% complete at customs declaration — only "Back To Home".
+    return (
+      <div className="flex-1 overflow-y-auto px-4 md:px-10 py-[8px] flex flex-col">
+        <JourneyProgress active={1} percent={100} title="Export by Air flow has been completed" subtitle="Declaration Created - Integrated Clearance Process Completed" button={<FillBtn onClick={onBackToHome}>Back To Home</FillBtn>} />
+        <Card className="flex-1"><SuccessBody heading="Declaration Request Created Successfully" lines={['Dear Customer Thank You For Using Service Request Web Application.', 'Your Request For Customs Declaration Amendment Will Be Sent For Approval.', 'Please Find Below Details For Future Reference']} refNo="Request Number: 560010545" rows={[]} /></Card>
+        <div className="flex items-center justify-between gap-[12px] bg-white px-4 md:px-6 py-[16px] rounded-[8px] mt-[16px]" style={{ boxShadow: '0px -2px 8px rgba(0,0,0,0.06)' }}>
+          <OutlineBtn onClick={onBack}>Back To Listing</OutlineBtn>
+          <FillBtn onClick={onBackToHome}>Back To Home</FillBtn>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="flex-1 overflow-y-auto px-4 md:px-10 py-[8px] flex flex-col">
       <JourneyProgress active={1} percent={55} title="Declaration Created - Integrated Clearance Process Completed" subtitle="Click on 'Continue' to move to the next step for Import Process" button={<FillBtn onClick={onContinuePayments}>Continue To Payments</FillBtn>} />
