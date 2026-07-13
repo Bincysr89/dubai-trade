@@ -171,8 +171,8 @@ const AIR_JOURNEYS: JourneyMap = {
     ],
     export: [
       { step: 1, title: 'Booking & Execution', icon: <BookingExecutionIcon size={ICON} />, desc: CARD_DESC['Booking & Execution'] },
-      { step: 2, title: 'Integrated Clearance', icon: <IntegratedClearanceIcon size={ICON} />, desc: CARD_DESC['Integrated Clearance'] },
-      { step: 3, title: 'Permits & Certificates', icon: <PermitsIcon />, desc: CARD_DESC['Permits & Certificates'] },
+      { step: 2, title: 'Permits & Certificates', icon: <PermitsIcon />, desc: CARD_DESC['Permits & Certificates'] },
+      { step: 3, title: 'Integrated Clearance', icon: <IntegratedClearanceIcon size={ICON} />, desc: CARD_DESC['Integrated Clearance'] },
     ],
   },
   bco: {
@@ -183,8 +183,8 @@ const AIR_JOURNEYS: JourneyMap = {
     ],
     export: [
       { step: 1, title: 'Booking & Execution', icon: <BookingExecutionIcon size={ICON} />, desc: CARD_DESC['Booking & Execution'] },
-      { step: 2, title: 'Integrated Clearance', icon: <IntegratedClearanceIcon size={ICON} />, desc: CARD_DESC['Integrated Clearance'] },
-      { step: 3, title: 'Permits & Certificates', icon: <PermitsIcon />, desc: CARD_DESC['Permits & Certificates'] },
+      { step: 2, title: 'Permits & Certificates', icon: <PermitsIcon />, desc: CARD_DESC['Permits & Certificates'] },
+      { step: 3, title: 'Integrated Clearance', icon: <IntegratedClearanceIcon size={ICON} />, desc: CARD_DESC['Integrated Clearance'] },
     ],
   },
 };

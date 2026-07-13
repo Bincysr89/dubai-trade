@@ -168,6 +168,7 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
   const [step, setStep] = useState<Step>('start');
   const [invoiceTab, setInvoiceTab] = useState<'upload' | 'manual'>('upload');
   const [dragging, setDragging] = useState(false);
+  const [addLineItem, setAddLineItem] = useState(false);
 
   return (
     <div className="fixed inset-0 z-[70] flex flex-col bg-[#f8fafd]" style={{ fontFamily: font }}>
@@ -195,15 +196,20 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
 
           {step === 'start' && <StartStep onProceed={() => setStep('carrier')} defaults={defaults} />}
           {step === 'carrier' && <CarrierStep />}
+          {addLineItem ? (
+            <AddLineItem />
+          ) : (<>
           {step === 'invoice' && (
             <InvoiceStep
               tab={invoiceTab} setTab={setInvoiceTab}
               dragging={dragging} setDragging={setDragging}
               onUpload={() => setStep('invoiceList')}
+              onAddLineItem={() => setAddLineItem(true)}
             />
           )}
-          {step === 'invoiceList' && <InvoiceListStep />}
+          {step === 'invoiceList' && <InvoiceListStep onAddLineItem={() => setAddLineItem(true)} />}
           {step === 'documents' && <DocumentsStep />}
+          </>)}
         </div>
       </div>
 
@@ -211,6 +217,7 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
       <div className="flex-shrink-0 bg-white px-4 md:px-10 py-[16px] flex items-center justify-between gap-[12px]" style={{ boxShadow: '0px -2px 8px rgba(0,0,0,0.06)' }}>
         <button
           onClick={() => {
+            if (addLineItem) { setAddLineItem(false); return; }
             if (step === 'carrier') setStep('start');
             else if (step === 'invoice') setStep('carrier');
             else if (step === 'invoiceList') setStep('invoice');
@@ -222,21 +229,25 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
         >Back</button>
 
         <div className="flex items-center gap-[12px]">
-          {(step === 'start' || step === 'carrier') && (
+          {addLineItem && (<>
+            <button onClick={() => setAddLineItem(false)} className="h-[48px] px-[28px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Cancel</button>
+            <button onClick={() => { setAddLineItem(false); if (step === 'invoice') setStep('invoiceList'); }} className="h-[48px] px-[36px] rounded-[4px] text-[16px] text-white hover:bg-[#0f4fb5] transition-colors" style={{ background: '#1360d2', fontWeight: 500 }}>Save</button>
+          </>)}
+          {!addLineItem && (step === 'start' || step === 'carrier') && (
             <button
               onClick={() => setStep(step === 'start' ? 'carrier' : 'invoice')}
               className="h-[48px] px-[32px] rounded-[4px] text-[16px] text-white hover:bg-[#0f4fb5] transition-colors"
               style={{ background: '#1360d2', fontWeight: 500 }}
             >Save</button>
           )}
-          {(step === 'invoice' || step === 'invoiceList') && (
+          {!addLineItem && (step === 'invoice' || step === 'invoiceList') && (
             <button
               onClick={() => setStep(step === 'invoice' ? 'invoiceList' : 'documents')}
               className="h-[48px] px-[32px] rounded-[4px] text-[16px] text-white hover:bg-[#0f4fb5] transition-colors"
               style={{ background: '#1360d2', fontWeight: 500 }}
             >Proceed</button>
           )}
-          {step === 'documents' && (
+          {!addLineItem && step === 'documents' && (
             <>
               <button
                 className="h-[48px] px-[24px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors"
@@ -400,12 +411,10 @@ function CarrierStep() {
 }
 
 /* ── Step 3: Invoice details — upload ── */
-function InvoiceStep({ tab, setTab, dragging, setDragging, onUpload }: {
+function InvoiceStep({ tab, setTab, dragging, setDragging, onUpload, onAddLineItem }: {
   tab: 'upload' | 'manual'; setTab: (t: 'upload' | 'manual') => void;
-  dragging: boolean; setDragging: (b: boolean) => void; onUpload: () => void;
+  dragging: boolean; setDragging: (b: boolean) => void; onUpload: () => void; onAddLineItem: () => void;
 }) {
-  const [addLine, setAddLine] = useState(false);
-  if (addLine) return <AddLineItem onBack={() => setAddLine(false)} onSave={() => { setAddLine(false); onUpload(); }} />;
   return (
     <>
       <ReadOnlyForm channel="Air" regime="Export" third={['AWB Number', 'AWB1234567']} fourth={['Flight Information', 'EK1234']} />
@@ -448,7 +457,7 @@ function InvoiceStep({ tab, setTab, dragging, setDragging, onUpload }: {
         </Card>
       )}
 
-      {tab === 'manual' && <ManualInvoice onSave={onUpload} onAddLineItem={() => setAddLine(true)} />}
+      {tab === 'manual' && <ManualInvoice onSave={onUpload} onAddLineItem={onAddLineItem} />}
     </>
   );
 }
@@ -487,7 +496,7 @@ function ManualInvoice({ onSave, onAddLineItem }: { onSave: () => void; onAddLin
   );
 }
 
-function AddLineItem({ onBack, onSave }: { onBack: () => void; onSave: () => void }) {
+function AddLineItem() {
   const Section = ({ title, fields }: { title: string; fields: [string, string?, string[]?][] }) => (
     <div className="mb-[20px]">
       <p className="text-[16px] text-[#0e1b3d] mb-[12px]" style={{ fontWeight: 700 }}>{title}</p>
@@ -548,14 +557,6 @@ function AddLineItem({ onBack, onSave }: { onBack: () => void; onSave: () => voi
             </tbody>
           </table></div>
         </Card>
-      </div>
-
-      <div className="flex items-center justify-between gap-[12px] bg-white px-[20px] py-[16px] rounded-[8px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.06)' }}>
-        <button onClick={onBack} className="h-[44px] px-[26px] rounded-[4px] border text-[15px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Back</button>
-        <div className="flex items-center gap-[12px]">
-          <button onClick={onBack} className="h-[44px] px-[22px] rounded-[4px] border text-[15px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Cancel</button>
-          <button onClick={onSave} className="h-[44px] px-[30px] rounded-[4px] text-[15px] text-white hover:bg-[#0f4fb5]" style={{ background: '#1360d2', fontWeight: 500 }}>Save</button>
-        </div>
       </div>
     </>
   );
@@ -626,12 +627,10 @@ function DocumentsStep() {
 }
 
 /* ── Step 4: Invoices added + line items ── */
-function InvoiceListStep() {
+function InvoiceListStep({ onAddLineItem }: { onAddLineItem: () => void }) {
   const [expanded, setExpanded] = useState(true);
-  const [addLineItem, setAddLineItem] = useState(false);
   const cols = ['HS Code', 'Goods Description', 'Condition', 'Country of origin', 'Weight', 'Value of Goods', 'Statistical Quantity - Unit', 'Supplementary Quantity/Units', 'Item Quantity', 'Action'];
   const row = ['AX1234567', 'Spare parts', 'New', 'India', '100 kg', 'AED 1500', '100 - Unit', '100', '100 - Unit'];
-  if (addLineItem) return <AddLineItem onBack={() => setAddLineItem(false)} onSave={() => setAddLineItem(false)} />;
   return (
     <>
       <ReadOnlyForm channel="Air" regime="Export" third={['AWB Number', 'AWB1234567']} fourth={['Flight Information', 'EK1234']} />
@@ -656,7 +655,7 @@ function InvoiceListStep() {
             <svg viewBox="0 0 24 24" className="size-[22px] text-[#1360d2]" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="4" y="3" width="16" height="18" rx="2" /><path d="M8 8h8M8 12h8M8 16h5" strokeLinecap="round" /></svg>
             <span className="text-[17px] text-[#0e1b3d]" style={{ fontWeight: 700 }}>Invoice 1</span>
           </div>
-          <button onClick={() => setAddLineItem(true)} className="h-[38px] px-[16px] rounded-[4px] border text-[14px] bg-white hover:bg-[#f0f4ff] transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Add Line Item</button>
+          <button onClick={onAddLineItem} className="h-[38px] px-[16px] rounded-[4px] border text-[14px] bg-white hover:bg-[#f0f4ff] transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Add Line Item</button>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-y-[14px] gap-x-[16px] mb-[8px]">
