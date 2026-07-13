@@ -446,11 +446,76 @@ function InvoiceStep({ tab, setTab, dragging, setDragging, onUpload }: {
         </Card>
       )}
 
-      {tab === 'manual' && (
-        <Card className="p-[24px]">
-          <p className="text-[15px] text-[#5a6282]">Add invoice and line item details manually.</p>
-        </Card>
-      )}
+      {tab === 'manual' && <ManualInvoice onSave={onUpload} />}
+    </>
+  );
+}
+
+/* ── Add Manually: Invoice Header → Add Line Item ── */
+function ManualInvoice({ onSave }: { onSave: () => void }) {
+  const [view, setView] = useState<'header' | 'lineItem'>('header');
+  if (view === 'lineItem') return <AddLineItem onBack={() => setView('header')} onSave={onSave} />;
+  const sel = ['Select', ''];
+  return (
+    <Card className="p-[24px]">
+      <p className="text-[16px] text-[#0e1b3d] mb-[16px]" style={{ fontWeight: 700 }}>Add Invoice Header</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[16px] mb-[16px]">
+        <Field label="Invoice Number" value="" onChange={() => {}} required placeholder="Invoice number" />
+        <Field label="Invoice Date" value="08/17/2023" onChange={() => {}} required />
+        <Field label="Seller" value="" onChange={() => {}} required search placeholder="Seller Name" />
+        <Field label="Number of Pages" value="12" onChange={() => {}} required />
+        <Field label="Invoice Type" value="" onChange={() => {}} options={['Commercial', 'Proforma']} required select />
+        <Field label="Terms of Delivery" value="" onChange={() => {}} options={['Cost & Fright', 'FOB', 'CIF']} required select />
+        <Field label="Payment Term" value="12 Months" onChange={() => {}} options={['12 Months', '6 Months', 'Advance']} required select />
+        <Field label="Freight Cost" value="" onChange={() => {}} required placeholder="Freight Cost" />
+        <Field label="Freight Cost Currency" value="" onChange={() => {}} options={['AED', 'USD', 'EUR']} required select />
+        <Field label="Insurance Cost" value="" onChange={() => {}} required placeholder="Enter Value" />
+        <Field label="Insurance Cost Currency" value="" onChange={() => {}} options={['AED', 'USD', 'EUR']} required select />
+        <Field label="Invoice Value" value="" onChange={() => {}} required placeholder="Enter Value" />
+        <Field label="Invoice Currency" value="" onChange={() => {}} options={['AED', 'USD', 'EUR']} required select />
+      </div>
+      <div className="flex items-center justify-between flex-wrap gap-[12px] pt-[8px]">
+        <p className="text-[15px] text-[#0e1b3d]" style={{ fontWeight: 600 }}>CIF Value</p>
+        <div className="flex items-center gap-[12px] flex-wrap">
+          <button className="h-[44px] px-[22px] rounded-[4px] border text-[15px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Close</button>
+          <button onClick={() => setView('lineItem')} className="h-[44px] px-[22px] rounded-[4px] border text-[15px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Save &amp; Add Line Item</button>
+          <button className="h-[44px] px-[22px] rounded-[4px] border text-[15px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Save &amp; Add Another Invoice</button>
+          <button onClick={onSave} className="h-[44px] px-[30px] rounded-[4px] text-[15px] text-white hover:bg-[#0f4fb5]" style={{ background: '#1360d2', fontWeight: 500 }}>Save</button>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function AddLineItem({ onBack, onSave }: { onBack: () => void; onSave: () => void }) {
+  const Section = ({ title, fields }: { title: string; fields: [string, string?, string[]?][] }) => (
+    <div className="mb-[20px]">
+      <p className="text-[16px] text-[#0e1b3d] mb-[12px]" style={{ fontWeight: 700 }}>{title}</p>
+      <Card className="p-[20px]"><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[16px]">
+        {fields.map(([l, v, opts]) => <Field key={l} label={l} value={v ?? ''} onChange={() => {}} required select={!!opts} options={opts} />)}
+      </div></Card>
+    </div>
+  );
+  return (
+    <>
+      <div className="flex items-center gap-[10px] mb-[10px]">
+        <svg viewBox="0 0 24 24" className="size-[20px] text-[#1360d2]" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="4" y="3" width="16" height="18" rx="2" /><path d="M8 8h8M8 12h8" strokeLinecap="round" /></svg>
+        <p className="text-[15px] text-[#0e1b3d]" style={{ fontWeight: 700 }}>Add Line Item</p>
+      </div>
+      <Card className="p-[18px] mb-[18px] grid grid-cols-2 sm:grid-cols-5 gap-[16px]">
+        {[['Invoice Number', 'TD 2403'], ['Invoice Date', '09/11/2024'], ['Terms of Delivery', 'Cost & Fright'], ['No. of Line Items', '1 Line Item'], ['Invoice Value', 'USD 6400.00']].map(([k, v]) => <div key={k}><p className="text-[12px] text-[#8f94ae]">{k}</p><p className="text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{v}</p></div>)}
+      </Card>
+      <Section title="Enter Details" fields={[['HS Code', '07089090'], ['Goods Description', 'Core sand shooting cone'], ['Condition', 'New', ['New', 'Used']], ['Country of Origin', 'New Zealand', ['New Zealand', 'India', 'China']], ['Statistical Quantity', '200'], ['Value of Goods', '2000.90'], ['Weight', '10000'], ['Supplementary Quantity', '200']]} />
+      <Section title="IHC Details" fields={[['Item quantity', 'Quantity'], ['Item volume', 'Volume'], ['Classification of goods', 'Quantity', ['Quantity', 'Weight']]]} />
+      <Section title="Exemption/Reference Declaration" fields={[['Exemption Type', 'Aircraft', ['Aircraft', 'Vessel']], ['Exemption reference No.', 'R12344667798989'], ['Previous Declaration No.', 'D1234545']]} />
+      <Section title="Anti Dumping Details" fields={[['Manufacturer/Exporter', 'OVZ12123 -'], ['Anti Dumping Applicability', 'Not Applicable', ['Not Applicable', 'Applicable']], ['Anti Dumping Exemption Reference No.', 'Reference No'], ['Reason for not- Applicable', '']]} />
+      <div className="flex items-center justify-between gap-[12px] bg-white px-[20px] py-[16px] rounded-[8px]" style={{ boxShadow: '0px 2px 8px rgba(0,0,0,0.06)' }}>
+        <button onClick={onBack} className="h-[44px] px-[26px] rounded-[4px] border text-[15px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Back</button>
+        <div className="flex items-center gap-[12px]">
+          <button onClick={onBack} className="h-[44px] px-[22px] rounded-[4px] border text-[15px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Cancel</button>
+          <button onClick={onSave} className="h-[44px] px-[30px] rounded-[4px] text-[15px] text-white hover:bg-[#0f4fb5]" style={{ background: '#1360d2', fontWeight: 500 }}>Save</button>
+        </div>
+      </div>
     </>
   );
 }
