@@ -8,8 +8,6 @@ import PermitsCreatePage from '../components/PermitsCreatePage';
 import TradePlusJourneyPage from '../components/TradePlusJourneyPage';
 import BookingExecutionPage from '../components/BookingExecutionPage';
 import DeclarationListPage from '../components/DeclarationListPage';
-import DdoFlow from '../components/ddo/DdoFlow';
-import DdoRecordsPage, { type DdoRecordStatus } from '../components/ddo/DdoRecordsPage';
 import {
   TradePlusIcon,
   IntegratedClearanceIcon,
@@ -233,15 +231,6 @@ export default function LandingPage() {
   const [declPermitChat, setDeclPermitChat] = useState(false);
   const [permitsExport, setPermitsExport] = useState(false);
   const [showDeclarationList, setShowDeclarationList] = useState(false);
-  const [showDdoFlow, setShowDdoFlow] = useState(false);
-  const [showDdoRecords, setShowDdoRecords] = useState(false);
-  const [ddoRecordStatus, setDdoRecordStatus] = useState<DdoRecordStatus>('nearing-expiry');
-
-  const openDdoRecords = (status: DdoRecordStatus) => {
-    setDdoRecordStatus(status);
-    setShowDdoRecords(true);
-  };
-
   const isAirMode = mode === 'air';
   const activeCards = isAirMode
     ? (AIR_JOURNEYS[airPersona]?.[tradeMode] ?? [])
@@ -318,41 +307,6 @@ export default function LandingPage() {
             <button className="bg-[rgba(14,27,61,0.8)] text-white h-[35px] rounded font-medium text-[16px] capitalize">
               Load More
             </button>
-
-            {/* DDO Trade+ Widget */}
-            <div className="bg-white border border-[#ddd] rounded p-4 flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <span className="text-[#051937] text-[16px] font-medium">Trade +</span>
-                <button
-                  onClick={() => setShowDdoFlow(true)}
-                  className="flex items-center gap-1 text-[#1360d2] text-[16px] font-semibold hover:opacity-70 transition-opacity"
-                >
-                  REQUEST DDO
-                  <svg viewBox="0 0 24 24" className="size-3" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <path d="M9 18l6-6-6-6" />
-                  </svg>
-                </button>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-                {([
-                  { status: 'nearing-expiry' as DdoRecordStatus, count: 5,  label: 'Nearing Expiry', color: '#d67e74' },
-                  { status: 'submitted'      as DdoRecordStatus, count: 12, label: 'Submitted',      color: '#6a7bc7' },
-                  { status: 'pending'        as DdoRecordStatus, count: 3,  label: 'Pending',        color: '#d3ab40' },
-                  { status: 'completed'      as DdoRecordStatus, count: 5,  label: 'Completed',      color: '#5cb78f' },
-                ]).map(item => (
-                  <button
-                    key={item.status}
-                    onClick={() => openDdoRecords(item.status)}
-                    className="bg-white border border-[#eee] rounded-[10px] flex flex-col items-center gap-1 py-3 px-1 hover:border-[#1360d2] hover:shadow-sm transition-all"
-                  >
-                    <span className="text-[#27314b] font-bold text-[18px] leading-none">{item.count}</span>
-                    <span className="font-semibold text-[9px] text-center leading-tight" style={{ color: item.color }}>
-                      {item.label}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
 
           {/* Journey */}
@@ -460,11 +414,6 @@ export default function LandingPage() {
           </div>
         </div>
       </div>
-
-      {showDdoFlow && <DdoFlow onClose={() => setShowDdoFlow(false)} />}
-      {showDdoRecords && (
-        <DdoRecordsPage status={ddoRecordStatus} onClose={() => setShowDdoRecords(false)} />
-      )}
 
       {showPermits && <PermitsCertificatesPage onClose={() => setShowPermits(false)} createPrefill={permitsExport ? { activity: 'Export', mode: 'Air' } : undefined} />}
       {showTradePlus && (
