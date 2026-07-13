@@ -25,7 +25,7 @@ import StatusFilterHeader from './StatusFilterHeader';
 import EligibleDeclarationsPage from './EligibleDeclarationsPage';
 import RaiseClaimRequestPage from './RaiseClaimRequestPage';
 import type { ClaimType } from './ClaimTypeSelectionPage';
-import { RefundTypePage, OutboundDeclarationPage, MissingDocDepositPage, DocumentUploadPage, PaymentDetailsPage, REFUND_TYPE_LABEL, type RefundType, type ChargeDetail } from './ClaimSubPages';
+import { type ChargeDetail } from './ClaimSubPages';
 import { RDChargeFlowPage, isMissingDocCharge } from './RDChargeFlowPage';
 import { REFUND_DEPOSIT_STEPS, REFUND_DEPOSIT_STEPS_NO_DOCS, REFUND_DEPOSIT_AMEND_STEPS } from './ClaimStepper';
 import CargoTransferPrePage from './CargoTransferPrePage';
@@ -53,7 +53,6 @@ import SuspensionHistoryPage from './SuspensionHistoryPage';
 import SuspensionHistoryViewPage from './SuspensionHistoryViewPage';
 import SuspensionResponsePage from './SuspensionResponsePage';
 import SuspensionSuccessModal from './SuspensionSuccessModal';
-import ClaimSubmittedSuccessPage from './ClaimSubmittedSuccessPage';
 import NonRemittanceDocumentsPage, { type UploadedDoc as NRUploadedDoc } from './NonRemittanceDocumentsPage';
 import ClaimTypeEntryPage from './ClaimTypeEntryPage';
 import NonRemittanceChargesPage from './NonRemittanceChargesPage';
@@ -249,8 +248,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
   const [stepperReturnStep, setStepperReturnStep] = useState(0);
   const [cargoPreValues, setCargoPreValues] = useState<{ cargoChannel: string; clientRef: string; carrierReg: string; transferType: string }>({ cargoChannel: 'Sea', clientRef: '', carrierReg: '', transferType: '' });
   const [cargoFormValues, setCargoFormValues] = useState<{ clientRef: string; carrierReg: string; mawb: string; transferorBizCode: string; transferorPremCode: string; transfereeBizCode: string; transfereePremCode: string }>({ clientRef: '', carrierReg: '', mawb: '', transferorBizCode: '', transferorPremCode: '', transfereeBizCode: '', transfereePremCode: '' });
-  type ClaimSubStep = 'list' | 'claimTypeEntry' | 'eligible' | 'eligibleDeclView' | 'chargeDetails' | 'rdDocuments' | 'rdPayment' | 'rdReview' | 'refundType' | 'outbound' | 'missingDoc' | 'documents' | 'payment' | 'success' | 'nonRemittanceDocs' | 'nonRemittanceCharges' | 'nonRemittanceReview' | 'nonRemittanceSuccess' | 'nonRemittanceAck' | 'nonRemittanceClaimView' | 'claimListView' | 'claimHistory' | 'cancelClaim' | 'amendClaim' | 'claimDocs' | 'claimSuspension' | 'rdNrSuccess' | 'nrPaymentPending' | 'nrPaymentProcessing' | 'nrPaymentSuccess' | 'nrPaymentRejected' | 'rdPaymentPending' | 'rdPaymentProcessing' | 'rdPaymentSuccess' | 'rdPaymentRejected';
-  const [claimDeclViewOpen, setClaimDeclViewOpen] = useState(false);
+  type ClaimSubStep = 'list' | 'claimTypeEntry' | 'eligible' | 'eligibleDeclView' | 'chargeDetails' | 'rdDocuments' | 'rdPayment' | 'rdReview' | 'nonRemittanceDocs' | 'nonRemittanceCharges' | 'nonRemittanceReview' | 'nonRemittanceSuccess' | 'nonRemittanceAck' | 'nonRemittanceClaimView' | 'claimListView' | 'claimHistory' | 'cancelClaim' | 'amendClaim' | 'claimDocs' | 'claimSuspension' | 'rdNrSuccess' | 'nrPaymentPending' | 'nrPaymentProcessing' | 'nrPaymentSuccess' | 'nrPaymentRejected' | 'rdPaymentPending' | 'rdPaymentProcessing' | 'rdPaymentSuccess' | 'rdPaymentRejected';
   const [claimListDeclNo, setClaimListDeclNo] = useState<string>('');
   const [claimListDeclViewOpen, setClaimListDeclViewOpen] = useState(false);
   const [claimSelectedRows, setClaimSelectedRows] = useState<import('./EligibleDeclarationsPage').Row[]>([]);
@@ -260,7 +258,6 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
   const rdSkipDocs = claimSelectedRows.length > 0 && claimSelectedRows.every(r => isMissingDocCharge(r.depositType));
   const [claimChargeDetails, setClaimChargeDetails] = useState<ChargeDetail[]>([]);
   const [claimStep, setClaimStep] = useState<ClaimSubStep>('list');
-  const [claimContext, setClaimContext] = useState<{ claimType: ClaimType; declarationNo: string; depositType: string; declarationCategory: string | null; refundType?: RefundType; allowedRefundTypes?: RefundType[] } | null>(null);
   const [nonRemittanceRows, setNonRemittanceRows] = useState<Row[]>([]);
   const [nonRemittanceUploadedDocs, setNonRemittanceUploadedDocs] = useState<NRUploadedDoc[]>([]);
   const [nonRemittancePaymentMode, setNonRemittancePaymentMode] = useState('');
@@ -382,7 +379,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [openFlyout]);
 
-  const resetNRClaim = () => { setNonRemittanceRows([]); setNonRemittancePaymentMode(''); setNonRemittanceAccountNo(''); setClaimContext(null); };
+  const resetNRClaim = () => { setNonRemittanceRows([]); setNonRemittancePaymentMode(''); setNonRemittanceAccountNo(''); };
 
   if (claimListDeclViewOpen) {
     return (
@@ -402,9 +399,12 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
     );
   }
 
-  // Refund of Deposits step titles — switch to "Amend" wording in amend mode.
-  const rdFlowTitle = rdAmendMode ? 'Amend - Refund of Deposits - 3842003' : 'Raise New Claim - Refund of Deposits';
-  const rdChargeTitle = rdAmendMode ? 'Amend — Refund of Deposits - 3842003' : 'Raise New Claim — Refund of Deposits';
+  // Refund of Deposits / Refund of Duty share the same stepper flow — switch
+  // wording based on which claim type the user selected. Amend mode is only
+  // reachable for Refund of Deposits claims, so it keeps its fixed wording.
+  const rdClaimLabel = (!rdAmendMode && selectedClaimTypeForFlow === 'refundDuty') ? 'Refund of Duty' : 'Refund of Deposits';
+  const rdFlowTitle = rdAmendMode ? 'Amend - Refund of Deposits - 3842003' : `Raise New Claim - ${rdClaimLabel}`;
+  const rdChargeTitle = rdAmendMode ? 'Amend — Refund of Deposits - 3842003' : `Raise New Claim — ${rdClaimLabel}`;
   const rdBreadcrumbLast = rdAmendMode ? 'Amend Claim' : 'Raise New Claim';
   const exitRdAmend = () => { setRdAmendMode(false); setClaimStep('list'); };
 
@@ -434,42 +434,13 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                 // Non Remittance goes to its own per-declaration docs page
                 if (selectedClaimType === 'nonRemittance') {
                   setNonRemittanceRows(rows);
-                  setClaimContext({
-                    claimType: selectedClaimType,
-                    declarationNo: rows.map((r) => r.declarationNo).join(', '),
-                    depositType: 'Non Remittance Claim',
-                    declarationCategory: 'Freezone Export',
-                  });
                   setClaimStep('nonRemittanceDocs');
                   return;
                 }
 
-                // Refund of Deposits → new Charge Details step
-                if (selectedClaimType === 'refundDeposit') {
-                  setClaimSelectedRows(rows);
-                  setClaimStep('chargeDetails');
-                  return;
-                }
-
-                // Refund of Duty — existing single-row flow
-                const row = rows[0];
-                const cat = row.declarationCategory;
-                let allowedRefundTypes: RefundType[] | null = null;
-                if (row.depositType === 'Duty Deposit') {
-                  allowedRefundTypes = ['full', 'partial'];
-                }
-                setClaimContext({
-                  claimType: selectedClaimType,
-                  declarationNo: rows.map((r) => r.declarationNo).join(', '),
-                  depositType: row.depositType,
-                  declarationCategory: cat,
-                  allowedRefundTypes: allowedRefundTypes ?? undefined,
-                });
-                if (allowedRefundTypes) {
-                  setClaimStep('refundType');
-                } else {
-                  setClaimStep('missingDoc');
-                }
+                // Refund of Deposits / Refund of Duty → shared Charge Details stepper flow
+                setClaimSelectedRows(rows);
+                setClaimStep('chargeDetails');
               }}
             />
           )}
@@ -503,7 +474,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
             <NonRemittanceDocumentsPage
               rows={claimSelectedRows}
               title={rdFlowTitle}
-              badge="Refund of Deposits"
+              badge={rdClaimLabel}
               steps={rdAmendMode ? REFUND_DEPOSIT_AMEND_STEPS : REFUND_DEPOSIT_STEPS}
               activeIndex={2}
               initialDocs={rdAmendMode ? RD_AMEND_DOCS : undefined}
@@ -539,7 +510,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
               title={rdFlowTitle}
               steps={rdAmendMode ? REFUND_DEPOSIT_AMEND_STEPS : (rdSkipDocs ? REFUND_DEPOSIT_STEPS_NO_DOCS : REFUND_DEPOSIT_STEPS)}
               activeIndex={rdAmendMode ? 3 : (rdSkipDocs ? 3 : 4)}
-              claimType="Refund of Deposits"
+              claimType={rdClaimLabel}
               showAmendment={rdAmendMode}
               onBack={() => setClaimStep(rdAmendMode ? 'rdDocuments' : 'rdPayment')}
               onSubmit={() => nonRemittancePaymentMode === 'E-Payment' ? setClaimStep('rdPaymentPending') : setClaimStep('rdNrSuccess')}
@@ -550,22 +521,22 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
             /* Success page uses the same design as the NR claim flow. */
             <NonRemittanceSuccessPage
               title={rdFlowTitle}
-              heading={rdAmendMode ? 'Refund of Deposits Claim Amendment Submitted Successfully' : 'Refund of Deposits Claim Submitted Successfully'}
+              heading={rdAmendMode ? 'Refund of Deposits Claim Amendment Submitted Successfully' : `${rdClaimLabel} Claim Submitted Successfully`}
               message={rdAmendMode
                 ? 'Your Refund of Deposits claim amendment request has been submitted successfully and is currently under processing. Please click on View Claim button for the details.'
-                : 'Your Refund of Deposits Claim has been submitted successfully and is currently under processing. Please click on View Claim button for the details.'}
+                : `Your ${rdClaimLabel} Claim has been submitted successfully and is currently under processing. Please click on View Claim button for the details.`}
               onBack={exitRdAmend}
               onViewAck={() => { setAckReturnStep('list'); setClaimStep('nonRemittanceAck'); }}
               onViewDocs={() => setClaimStep('claimDocs')}
               onViewClaim={() => { setClaimViewReturnStep('list'); setClaimStep('nonRemittanceClaimView'); }}
             />
           )}
-          {/* Refund of Deposits — e-Payment screens reuse the NR payment pages. */}
+          {/* Refund of Deposits / Refund of Duty — e-Payment screens reuse the NR payment pages. */}
           {claimStep === 'rdPaymentPending' && (
             <NRPaymentPendingPage
               title={rdFlowTitle}
-              badgeLabel="Refund of Deposits"
-              claimLabel="Refund of Deposits"
+              badgeLabel={rdClaimLabel}
+              claimLabel={rdClaimLabel}
               onBackToListing={() => setClaimStep('list')}
               onMakePayment={() => setClaimStep('rdPaymentProcessing')}
             />
@@ -591,65 +562,6 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
               title={rdFlowTitle}
               onBackToListing={() => setClaimStep('list')}
               onRetryPayment={() => setClaimStep('rdPaymentProcessing')}
-            />
-          )}
-          {claimStep === 'refundType' && claimContext && !claimDeclViewOpen && (
-            <RefundTypePage
-              onBack={() => setClaimStep('eligible')}
-              onContinue={(type) => {
-                setClaimContext({ ...claimContext, refundType: type });
-                setClaimStep('documents');
-              }}
-              declaration={{
-                claimType: claimContext.claimType === 'refundDeposit' ? 'Refund of Deposits' : claimContext.claimType === 'refundDuty' ? 'Refund of Duty' : 'Non Remittance',
-                declarationNo: claimContext.declarationNo,
-                depositType: claimContext.depositType,
-                declarationCategory: claimContext.declarationCategory,
-              }}
-              allowedTypes={claimContext.allowedRefundTypes}
-              onViewDeclaration={() => setClaimDeclViewOpen(true)}
-            />
-          )}
-          {claimStep === 'refundType' && claimContext && claimDeclViewOpen && (
-            <CustomsDeclarationViewPage
-              declarationNo={claimContext.declarationNo}
-              onBack={() => setClaimDeclViewOpen(false)}
-              onServiceCatalogue={onServiceCatalogue}
-              onHome={onClose}
-            />
-          )}
-          {claimStep === 'documents' && claimContext && (
-            <DocumentUploadPage
-              onBack={() => setClaimStep('refundType')}
-              onContinue={() => setClaimStep('payment')}
-            />
-          )}
-          {claimStep === 'payment' && claimContext && (
-            <PaymentDetailsPage
-              summary={{
-                declarationNo: claimContext.declarationNo || '101-04498436-24',
-                depositType: claimContext.depositType || 'Missing Document Deposit',
-                depositAmount: 'Dh 1,000',
-                depositMethod: 'Cash (ePayment)',
-                refundType: claimContext.refundType ? REFUND_TYPE_LABEL[claimContext.refundType] : 'N/A',
-                hsCount: 10,
-                outboundDeclarationNo: 'E: 2080004915824',
-                totalRefundAmount: 'Dh 200.0',
-              }}
-              onBack={() => setClaimStep('documents')}
-              onContinue={() => setClaimStep('success')}
-            />
-          )}
-          {claimStep === 'outbound' && claimContext && (
-            <OutboundDeclarationPage
-              onBack={() => setClaimStep('refundType')}
-              onContinue={() => setClaimStep('documents')}
-            />
-          )}
-          {claimStep === 'missingDoc' && claimContext && (
-            <MissingDocDepositPage
-              onBack={() => setClaimStep('eligible')}
-              onContinue={() => setClaimStep('documents')}
             />
           )}
           {claimStep === 'nonRemittanceDocs' && nonRemittanceRows.length > 0 && (
@@ -759,12 +671,6 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
             <NRPaymentRejectedPage
               onBackToListing={() => { setClaimStep('list'); resetNRClaim(); }}
               onRetryPayment={() => setClaimStep('nrPaymentProcessing')}
-            />
-          )}
-          {claimStep === 'success' && (
-            <ClaimSubmittedSuccessPage
-              onBack={() => { setClaimStep('list'); setClaimContext(null); setNonRemittanceRows([]); }}
-              onCreateAnother={() => { setClaimStep('eligible'); setNonRemittanceRows([]); }}
             />
           )}
         </div>

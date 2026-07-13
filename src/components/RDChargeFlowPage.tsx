@@ -6,9 +6,9 @@ import type { Row } from './EligibleDeclarationsPage';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
 
-/* ─── Column grid definition — serial no. + 7 equal columns ─────── */
-const COLS    = '56px repeat(7, minmax(160px, 1fr))';
-const TBL_MIN = 1190;
+/* ─── Column grid definition — serial no. + 7 equal columns + action ─────── */
+const COLS    = '56px repeat(7, minmax(160px, 1fr)) 72px';
+const TBL_MIN = 1250;
 
 /* ─── Domain types ──────────────────────────────────────────────── */
 type RefundType = 'full' | 'fullImport' | 'partial' | 'partialImport' | 'no' | 'refund' | 'noRefund' | '';
@@ -18,10 +18,21 @@ type RefundType = 'full' | 'fullImport' | 'partial' | 'partialImport' | 'no' | '
 export const MISSING_DOC_CHARGE_TYPES = ['Missing Document Deposit', 'Document Deposit'];
 export const isMissingDocCharge = (ct: string) => MISSING_DOC_CHARGE_TYPES.includes(ct);
 
+/* Only Alternative Duty Deposit supports the full Export/Import refund options
+   (and the outbound-declaration linkage that comes with them). Every other
+   charge type — including Missing/Document Deposit — is a simple Refund / No Refund. */
+export const hasFullRefundOptions = (ct: string) => ct === 'Alternative Duty Deposit';
+
+/* Refund of Duty — the "Duty" charge type gets Full/Partial/No Export (and the
+   outbound-declaration linkage that comes with them); the other two Refund of
+   Duty charge types (Declaration Amendment / Cancellation) are Refund / No Refund. */
+export const hasDutyRefundOptions = (ct: string) => ct === 'Duty';
+
 export type ChargeDetail = {
   declarationNo: string;
   chargeType: string;
   depositAmount: string;
+  depositMethod: string;
   refundType: RefundType;
   outboundDeclNo: string;
   claimAmount: string;
@@ -111,7 +122,14 @@ const REFUND_OPTIONS: { value: RefundType; label: string }[] = [
   { value: 'no',            label: 'No Export'      },
 ];
 
-/* Missing/Document Deposit — only plain Refund / No Refund. */
+/* Refund of Duty — "Duty" charge type: Full/Partial/No Export only (no Import legs). */
+const REFUND_OPTIONS_DUTY: { value: RefundType; label: string }[] = [
+  { value: 'full',    label: 'Full Export'    },
+  { value: 'partial', label: 'Partial Export' },
+  { value: 'no',      label: 'No Export'      },
+];
+
+/* Every other charge type (Alternative Duty Deposit and Duty excepted) — plain Refund / No Refund. */
 const MISSING_DOC_REFUND_OPTIONS: { value: RefundType; label: string }[] = [
   { value: 'refund',   label: 'Refund'    },
   { value: 'noRefund', label: 'No Refund' },
@@ -647,7 +665,7 @@ function HSRow({ hs, inv, declNo, rt, obs, edit, selected, onToggleSelect, onPat
 }
 
 /* ─── Declaration row card ──────────────────────────────────────── */
-function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount, onToggleInv, onAdd, onEdit, onViewOb }: {
+function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount, onToggleInv, onAdd, onEdit, onViewOb, onDelete }: {
   d: ChargeDetail; idx: number; obs: OutboundState; invOpen: boolean;
   hsEdits: Record<string, { allocationMethod?: string; currency?: string }>;
   onPatchHs: (hsId: string, patch: { allocationMethod?: string; currency?: string }) => void;
@@ -657,6 +675,7 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
   onAdd: (ctx: DrawerCtx, hsIds: string[], onApplied?: () => void) => void;
   onEdit: (ctx: DrawerCtx, ob: OutboundDetail) => void;
   onViewOb: (ob: OutboundDetail) => void;
+  onDelete: (i: number) => void;
 }) {
   const invoices = getInvoices(d.declarationNo);
   const needsOb  = needsOutbound(d.refundType);
@@ -728,7 +747,7 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
 
         <div style={{ paddingRight: 8 }}>
           <span className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap', overflow: 'hidden', display: 'block', textOverflow: 'ellipsis' }}>
-            {meta.depositMethod}
+            {d.depositMethod}
           </span>
         </div>
 
@@ -746,16 +765,27 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
 
         <div style={{ paddingRight: 8 }}>
           <RefundSelect value={d.refundType} onChange={rt => onRefund(idx, rt)}
-            options={isMissingDocCharge(d.chargeType) ? MISSING_DOC_REFUND_OPTIONS : REFUND_OPTIONS} />
+            options={hasFullRefundOptions(d.chargeType) ? REFUND_OPTIONS
+              : hasDutyRefundOptions(d.chargeType) ? REFUND_OPTIONS_DUTY
+              : MISSING_DOC_REFUND_OPTIONS} />
         </div>
 
-        <div>
+        <div style={{ paddingRight: 8 }}>
           <input type="number" min={0} value={d.claimAmount} onChange={e => onAmount(idx, e.target.value)}
             placeholder="Enter amount" readOnly={isAuto}
             className="w-full bg-white rounded-[4px] text-[16px]"
             style={{ height: 56, border: `1px solid ${d.refundType && !d.claimAmount.trim() && d.refundType !== 'no' ? '#dc3545' : '#d5ddfb'}`,
               padding: '0 12px', fontFamily: font, color: '#0e1b3d', outline: 'none',
               background: isAuto ? '#f8fafd' : '#fff' }} />
+        </div>
+
+        <div className="flex items-center justify-center">
+          <button type="button" onClick={() => onDelete(idx)} aria-label="Delete"
+            className="size-[36px] inline-flex items-center justify-center rounded hover:bg-[#fef2f2] transition-colors" style={{ color: '#dc3545' }}>
+            <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+              <path d="M3 5h14M8 5V3h4v2M17 5l-1 13H4L3 5" /><path d="M8 9v5M12 9v5" />
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -928,9 +958,14 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
     rows.map(r => {
       const chargeType = r.depositType ?? 'Alternative Duty Deposit';
       const depositAmount = r.depositAmount ?? '0';
-      const refundType: RefundType = prefill ? (isMissingDocCharge(chargeType) ? 'refund' : 'full') : '';
+      const depositMethod = r.depositMethod && r.depositMethod !== 'N/A'
+        ? r.depositMethod
+        : (DECL_META[r.declarationNo]?.depositMethod ?? 'Alternative Duty');
+      const refundType: RefundType = prefill
+        ? ((hasFullRefundOptions(chargeType) || hasDutyRefundOptions(chargeType)) ? 'full' : 'refund')
+        : '';
       return {
-        declarationNo: r.declarationNo, chargeType, depositAmount,
+        declarationNo: r.declarationNo, chargeType, depositAmount, depositMethod,
         refundType,
         outboundDeclNo: '', claimAmount: prefill ? autoAmount(refundType, depositAmount) : '',
       };
@@ -967,6 +1002,21 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
   };
   const patchAmount  = (i: number, v: string) => setDetails(p => p.map((d, j) => j !== i ? d : { ...d, claimAmount: v }));
   const toggleInv    = (i: number)            => setInvOpen(p => ({ ...p, [i]: !p[i] }));
+
+  /* Delete a declaration row from the claim, with confirmation. */
+  const [deleteIdx, setDeleteIdx] = useState<number | null>(null);
+  const confirmDeleteRow = () => {
+    if (deleteIdx === null) return;
+    const declNo = details[deleteIdx]?.declarationNo;
+    setDetails(p => p.filter((_, j) => j !== deleteIdx));
+    setObs(p => {
+      const next = { ...p };
+      Object.keys(next).forEach(k => { if (k.startsWith(`${declNo}::`)) delete next[k]; });
+      return next;
+    });
+    setInvOpen({});
+    setDeleteIdx(null);
+  };
 
   /* Write the outbound declaration to every selected line item — the same
      declaration number can cover multiple invoices/line items. */
@@ -1029,7 +1079,7 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
             {/* Table header card */}
             <div style={{ display: 'grid', gridTemplateColumns: COLS, background: '#a7c2e9',
               borderRadius: 8, padding: '10px 16px', gap: 0 }}>
-              {['S. No.', 'Claim Declaration No.', 'Declaration Type', 'Deposit Method', 'Charge Type', 'Amount (AED)', 'Refund Type', 'Claim Amount (AED)'].map(h => (
+              {['S. No.', 'Claim Declaration No.', 'Declaration Type', 'Deposit Method', 'Charge Type', 'Amount (AED)', 'Refund Type', 'Claim Amount (AED)', 'Action'].map(h => (
                 <div key={h} className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500, whiteSpace: 'nowrap', paddingRight: 8, fontFamily: font }}>
                   {h}
                 </div>
@@ -1044,7 +1094,8 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
                 onRefund={patchRefund} onAmount={patchAmount} onToggleInv={toggleInv}
                 onAdd={(ctx, hsIds, onApplied) => setModal({ ctx, hsIds, onApplied })}
                 onEdit={(ctx, ob) => setModal({ ctx: { ...ctx, editId: ob.id }, hsIds: [ctx.hsId], existing: ob })}
-                onViewOb={ob => setViewOb(ob)} />
+                onViewOb={ob => setViewOb(ob)}
+                onDelete={setDeleteIdx} />
             ))}
           </div>
         </div>
@@ -1098,6 +1149,38 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
       {viewOb && <OutboundViewPopup ob={viewOb} onClose={() => setViewOb(null)} />}
 
       {saveModal && <SaveExitModal onCancel={() => setSaveModal(false)} onBackToListing={onBackToListing ?? (() => {})} />}
+
+      {/* Delete confirmation dialog */}
+      {deleteIdx !== null && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/50" onClick={() => setDeleteIdx(null)}>
+          <div onClick={e => e.stopPropagation()} className="bg-white rounded-[10px] flex flex-col items-center gap-[20px] px-[40px] py-[36px] max-w-[460px] mx-[16px]"
+            style={{ boxShadow: '0 8px 40px rgba(0,0,0,0.18)', fontFamily: font }}>
+            <div className="size-[64px] rounded-full flex items-center justify-center" style={{ background: '#fff8e6' }}>
+              <svg viewBox="0 0 96 96" fill="none" width="34" height="34">
+                <circle cx="48" cy="48" r="42" fill="none" stroke="#FFC020" strokeWidth="7" />
+                <rect x="44.5" y="22" width="7" height="32" rx="3.5" fill="#FFC020" />
+                <circle cx="48" cy="68" r="4.5" fill="#FFC020" />
+              </svg>
+            </div>
+            <div className="text-center flex flex-col gap-[8px]">
+              <p className="text-[20px] text-[#0e1b3d]" style={{ fontWeight: 700 }}>Are you sure to delete?</p>
+              <p className="text-[16px] text-[#697498]" style={{ lineHeight: 1.4 }}>This declaration record will be removed from the claim.</p>
+            </div>
+            <div className="flex gap-[12px]">
+              <button onClick={() => setDeleteIdx(null)}
+                className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors"
+                style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>
+                No
+              </button>
+              <button onClick={confirmDeleteRow}
+                className="h-[48px] px-[36px] rounded-[4px] text-[16px] text-white transition-colors"
+                style={{ background: '#1360d2', fontWeight: 500 }}>
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

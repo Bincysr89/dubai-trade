@@ -525,8 +525,8 @@ const ROWS: Row[] = [
   { declarationNo: '303-07731209-24', declarationDate: '09/18/2024', depositType: 'Cargo Transfer Deposit',            declarationCategory: 'Bonded Movement',              depositAmount: 'Dh 800',   depositMethod: 'Standing Guarantee', claimExpiry: '05/20/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
   // Duty Deposit (Refund of Deposit context — direct)
   { declarationNo: '108-05512790-24', declarationDate: '11/02/2024', depositType: 'Duty Deposit',                      declarationCategory: 'Import',                       depositAmount: 'Dh 3,200', depositMethod: 'Standing Guarantee', claimExpiry: '05/01/2025', exportExpiry: '04/01/2025', remarks: '—', kind: 'requestExt' },
-  // Document Deposit
-  { declarationNo: '101-04498436-24', declarationDate: '12/05/2024', depositType: 'Document Deposit',                  declarationCategory: null,                           depositAmount: 'Dh 1,000', depositMethod: 'Cash',               claimExpiry: '04/03/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
+  // Missing Document Deposit
+  { declarationNo: '101-04498436-24', declarationDate: '12/05/2024', depositType: 'Missing Document Deposit',          declarationCategory: null,                           depositAmount: 'Dh 1,000', depositMethod: 'Standing Guarantee', claimExpiry: '04/03/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
   // CDM Deposit
   { declarationNo: '202-08812205-24', declarationDate: '08/14/2024', depositType: 'CDM Deposit',                       declarationCategory: null,                           depositAmount: 'Dh 2,500', depositMethod: 'Cash',               claimExpiry: '06/15/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
   // Declaration Amendment - Deposit
@@ -535,8 +535,8 @@ const ROWS: Row[] = [
   { declarationNo: '510-03318821-24', declarationDate: '06/22/2024', depositType: 'Declaration Cancellation - Deposit',declarationCategory: null,                           depositAmount: 'Dh 4,000', depositMethod: 'Cash',               claimExpiry: '06/30/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
 
   // ── Refund of Duty ─────────────────────────────────────────────────────────
-  // Duty Deposit + Import (needs refund type selection)
-  { declarationNo: '506-02100934-24', declarationDate: '09/18/2024', depositType: 'Duty Deposit',                               declarationCategory: 'Import',              depositAmount: 'Dh 1,800', depositMethod: 'Cash', claimExpiry: '05/20/2025', exportExpiry: 'N/A', remarks: '—', kind: 'request' },
+  // Duty + Import (needs refund type selection)
+  { declarationNo: '506-02100934-24', declarationDate: '09/18/2024', depositType: 'Duty',                                       declarationCategory: 'Import',              depositAmount: 'Dh 1,800', depositMethod: 'Cash', claimExpiry: '05/20/2025', exportExpiry: 'N/A', remarks: '—', kind: 'request' },
   // Declaration Amendment - Duty / Charges (direct)
   { declarationNo: '507-03219875-24', declarationDate: '08/03/2024', depositType: 'Declaration Amendment - Duty / Charges',     declarationCategory: 'Import',              depositAmount: 'Dh 6,200', depositMethod: 'Cash', claimExpiry: '06/05/2025', exportExpiry: 'N/A', remarks: '—', kind: 'request' },
   { declarationNo: '511-04412309-24', declarationDate: '07/15/2024', depositType: 'Declaration Amendment - Duty / Charges',     declarationCategory: 'Import For Re-Export',depositAmount: 'Dh 2,400', depositMethod: 'Cash', claimExpiry: '07/01/2025', exportExpiry: 'N/A', remarks: '—', kind: 'request' },
@@ -621,13 +621,13 @@ const CLAIM_TYPE_DEPOSITS: Record<ClaimType, string[]> = {
     'Alternative Duty Deposit',
     'Cargo Transfer Deposit',
     'Duty Deposit',
-    'Document Deposit',
+    'Missing Document Deposit',
     'CDM Deposit',
     'Declaration Amendment - Deposit',
     'Declaration Cancellation - Deposit',
   ],
   refundDuty: [
-    'Duty Deposit',
+    'Duty',
     'Declaration Amendment - Duty / Charges',
     'Declaration Cancellation Refund - Duty / Charges',
   ],
@@ -992,7 +992,7 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
                     { label: 'Alternative Duty Deposit',          value: 'Alternative Duty Deposit' },
                     { label: 'Cargo Transfer Deposit',            value: 'Cargo Transfer Deposit' },
                     { label: 'Duty Deposit',                      value: 'Duty Deposit' },
-                    { label: 'Document Deposit',                  value: 'Document Deposit' },
+                    { label: 'Missing Document Deposit',          value: 'Missing Document Deposit' },
                     { label: 'CDM Deposit',                       value: 'CDM Deposit' },
                     { label: 'Declaration Amendment - Deposit',   value: 'Declaration Amendment - Deposit' },
                     { label: 'Declaration Cancellation - Deposit',value: 'Declaration Cancellation - Deposit' },
