@@ -200,13 +200,18 @@ export function useTableBehaviors() {
 /**
  * Left/right scroll arrow buttons — place inside a `position: relative` wrapper that also contains the scroll div.
  * stickyWidth = combined pixel width of sticky Status + Actions columns.
+ * headerHeight = the table header row's height in px (every table in this app uses the same
+ * `padding: '10px 12px'` / 16px single-line header convention, so 44px is a safe default) — the
+ * fade + button start below this so they never wash out the header's column names, which is what
+ * happens if the semi-transparent gradient is layered over the header's solid background color.
  */
 export function ScrollArrows({
-  atStart, atEnd, onLeft, onRight, stickyWidth,
+  atStart, atEnd, onLeft, onRight, stickyWidth, headerHeight = 44,
 }: {
   atStart: boolean; atEnd: boolean;
   onLeft: () => void; onRight: () => void;
   stickyWidth: number;
+  headerHeight?: number;
 }) {
   const btn: React.CSSProperties = {
     width: 32, height: 32, borderRadius: '50%',
@@ -220,7 +225,7 @@ export function ScrollArrows({
     <>
       {!atStart && (
         <div style={{
-          position: 'absolute', left: 0, top: 0, bottom: 0, width: 80, zIndex: 20,
+          position: 'absolute', left: 0, top: headerHeight, bottom: 0, width: 80, zIndex: 20,
           background: 'linear-gradient(to right, rgba(255,255,255,0.85) 0%, transparent 100%)',
           display: 'flex', alignItems: 'center', paddingLeft: 12,
           pointerEvents: 'none',
@@ -234,7 +239,7 @@ export function ScrollArrows({
       )}
       {!atEnd && (
         <div style={{
-          position: 'absolute', right: stickyWidth, top: 0, bottom: 0, width: 80, zIndex: 20,
+          position: 'absolute', right: stickyWidth, top: headerHeight, bottom: 0, width: 80, zIndex: 20,
           background: 'linear-gradient(to left, rgba(255,255,255,0.85) 0%, transparent 100%)',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: 12,
           pointerEvents: 'none',
