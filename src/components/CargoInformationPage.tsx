@@ -4,6 +4,7 @@ import Pagination from './Pagination';
 import BackToListingBar from './BackToListingBar';
 import ManageColumnsModal, { ColDef } from './ManageColumnsModal';
 import { DateInput } from './DatePicker';
+import { useTableBehaviors, DragDots, ScrollArrows } from '../hooks/useTableBehaviors';
 
 const font = "'Dubai', sans-serif";
 
@@ -287,6 +288,15 @@ export default function CargoInformationPage({ onBack }: Props) {
   const [openFlyout, setOpenFlyout]           = useState<number | null>(null);
   const [showNewRequest, setShowNewRequest]   = useState(false);
   const [viewRow, setViewRow]                 = useState<ListingRow | null>(null);
+  const [colOrder, setColOrder]               = useState<string[]>(() => config.columns.map(c => c.key));
+
+  const {
+    tableRef, scrollRef, hoveredColKey, resizeIndicatorLeft, isNearResize,
+    atScrollStart, atScrollEnd, handleScroll, scrollToStart, scrollToEnd,
+    handleTableMouseMove, handleTableMouseLeave, handleTableMouseDown,
+    onDragStart, onDragEnd, onDragOver, onDragLeave, onDrop,
+    getThStyle, getTdBg, getW,
+  } = useTableBehaviors();
 
   const statusRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -306,9 +316,13 @@ export default function CargoInformationPage({ onBack }: Props) {
     setPage(1); setSearchValue(''); setSearchKey(next.searchKeys[0]); setToolbarStatus(null);
     setShowDrafts(false); setShowFilters(false); setAfValues({}); setViewRow(null);
     setVisibleCols(next.columns.map(c => c.key));
+    setColOrder(next.columns.map(c => c.key));
   };
 
-  const orderedVisible = config.columns.filter(c => visibleCols.includes(c.key));
+  const orderedVisible = (colOrder.length === config.columns.length ? colOrder : config.columns.map(c => c.key))
+    .filter(k => visibleCols.includes(k))
+    .map(k => config.columns.find(c => c.key === k))
+    .filter((c): c is FieldCol => Boolean(c));
   const colLabel = (key: string) => config.columns.find(c => c.key === key)?.label ?? key;
 
   const filteredRows = config.rows.filter(r => {
@@ -595,13 +609,40 @@ export default function CargoInformationPage({ onBack }: Props) {
                 </div>
               )}
 
-              {/* Table — same structure (sticky Status + Actions) for every listing */}
-              <div className="overflow-x-auto pb-[20px] flex-1">
-                <table style={{ width: 'max-content', minWidth: '100%', tableLayout: 'auto', borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }}>
+              {/* Table — same structure (sticky Status + Actions, drag-reorder, resize, scroll arrows) for every listing */}
+              <div className="pb-[20px] flex-1" style={{ position: 'relative' }}>
+                <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={232} />
+                <div ref={scrollRef} onScroll={handleScroll} className="overflow-x-auto" style={{ position: 'relative' }}>
+                  {resizeIndicatorLeft !== null && (
+                    <div style={{ position: 'absolute', top: 0, bottom: 0, left: resizeIndicatorLeft, width: 3, background: '#1360d2', borderRadius: 2, pointerEvents: 'none', zIndex: 100 }} />
+                  )}
+                <table
+                  ref={tableRef}
+                  onMouseMove={handleTableMouseMove}
+                  onMouseLeave={handleTableMouseLeave}
+                  onMouseDown={handleTableMouseDown}
+                  style={{ width: 'max-content', minWidth: '100%', tableLayout: 'auto', borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font, cursor: isNearResize ? 'col-resize' : undefined }}
+                >
                   <thead>
                     <tr>
                       {orderedVisible.map((col, i) => (
-                        <th key={col.key} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, borderTopLeftRadius: i === 0 ? 8 : 0, borderBottomLeftRadius: i === 0 ? 8 : 0, paddingLeft: i === 0 ? 16 : 12, minWidth: col.w, whiteSpace: 'nowrap' }}>
+                        <th key={col.key} data-col-key={col.key} style={{
+                          padding: '10px 12px', textAlign: 'left', fontWeight: 500, borderTopLeftRadius: i === 0 ? 8 : 0, borderBottomLeftRadius: i === 0 ? 8 : 0, paddingLeft: i === 0 ? 16 : 12,
+                          width: getW(col.key, col.w), minWidth: getW(col.key, col.w), whiteSpace: 'nowrap', position: 'relative',
+                          ...getThStyle(col.key),
+                        }}
+                          onDragOver={(e) => onDragOver(col.key, e)}
+                          onDragLeave={onDragLeave}
+                          onDrop={(e) => onDrop(col.key, e, colOrder, setColOrder)}
+                        >
+                          <div
+                            draggable
+                            onDragStart={(e) => onDragStart(col.key, e)}
+                            onDragEnd={onDragEnd}
+                            style={{ display: hoveredColKey === col.key ? 'flex' : 'none', position: 'absolute', top: 3, left: '50%', transform: 'translateX(-50%)', cursor: 'grab', alignItems: 'center', justifyContent: 'center', zIndex: 4 }}
+                          >
+                            <DragDots />
+                          </div>
                           <span className="text-[16px] font-medium text-[#051937] whitespace-nowrap">{col.label}</span>
                         </th>
                       ))}
@@ -623,7 +664,7 @@ export default function CargoInformationPage({ onBack }: Props) {
                       return (
                         <tr key={str(row[config.refKey])}>
                           {orderedVisible.map((col, ci) => (
-                            <td key={col.key} style={{ background: '#fff', padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff', paddingLeft: ci === 0 ? 16 : 12, minWidth: col.w, whiteSpace: 'nowrap' }}>
+                            <td key={col.key} data-col-key={col.key} style={{ background: getTdBg(col.key) ?? '#fff', padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff', paddingLeft: ci === 0 ? 16 : 12, width: getW(col.key, col.w), minWidth: getW(col.key, col.w), whiteSpace: 'nowrap' }}>
                               {col.key === config.refKey ? (
                                 <button onClick={() => setViewRow(row)} className="text-[16px] text-[#1360d2] font-medium hover:underline whitespace-nowrap overflow-hidden text-ellipsis block" style={{ fontFamily: font, background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}>
                                   {str(row[col.key])}
@@ -660,6 +701,7 @@ export default function CargoInformationPage({ onBack }: Props) {
                     })}
                   </tbody>
                 </table>
+                </div>
 
                 <Pagination
                   page={page}
