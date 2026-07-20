@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Header from './Header';
 import Pagination from './Pagination';
 import { DateInput } from './DatePicker';
+import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
 
 const font = "'Dubai', sans-serif";
 
@@ -159,6 +160,8 @@ export default function ServiceListingPage({
   const hasAF = !!advancedFilterFields?.length;
 
   const paginated = rows.slice((page - 1) * pageSize, page * pageSize);
+
+  const { scrollRef, atScrollStart, atScrollEnd, handleScroll, scrollToStart, scrollToEnd } = useTableBehaviors();
 
   return (
     <div className="fixed inset-0 z-50 bg-[#f8fafd] flex flex-col overflow-hidden">
@@ -381,7 +384,9 @@ export default function ServiceListingPage({
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto pb-[20px]">
+        <div className="pb-[20px]" style={{ position: 'relative' }}>
+          <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={232} />
+          <div ref={scrollRef} onScroll={handleScroll} className="overflow-x-auto">
           <table
             style={{
               width: 'max-content',
@@ -533,6 +538,7 @@ export default function ServiceListingPage({
               })}
             </tbody>
           </table>
+          </div>
 
           <Pagination
             page={page}

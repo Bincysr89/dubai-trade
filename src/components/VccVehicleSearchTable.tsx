@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import VccDetailsModal, { type VccDetails } from './VccDetailsModal';
+import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
 
 type Status = 'Generated' | 'Printed/Downloaded' | 'Cancelled';
 
@@ -62,6 +63,7 @@ type Props = {
 };
 
 export default function VccVehicleSearchTable({ searchTerm, searchType, onViewRequest }: Props) {
+  const { scrollRef, atScrollStart, atScrollEnd, handleScroll, scrollToStart, scrollToEnd } = useTableBehaviors();
   const [openVcc, setOpenVcc] = useState<VehicleRow | null>(null);
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -99,7 +101,9 @@ export default function VccVehicleSearchTable({ searchTerm, searchType, onViewRe
   const STICKY_ACTION_W = 80;
 
   return (
-    <div className="overflow-x-auto pb-[20px]">
+    <div className="pb-[20px]" style={{ position: 'relative' }}>
+      <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={STICKY_STATUS_W + STICKY_ACTION_W} />
+      <div ref={scrollRef} onScroll={handleScroll} className="overflow-x-auto">
       <table
         style={{
           minWidth: 1400,
@@ -240,6 +244,7 @@ export default function VccVehicleSearchTable({ searchTerm, searchType, onViewRe
           })}
         </tbody>
       </table>
+      </div>
 
       <VccDetailsModal
         open={openVcc !== null}

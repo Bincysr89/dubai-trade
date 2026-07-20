@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ColumnFilter } from './ColumnFilter';
+import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
 
 const font = "'Dubai', sans-serif";
 
@@ -45,6 +46,7 @@ type Props = { onBack: () => void };
 export default function ClaimsAuditHistoryPage({ onBack }: Props) {
   const [openFlyout, setOpenFlyout] = useState<number | null>(null);
   const flyoutRef = useRef<HTMLDivElement>(null);
+  const { scrollRef, atScrollStart, atScrollEnd, handleScroll, scrollToStart, scrollToEnd } = useTableBehaviors();
 
   useEffect(() => {
     if (openFlyout === null) return;
@@ -77,7 +79,9 @@ export default function ClaimsAuditHistoryPage({ onBack }: Props) {
       <div className="flex-1 overflow-auto px-4 sm:px-10 pb-[100px]">
         <h1 className="text-[32px] text-[#0e1b3d] mb-[16px]" style={{ fontWeight: 500 }}>Audit History</h1>
 
-        <div className="overflow-x-auto">
+        <div style={{ position: 'relative' }}>
+          <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={160} />
+          <div ref={scrollRef} onScroll={handleScroll} className="overflow-x-auto">
           <table style={{ minWidth: 1300, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }} className="w-full">
             <thead>
               <tr>
@@ -141,6 +145,7 @@ export default function ClaimsAuditHistoryPage({ onBack }: Props) {
               })}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
 

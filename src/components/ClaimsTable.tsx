@@ -56,7 +56,7 @@ function getFlyoutItems(status: Status, isDraft: boolean, isNonRemittance = fals
   return ['view', 'amend', 'cancel'];
 }
 
-type DeclDetail = {
+export type DeclDetail = {
   declNo: string;
   date: string;
   category: string;
@@ -65,7 +65,7 @@ type DeclDetail = {
   exportExpiry: string;
 };
 
-type ClaimRow = {
+export type ClaimRow = {
   reqNo: string;
   claimNo: string;
   ver: string;
@@ -223,7 +223,7 @@ function DeclarationsModal({ declarations, onClose, onDeclarationOpen }: { decla
 }
 
 type Props = {
-  onView?: (claimType: string) => void;
+  onView?: (row: ClaimRow) => void;
   onAmend?: (claimType: string) => void;
   onCancel?: (claimType: string) => void;
   onPrint?: () => void;
@@ -315,7 +315,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
     </button>
   );
 
-  const renderFlyout = (i: number, status: Status, claimType: string) => (
+  const renderFlyout = (i: number, row: ClaimRow) => (
     <div className="relative inline-block" ref={openFlyout === i ? flyoutRef : undefined}>
       <button
         className="size-[28px] inline-flex items-center justify-center rounded hover:bg-[#f0f4ff] transition-colors"
@@ -328,15 +328,15 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
       </button>
       {openFlyout === i && (
         <div className="absolute z-[100] bg-white rounded-[8px] py-[4px] overflow-hidden" style={{ right: '100%', top: 0, marginRight: 6, width: 272, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
-          {getFlyoutItems(status, showDrafts, claimType === 'Non Remittance').map((id) => (
+          {getFlyoutItems(row.status, showDrafts, row.claimType === 'Non Remittance').map((id) => (
             <button
               key={id}
               className="group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
               onClick={() => {
                 setOpenFlyout(null);
-                if (id === 'view')     onView?.(claimType);
-                if (id === 'amend')    onAmend?.(claimType);
-                if (id === 'cancel')   onCancel?.(claimType);
+                if (id === 'view')     onView?.(row);
+                if (id === 'amend')    onAmend?.(row.claimType);
+                if (id === 'cancel')   onCancel?.(row.claimType);
                 if (id === 'print')       onPrint?.();
                 if (id === 'printReceipt') onPrint?.();
                 if (id === 'viewDocs') onViewDocs?.();
@@ -364,9 +364,9 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
     );
   };
 
-  const renderActionCell = (i: number, status: Status, claimType: string) => (
+  const renderActionCell = (i: number, row: ClaimRow) => (
     <td style={{ position: 'sticky', right: 0, background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 79, textAlign: 'center', borderBottom: '1px solid #f8f8f8', zIndex: openFlyout === i ? 50 : 1 }}>
-      {renderFlyout(i, status, claimType)}
+      {renderFlyout(i, row)}
     </td>
   );
 
@@ -457,7 +457,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
                 {vis('submissionDate') && cell(txt(row.submissionDate), 'submissionDate', 170)}
                 {vis('remark') && cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3, fontFamily: font }}>{row.remark}</span>, 'remark', 200)}
                 {renderStatusCell(row.status, i)}
-                {renderActionCell(i, row.status, row.claimType)}
+                {renderActionCell(i, row)}
               </tr>
             ))}
           </tbody>

@@ -685,6 +685,7 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
   const [pageSize, setPageSize] = useState(8);
   const [selectedDecls, setSelectedDecls] = useState<Set<string>>(new Set());
   const [overLimitError, setOverLimitError] = useState(false);
+  const [confirmRemoveDecl, setConfirmRemoveDecl] = useState<string | null>(null);
   const claimTypePreset = initialClaimType != null;
 
   // First filter by claim type, then by search query, then by importer code
@@ -802,6 +803,10 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
   const orderedHeaders = colOrder.length === headers.length
     ? (colOrder.map(label => headers.find(h => h.label === label)).filter(Boolean) as typeof headers)
     : headers;
+  // Scroll arrow should sit immediately to the left of whichever column is currently
+  // sticky/static at the right edge (drag-reorder can change which one that is).
+  const lastHeader = orderedHeaders[orderedHeaders.length - 1];
+  const mainStickyWidth = lastHeader ? getW(lastHeader.label, lastHeader.w) : 0;
 
   // Shared cell-value lookup — reused by the main table and the selected-declarations summary panel,
   // returning a fully-styled node so both tables render identically column-for-column.
@@ -1317,7 +1322,7 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
           {claimType && declTab === 'manual' && (
           <>
           <div className="px-[16px] pt-[8px] pb-[16px]" style={{ position: 'relative' }}>
-            <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={0} />
+            <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={mainStickyWidth} />
             <div ref={scrollRef} onScroll={handleScroll} className="overflow-x-auto" style={{ position: 'relative' }}>
               {resizeIndicatorLeft !== null && (
                 <div style={{ position: 'absolute', top: 0, bottom: 0, left: resizeIndicatorLeft, width: 3, background: '#1360d2', borderRadius: 2, pointerEvents: 'none', zIndex: 100 }} />
@@ -1531,7 +1536,7 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
                           </th>
                         );
                       })}
-                      <th style={{ position: 'sticky', right: 0, width: 64, minWidth: 64, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2, borderTopRightRadius: 8, borderBottomRightRadius: 8 }}>
+                      <th style={{ position: 'sticky', right: 0, width: 64, minWidth: 64, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, zIndex: 2, borderTopRightRadius: 8, borderBottomRightRadius: 8 }}>
                         <span className="text-[16px] text-[#000] whitespace-nowrap" style={{ letterSpacing: '0.07px' }}>Action</span>
                       </th>
                     </tr>
@@ -1551,15 +1556,17 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
                             </td>
                           );
                         })}
-                        <td style={{ position: 'sticky', right: 0, background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 64, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>
+                        <td style={{ position: 'sticky', right: 0, background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 64 }}>
                           <button
                             type="button"
                             aria-label={`Remove ${row.declarationNo}`}
-                            onClick={() => setSelectedDecls((prev) => { const next = new Set(prev); next.delete(row.declarationNo); return next; })}
+                            onClick={() => setConfirmRemoveDecl(row.declarationNo)}
                             className="size-[24px] inline-flex items-center justify-center rounded hover:bg-[#fef2f2] transition-colors flex-shrink-0"
                             style={{ color: '#dc3545' }}
                           >
-                            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+                            <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                              <path d="M3 5h14M8 5V3h4v2M17 5l-1 13H4L3 5" /><path d="M8 9v5M12 9v5" />
+                            </svg>
                           </button>
                         </td>
                       </tr>
@@ -1570,6 +1577,41 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
             </div>
           );
         })()}
+
+        {/* Remove-declaration confirmation */}
+        {confirmRemoveDecl && (
+          <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/50" onClick={() => setConfirmRemoveDecl(null)}>
+            <div onClick={e => e.stopPropagation()} className="bg-white rounded-[10px] flex flex-col items-center gap-[20px] px-[40px] py-[36px] max-w-[460px] mx-[16px]"
+              style={{ boxShadow: '0 8px 40px rgba(0,0,0,0.18)', fontFamily: "'Dubai', sans-serif" }}>
+              <div className="size-[64px] rounded-full flex items-center justify-center" style={{ background: '#fff8e6' }}>
+                <svg viewBox="0 0 96 96" fill="none" width="34" height="34">
+                  <circle cx="48" cy="48" r="42" fill="none" stroke="#FFC020" strokeWidth="7" />
+                  <rect x="44.5" y="22" width="7" height="32" rx="3.5" fill="#FFC020" />
+                  <circle cx="48" cy="68" r="4.5" fill="#FFC020" />
+                </svg>
+              </div>
+              <div className="text-center flex flex-col gap-[8px]">
+                <p className="text-[20px] text-[#0e1b3d]" style={{ fontWeight: 700 }}>Are you sure to delete?</p>
+                <p className="text-[16px] text-[#697498]" style={{ lineHeight: 1.4 }}>This declaration will be removed from your selected list.</p>
+              </div>
+              <div className="flex gap-[12px]">
+                <button onClick={() => setConfirmRemoveDecl(null)}
+                  className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors"
+                  style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>
+                  No
+                </button>
+                <button onClick={() => {
+                    setSelectedDecls((prev) => { const next = new Set(prev); next.delete(confirmRemoveDecl); return next; });
+                    setConfirmRemoveDecl(null);
+                  }}
+                  className="h-[48px] px-[36px] rounded-[4px] text-[16px] text-white transition-colors"
+                  style={{ background: '#1360d2', fontWeight: 500 }}>
+                  Yes
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <ClaimantBrokerDetail />
       </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import ManageColumnsModal, { ColDef } from './ManageColumnsModal';
+import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
 import Header from './Header';
 import VccTable, { type VccRow } from './VccTable';
 import VccListPopup from './VccListPopup';
@@ -18,7 +19,7 @@ import VccAuditHistoryPage from './VccAuditHistoryPage';
 import VccUpdatePaymentModePage from './VccUpdatePaymentModePage';
 import EPaymentsTable from './EPaymentsTable';
 import CargoTransferTable from './CargoTransferTable';
-import ClaimsTable from './ClaimsTable';
+import ClaimsTable, { type ClaimRow } from './ClaimsTable';
 import AcknowledgementTable, { ACK_ROWS } from './AcknowledgementTable';
 import { AckAcceptConfirmModal, AckDeclineReasonModal, AckDeclineConfirmModal, AckSuccessPage } from './AckModals';
 import StatusFilterHeader from './StatusFilterHeader';
@@ -268,6 +269,9 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
   // Claim-type label (e.g. "Refund of Deposits") of the row the user clicked View/Cancel on —
   // routes to the matching read-only view / cancel flow instead of always showing the NR one.
   const [listClaimType, setListClaimType] = useState<string>('Non Remittance');
+  // Full row of the claim the user clicked "View Claim" on — carries the actual charge type
+  // and declaration list so the view page shows the right data and section layout for that claim.
+  const [viewClaimRow, setViewClaimRow] = useState<ClaimRow | null>(null);
   const [claimViewReturnStep, setClaimViewReturnStep] = useState<ClaimSubStep>('nonRemittanceSuccess');
   const [ackReturnStep, setAckReturnStep] = useState<ClaimSubStep>('nonRemittanceSuccess');
   const [ackStep, setAckStep] = useState<'list' | 'acceptSuccess' | 'declineSuccess'>('list');
@@ -352,6 +356,10 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
   const [filterFocused, setFilterFocused] = useState<Record<string, boolean>>({});
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
   const flyoutRef = useRef<HTMLDivElement>(null);
+  const {
+    scrollRef: declScrollRef, atScrollStart: declAtScrollStart, atScrollEnd: declAtScrollEnd,
+    handleScroll: declHandleScroll, scrollToStart: declScrollToStart, scrollToEnd: declScrollToEnd,
+  } = useTableBehaviors();
 
   const isFloated = (key: string) => filterFocused[key] || !!filterValues[key];
   const floatLabel = (active: boolean): React.CSSProperties => ({
@@ -635,6 +643,11 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
             listClaimType === 'Refund of Deposits' || listClaimType === 'Refund of Duty' ? (
               <RefundDepositsClaimViewPage
                 claimType={listClaimType}
+                chargeType={viewClaimRow?.depositType}
+                declarations={viewClaimRow?.declarations}
+                claimNo={viewClaimRow?.claimNo}
+                claimStatus={viewClaimRow?.status}
+                submissionDate={viewClaimRow?.submissionDate}
                 onBack={() => setClaimStep('list')}
               />
             ) : (
@@ -2275,7 +2288,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
         ) : activeMenu === 'Refund & Claims' ? (
           <ClaimsTable
             showDrafts={showDrafts}
-            onView={(ct) => { setListClaimType(ct); setClaimStep('claimListView'); }}
+            onView={(row) => { setListClaimType(row.claimType); setViewClaimRow(row); setClaimStep('claimListView'); }}
             onAmend={(ct) => {
               if (ct === 'Refund of Deposits') {
                 // RD amend reuses the RD new-claim steps with editable pre-filled fields,
@@ -2306,7 +2319,9 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
             onCloseColModal={() => setShowColModal(false)}
           />
         ) : (
-          <div className="overflow-x-auto pb-[20px]">
+          <div className="pb-[20px]" style={{ position: 'relative' }}>
+            <ScrollArrows atStart={declAtScrollStart} atEnd={declAtScrollEnd} onLeft={declScrollToStart} onRight={declScrollToEnd} stickyWidth={226} />
+            <div ref={declScrollRef} onScroll={declHandleScroll} className="overflow-x-auto">
             <table
               style={{
                 minWidth: 2100,
@@ -2511,6 +2526,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                 })}
               </tbody>
             </table>
+            </div>
           </div>
         )}
         </div>

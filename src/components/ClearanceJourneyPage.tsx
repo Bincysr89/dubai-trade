@@ -7,6 +7,7 @@ import integratedClearanceSrc from '../assets/integratedclearance.svg';
 import paymentsSrc from '../assets/payments.svg';
 import cargoWavesSrc from '../assets/cargowaves.svg';
 import waveSrc from '../assets/wave.svg';
+import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
 
@@ -629,6 +630,7 @@ function DocumentsStep() {
 /* ── Step 4: Invoices added + line items ── */
 function InvoiceListStep({ onAddLineItem }: { onAddLineItem: () => void }) {
   const [expanded, setExpanded] = useState(true);
+  const { scrollRef, atScrollStart, atScrollEnd, handleScroll, scrollToStart, scrollToEnd } = useTableBehaviors();
   const cols = ['HS Code', 'Goods Description', 'Condition', 'Country of origin', 'Weight', 'Value of Goods', 'Statistical Quantity - Unit', 'Supplementary Quantity/Units', 'Item Quantity', 'Action'];
   const row = ['AX1234567', 'Spare parts', 'New', 'India', '100 kg', 'AED 1500', '100 - Unit', '100', '100 - Unit'];
   return (
@@ -676,26 +678,30 @@ function InvoiceListStep({ onAddLineItem }: { onAddLineItem: () => void }) {
           <>
             <p className="text-[16px] text-[#0e1b3d] mb-[2px]" style={{ fontWeight: 700 }}>Line Items</p>
             <p className="text-[13px] text-[#8f94ae] mb-[12px]">(100 Items Available)</p>
-            <div className="overflow-x-auto rounded-[8px] border border-[#eef1f6]">
-              <table className="w-full border-collapse" style={{ minWidth: 1000 }}>
-                <thead>
-                  <tr style={{ background: '#eaf1fb' }}>
-                    {cols.map((c) => (
-                      <th key={c} className="text-left text-[13px] text-[#455174] px-[14px] py-[12px] whitespace-nowrap" style={{ fontWeight: 600 }}>{c}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-t border-[#eef1f6]">
-                    {row.map((v, i) => (
-                      <td key={i} className="text-[14px] text-[#0e1b3d] px-[14px] py-[14px] whitespace-nowrap">{v}</td>
-                    ))}
-                    <td className="px-[14px] py-[14px]">
-                      <button className="size-[28px] rounded flex items-center justify-center hover:bg-[#f0f4ff]"><svg viewBox="0 0 24 24" className="size-[16px] text-[#697498]" fill="currentColor"><circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" /></svg></button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <div className="pb-[4px]" style={{ position: 'relative' }}>
+              <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={80} />
+              <div ref={scrollRef} onScroll={handleScroll} className="overflow-x-auto rounded-[8px] border border-[#eef1f6]">
+                <table className="w-full border-collapse" style={{ minWidth: 1000 }}>
+                  <thead>
+                    <tr style={{ background: '#eaf1fb' }}>
+                      {cols.slice(0, -1).map((c) => (
+                        <th key={c} className="text-left text-[13px] text-[#455174] px-[14px] py-[12px] whitespace-nowrap" style={{ fontWeight: 600 }}>{c}</th>
+                      ))}
+                      <th className="text-left text-[13px] text-[#455174] px-[14px] py-[12px] whitespace-nowrap" style={{ fontWeight: 600, background: '#eaf1fb', position: 'sticky', right: 0, minWidth: 80, width: 80, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>{cols[cols.length - 1]}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-t border-[#eef1f6]">
+                      {row.map((v, i) => (
+                        <td key={i} className="text-[14px] text-[#0e1b3d] px-[14px] py-[14px] whitespace-nowrap">{v}</td>
+                      ))}
+                      <td className="px-[14px] py-[14px]" style={{ background: '#fff', position: 'sticky', right: 0, minWidth: 80, width: 80, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 1 }}>
+                        <button className="size-[28px] rounded flex items-center justify-center hover:bg-[#f0f4ff]"><svg viewBox="0 0 24 24" className="size-[16px] text-[#697498]" fill="currentColor"><circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" /></svg></button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </>
         )}

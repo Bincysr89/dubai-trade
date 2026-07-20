@@ -4,6 +4,7 @@ import SaveExitModal from './SaveExitModal';
 import BackToListingBar from './BackToListingBar';
 import ClaimStepper, { REFUND_DEPOSIT_STEPS, REFUND_DEPOSIT_STEPS_NO_DOCS } from './ClaimStepper';
 import type { Row } from './EligibleDeclarationsPage';
+import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
 
@@ -767,6 +768,7 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
   const needsOb  = needsOutbound(d.refundType);
   const isAuto   = d.refundType === 'no' || d.refundType === 'full' || d.refundType === 'fullImport' || d.refundType === 'refund' || d.refundType === 'noRefund';
   const meta     = DECL_META[d.declarationNo] ?? { declarationType: 'Import for Re-Export', depositMethod: 'Alternative Duty' };
+  const { scrollRef: hsScrollRef, atScrollStart: hsAtScrollStart, atScrollEnd: hsAtScrollEnd, handleScroll: hsHandleScroll, scrollToStart: hsScrollToStart, scrollToEnd: hsScrollToEnd } = useTableBehaviors();
 
   /* Search above the invoice table — combined type-dropdown + input, as on the first stepper */
   const [searchType, setSearchType]         = useState<'Invoice Number' | 'HS Code'>('Invoice Number');
@@ -983,7 +985,9 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
               })()}
               </div>
 
-              <div style={{ overflowX: 'auto' }}>
+              <div style={{ position: 'relative' }}>
+                <ScrollArrows atStart={hsAtScrollStart} atEnd={hsAtScrollEnd} onLeft={hsScrollToStart} onRight={hsScrollToEnd} stickyWidth={72} />
+                <div ref={hsScrollRef} onScroll={hsHandleScroll} style={{ overflowX: 'auto' }}>
                 <table className="dt-table dt-table--lined" style={{ minWidth: 1360 }}>
                   <thead>
                     <tr>
@@ -1033,6 +1037,7 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
                     ))}
                   </tbody>
                 </table>
+                </div>
               </div>
             </div>
           )}

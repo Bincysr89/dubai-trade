@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import CargoTransferViewPage from './CargoTransferViewPage';
 import Pagination from './Pagination';
 import { DateInputOutlined } from './DatePicker';
+import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
 
 const font = "'Dubai', sans-serif";
 
@@ -353,6 +354,7 @@ function SuccessPopup({ type, count, onClose }: { type: Tab; count: number; onCl
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function CargoTransferReceiptReleasePage({ onBack }: Props) {
+  const { scrollRef, atScrollStart, atScrollEnd, handleScroll, scrollToStart, scrollToEnd } = useTableBehaviors();
   const [tab, setTab]           = useState<Tab>('release');
   const [rows, setRows]         = useState<Row[]>(INITIAL_ROWS);
   const [selected, setSelected] = useState<Set<number>>(new Set());
@@ -749,7 +751,9 @@ export default function CargoTransferReceiptReleasePage({ onBack }: Props) {
           </div>
 
           {/* ══ Table — data cols scrollable, last 2 status cols sticky right ══ */}
-          <div className="overflow-x-auto">
+          <div style={{ position: 'relative' }}>
+          <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={STICKY_COLS[0].w + STICKY_COLS[1].w} />
+          <div ref={scrollRef} onScroll={handleScroll} className="overflow-x-auto">
             <table style={{
               width: 'max-content', minWidth: '100%',
               borderCollapse: 'separate', borderSpacing: '0 0',
@@ -879,6 +883,7 @@ export default function CargoTransferReceiptReleasePage({ onBack }: Props) {
                 })}
               </tbody>
             </table>
+          </div>
           </div>
 
           {/* ══ Pagination ══ */}

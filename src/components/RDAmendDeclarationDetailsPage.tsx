@@ -3,6 +3,7 @@ import type { Row } from './EligibleDeclarationsPage';
 import ClaimStepper from './ClaimStepper';
 import ClaimantBrokerDetail from './ClaimantBrokerDetail';
 import BackToListingBar from './BackToListingBar';
+import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
 
 const font = "'Dubai', sans-serif";
 
@@ -66,6 +67,7 @@ type Props = {
 
 export default function RDAmendDeclarationDetailsPage({ rows, onRowsChange, claimNo, claimLabel, steps, onBack, onBackToListing, onProceed }: Props) {
   const removeRow = (declarationNo: string) => onRowsChange(rows.filter(r => r.declarationNo !== declarationNo));
+  const { scrollRef, atScrollStart, atScrollEnd, handleScroll, scrollToStart, scrollToEnd } = useTableBehaviors();
 
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full" style={{ fontFamily: font }}>
@@ -101,7 +103,9 @@ export default function RDAmendDeclarationDetailsPage({ rows, onRowsChange, clai
             </p>
           </div>
 
-          <div className="overflow-x-auto px-[16px] pt-[8px] pb-[16px]">
+          <div className="px-[16px] pt-[8px] pb-[16px]" style={{ position: 'relative' }}>
+            <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={72} />
+            <div ref={scrollRef} onScroll={handleScroll} className="overflow-x-auto">
             <table style={{ minWidth: COLUMNS.reduce((s, c) => s + c.w, 0) + 72, borderCollapse: 'separate', borderSpacing: '0 8px' }} className="w-full">
               <thead>
                 <tr>
@@ -149,6 +153,7 @@ export default function RDAmendDeclarationDetailsPage({ rows, onRowsChange, clai
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
 

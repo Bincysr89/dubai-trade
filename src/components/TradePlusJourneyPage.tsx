@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Header from './Header';
 import JourneyProgress from './JourneyBanner';
+import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
 import importBySeaSrc from '../assets/importbysea.svg';
 // @ts-ignore
 import tradePlusSrc from '../assets/trade+.svg';
@@ -111,6 +112,7 @@ export default function TradePlusJourneyPage({ onClose, onContinueToClearance }:
 /* Step 1 — DDO tracking list */
 function ListStep({ onClose, onRequest }: { onClose: () => void; onRequest: () => void }) {
   const [tab, setTab] = useState<'track' | 'pay'>('track');
+  const { scrollRef, atScrollStart, atScrollEnd, handleScroll, scrollToStart, scrollToEnd } = useTableBehaviors();
   const cols = ['DO Reference No.', 'BOL No.', 'Request Party Name', 'Requested Date', 'Completed Date', 'Pending With', 'DO/NOC Number', 'Status', 'Status Remark'];
   const rows = [
     ['823177', '337788', 'A539-APL CO.P TE. LTD', '06/07/2024 11:34', '06/07/2024 11:34', 'A539-APL CO.P TE. LTD', '9809876', 'Successful', 'Active'],
@@ -150,12 +152,14 @@ function ListStep({ onClose, onRequest }: { onClose: () => void; onRequest: () =
         </div>
         {/* Table */}
         <Card>
-          <div className="overflow-x-auto">
+          <div className="pb-[4px]" style={{ position: 'relative' }}>
+            <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={100} />
+            <div ref={scrollRef} onScroll={handleScroll} className="overflow-x-auto">
             <table className="w-full border-collapse" style={{ minWidth: 1100 }}>
               <thead><tr style={{ background: '#c9def7' }}>
                 <th className="px-[14px] py-[14px]"><span className="size-[16px] rounded-[3px] border border-[#8f9bbf] inline-block" /></th>
                 {cols.map((c) => (<th key={c} className="text-left text-[13px] text-[#0e1b3d] px-[14px] py-[14px] whitespace-nowrap" style={{ fontWeight: 600 }}>{c}</th>))}
-                <th className="text-left text-[13px] text-[#0e1b3d] px-[14px] py-[14px]" style={{ fontWeight: 600 }}>Actions</th>
+                <th className="text-left text-[13px] text-[#0e1b3d] px-[14px] py-[14px] whitespace-nowrap" style={{ fontWeight: 600, background: '#c9def7', position: 'sticky', right: 0, minWidth: 100, width: 100, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>Actions</th>
               </tr></thead>
               <tbody>
                 {rows.map((r, ri) => (
@@ -168,11 +172,12 @@ function ListStep({ onClose, onRequest }: { onClose: () => void; onRequest: () =
                           : <span className="text-[#0e1b3d]">{cell}</span>}
                       </td>
                     ))}
-                    <td className="px-[14px] py-[14px]"><div className="flex items-center gap-[8px]"><button className="size-[26px] flex items-center justify-center"><svg viewBox="0 0 24 24" className="size-[15px] text-[#697498]" fill="currentColor"><circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" /></svg></button><button className="size-[26px] rounded-full border border-[#d5ddfb] flex items-center justify-center"><svg viewBox="0 0 24 24" className="size-[14px] text-[#697498]" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M6 9l6 6 6-6" /></svg></button></div></td>
+                    <td className="px-[14px] py-[14px]" style={{ background: '#fff', position: 'sticky', right: 0, minWidth: 100, width: 100, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 1 }}><div className="flex items-center gap-[8px]"><button className="size-[26px] flex items-center justify-center"><svg viewBox="0 0 24 24" className="size-[15px] text-[#697498]" fill="currentColor"><circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" /></svg></button><button className="size-[26px] rounded-full border border-[#d5ddfb] flex items-center justify-center"><svg viewBox="0 0 24 24" className="size-[14px] text-[#697498]" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M6 9l6 6 6-6" /></svg></button></div></td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
           <div className="flex items-center justify-end gap-[10px] px-[16px] py-[14px] flex-wrap">
             <span className="text-[14px] text-[#5a6282]">Result</span>

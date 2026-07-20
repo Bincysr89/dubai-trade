@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ColumnFilter } from './ColumnFilter';
+import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
 
 const font = "'Dubai', sans-serif";
 
@@ -90,6 +91,7 @@ type Props = {
 export default function CargoTransferHistoryPage({ onBack, onBackToListing, onSuspensionHistory, onSuspensionResponse }: Props) {
   const [openFlyout, setOpenFlyout] = useState<number | null>(null);
   const flyoutRef = useRef<HTMLDivElement>(null);
+  const { scrollRef, atScrollStart, atScrollEnd, handleScroll, scrollToStart, scrollToEnd } = useTableBehaviors();
 
   useEffect(() => {
     if (openFlyout === null) return;
@@ -144,7 +146,9 @@ export default function CargoTransferHistoryPage({ onBack, onBackToListing, onSu
         <h1 style={{ fontSize: 32, fontWeight: 500, color: '#0e1b3d', fontFamily: font, marginBottom: 8 }}>
           Cargo Transfer History
         </h1>
-        <div className="overflow-x-auto">
+        <div style={{ position: 'relative' }}>
+          <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={186} />
+          <div ref={scrollRef} onScroll={handleScroll} className="overflow-x-auto">
           <table style={{ minWidth: 1500, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }} className="w-full">
             <thead>
               <tr>
@@ -247,6 +251,7 @@ export default function CargoTransferHistoryPage({ onBack, onBackToListing, onSu
               })}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
 

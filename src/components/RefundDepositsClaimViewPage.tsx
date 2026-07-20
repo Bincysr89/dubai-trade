@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Dh from './Dh';
+import { hasFullRefundOptions, hasDutyRefundOptions } from './RDChargeFlowPage';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
 
@@ -52,24 +53,58 @@ type DeclLine = {
   depositMethod: string; accountNumber: string; depositAmount: string;
   refundType: string; claimAmount: string; invoices: InvoiceGroup[];
 };
-const DECL_LINES: DeclLine[] = [
-  {
-    declarationNo: '105-01426431-24', declarationType: 'Import for Re Export', chargeType: 'Alternative Duty Deposit',
-    depositMethod: 'Standing Guarantee', accountNumber: 'ACC-100234', depositAmount: '1,000.00',
-    refundType: 'Full Export', claimAmount: '1,000.00',
-    invoices: [
-      { invoiceNo: 'INV-2024-001', hsLines: [
-        { id: 'h1', lineItemNo: 1, hsCode: '39269050', description: 'Plastic Components & Fittings',       statQty: '100', suppQty: '100', weight: '45.5', unit: 'PCS', outbound: [OB1] },
-        { id: 'h2', lineItemNo: 2, hsCode: '84713000', description: 'Electronic Data Processing Machines', statQty: '5',   suppQty: '5',   weight: '22.0', unit: 'NOS', outbound: [OB2] },
-      ]},
-    ],
-  },
+
+/* Only Alternative Duty Deposit (and Duty) declarations carry export/outbound linkage —
+   every other charge type (Missing Document, CDM, Cargo Transfer, Declaration Amendment/
+   Cancellation Deposit) is a plain Refund/No Refund with no Invoice & HS Code / Outbound
+   Declaration Details section, mirroring the create/amend claim flow's RDChargeFlowPage. */
+const hasOutboundLinkage = (chargeType: string) => hasFullRefundOptions(chargeType) || hasDutyRefundOptions(chargeType);
+
+/* Real Invoice/HS/Outbound mock content — only exists for the one Alternative Duty Deposit
+   declaration used across this claim's demo data; every other declaration passed in gets no
+   invoices (harmless, since the accordion is hidden for those charge types anyway). */
+const INVOICES_BY_DECL: Record<string, InvoiceGroup[]> = {
+  '105-01426431-24': [
+    { invoiceNo: 'INV-2024-001', hsLines: [
+      { id: 'h1', lineItemNo: 1, hsCode: '39269050', description: 'Plastic Components & Fittings',       statQty: '100', suppQty: '100', weight: '45.5', unit: 'PCS', outbound: [OB1] },
+      { id: 'h2', lineItemNo: 2, hsCode: '84713000', description: 'Electronic Data Processing Machines', statQty: '5',   suppQty: '5',   weight: '22.0', unit: 'NOS', outbound: [OB2] },
+    ]},
+  ],
+};
+
+type IncomingDecl = { declNo: string; date: string; category: string; ownerCode: string; claimExpiry: string; exportExpiry: string };
+
+/* Default demo declaration — used when the page is opened without a specific claim's data
+   (e.g. the "View Claim" link nested inside ClaimCancelFlow). */
+const DEFAULT_DECLARATIONS: IncomingDecl[] = [
+  { declNo: '105-01426431-24', date: '09/10/2024', category: 'Import for Re Export', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '04/03/2025', exportExpiry: '03/08/2025' },
 ];
 
-const DEFAULT_DOCS = [
-  { id: 'vd-1', declNo: '105-01426431-24', docType: 'Standing Guarantee Letter', fileName: 'Guarantee-105-24.pdf', uploadedOn: '15/07/2025', remarks: '' },
-  { id: 'vd-2', declNo: '105-01426431-24', docType: 'Outbound Declaration Copy', fileName: 'Outbound-EX20800049.pdf', uploadedOn: '15/07/2025', remarks: '' },
-];
+function buildDeclLines(declarations: IncomingDecl[], chargeType: string): DeclLine[] {
+  const outbound = hasOutboundLinkage(chargeType);
+  return declarations.map(d => ({
+    declarationNo: d.declNo,
+    declarationType: d.category,
+    chargeType,
+    depositMethod: outbound ? 'Standing Guarantee' : 'N/A',
+    accountNumber: outbound ? 'ACC-100234' : '—',
+    depositAmount: '1,000.00',
+    refundType: outbound ? 'Full Export' : 'Refund',
+    claimAmount: '1,000.00',
+    invoices: INVOICES_BY_DECL[d.declNo] ?? [],
+  }));
+}
+
+function buildDefaultDocs(declNo: string, outbound: boolean) {
+  return outbound
+    ? [
+        { id: 'vd-1', declNo, docType: 'Standing Guarantee Letter', fileName: `Guarantee-${declNo}.pdf`, uploadedOn: '15/07/2025', remarks: '' },
+        { id: 'vd-2', declNo, docType: 'Outbound Declaration Copy', fileName: 'Outbound-EX20800049.pdf', uploadedOn: '15/07/2025', remarks: '' },
+      ]
+    : [
+        { id: 'vd-1', declNo, docType: 'Supporting Document', fileName: `Support-${declNo}.pdf`, uploadedOn: '15/07/2025', remarks: '' },
+      ];
+}
 
 const versionRows = [
   { version: 'Version 1', submittedDate: '29/06/2026, 10:14', status: 'Completed', isCurrentlyViewing: true },
@@ -146,9 +181,10 @@ function DeclarationCard({ d, idx, open, onToggle, onViewOb }: {
   d: DeclLine; idx: number; open: boolean; onToggle: () => void; onViewOb: (obs: OutboundEntry[]) => void;
 }) {
   const allHs = d.invoices.flatMap(inv => inv.hsLines.map(hs => ({ inv, hs })));
+  const outbound = hasOutboundLinkage(d.chargeType);
 
   return (
-    <div className="bg-white rounded-[8px]" style={{ border: `1.5px solid ${open ? '#1360d2' : 'transparent'}`, borderTop: idx > 0 ? '1px solid #eef1f6' : undefined }}>
+    <div className="bg-white rounded-[8px]" style={{ border: `1.5px solid ${open && outbound ? '#1360d2' : 'transparent'}`, borderTop: idx > 0 ? '1px solid #eef1f6' : undefined }}>
       {/* Declaration summary row */}
       <div className="flex flex-wrap items-center gap-x-[24px] gap-y-[8px] px-[16px] py-[14px]">
         <span className="text-[16px] text-[#455174]" style={{ fontFamily: font }}>{idx + 1}</span>
@@ -162,17 +198,23 @@ function DeclarationCard({ d, idx, open, onToggle, onViewOb }: {
           <span className="text-[16px]" style={{ color: '#455174', fontFamily: font }}>Claim Amount (AED)</span>
           <span className="text-[16px] inline-flex items-baseline gap-[3px]" style={{ color: '#051937', fontFamily: font, fontWeight: 500 }}><Dh style={{ fontSize: 15 }} />{d.claimAmount}</span>
         </div>
-        <button type="button" onClick={onToggle} aria-label={open ? 'Collapse outbound details' : 'Expand outbound details'}
-          className="size-[36px] rounded-full inline-flex items-center justify-center transition-colors ml-auto"
-          style={{ background: '#fff', border: '1px solid #e0e6ef', color: '#455174', boxShadow: '0px 1px 4px rgba(19,96,210,0.10)' }}>
-          <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"
-            style={{ transition: 'transform 0.15s', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-            <path d="M5 8l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
+        {outbound && (
+          <button type="button" onClick={onToggle} aria-label={open ? 'Collapse outbound details' : 'Expand outbound details'}
+            className="size-[36px] rounded-full inline-flex items-center justify-center transition-colors ml-auto"
+            style={{ background: '#fff', border: '1px solid #e0e6ef', color: '#455174', boxShadow: '0px 1px 4px rgba(19,96,210,0.10)' }}>
+            <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"
+              style={{ transition: 'transform 0.15s', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+              <path d="M5 8l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        )}
       </div>
 
-      {/* Outbound Declaration Details — read-only accordion toggle bar + HS code table */}
+      {/* Outbound Declaration Details — read-only accordion toggle bar + HS code table.
+          Only charge types with export/outbound linkage (Alternative Duty Deposit, Duty) get
+          this section; Missing Document/CDM/Cargo Transfer/Declaration Amendment/Cancellation
+          Deposit claims have no invoice or outbound data, same as the create/amend claim flow. */}
+      {outbound && (
       <div style={{ borderTop: '1px solid #eef1f6' }}>
         <button type="button" onClick={onToggle}
           className={`w-full flex items-center gap-[10px] px-[20px] py-[12px] text-left transition-colors ${open ? '' : 'hover:bg-[#f8fafd]'}`}
@@ -188,11 +230,12 @@ function DeclarationCard({ d, idx, open, onToggle, onViewOb }: {
           <span className="text-[14px] text-[#697498] ml-auto" style={{ fontFamily: font, flexShrink: 0 }}>{open ? 'Collapse' : 'Expand'}</span>
         </button>
       </div>
+      )}
 
-      {open && (
+      {outbound && open && (
         <div className="px-[20px] pb-[16px] pt-[16px]" style={{ borderTop: '1px solid #f5f7fc' }}>
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontFamily: font, minWidth: 1000 }}>
+            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontFamily: font, minWidth: 1080 }}>
               <thead>
                 <tr>
                   {['Invoice Number', 'Invoice Line Item No.', 'HS Code', 'Goods Description', 'Outbound Declaration No.', 'Statistical Qty', 'Supplementary Qty', 'Weight'].map(h => (
@@ -200,6 +243,9 @@ function DeclarationCard({ d, idx, open, onToggle, onViewOb }: {
                       <span className="text-[16px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>{h}</span>
                     </th>
                   ))}
+                  <th style={{ background: '#a6c2e9', padding: '10px 14px', textAlign: 'center', borderBottom: '1px solid #e8edf5', position: 'sticky', right: 0, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>
+                    <span className="text-[16px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>Action</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -231,6 +277,17 @@ function DeclarationCard({ d, idx, open, onToggle, onViewOb }: {
                     <td style={{ padding: '10px 14px', textAlign: 'right' }}><span className="text-[16px] whitespace-nowrap" style={{ color: '#0e1b3d', fontFamily: font }}>{hs.statQty} <span className="text-[14px] text-[#697498]">{hs.unit}</span></span></td>
                     <td style={{ padding: '10px 14px', textAlign: 'right' }}><span className="text-[16px] whitespace-nowrap" style={{ color: '#0e1b3d', fontFamily: font }}>{hs.suppQty} <span className="text-[14px] text-[#697498]">{hs.unit}</span></span></td>
                     <td style={{ padding: '10px 14px', textAlign: 'right' }}><span className="text-[16px] whitespace-nowrap" style={{ color: '#0e1b3d', fontFamily: font }}>{hs.weight} <span className="text-[14px] text-[#697498]">kg</span></span></td>
+                    <td style={{ padding: '10px 14px', textAlign: 'center', position: 'sticky', right: 0, background: '#fff', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>
+                      <button type="button" title="View outbound declaration details" aria-label="View outbound declaration details"
+                        onClick={() => onViewOb(hs.outbound)} disabled={hs.outbound.length === 0}
+                        className="inline-flex items-center justify-center w-[34px] h-[34px] rounded-[4px] hover:bg-[#e8f0ff] transition-colors"
+                        style={{ border: '1px solid #d5ddfb', color: hs.outbound.length === 0 ? '#c0c8d8' : '#1360d2', cursor: hs.outbound.length === 0 ? 'not-allowed' : 'pointer' }}>
+                        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -242,10 +299,28 @@ function DeclarationCard({ d, idx, open, onToggle, onViewOb }: {
   );
 }
 
-type Props = { onBack: () => void; claimType?: string };
+type Props = {
+  onBack: () => void;
+  claimType?: string;
+  /** Charge type of the claim being viewed (e.g. "Alternative Duty Deposit", "Missing Document
+      Deposit") — determines whether the Invoice & HS Code / Outbound Declaration Details
+      accordion is shown at all. Defaults to the Alternative Duty Deposit demo claim. */
+  chargeType?: string;
+  declarations?: IncomingDecl[];
+  claimNo?: string;
+  claimStatus?: string;
+  submissionDate?: string;
+};
 
-export default function RefundDepositsClaimViewPage({ onBack, claimType = 'Refund of Deposits' }: Props) {
-  const [openDeclIds, setOpenDeclIds] = useState<Set<string>>(() => new Set([DECL_LINES[0]?.declarationNo].filter(Boolean) as string[]));
+export default function RefundDepositsClaimViewPage({
+  onBack, claimType = 'Refund of Deposits', chargeType = 'Alternative Duty Deposit',
+  declarations = DEFAULT_DECLARATIONS, claimNo = '3842063', claimStatus = 'Completed', submissionDate = '29/06/2026',
+}: Props) {
+  const declLines = useMemo(() => buildDeclLines(declarations, chargeType), [declarations, chargeType]);
+  const outbound = hasOutboundLinkage(chargeType);
+  const defaultDocs = useMemo(() => buildDefaultDocs(declLines[0]?.declarationNo ?? '—', outbound), [declLines, outbound]);
+
+  const [openDeclIds, setOpenDeclIds] = useState<Set<string>>(() => new Set([declLines[0]?.declarationNo].filter(Boolean) as string[]));
   const toggleDecl = (declarationNo: string) => setOpenDeclIds(prev => {
     const next = new Set(prev);
     next.has(declarationNo) ? next.delete(declarationNo) : next.add(declarationNo);
@@ -279,10 +354,10 @@ export default function RefundDepositsClaimViewPage({ onBack, claimType = 'Refun
           {/* Claim Header Details */}
           <Section title="Claim Header Details">
             <div className="flex flex-wrap">
-              <FieldItem label="Claim No. & Version" value="3842063-1" />
+              <FieldItem label="Claim No. & Version" value={`${claimNo}-1`} />
               <FieldItem label="Claim Type" value={claimType} />
-              <FieldItem label="Claim Registration Date" value="29/06/2026" />
-              <FieldItem label="Claim Status" value="Completed" />
+              <FieldItem label="Claim Registration Date" value={submissionDate} />
+              <FieldItem label="Claim Status" value={claimStatus} />
             </div>
             <Divider />
             <div className="flex flex-wrap">
@@ -330,9 +405,9 @@ export default function RefundDepositsClaimViewPage({ onBack, claimType = 'Refun
           {/* Declaration Details — merged with Invoice/HS Code + Outbound Declaration
               Details into one read-only accordion per declaration (mirrors the
               Refund Details step of the create/amend claim flow). */}
-          <Section title="Declaration Details" badge={`${DECL_LINES.length} declaration${DECL_LINES.length !== 1 ? 's' : ''}`}>
+          <Section title="Declaration Details" badge={`${declLines.length} declaration${declLines.length !== 1 ? 's' : ''}`}>
             <div className="flex flex-col">
-              {DECL_LINES.map((d, i) => (
+              {declLines.map((d, i) => (
                 <DeclarationCard key={d.declarationNo} d={d} idx={i} open={openDeclIds.has(d.declarationNo)} onToggle={() => toggleDecl(d.declarationNo)} onViewOb={setViewOb} />
               ))}
             </div>
@@ -352,7 +427,7 @@ export default function RefundDepositsClaimViewPage({ onBack, claimType = 'Refun
                   </tr>
                 </thead>
                 <tbody>
-                  {DEFAULT_DOCS.map((doc, i) => (
+                  {defaultDocs.map((doc, i) => (
                     <tr key={doc.id} style={{ borderBottom: '1px solid #f0f3fa' }}>
                       <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{i + 1}</span></td>
                       <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#1360d2', fontFamily: font, fontWeight: 500 }}>{doc.declNo}</span></td>

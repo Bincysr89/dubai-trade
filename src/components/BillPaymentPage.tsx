@@ -4,6 +4,7 @@ import Header from './Header';
 import Pagination from './Pagination';
 import infoIconSrc from '../assets/icon-info.svg';
 import { DateTimePicker, DateInput } from './DatePicker';
+import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
 
 const font = "'Dubai', sans-serif";
 
@@ -1651,7 +1652,9 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   /* ── Invoices content ───────────────────────────────────────────────────── */
   const paginatedInv = INVOICE_ROWS.slice((invPage - 1) * PAGE_SIZE, invPage * PAGE_SIZE);
 
-  const InvoicesContent = () => (
+  const InvoicesContent = () => {
+    const { scrollRef: invScrollRef, atScrollStart: invAtScrollStart, atScrollEnd: invAtScrollEnd, handleScroll: invHandleScroll, scrollToStart: invScrollToStart, scrollToEnd: invScrollToEnd } = useTableBehaviors();
+    return (
     <div className="flex-1 flex flex-col min-w-0">
       {/* Row 1 — Toolbar */}
       <div className="flex items-center gap-[10px] mb-[10px]">
@@ -1839,7 +1842,9 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto" style={{ position: 'relative' }}>
+      <div style={{ position: 'relative' }}>
+        <ScrollArrows atStart={invAtScrollStart} atEnd={invAtScrollEnd} onLeft={invScrollToStart} onRight={invScrollToEnd} stickyWidth={240} />
+        <div ref={invScrollRef} onScroll={invHandleScroll} className="overflow-x-auto">
         <table style={{ width: '100%', minWidth: 1100, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }}>
           <thead>
             <tr>
@@ -1947,6 +1952,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             })}
           </tbody>
         </table>
+        </div>
       </div>
       <div className="sticky bottom-0 bg-white z-10 border-t border-[#f0f4ff] pt-[6px]">
         <Pagination
@@ -1961,13 +1967,16 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
       {invPayDetails && <TransactionModal row={invPayDetails} onClose={() => setInvPayDetails(null)} />}
       {showInvReceipt && <ReceiptModal onClose={() => setShowInvReceipt(false)} rows={invReceiptRows} />}
     </div>
-  );
+    );
+  };
 
   /* ── Payments content ───────────────────────────────────────────────────── */
   const filteredPayments = payStatusFilter ? PAYMENT_ROWS.filter(r => r.status === payStatusFilter) : PAYMENT_ROWS;
   const paginatedPay = filteredPayments.slice((payPage - 1) * PAGE_SIZE, payPage * PAGE_SIZE);
 
-  const PaymentsContent = () => (
+  const PaymentsContent = () => {
+    const { scrollRef: payScrollRef, atScrollStart: payAtScrollStart, atScrollEnd: payAtScrollEnd, handleScroll: payHandleScroll, scrollToStart: payScrollToStart, scrollToEnd: payScrollToEnd } = useTableBehaviors();
+    return (
     <div className="flex-1 flex flex-col min-w-0">
       {/* Row 1 — Toolbar */}
       <div className="flex items-center gap-[10px] mb-[10px]">
@@ -2137,7 +2146,9 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
       </div>
 
       {/* Payments table */}
-      <div className="overflow-x-auto" style={{ position: 'relative' }}>
+      <div style={{ position: 'relative' }}>
+        <ScrollArrows atStart={payAtScrollStart} atEnd={payAtScrollEnd} onLeft={payScrollToStart} onRight={payScrollToEnd} stickyWidth={240} />
+        <div ref={payScrollRef} onScroll={payHandleScroll} className="overflow-x-auto">
         <table style={{ width: '100%', minWidth: 1100, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }}>
           <thead>
             <tr>
@@ -2314,6 +2325,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             })}
           </tbody>
         </table>
+        </div>
       </div>
       <div className="sticky bottom-0 bg-white z-10 border-t border-[#f0f4ff] pt-[6px]">
         <Pagination
@@ -2328,14 +2340,17 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
       {showPayFlyoutReceipt && <ReceiptModal onClose={() => setShowPayFlyoutReceipt(false)} rows={payFlyoutReceiptRows} />}
       {invPayDetails && <TransactionModal row={invPayDetails} onClose={() => setInvPayDetails(null)} />}
     </div>
-  );
+    );
+  };
 
   /* ── Accounts content ───────────────────────────────────────────────────── */
   const filteredAccounts = accTypeFilter === 'All' ? ALL_ACCOUNTS : ALL_ACCOUNTS.filter(a => a.type === accTypeFilter);
   const totalAccPages    = Math.ceil(filteredAccounts.length / ACC_PAGE_SIZE);
   const paginatedAcc     = filteredAccounts.slice((accPage - 1) * ACC_PAGE_SIZE, accPage * ACC_PAGE_SIZE);
 
-  const AccountsContent = () => (
+  const AccountsContent = () => {
+    const { scrollRef: accScrollRef, atScrollStart: accAtScrollStart, atScrollEnd: accAtScrollEnd, handleScroll: accHandleScroll, scrollToStart: accScrollToStart, scrollToEnd: accScrollToEnd } = useTableBehaviors();
+    return (
     <div className="flex-1 flex flex-col min-w-0">
       {/* Row 1 — Toolbar */}
       <div className="flex items-center gap-[10px] mb-[10px]">
@@ -2410,8 +2425,10 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
       </div>
 
       {/* Accounts table */}
-      <div className="overflow-x-auto">
-        <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }}>
+      <div style={{ position: 'relative' }}>
+        <ScrollArrows atStart={accAtScrollStart} atEnd={accAtScrollEnd} onLeft={accScrollToStart} onRight={accScrollToEnd} stickyWidth={120} />
+        <div ref={accScrollRef} onScroll={accHandleScroll} className="overflow-x-auto">
+        <table style={{ width: '100%', minWidth: 1100, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }}>
           <thead>
             <tr>
               {/* Checkbox */}
@@ -2440,7 +2457,11 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                   </div>
                 </th>
               ))}
-              <th style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'center', width: 120, borderTopRightRadius: 8, borderBottomRightRadius: 8 }}>
+              <th style={{
+                background: '#a6c2e9', padding: '10px 12px', textAlign: 'center', width: 120, minWidth: 120,
+                borderTopRightRadius: 8, borderBottomRightRadius: 8,
+                position: 'sticky', right: 0, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2,
+              }}>
                 <span className="text-[16px] font-medium text-[#051937]">Actions</span>
               </th>
             </tr>
@@ -2493,7 +2514,11 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                       <DirhamIcon size={14} color="#0e1b3d" /> {acc.availableLimit}
                     </span>
                   </td>
-                  <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff', textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+                  <td style={{
+                    padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff', textAlign: 'center',
+                    position: 'sticky', right: 0, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 1,
+                    background: isSelected ? '#dce8f8' : '#fff',
+                  }} onClick={e => e.stopPropagation()}>
                     <button
                       onClick={() => setShowStmtModal(true)}
                       title="Download Account Statement"
@@ -2510,6 +2535,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             })}
           </tbody>
         </table>
+        </div>
       </div>
       <div className="sticky bottom-0 bg-white z-10 border-t border-[#f0f4ff] pt-[6px]">
         <Pagination
@@ -2623,7 +2649,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
         </div>
       )}
     </div>
-  );
+    );
+  };
 
   /* ── Main render ─────────────────────────────────────────────────────────── */
   return (

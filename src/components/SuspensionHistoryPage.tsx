@@ -1,5 +1,6 @@
 import React from 'react';
 import { ColumnFilter } from './ColumnFilter';
+import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
 
 const font = "'Dubai', sans-serif";
 
@@ -23,6 +24,7 @@ type Props = {
 };
 
 export default function SuspensionHistoryPage({ onBack, onBackToListing, onView }: Props) {
+  const { scrollRef, atScrollStart, atScrollEnd, handleScroll, scrollToStart, scrollToEnd } = useTableBehaviors();
   const headers: { label: string; w: number }[] = [
     { label: 'Suspension Date',   w: 160 },
     { label: 'CDM Comments',      w: 352 },
@@ -63,7 +65,9 @@ export default function SuspensionHistoryPage({ onBack, onBackToListing, onView 
         <h1 style={{ fontSize: 32, fontWeight: 500, color: '#0e1b3d', fontFamily: font, marginBottom: 8 }}>
           Suspension History
         </h1>
-        <div className="overflow-x-auto">
+        <div className="pb-[20px]" style={{ position: 'relative' }}>
+          <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={210} />
+          <div ref={scrollRef} onScroll={handleScroll} className="overflow-x-auto">
           <table style={{ minWidth: 1100, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }} className="w-full">
             <thead>
               <tr>
@@ -84,7 +88,11 @@ export default function SuspensionHistoryPage({ onBack, onBackToListing, onView 
                     <ColumnFilter label={col.label} labelClass="text-[16px] font-medium text-[#051937]" />
                   </th>
                 ))}
-                <th style={{ width: 210, minWidth: 210, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, borderRadius: '0 8px 0 0' }}>
+                <th style={{
+                  width: 210, minWidth: 210, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500,
+                  borderRadius: '0 8px 0 0', position: 'sticky', right: 0,
+                  boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2,
+                }}>
                   <span className="text-[16px] font-medium text-[#051937]">Action</span>
                 </th>
               </tr>
@@ -100,7 +108,11 @@ export default function SuspensionHistoryPage({ onBack, onBackToListing, onView 
                     {cell(<span className="text-[16px] text-[#051937] whitespace-nowrap">{row.cdmComments}</span>, 352)}
                     {cell(<span className="text-[16px] text-[#051937] whitespace-nowrap">{row.responseDate}</span>, 200)}
                     {cell(<span className="text-[16px] text-[#051937] whitespace-nowrap">{row.customerResponse}</span>, 362)}
-                    <td style={{ background: '#fff', padding: '0 8px', height: 54, verticalAlign: 'middle', width: 210, borderBottom: '1px solid #f8f8f8' }}>
+                    <td style={{
+                      background: '#fff', padding: '0 8px', height: 54, verticalAlign: 'middle', width: 210,
+                      borderBottom: '1px solid #f8f8f8', position: 'sticky', right: 0,
+                      boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 1,
+                    }}>
                       <button
                         onClick={onView}
                         className="text-[16px] underline"
@@ -114,6 +126,7 @@ export default function SuspensionHistoryPage({ onBack, onBackToListing, onView 
               })}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
 

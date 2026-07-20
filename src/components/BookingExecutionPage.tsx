@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Header from './Header';
+import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
 import importBySeaSrc from '../assets/importbysea.svg';
 // @ts-ignore
 import tradePlusSrc from '../assets/trade+.svg';
@@ -102,6 +103,7 @@ export default function BookingExecutionPage({ onClose, onBackToHome, onContinue
 }
 
 function ListStep({ onStart }: { onStart: () => void }) {
+  const { scrollRef, atScrollStart, atScrollEnd, handleScroll, scrollToStart, scrollToEnd } = useTableBehaviors();
   const cols = ['Order ID', 'JRN No.', 'AWB No.', 'No Of HAWB', 'Agent (Internal)', 'Destination', 'Flight No.', 'Flight Date', 'Charge Weight'];
   const rows = [
     ['1786543042', '-', '-', '-', 'DHL-23456677', 'MAA', 'EK-563', '12-Jul-2025', '100 KG'],
@@ -125,8 +127,29 @@ function ListStep({ onStart }: { onStart: () => void }) {
         <div className="flex items-center gap-[12px]"><span className="text-[#1360d2] text-[15px]">Need Help</span><button className="flex items-center gap-[8px] h-[44px] px-[16px] rounded-[4px] border border-[#d4dcfa] bg-white text-[15px] text-[#0e1b3d]"><svg viewBox="0 0 24 24" className="size-[18px]" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M9 4v16M15 4v16" /></svg>Columns</button><Fill onClick={onStart}>Start Journey</Fill></div>
       </div>
       <Card>
-        <div className="overflow-x-auto"><table className="w-full border-collapse" style={{ minWidth: 1100 }}><thead><tr style={{ background: '#c9def7' }}>{cols.map(c => <th key={c} className="text-left text-[13px] text-[#0e1b3d] px-[14px] py-[14px] whitespace-nowrap" style={{ fontWeight: 600 }}>{c}</th>)}<th className="text-left text-[13px] text-[#0e1b3d] px-[14px] py-[14px]" style={{ fontWeight: 600 }}>Actions</th></tr></thead>
-          <tbody>{rows.map((r, ri) => <tr key={ri} className="border-t border-[#eef1f6]">{r.map((v, ci) => <td key={ci} className="text-[13px] text-[#0e1b3d] px-[14px] py-[14px] whitespace-nowrap">{v}</td>)}<td className="px-[14px] py-[14px]"><svg viewBox="0 0 24 24" className="size-[15px] text-[#697498]" fill="currentColor"><circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" /></svg></td></tr>)}</tbody></table></div>
+        <div className="pb-[4px]" style={{ position: 'relative' }}>
+          <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={100} />
+          <div ref={scrollRef} onScroll={handleScroll} className="overflow-x-auto">
+            <table className="w-full border-collapse" style={{ minWidth: 1100 }}>
+              <thead>
+                <tr style={{ background: '#c9def7' }}>
+                  {cols.map(c => <th key={c} className="text-left text-[13px] text-[#0e1b3d] px-[14px] py-[14px] whitespace-nowrap" style={{ fontWeight: 600 }}>{c}</th>)}
+                  <th className="text-left text-[13px] text-[#0e1b3d] px-[14px] py-[14px] whitespace-nowrap" style={{ fontWeight: 600, background: '#c9def7', position: 'sticky', right: 0, minWidth: 100, width: 100, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r, ri) => (
+                  <tr key={ri} className="border-t border-[#eef1f6]">
+                    {r.map((v, ci) => <td key={ci} className="text-[13px] text-[#0e1b3d] px-[14px] py-[14px] whitespace-nowrap">{v}</td>)}
+                    <td className="px-[14px] py-[14px]" style={{ background: '#fff', position: 'sticky', right: 0, minWidth: 100, width: 100, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 1 }}>
+                      <svg viewBox="0 0 24 24" className="size-[15px] text-[#697498]" fill="currentColor"><circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" /></svg>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </Card>
     </div>
   );
@@ -208,6 +231,7 @@ function CreateStep({ onBack, onDirectBooking }: { onBack: () => void; onDirectB
 }
 
 function DirectBookingStep({ onBack, onSubmit }: { onBack: () => void; onSubmit: () => void }) {
+  const { scrollRef, atScrollStart, atScrollEnd, handleScroll, scrollToStart, scrollToEnd } = useTableBehaviors();
   const stepper = ['Shipment Details', 'View Flights', 'Selected Flights', 'Confirm Booking'];
   const cols = ['Airline', 'Flight No', 'Suffix', 'Flight Date', 'Boarding Point', 'Off Point', 'Pieces', 'Weight', 'Volume', 'Aircraft Type', 'Mode', 'Class'];
   const row = ['Emirates', 'EK-4000', 'V', '18-Jun-2024 Tue', 'DWC', 'DXB', '10', '1000', '02', '8777', 'T', 'W'];
@@ -217,7 +241,29 @@ function DirectBookingStep({ onBack, onSubmit }: { onBack: () => void; onSubmit:
       <div className="flex-1 overflow-y-auto px-4 md:px-10 pb-[20px]">
         <Card className="px-[20px] py-[14px] mb-[16px]"><div className="flex items-center overflow-x-auto no-scrollbar">{stepper.map((s, i) => <div key={s} className="flex items-center flex-shrink-0"><div className="flex items-center gap-[8px]"><span className="size-[22px] rounded-full flex items-center justify-center" style={{ background: i < 2 ? '#28a745' : '#fff', border: i < 2 ? 'none' : `2px solid ${i === 2 ? '#1360d2' : '#c3cbe0'}` }}>{i < 2 ? <svg viewBox="0 0 24 24" className="size-[12px]" fill="none" stroke="#fff" strokeWidth="3"><path d="M5 13l4 4L19 7" /></svg> : <span className="text-[11px]" style={{ color: i === 2 ? '#1360d2' : '#8f94ae' }}>{'0' + (i + 1)}</span>}</span><span className="text-[13px] whitespace-nowrap" style={{ color: i < 2 ? '#28a745' : i === 2 ? '#1360d2' : '#8f94ae', fontWeight: 500 }}>{s}</span></div>{i < stepper.length - 1 && <div className="h-[1.5px] mx-[10px]" style={{ background: i < 2 ? '#28a745' : '#c5cef7', width: 90 }} />}</div>)}</div></Card>
         <Card className="p-[18px] mb-[16px] flex items-center gap-[16px] flex-wrap"><span className="size-[30px] rounded-full bg-[#e2ebf9] flex items-center justify-center text-[11px] text-[#1360d2] font-semibold">DXB</span><span className="text-[15px] text-[#0e1b3d]" style={{ fontWeight: 600 }}>Dubai (DXB)</span><svg viewBox="0 0 60 12" width="60" height="12"><path d="M2 6h50" stroke="#1360d2" strokeWidth="1.5" strokeDasharray="3 3" /><path d="M52 2l4 4-4 4" fill="none" stroke="#1360d2" strokeWidth="1.5" /></svg><span className="size-[30px] rounded-full bg-[#f6dede] flex items-center justify-center text-[11px] text-[#dc3545] font-semibold">MAA</span><span className="text-[15px] text-[#0e1b3d]" style={{ fontWeight: 600 }}>Saudi Arabia</span><span className="ml-auto text-[14px] text-[#5a6282]">Flight Date : <span className="text-[#0e1b3d]" style={{ fontWeight: 600 }}>Wed, 26 Jul 2024</span></span><Out>Modify</Out></Card>
-        <Card className="p-[18px] mb-[16px]"><div className="overflow-x-auto rounded-[8px] border border-[#eef1f6]"><table className="w-full border-collapse" style={{ minWidth: 1000 }}><thead><tr style={{ background: '#eaf1fb' }}>{cols.map(c => <th key={c} className="text-left text-[13px] text-[#455174] px-[12px] py-[12px] whitespace-nowrap" style={{ fontWeight: 600 }}>{c}</th>)}</tr></thead><tbody>{[0, 1].map(i => <tr key={i} className="border-t border-[#eef1f6]">{row.map((v, ci) => <td key={ci} className="text-[13px] text-[#0e1b3d] px-[12px] py-[12px] whitespace-nowrap">{v}</td>)}</tr>)}</tbody></table></div></Card>
+        <Card className="p-[18px] mb-[16px]">
+          <div className="pb-[4px]" style={{ position: 'relative' }}>
+            <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={90} />
+            <div ref={scrollRef} onScroll={handleScroll} className="overflow-x-auto rounded-[8px] border border-[#eef1f6]">
+              <table className="w-full border-collapse" style={{ minWidth: 1000 }}>
+                <thead>
+                  <tr style={{ background: '#eaf1fb' }}>
+                    {cols.slice(0, -1).map(c => <th key={c} className="text-left text-[13px] text-[#455174] px-[12px] py-[12px] whitespace-nowrap" style={{ fontWeight: 600 }}>{c}</th>)}
+                    <th className="text-left text-[13px] text-[#455174] px-[12px] py-[12px] whitespace-nowrap" style={{ fontWeight: 600, background: '#eaf1fb', position: 'sticky', right: 0, minWidth: 90, width: 90, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>{cols[cols.length - 1]}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[0, 1].map(i => (
+                    <tr key={i} className="border-t border-[#eef1f6]">
+                      {row.slice(0, -1).map((v, ci) => <td key={ci} className="text-[13px] text-[#0e1b3d] px-[12px] py-[12px] whitespace-nowrap">{v}</td>)}
+                      <td className="text-[13px] text-[#0e1b3d] px-[12px] py-[12px] whitespace-nowrap" style={{ background: '#fff', position: 'sticky', right: 0, minWidth: 90, width: 90, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 1 }}>{row[row.length - 1]}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </Card>
         <Card className="p-[18px]"><p className="text-[15px] text-[#0e1b3d] mb-[12px]" style={{ fontWeight: 700 }}>Charge Details :</p><div className="grid grid-cols-2 sm:grid-cols-4 gap-[16px]">{[['Total Charge', '3000.00 AED'], ['Freight Charges', '3037.15 AED'], ['Fuel Surcharges Due', '689.75 AED'], ['Grand Total', '10236.00 AED']].map(([k, v]) => <div key={k}><p className="text-[13px] text-[#8f94ae]">{k}</p><p className="text-[15px] text-[#0e1b3d]" style={{ fontWeight: 600 }}>{v}</p></div>)}</div></Card>
       </div>
       <div className="flex-shrink-0 bg-white px-4 md:px-10 py-[16px] flex items-center justify-between" style={{ boxShadow: '0px -2px 8px rgba(0,0,0,0.06)' }}><div className="flex gap-[12px]"><Out onClick={onBack}>Cancel</Out><Out onClick={onBack}>Back</Out></div><Fill onClick={onSubmit}>Submit</Fill></div>
