@@ -12,9 +12,10 @@ export const REFUND_DEPOSIT_STEPS: { id: string; label: string }[] = [
 export const REFUND_DEPOSIT_STEPS_NO_DOCS: { id: string; label: string }[] =
   REFUND_DEPOSIT_STEPS.filter(s => s.id !== 'documents');
 
-/* Amend flow has no payment step. */
+/* Amend flow has no payment step, and its first step reviews the existing
+   declarations (read-only-ish, with remove) rather than searching for new ones. */
 export const REFUND_DEPOSIT_AMEND_STEPS: { id: string; label: string }[] =
-  REFUND_DEPOSIT_STEPS.filter(s => s.id !== 'payment');
+  REFUND_DEPOSIT_STEPS.filter(s => s.id !== 'payment').map(s => s.id === 'eligible' ? { ...s, label: 'Declaration Details' } : s);
 
 export const CLAIM_STEPS: { id: string; label: string }[] = [
   { id: 'claim',     label: 'Claim Details' },

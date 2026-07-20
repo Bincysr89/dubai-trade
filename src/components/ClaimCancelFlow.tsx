@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import NonRemittanceClaimViewPage from './NonRemittanceClaimViewPage';
+import RefundDepositsClaimViewPage from './RefundDepositsClaimViewPage';
 import ClaimantBrokerDetail from './ClaimantBrokerDetail';
 
 const font = "'Dubai', sans-serif";
@@ -158,29 +159,48 @@ function Breadcrumb({ onBack }: { onBack: () => void }) {
   );
 }
 
-// ── Claim data (Non Remittance claim from the listing) ───────────────────────
-
-const CLAIM_TITLE = 'Cancel - Non Remittance Claim - 2420390';
+// ── Claim data — sourced from the claim's actual type so the cancel flow shows
+//    Refund of Deposits / Refund of Duty details instead of always Non Remittance ──
 
 const CANCEL_REASONS = ['Wrong Declaration Claimed', 'Not Interested', 'Others'];
 
+const isRdClaimType = (claimType: string) => claimType === 'Refund of Deposits' || claimType === 'Refund of Duty';
+
+function getClaimTitle(claimType: string) {
+  return isRdClaimType(claimType) ? `Cancel - ${claimType} - 3842063` : 'Cancel - Non Remittance Claim - 2420390';
+}
+
 /* Claim Details card — field set mirrors the legacy Cancel Claim screen. */
-const CLAIM_DETAILS = [
-  { label: 'Claim No.',                     value: '2420390 (Version 1)' },
-  { label: 'Claim Type',                    value: 'Non Remittance' },
-  { label: 'Deposit Method',                value: 'Non Remittance Claim' },
-  { label: 'Claimant Code - Name (Type)',   value: 'AE-9106286 - SW Logistics LLC (Business)' },
-  { label: 'Submission Date',               value: '29/06/2026' },
-  { label: 'Registration Date',             value: '29/06/2026' },
-  { label: 'Total No. of Sub Claims',       value: '1' },
-];
+function getClaimDetails(claimType: string): { label: string; value: string }[] {
+  if (isRdClaimType(claimType)) {
+    return [
+      { label: 'Claim No.',                     value: '3842063 (Version 1)' },
+      { label: 'Claim Type',                    value: claimType },
+      { label: 'Deposit Method',                value: 'Standing Guarantee' },
+      { label: 'Claimant Code - Name (Type)',   value: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C (Business)' },
+      { label: 'Submission Date',               value: '29/06/2026' },
+      { label: 'Registration Date',             value: '29/06/2026' },
+      { label: 'Total No. of Sub Claims',       value: '1' },
+    ];
+  }
+  return [
+    { label: 'Claim No.',                     value: '2420390 (Version 1)' },
+    { label: 'Claim Type',                    value: 'Non Remittance' },
+    { label: 'Deposit Method',                value: 'Non Remittance Claim' },
+    { label: 'Claimant Code - Name (Type)',   value: 'AE-9106286 - SW Logistics LLC (Business)' },
+    { label: 'Submission Date',               value: '29/06/2026' },
+    { label: 'Registration Date',             value: '29/06/2026' },
+    { label: 'Total No. of Sub Claims',       value: '1' },
+  ];
+}
 
 // ── Step 1: Reason for Cancellation ──────────────────────────────────────────
 
-function Step1({ onBack, onProceed, onViewClaim, reason, setReason, reasonDesc, setReasonDesc }: {
+function Step1({ onBack, onProceed, onViewClaim, reason, setReason, reasonDesc, setReasonDesc, claimTitle, claimDetails }: {
   onBack: () => void; onProceed: () => void; onViewClaim: () => void;
   reason: string; setReason: (v: string) => void;
   reasonDesc: string; setReasonDesc: (v: string) => void;
+  claimTitle: string; claimDetails: { label: string; value: string }[];
 }) {
   const [reasonOpen, setReasonOpen] = useState(false);
   const [reasonPos, setReasonPos] = useState<{ top: number; left: number; width: number } | null>(null);
@@ -207,7 +227,7 @@ function Step1({ onBack, onProceed, onViewClaim, reason, setReason, reasonDesc, 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto px-[40px] pb-[24px]">
         <div className="mb-[8px]">
-          <PageTitle>{CLAIM_TITLE}</PageTitle>
+          <PageTitle>{claimTitle}</PageTitle>
         </div>
         <div className="flex flex-col gap-[24px]">
 
@@ -277,7 +297,7 @@ function Step1({ onBack, onProceed, onViewClaim, reason, setReason, reasonDesc, 
             </div>
             <Card className="p-[20px]">
               <div className="flex flex-wrap gap-[20px]">
-                {CLAIM_DETAILS.map(f => (
+                {claimDetails.map(f => (
                   <InfoCard key={f.label} label={f.label} value={f.value} />
                 ))}
               </div>
@@ -465,7 +485,7 @@ function Step2({ onBack, onProceed }: { onBack: () => void; onProceed: () => voi
 const PAYMENT_MODES = ['Credit/Debit Account', 'Cash', 'Cheque'];
 const PAYMENT_REFS  = ['Standard Guarantee', 'Account Number', 'Transaction ID'];
 
-function Step3({ onBack, onProceed, onViewClaim }: { onBack: () => void; onProceed: () => void; onViewClaim: () => void }) {
+function Step3({ onBack, onProceed, onViewClaim, claimTitle }: { onBack: () => void; onProceed: () => void; onViewClaim: () => void; claimTitle: string }) {
   const [paymentMode, setPaymentMode] = useState('Credit/Debit Account');
   const [paymentRef, setPaymentRef]   = useState('Standard Guarantee');
 
@@ -475,7 +495,7 @@ function Step3({ onBack, onProceed, onViewClaim }: { onBack: () => void; onProce
       <div className="flex-1 overflow-y-auto px-[40px] pb-[24px]">
         {/* Title + View Claim */}
         <div className="flex items-start justify-between gap-[16px] mb-[8px]">
-          <PageTitle>{CLAIM_TITLE}</PageTitle>
+          <PageTitle>{claimTitle}</PageTitle>
           <OutlineBtn onClick={onViewClaim}>
             <span className="whitespace-nowrap">View Claim Details</span>
           </OutlineBtn>
@@ -546,9 +566,10 @@ function Step3({ onBack, onProceed, onViewClaim }: { onBack: () => void; onProce
 
 // ── Step 4: Summary / Submit ──────────────────────────────────────────────────
 
-function Step4({ onBack, onSubmit, onViewClaim, reason, reasonDesc }: {
+function Step4({ onBack, onSubmit, onViewClaim, reason, reasonDesc, claimTitle, claimDetails }: {
   onBack: () => void; onSubmit: () => void; onViewClaim: () => void;
   reason: string; reasonDesc: string;
+  claimTitle: string; claimDetails: { label: string; value: string }[];
 }) {
   const [declared, setDeclared] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
@@ -559,7 +580,7 @@ function Step4({ onBack, onSubmit, onViewClaim, reason, reasonDesc }: {
       <div className="flex-1 overflow-y-auto px-[40px] pb-[24px]">
         {/* Title + View Claim */}
         <div className="flex items-start justify-between gap-[16px] mb-[8px]">
-          <PageTitle>{CLAIM_TITLE}</PageTitle>
+          <PageTitle>{claimTitle}</PageTitle>
           <OutlineBtn onClick={onViewClaim}>
             <span className="whitespace-nowrap">View Claim Details</span>
           </OutlineBtn>
@@ -586,12 +607,9 @@ function Step4({ onBack, onSubmit, onViewClaim, reason, reasonDesc }: {
             <SectionLabel>Claim Details</SectionLabel>
             <Card className="px-[20px] py-[32px]">
               <div className="flex flex-wrap gap-[20px]">
-                <InfoCard label="Claimant Code - Name (Type)" value="AE-9106286 - SW Logistics LLC (Business)" />
-                <InfoCard label="Claim No."                   value="2420390 (1)" />
-                <InfoCard label="Claim Type"                  value="Non Remittance" />
-                <InfoCard label="Submission Date"             value="29/06/2026" />
-                <InfoCard label="Registration Date"           value="29/06/2026" />
-                <InfoCard label="Deposit Method"              value="Non Remittance Claim" />
+                {claimDetails.map(f => (
+                  <InfoCard key={f.label} label={f.label} value={f.value} />
+                ))}
               </div>
             </Card>
           </div>
@@ -709,14 +727,17 @@ function SuccessPopup({ onClose }: { onClose: () => void }) {
 
 type Step = 1 | 2 | 3 | 4;
 
-type Props = { onBack: () => void };
+type Props = { onBack: () => void; claimType?: string };
 
-export default function ClaimCancelFlow({ onBack }: Props) {
+export default function ClaimCancelFlow({ onBack, claimType = 'Non Remittance' }: Props) {
   const [step, setStep] = useState<Step>(1);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showViewClaim, setShowViewClaim] = useState(false);
   const [reason, setReason] = useState('');
   const [reasonDesc, setReasonDesc] = useState('');
+
+  const claimTitle = getClaimTitle(claimType);
+  const claimDetails = getClaimDetails(claimType);
 
   const handleSuccess  = () => setShowSuccess(true);
   const handleClose    = () => { setShowSuccess(false); onBack(); };
@@ -726,7 +747,9 @@ export default function ClaimCancelFlow({ onBack }: Props) {
   if (showViewClaim) {
     return (
       <div className="flex flex-col h-full">
-        <NonRemittanceClaimViewPage selectedRows={[]} uploadedDocs={[]} onBack={closeViewClaim} />
+        {isRdClaimType(claimType)
+          ? <RefundDepositsClaimViewPage claimType={claimType} onBack={closeViewClaim} />
+          : <NonRemittanceClaimViewPage selectedRows={[]} uploadedDocs={[]} onBack={closeViewClaim} />}
       </div>
     );
   }
@@ -736,12 +759,13 @@ export default function ClaimCancelFlow({ onBack }: Props) {
       <div className="flex flex-col h-full">
         {step === 1 && (
           <Step1 onBack={onBack} onProceed={() => setStep(2)} onViewClaim={openViewClaim}
-            reason={reason} setReason={setReason} reasonDesc={reasonDesc} setReasonDesc={setReasonDesc} />
+            reason={reason} setReason={setReason} reasonDesc={reasonDesc} setReasonDesc={setReasonDesc}
+            claimTitle={claimTitle} claimDetails={claimDetails} />
         )}
         {step === 2 && <Step2 onBack={() => setStep(1)} onProceed={() => setStep(4)} />}
         {step === 4 && (
           <Step4 onBack={() => setStep(2)} onSubmit={handleSuccess} onViewClaim={openViewClaim}
-            reason={reason} reasonDesc={reasonDesc} />
+            reason={reason} reasonDesc={reasonDesc} claimTitle={claimTitle} claimDetails={claimDetails} />
         )}
       </div>
 

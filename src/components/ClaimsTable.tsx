@@ -90,28 +90,48 @@ const CLAIM_ROWS: ClaimRow[] = [
     depositType: 'Non Remittance Claim', claimantName: 'SW Logistics LLC', claimantCode: 'AE-9106286', submissionDate: '29/06/2026', status: 'Submitted', remark: '—',
   },
   {
-    reqNo: '4701751', claimNo: '3842003', ver: '1', claimType: 'Refund of Deposits',
-    declarations: [
-      { declNo: '302-09977250-24', date: '11/02/2024', category: 'Cargo Transfer from CTO to CH', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '06/01/2025', exportExpiry: 'N/A' },
-      { declNo: '302-09977251-24', date: '11/08/2024', category: 'Cargo Transfer from CH to CH',  ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '06/08/2025', exportExpiry: 'N/A' },
-    ],
-    depositType: 'Missing Document Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/04/2024', status: 'Under Processing', remark: '1 sub claim Settled / Approved',
-  },
-  {
     reqNo: '4701740', claimNo: '3842063', ver: '1', claimType: 'Refund of Deposits',
     declarations: [
-      { declNo: '101-09977250-24', date: '09/10/2024', category: 'Import for Re Export', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '04/03/2025', exportExpiry: '03/08/2025' },
+      { declNo: '105-01426431-24', date: '09/10/2024', category: 'Import for Re Export', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '04/03/2025', exportExpiry: '03/08/2025' },
     ],
-    depositType: 'Deposit Alternative Duty Rate', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/01/2024', status: 'Completed', remark: '1 sub claim Settled / Approved',
+    depositType: 'Alternative Duty Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/01/2024', status: 'Under Processing', remark: '1 sub claim Settled / Approved',
   },
   {
-    reqNo: '4701770', claimNo: '3842073', ver: '1', claimType: 'Refund of Deposits',
+    reqNo: '4701751', claimNo: '3842003', ver: '1', claimType: 'Refund of Deposits',
     declarations: [
-      { declNo: '401-09977250-24', date: '07/02/2024', category: 'Temporary Admission', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '07/01/2025', exportExpiry: '05/15/2025' },
-      { declNo: '401-09977251-24', date: '08/05/2024', category: 'Temporary Admission', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '08/05/2025', exportExpiry: '07/05/2025' },
-      { declNo: '401-09977252-24', date: '09/10/2024', category: 'Import',              ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '09/10/2025', exportExpiry: 'N/A'         },
+      { declNo: '101-04498436-24', date: '12/05/2024', category: 'Missing Document Deposit', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '04/03/2025', exportExpiry: 'N/A' },
     ],
-    depositType: 'Anti Dumping Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/02/2024', status: 'Suspended', remark: '1 sub claim Settled / Approved',
+    depositType: 'Missing Document Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/04/2024', status: 'Submitted', remark: '1 sub claim Settled / Approved',
+  },
+  {
+    reqNo: '4701762', claimNo: '3842082', ver: '1', claimType: 'Refund of Deposits',
+    declarations: [
+      { declNo: '202-08812205-24', date: '08/14/2024', category: 'CDM Deposit', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '06/15/2025', exportExpiry: 'N/A' },
+    ],
+    depositType: 'CDM Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/06/2024', status: 'Under Processing', remark: '—',
+  },
+  {
+    reqNo: '4701770', claimNo: '3842091', ver: '1', claimType: 'Refund of Deposits',
+    declarations: [
+      { declNo: '301-08821001-24', date: '10/21/2024', category: 'Cargo Transfer from CTO to CH', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '07/12/2025', exportExpiry: 'N/A' },
+      { declNo: '302-04490111-24', date: '11/02/2024', category: 'Cargo Transfer from CH to CH',  ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '06/01/2025', exportExpiry: 'N/A' },
+      { declNo: '303-07731209-24', date: '09/18/2024', category: 'Bonded Movement',                ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '05/20/2025', exportExpiry: 'N/A' },
+    ],
+    depositType: 'Cargo Transfer Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/02/2024', status: 'Completed', remark: '1 sub claim Settled / Approved',
+  },
+  {
+    reqNo: '4701781', claimNo: '3842105', ver: '1', claimType: 'Refund of Deposits',
+    declarations: [
+      { declNo: '410-09912044-24', date: '07/15/2024', category: 'Declaration Amendment - Deposit', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '07/01/2025', exportExpiry: 'N/A' },
+    ],
+    depositType: 'Declaration Amendment - Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/08/2024', status: 'Suspended', remark: '—',
+  },
+  {
+    reqNo: '4701799', claimNo: '3842118', ver: '1', claimType: 'Refund of Deposits',
+    declarations: [
+      { declNo: '510-03318821-24', date: '06/22/2024', category: 'Declaration Cancellation - Deposit', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '06/30/2025', exportExpiry: 'N/A' },
+    ],
+    depositType: 'Declaration Cancellation - Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/10/2024', status: 'Submitted', remark: '—',
   },
 ];
 
@@ -203,9 +223,9 @@ function DeclarationsModal({ declarations, onClose, onDeclarationOpen }: { decla
 }
 
 type Props = {
-  onView?: () => void;
+  onView?: (claimType: string) => void;
   onAmend?: (claimType: string) => void;
-  onCancel?: () => void;
+  onCancel?: (claimType: string) => void;
   onPrint?: () => void;
   onViewDocs?: () => void;
   onHistory?: () => void;
@@ -314,9 +334,9 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
               className="group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
               onClick={() => {
                 setOpenFlyout(null);
-                if (id === 'view')     onView?.();
+                if (id === 'view')     onView?.(claimType);
                 if (id === 'amend')    onAmend?.(claimType);
-                if (id === 'cancel')   onCancel?.();
+                if (id === 'cancel')   onCancel?.(claimType);
                 if (id === 'print')       onPrint?.();
                 if (id === 'printReceipt') onPrint?.();
                 if (id === 'viewDocs') onViewDocs?.();

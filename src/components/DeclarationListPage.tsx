@@ -39,6 +39,7 @@ import CargoTransferViewPage from './CargoTransferViewPage';
 import CargoTransferCancelFlow from './CargoTransferCancelFlow';
 import ClaimCancelFlow from './ClaimCancelFlow';
 import ClaimAmendFlow from './ClaimAmendFlow';
+import RDAmendDeclarationDetailsPage from './RDAmendDeclarationDetailsPage';
 import ClaimDocumentsPage from './ClaimDocumentsPage';
 import PermitsCreatePage from './PermitsCreatePage';
 import ClearanceJourneyPage from './ClearanceJourneyPage';
@@ -60,6 +61,7 @@ import NonRemittanceReviewPage from './NonRemittanceReviewPage';
 import NonRemittanceSuccessPage from './NonRemittanceSuccessPage';
 import NonRemittanceAckPage from './NonRemittanceAckPage';
 import NonRemittanceClaimViewPage from './NonRemittanceClaimViewPage';
+import RefundDepositsClaimViewPage from './RefundDepositsClaimViewPage';
 import ClaimsAuditHistoryPage from './ClaimsAuditHistoryPage';
 import NRPaymentPendingPage from './NRPaymentPendingPage';
 import NRPaymentProcessingPage from './NRPaymentProcessingPage';
@@ -97,8 +99,8 @@ const aeoLogoSrc = 'https://www.figma.com/api/mcp/asset/5de21541-f817-4a23-bf16-
 
 /* Declarations of an existing Refund of Deposits claim being amended. */
 const RD_AMEND_ROWS: Row[] = [
-  { declarationNo: '105-01426431-24', declarationDate: '09/10/2024', depositType: 'Alternative Duty Deposit', declarationCategory: 'Import for Re Export', depositAmount: 'Dh 1,000', depositMethod: 'Standing Guarantee', claimExpiry: '04/03/2025', exportExpiry: '03/08/2025', remarks: '—', kind: 'requestExt', importerCode: 'A180' },
-  { declarationNo: '404-09988123-24', declarationDate: '07/02/2024', depositType: 'Alternative Duty Deposit', declarationCategory: 'Temporary Admission', depositAmount: 'Dh 5,000', depositMethod: 'Standing Guarantee', claimExpiry: '07/01/2025', exportExpiry: '05/15/2025', remarks: '—', kind: 'requestExt', importerCode: 'A180' },
+  { declarationNo: '105-01426431-24', declarationDate: '09/10/2024', depositType: 'Alternative Duty Deposit', declarationCategory: 'Import for Re Export', depositAmount: 'Dh 1,000', depositMethod: 'Standing Guarantee', accountNumber: 'ACC-100234', claimExpiry: '04/03/2025', exportExpiry: '03/08/2025', remarks: '—', kind: 'requestExt', importerCode: 'A180' },
+  { declarationNo: '404-09988123-24', declarationDate: '07/02/2024', depositType: 'Alternative Duty Deposit', declarationCategory: 'Temporary Admission', depositAmount: 'Dh 5,000', depositMethod: 'Standing Guarantee', accountNumber: 'ACC-100567', claimExpiry: '07/01/2025', exportExpiry: '05/15/2025', remarks: '—', kind: 'requestExt', importerCode: 'A180' },
 ];
 
 /* Documents already uploaded on the Refund of Deposits claim being amended. */
@@ -248,7 +250,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
   const [stepperReturnStep, setStepperReturnStep] = useState(0);
   const [cargoPreValues, setCargoPreValues] = useState<{ cargoChannel: string; clientRef: string; carrierReg: string; transferType: string }>({ cargoChannel: 'Sea', clientRef: '', carrierReg: '', transferType: '' });
   const [cargoFormValues, setCargoFormValues] = useState<{ clientRef: string; carrierReg: string; mawb: string; transferorBizCode: string; transferorPremCode: string; transfereeBizCode: string; transfereePremCode: string }>({ clientRef: '', carrierReg: '', mawb: '', transferorBizCode: '', transferorPremCode: '', transfereeBizCode: '', transfereePremCode: '' });
-  type ClaimSubStep = 'list' | 'claimTypeEntry' | 'eligible' | 'eligibleDeclView' | 'chargeDetails' | 'rdDocuments' | 'rdPayment' | 'rdReview' | 'nonRemittanceDocs' | 'nonRemittanceCharges' | 'nonRemittanceReview' | 'nonRemittanceSuccess' | 'nonRemittanceAck' | 'nonRemittanceClaimView' | 'claimListView' | 'claimHistory' | 'cancelClaim' | 'amendClaim' | 'claimDocs' | 'claimSuspension' | 'rdNrSuccess' | 'nrPaymentPending' | 'nrPaymentProcessing' | 'nrPaymentSuccess' | 'nrPaymentRejected' | 'rdPaymentPending' | 'rdPaymentProcessing' | 'rdPaymentSuccess' | 'rdPaymentRejected';
+  type ClaimSubStep = 'list' | 'claimTypeEntry' | 'eligible' | 'eligibleDeclView' | 'amendDeclDetails' | 'chargeDetails' | 'rdDocuments' | 'rdPayment' | 'rdReview' | 'nonRemittanceDocs' | 'nonRemittanceCharges' | 'nonRemittanceReview' | 'nonRemittanceSuccess' | 'nonRemittanceAck' | 'nonRemittanceClaimView' | 'claimListView' | 'claimHistory' | 'cancelClaim' | 'amendClaim' | 'claimDocs' | 'claimSuspension' | 'rdNrSuccess' | 'nrPaymentPending' | 'nrPaymentProcessing' | 'nrPaymentSuccess' | 'nrPaymentRejected' | 'rdPaymentPending' | 'rdPaymentProcessing' | 'rdPaymentSuccess' | 'rdPaymentRejected';
   const [claimListDeclNo, setClaimListDeclNo] = useState<string>('');
   const [claimListDeclViewOpen, setClaimListDeclViewOpen] = useState(false);
   const [claimSelectedRows, setClaimSelectedRows] = useState<import('./EligibleDeclarationsPage').Row[]>([]);
@@ -263,6 +265,9 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
   const [nonRemittancePaymentMode, setNonRemittancePaymentMode] = useState('');
   const [nonRemittanceAccountNo, setNonRemittanceAccountNo] = useState('');
   const [selectedClaimTypeForFlow, setSelectedClaimTypeForFlow] = useState<ClaimType | null>(null);
+  // Claim-type label (e.g. "Refund of Deposits") of the row the user clicked View/Cancel on —
+  // routes to the matching read-only view / cancel flow instead of always showing the NR one.
+  const [listClaimType, setListClaimType] = useState<string>('Non Remittance');
   const [claimViewReturnStep, setClaimViewReturnStep] = useState<ClaimSubStep>('nonRemittanceSuccess');
   const [ackReturnStep, setAckReturnStep] = useState<ClaimSubStep>('nonRemittanceSuccess');
   const [ackStep, setAckStep] = useState<'list' | 'acceptSuccess' | 'declineSuccess'>('list');
@@ -403,8 +408,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
   // wording based on which claim type the user selected. Amend mode is only
   // reachable for Refund of Deposits claims, so it keeps its fixed wording.
   const rdClaimLabel = (!rdAmendMode && selectedClaimTypeForFlow === 'refundDuty') ? 'Refund of Duty' : 'Refund of Deposits';
-  const rdFlowTitle = rdAmendMode ? 'Amend - Refund of Deposits - 3842003' : `Raise New Claim - ${rdClaimLabel}`;
-  const rdChargeTitle = rdAmendMode ? 'Amend — Refund of Deposits - 3842003' : `Raise New Claim — ${rdClaimLabel}`;
+  const rdFlowTitle = rdAmendMode ? 'Amend - Refund of Deposits - 3842063' : `Raise New Claim - ${rdClaimLabel}`;
+  const rdChargeTitle = rdAmendMode ? 'Amend — Refund of Deposits - 3842063' : `Raise New Claim — ${rdClaimLabel}`;
   const rdBreadcrumbLast = rdAmendMode ? 'Amend Claim' : 'Raise New Claim';
   const exitRdAmend = () => { setRdAmendMode(false); setClaimStep('list'); };
 
@@ -452,6 +457,18 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
               onHome={onClose}
             />
           )}
+          {claimStep === 'amendDeclDetails' && claimSelectedRows.length > 0 && (
+            <RDAmendDeclarationDetailsPage
+              rows={claimSelectedRows}
+              onRowsChange={setClaimSelectedRows}
+              claimNo="3842063"
+              claimLabel={rdClaimLabel}
+              steps={REFUND_DEPOSIT_AMEND_STEPS}
+              onBack={exitRdAmend}
+              onBackToListing={exitRdAmend}
+              onProceed={() => setClaimStep('chargeDetails')}
+            />
+          )}
           {claimStep === 'chargeDetails' && claimSelectedRows.length > 0 && (
             <RDChargeFlowPage
               rows={claimSelectedRows}
@@ -460,7 +477,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
               prefill={rdAmendMode}
               hideSaveExit={rdAmendMode}
               steps={rdAmendMode ? REFUND_DEPOSIT_AMEND_STEPS : undefined}
-              onBack={() => rdAmendMode ? exitRdAmend() : setClaimStep('eligible')}
+              onBack={() => rdAmendMode ? setClaimStep('amendDeclDetails') : setClaimStep('eligible')}
               onBackToListing={() => rdAmendMode ? exitRdAmend() : setClaimStep('list')}
               onContinue={({ details }) => {
                 setClaimChargeDetails(details);
@@ -615,14 +632,21 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
             />
           )}
           {claimStep === 'claimListView' && (
-            <NonRemittanceClaimViewPage
-              selectedRows={[]}
-              uploadedDocs={[]}
-              onBack={() => setClaimStep('list')}
-            />
+            listClaimType === 'Refund of Deposits' || listClaimType === 'Refund of Duty' ? (
+              <RefundDepositsClaimViewPage
+                claimType={listClaimType}
+                onBack={() => setClaimStep('list')}
+              />
+            ) : (
+              <NonRemittanceClaimViewPage
+                selectedRows={[]}
+                uploadedDocs={[]}
+                onBack={() => setClaimStep('list')}
+              />
+            )
           )}
           {claimStep === 'cancelClaim' && (
-            <ClaimCancelFlow onBack={() => setClaimStep('list')} />
+            <ClaimCancelFlow claimType={listClaimType} onBack={() => setClaimStep('list')} />
           )}
           {claimStep === 'amendClaim' && (
             <ClaimAmendFlow onBack={() => setClaimStep('list')} />
@@ -2251,19 +2275,20 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
         ) : activeMenu === 'Refund & Claims' ? (
           <ClaimsTable
             showDrafts={showDrafts}
-            onView={() => setClaimStep('claimListView')}
+            onView={(ct) => { setListClaimType(ct); setClaimStep('claimListView'); }}
             onAmend={(ct) => {
               if (ct === 'Refund of Deposits') {
-                // RD amend reuses the RD new-claim steps with editable pre-filled fields.
+                // RD amend reuses the RD new-claim steps with editable pre-filled fields,
+                // starting on a Declaration Details review step (not the full search UI).
                 setClaimSelectedRows(RD_AMEND_ROWS);
                 setRdAmendMode(true);
-                setClaimStep('chargeDetails');
+                setClaimStep('amendDeclDetails');
               } else {
                 setRdAmendMode(false);
                 setClaimStep('amendClaim');
               }
             }}
-            onCancel={() => setClaimStep('cancelClaim')}
+            onCancel={(ct) => { setListClaimType(ct); setClaimStep('cancelClaim'); }}
             onViewDocs={() => setClaimStep('claimDocs')}
             onSuspensionResponse={() => setClaimStep('claimSuspension')}
             onPrint={() => { setAckReturnStep('list'); setClaimStep('nonRemittanceAck'); }}

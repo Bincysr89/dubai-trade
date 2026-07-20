@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import SaveExitModal from './SaveExitModal';
 import BackToListingBar from './BackToListingBar';
 import ClaimStepper, { REFUND_DEPOSIT_STEPS, REFUND_DEPOSIT_STEPS_NO_DOCS } from './ClaimStepper';
@@ -7,8 +8,8 @@ import type { Row } from './EligibleDeclarationsPage';
 const font = "'Dubai', 'Segoe UI', sans-serif";
 
 /* ─── Column grid definition — serial no. + 7 equal columns + action ─────── */
-const COLS    = '56px repeat(7, minmax(160px, 1fr)) 72px';
-const TBL_MIN = 1250;
+const COLS    = '56px repeat(7, minmax(160px, 1fr)) 104px';
+const TBL_MIN = 1280;
 
 /* ─── Domain types ──────────────────────────────────────────────── */
 type RefundType = 'full' | 'fullImport' | 'partial' | 'partialImport' | 'no' | 'refund' | 'noRefund' | '';
@@ -164,7 +165,10 @@ type MenuPos = { top: number; left: number; width: number };
 function FlyoutMenu({ pos, options, value, onSelect }: {
   pos: MenuPos; options: { value: string; label: string }[]; value: string; onSelect: (v: string) => void;
 }) {
-  return (
+  // Portaled to <body> — a sticky/z-indexed ancestor (e.g. the Action column) would
+  // otherwise trap this fixed-position menu inside its own stacking context, painting
+  // it behind a later row's sticky cell instead of on top of the whole page.
+  return createPortal(
     <div className="py-[4px]"
       style={{ position: 'fixed', top: pos.top, left: pos.left, width: Math.max(pos.width, 160), zIndex: 9999,
         background: '#fff', borderRadius: 8, border: '1px solid #f0f0f5', boxShadow: '0px 2px 16px 0px rgba(0,0,0,0.12)',
@@ -181,7 +185,8 @@ function FlyoutMenu({ pos, options, value, onSelect }: {
           </button>
         );
       })}
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -284,23 +289,31 @@ function InlineSelect({ value, onChange, options, placeholder = 'Select' }: {
   );
 }
 
-/* ─── Outbound Declaration View Popup ───────────────────────────── */
-function OutboundViewPopup({ ob, onClose }: { ob: OutboundDetail; onClose: () => void }) {
-  const Field = ({ label, value }: { label: string; value: string }) => (
-    <div className="flex flex-col gap-[4px]">
-      <span className="text-[14px]" style={{ color: '#697498', fontFamily: font }}>{label}</span>
-      <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500, fontFamily: font }}>{value || '—'}</span>
-    </div>
-  );
+/* ─── Outbound Declaration View Popup — every outbound added to the line item, one
+       row per declaration so it stays legible even with 10+ entries. ── */
+const OB_VIEW_COLS: { label: string; get: (ob: OutboundDetail) => string }[] = [
+  { label: 'Customs Authority',     get: ob => ob.customsAuthority },
+  { label: 'Declaration No.',       get: ob => ob.declarationNo },
+  { label: 'Declaration Type',      get: ob => ob.declarationType },
+  { label: 'Exit Point',            get: ob => ob.exitPoint },
+  { label: 'Actual Departure Date', get: ob => ob.actualDepartureDate },
+  { label: 'Re-Export To',          get: ob => ob.reExportTo },
+  { label: 'Statistical Qty',       get: ob => ob.statQty },
+  { label: 'Supplementary Qty',     get: ob => ob.suppQty },
+  { label: 'Weight (kg)',           get: ob => ob.weight },
+];
 
+function OutboundViewPopup({ obs, onClose }: { obs: OutboundDetail[]; onClose: () => void }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(14,27,61,0.45)', padding: 24 }}>
-      <div className="bg-white rounded-[8px] overflow-hidden" style={{ width: '100%', maxWidth: 920, boxShadow: '0px 20px 60px rgba(14,27,61,0.18)', fontFamily: font }}>
+      <div className="bg-white rounded-[8px] overflow-hidden" style={{ width: '100%', maxWidth: 1200, maxHeight: 'calc(100vh - 48px)', display: 'flex', flexDirection: 'column', boxShadow: '0px 20px 60px rgba(14,27,61,0.18)', fontFamily: font }}>
         {/* Header — dark blue, matches other popups */}
-        <div className="bg-[#0e1b3d] flex items-center justify-between px-[24px] py-[18px]">
+        <div className="bg-[#0e1b3d] flex items-center justify-between px-[24px] py-[18px]" style={{ flexShrink: 0 }}>
           <div className="flex items-center gap-[12px] flex-wrap">
             <h2 className="text-[18px] text-[#f8fafd]" style={{ fontWeight: 500, margin: 0, fontFamily: font }}>Outbound Declaration Details</h2>
-            <span className="text-[14px]" style={{ color: 'rgba(255,255,255,0.75)', fontWeight: 500, fontFamily: font }}>{ob.declarationNo || '—'}</span>
+            <span className="text-[14px] px-[10px] py-[3px] rounded-[12px]" style={{ background: 'rgba(255,255,255,0.14)', color: '#f8fafd', fontWeight: 500, fontFamily: font }}>
+              {obs.length} declaration{obs.length !== 1 ? 's' : ''}
+            </span>
           </div>
           <button onClick={onClose} aria-label="Close"
             className="size-[28px] inline-flex items-center justify-center rounded-full text-white hover:bg-white/10">
@@ -308,34 +321,34 @@ function OutboundViewPopup({ ob, onClose }: { ob: OutboundDetail; onClose: () =>
           </button>
         </div>
 
-        {/* Body */}
-        <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
-          {/* Declaration info */}
-          <div className="rounded-[6px] p-[16px]" style={{ background: '#f8fafd', border: '1px solid #eef1f6' }}>
-            <p className="text-[14px] text-[#455174] mb-[12px]" style={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: font }}>Declaration Information</p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px 20px' }}>
-              <Field label="Customs Authority"  value={ob.customsAuthority}     />
-              <Field label="Declaration No."    value={ob.declarationNo}        />
-              <Field label="Declaration Type"   value={ob.declarationType}      />
-              <Field label="Exit Point"         value={ob.exitPoint}            />
-            </div>
-          </div>
-
-          {/* Shipment info */}
-          <div className="rounded-[6px] p-[16px]" style={{ background: '#f8fafd', border: '1px solid #eef1f6' }}>
-            <p className="text-[14px] text-[#455174] mb-[12px]" style={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: font }}>Shipment Information</p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px 20px' }}>
-              <Field label="Actual Departure Date" value={ob.actualDepartureDate} />
-              <Field label="Re-Export To"          value={ob.reExportTo}          />
-              <Field label="Statistical Qty"       value={ob.statQty}             />
-              <Field label="Supplementary Qty"     value={ob.suppQty || '—'}      />
-              <Field label="Weight (kg)"           value={ob.weight}              />
-            </div>
+        {/* Body — one row per outbound declaration, fields as columns */}
+        <div className="flex-1 overflow-auto px-[24px] py-[20px]">
+          <div className="border border-[#eef1f6] rounded-[8px] overflow-x-auto">
+            <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 1100, fontFamily: font }}>
+              <thead>
+                <tr style={{ background: '#a6c2e9' }}>
+                  <th className="text-left text-[16px] text-[#000]" style={{ padding: '12px', fontWeight: 500, width: 44 }}>#</th>
+                  {OB_VIEW_COLS.map(c => (
+                    <th key={c.label} className="text-left text-[16px] text-[#000]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>{c.label}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {obs.map((ob, i) => (
+                  <tr key={ob.id} style={{ borderTop: '1px solid #eef1f6' }}>
+                    <td className="text-[14px] text-[#697498]" style={{ padding: '12px' }}>{i + 1}</td>
+                    {OB_VIEW_COLS.map(c => (
+                      <td key={c.label} className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{c.get(ob) || '—'}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
 
         {/* Footer */}
-        <div style={{ padding: '12px 24px 20px', display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid #eef1f6' }}>
+        <div style={{ flexShrink: 0, padding: '12px 24px 20px', display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid #eef1f6' }}>
           <button onClick={onClose}
             className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors"
             style={{ background: '#1360d2', border: 'none', fontFamily: font, fontWeight: 500, cursor: 'pointer', boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
@@ -354,33 +367,43 @@ const BLANK_OB = (): OutboundDetail => ({
   actualDepartureDate: '', statQty: '', suppQty: '', weight: '', reExportTo: '',
 });
 
-function FLabel({ label, req }: { label: string; req?: boolean }) {
-  return (
-    <p className="text-[14px] mb-[6px]" style={{ color: '#697498', fontFamily: font }}>
-      {req && <span style={{ color: '#dc3545' }}>* </span>}{label}
-    </p>
-  );
-}
-
+/* Floating-label text input — matches FloatingField.tsx's convention used across the app. */
 function FInput({ label, value, onChange, type = 'text', placeholder = '', req }: {
   label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string; req?: boolean;
 }) {
+  const [focused, setFocused] = useState(false);
+  const floated = focused || value.length > 0;
+  // Native date inputs always render their own "mm/dd/yyyy" placeholder, which fights a
+  // centered resting label — render as text until focused/filled, same trick as FloatingField.
+  const isDate = type === 'date';
+  const effectiveType = isDate ? (floated ? 'date' : 'text') : type;
   return (
-    <div>
-      <FLabel label={label} req={req} />
-      <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+    <div className="relative">
+      <input type={effectiveType} value={value} onChange={e => onChange(e.target.value)}
+        onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+        placeholder={floated ? placeholder : ''}
         className="w-full bg-white rounded-[4px] text-[16px]"
-        style={{ height: 48, border: '1px solid #d5ddfb', padding: '0 12px', fontFamily: font, color: '#0e1b3d', outline: 'none' }} />
+        style={{ height: 48, border: `1px solid ${focused ? '#1360d2' : '#d5ddfb'}`, padding: '0 12px', fontFamily: font, color: '#0e1b3d', outline: 'none', transition: 'border-color 120ms' }} />
+      <span className="absolute pointer-events-none transition-all" style={{
+        left: floated ? 10 : 12, top: floated ? -9 : '50%', transform: floated ? 'none' : 'translateY(-50%)',
+        background: floated ? '#fff' : 'transparent', padding: floated ? '0 4px' : 0,
+        fontSize: floated ? 12 : 16, color: floated ? (focused ? '#1360d2' : '#0e1b3d') : '#697498',
+        transitionDuration: '120ms', fontFamily: font,
+      }}>
+        {req && <span style={{ color: '#dc3545' }}>*</span>}{label}
+      </span>
     </div>
   );
 }
 
+/* Floating-label select — same visual convention as FInput/RefundSelect. */
 function FSelect({ label, value, onChange, options, req }: {
   label: string; value: string; onChange: (v: string) => void; options: string[]; req?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [pos,  setPos]  = useState<MenuPos | null>(null);
   const btnRef          = useRef<HTMLButtonElement>(null);
+  const floated          = open || value.length > 0;
 
   const toggle = () => {
     if (btnRef.current) {
@@ -398,19 +421,26 @@ function FSelect({ label, value, onChange, options, req }: {
   }, [open]);
 
   return (
-    <div>
-      <FLabel label={label} req={req} />
+    <div className="relative">
       <button ref={btnRef} type="button" onClick={toggle} aria-haspopup="listbox" aria-expanded={open}
         className="w-full bg-white rounded-[4px] flex items-center px-[12px] text-left transition-colors"
         style={{ height: 48, border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}`, fontFamily: font, cursor: 'pointer' }}>
-        <span className="flex-1 text-[16px]" style={{ color: value ? '#0e1b3d' : '#697498' }}>
-          {value || 'Please Select'}
+        <span className="flex-1 text-[16px]" style={{ color: value ? '#0e1b3d' : 'transparent' }}>
+          {value || ' '}
         </span>
         <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"
           className={`transition-transform flex-shrink-0 ${open ? 'rotate-180' : ''}`}>
           <path d="M5 8l5 5 5-5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </button>
+      <span className="absolute pointer-events-none transition-all" style={{
+        left: floated ? 10 : 12, top: floated ? -9 : '50%', transform: floated ? 'none' : 'translateY(-50%)',
+        background: floated ? '#fff' : 'transparent', padding: floated ? '0 4px' : 0,
+        fontSize: floated ? 12 : 16, color: floated ? (open ? '#1360d2' : '#0e1b3d') : '#697498',
+        transitionDuration: '120ms', fontFamily: font,
+      }}>
+        {req && <span style={{ color: '#dc3545' }}>*</span>}{label}
+      </span>
       {open && pos && (
         <FlyoutMenu pos={pos} options={options.map(o => ({ value: o, label: o }))} value={value}
           onSelect={v => { onChange(v); setOpen(false); }} />
@@ -419,13 +449,21 @@ function FSelect({ label, value, onChange, options, req }: {
   );
 }
 
-function OutboundModal({ ctx, existing, targetCount, onSave, onSaveAnother, onClose }: {
-  ctx: DrawerCtx; existing?: OutboundDetail; targetCount: number;
+function OutboundModal({ ctx, existing, targetCount, previousOutbounds = [], onSave, onSaveAnother, onClose }: {
+  ctx: DrawerCtx; existing?: OutboundDetail; targetCount: number; previousOutbounds?: OutboundDetail[];
   onSave: (d: OutboundDetail) => void; onSaveAnother: (d: OutboundDetail) => void; onClose: () => void;
 }) {
   const [form, setForm]       = useState<OutboundDetail>(existing ?? BLANK_OB());
   const [touched, setTouched] = useState(false);
-  useEffect(() => { setForm(existing ?? BLANK_OB()); setTouched(false); }, [ctx.hsId, ctx.editId]);
+  const [prefillFrom, setPrefillFrom] = useState('');
+  useEffect(() => { setForm(existing ?? BLANK_OB()); setTouched(false); setPrefillFrom(''); }, [ctx.hsId, ctx.editId]);
+
+  /* Add mode only — prefill the form from an outbound declaration already added elsewhere in this claim. */
+  const applyPrefill = (declarationNo: string) => {
+    setPrefillFrom(declarationNo);
+    const source = previousOutbounds.find(o => o.declarationNo === declarationNo);
+    if (source) setForm(f => ({ ...source, id: f.id }));
+  };
 
   const set = (k: keyof OutboundDetail, v: string) => setForm(f => ({ ...f, [k]: v }));
   const isValid = form.declarationNo.trim() && form.declarationType && form.exitPoint && form.actualDepartureDate && form.statQty.trim() && form.weight.trim() && form.reExportTo;
@@ -433,6 +471,7 @@ function OutboundModal({ ctx, existing, targetCount, onSave, onSaveAnother, onCl
   /* Dubai Customs — searching the declaration number autofills the rest. */
   const isDubai = form.customsAuthority === 'Dubai Customs';
   const [declSearchOpen, setDeclSearchOpen] = useState(false);
+  const [declFocused, setDeclFocused] = useState(false);
   const declRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!declSearchOpen) return;
@@ -480,19 +519,40 @@ function OutboundModal({ ctx, existing, targetCount, onSave, onSaveAnother, onCl
             )}
           </div>
 
+          {!ctx.editId && previousOutbounds.length > 0 && (
+            <div className="rounded-[6px] p-[14px]" style={{ background: '#f8fafd', border: '1px solid #eef1f6' }}>
+              <FSelect label="Prefill from Previous Outbound"
+                value={prefillFrom ? (previousOutbounds.find(o => o.declarationNo === prefillFrom)?.declarationNo ?? '') : ''}
+                onChange={applyPrefill}
+                options={previousOutbounds.map(o => o.declarationNo)} />
+              <p className="text-[12px] text-[#697498]" style={{ margin: '6px 0 0', fontFamily: font }}>Choose a declaration already added to this claim to prefill the fields below.</p>
+            </div>
+          )}
+
           <div>
             <p className="text-[16px] text-[#0e1b3d] mb-[12px]" style={{ fontWeight: 500, fontFamily: font, borderBottom: '1px solid #eef1f6', paddingBottom: 8 }}>Declaration Information</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
               <FSelect label="Customs Authority" value={form.customsAuthority} onChange={v => set('customsAuthority', v)} options={CUSTOMS_AUTHORITIES} req />
               <div ref={declRef} style={{ position: 'relative' }}>
-                <FLabel label="Declaration No." req />
                 <div style={{ position: 'relative' }}>
                   <input value={form.declarationNo}
                     onChange={e => { set('declarationNo', e.target.value); if (isDubai) setDeclSearchOpen(true); }}
-                    onFocus={() => { if (isDubai) setDeclSearchOpen(true); }}
-                    placeholder={isDubai ? 'Search Declaration Number' : 'e.g. EX-12345678-24'}
+                    onFocus={() => { setDeclFocused(true); if (isDubai) setDeclSearchOpen(true); }}
+                    onBlur={() => setDeclFocused(false)}
+                    placeholder={declFocused ? (isDubai ? 'Search Declaration Number' : 'e.g. EX-12345678-24') : ''}
                     className="w-full bg-white rounded-[4px] text-[16px]"
-                    style={{ height: 48, border: '1px solid #d5ddfb', padding: '0 40px 0 12px', fontFamily: font, color: '#0e1b3d', outline: 'none' }} />
+                    style={{ height: 48, border: `1px solid ${declFocused ? '#1360d2' : '#d5ddfb'}`, padding: '0 40px 0 12px', fontFamily: font, color: '#0e1b3d', outline: 'none', transition: 'border-color 120ms' }} />
+                  <span className="absolute pointer-events-none transition-all" style={(() => {
+                    const floated = declFocused || form.declarationNo.length > 0;
+                    return {
+                      left: floated ? 10 : 12, top: floated ? -9 : '50%', transform: floated ? 'none' : 'translateY(-50%)',
+                      background: floated ? '#fff' : 'transparent', padding: floated ? '0 4px' : 0,
+                      fontSize: floated ? 12 : 16, color: floated ? (declFocused ? '#1360d2' : '#0e1b3d') : '#697498',
+                      transitionDuration: '120ms', fontFamily: font,
+                    };
+                  })()}>
+                    <span style={{ color: '#dc3545' }}>*</span>Declaration No.
+                  </span>
                   <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" strokeLinecap="round"
                     style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
                     <circle cx="9" cy="9" r="5.5"/><path d="M14 14l4 4"/>
@@ -576,12 +636,34 @@ function HSRow({ hs, inv, declNo, rt, obs, edit, selected, onToggleSelect, onPat
   onPatchHs: (hsId: string, patch: { allocationMethod?: string }) => void;
   onAdd: (ctx: DrawerCtx, hsIds: string[]) => void;
   onEdit: (ctx: DrawerCtx, ob: OutboundDetail) => void;
-  onViewOb: (ob: OutboundDetail) => void;
+  onViewOb: (obs: OutboundDetail[]) => void;
 }) {
   const key     = obKey(declNo, hs.id);
   const list    = obs[key] ?? [];
   const needsOb = needsOutbound(rt);
   const alloc   = edit.allocationMethod ?? hs.allocationMethod;
+
+  /* Action column — 3-dot flyout: Add new outbound / View outbound details */
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuPos,  setMenuPos]  = useState<MenuPos | null>(null);
+  const menuBtnRef              = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!menuOpen) return;
+    const close = (e: MouseEvent) => { if (menuBtnRef.current && !menuBtnRef.current.contains(e.target as Node)) setMenuOpen(false); };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [menuOpen]);
+  const openMenu = () => {
+    if (menuBtnRef.current) {
+      const r = menuBtnRef.current.getBoundingClientRect();
+      setMenuPos({ top: r.bottom + 4, left: r.right - 210, width: 210 });
+    }
+    setMenuOpen(true);
+  };
+  const actionOptions = [
+    { value: 'add', label: 'Add new outbound' },
+    ...(list.length > 0 ? [{ value: 'view', label: 'View outbound details' }] : []),
+  ];
 
   return (
     <tr className={selected ? 'is-selected' : ''}>
@@ -601,19 +683,26 @@ function HSRow({ hs, inv, declNo, rt, obs, edit, selected, onToggleSelect, onPat
       <td className="text-[16px]" style={{ color: '#051937', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: font }}>{hs.hsCode}</td>
       {/* Goods Description */}
       <td className="text-[16px] text-[#0e1b3d]" style={{ minWidth: 180 }}>{hs.description}</td>
-      {/* Outbound Declaration No — hyperlinks open the view popup */}
+      {/* Outbound Declaration No — a single declaration is a plain link; multiple show a
+          count badge that opens the view-all popup so the total is legible at a glance. */}
       <td style={{ minWidth: 170 }}>
         {list.length > 0 ? (
-          <div className="flex flex-col gap-[4px]">
-            {list.map(ob => (
-              <button key={ob.id} type="button"
-                onClick={() => onViewOb(ob)}
-                className="text-[16px] hover:underline text-left"
-                style={{ color: '#1360d2', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontFamily: font, padding: 0, whiteSpace: 'nowrap' }}>
-                {ob.declarationNo || `Outbound #${list.indexOf(ob) + 1}`}
-              </button>
-            ))}
-          </div>
+          list.length === 1 ? (
+            <button type="button"
+              onClick={() => onViewOb(list)}
+              className="text-[16px] hover:underline text-left"
+              style={{ color: '#1360d2', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontFamily: font, padding: 0, whiteSpace: 'nowrap' }}>
+              {list[0].declarationNo || 'Outbound #1'}
+            </button>
+          ) : (
+            <button type="button" title={`${list.length} outbound declarations`}
+              onClick={() => onViewOb(list)}
+              aria-label="View outbound declarations"
+              className="text-[16px] font-medium inline-flex items-center justify-center hover:opacity-80 transition-opacity"
+              style={{ background: 'rgba(19,96,210,0.08)', color: '#1360d2', minWidth: 32, height: 24, padding: '0 8px', borderRadius: 12, textDecoration: 'underline', border: 'none', cursor: 'pointer', fontFamily: font }}>
+              {list.length}
+            </button>
+          )
         ) : (
           <span className="text-[16px]" style={{ color: '#c0c8d8' }}>—</span>
         )}
@@ -624,38 +713,35 @@ function HSRow({ hs, inv, declNo, rt, obs, edit, selected, onToggleSelect, onPat
       <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap', textAlign: 'right', fontFamily: font }}>{hs.suppQty} <span className="text-[14px] text-[#697498]">{hs.unit}</span></td>
       {/* Weight */}
       <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap', textAlign: 'right', fontFamily: font }}>{hs.weight} <span className="text-[14px] text-[#697498]">kg</span></td>
-      {/* Allocation Method */}
-      <td style={{ minWidth: 120 }}>
-        <InlineSelect value={alloc} onChange={v => onPatchHs(hs.id, { allocationMethod: v })} options={ALLOCATION_OPTIONS} placeholder="Select" />
-      </td>
-      {/* Unit Price */}
-      <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap', textAlign: 'right', fontFamily: font }}>{hs.unitPrice}</td>
-      {/* Currency — plain text */}
-      <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap', fontFamily: font }}>{hs.currency}</td>
+      {/* Allocation Method / Unit Price / Currency — only apply to Partial Export */}
+      {rt === 'partial' && (
+        <>
+          <td style={{ minWidth: 120 }}>
+            <InlineSelect value={alloc} onChange={v => onPatchHs(hs.id, { allocationMethod: v })} options={ALLOCATION_OPTIONS} placeholder="Select" />
+          </td>
+          <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap', textAlign: 'right', fontFamily: font }}>{hs.unitPrice}</td>
+          <td className="text-[16px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap', fontFamily: font }}>{hs.currency}</td>
+        </>
+      )}
       {/* Action — sticky so it stays visible while the rest scrolls */}
       <td style={{ whiteSpace: 'nowrap', position: 'sticky', right: 0, zIndex: 1, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>
         {needsOb ? (
-          list.length > 0 ? (
-            <button type="button"
-              onClick={() => onEdit({ declNo, invoiceNo: inv.invoiceNo, invoiceId: inv.id, hsId: hs.id, hsCode: hs.hsCode, description: hs.description }, list[list.length - 1])}
-              className="h-[36px] px-[14px] rounded-[4px] text-[14px] bg-white hover:bg-[#f0f4ff] inline-flex items-center gap-[6px]"
-              style={{ border: '1.5px solid #1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500, whiteSpace: 'nowrap', cursor: 'pointer' }}>
-              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 20h4l11-11-4-4L4 16v4z" /><path d="M14 6l4 4" />
-              </svg>
-              Edit
+          <>
+            <button ref={menuBtnRef} type="button" onClick={openMenu} aria-label="Row actions" aria-haspopup="menu" aria-expanded={menuOpen}
+              className="size-[32px] inline-flex items-center justify-center rounded-[4px] hover:bg-[#f0f4ff] transition-colors"
+              style={{ border: '1px solid #d5ddfb', cursor: 'pointer' }}>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="#455174"><circle cx="12" cy="5" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="12" cy="19" r="1.8" /></svg>
             </button>
-          ) : (
-            <button type="button"
-              onClick={() => onAdd({ declNo, invoiceNo: inv.invoiceNo, invoiceId: inv.id, hsId: hs.id, hsCode: hs.hsCode, description: hs.description }, [hs.id])}
-              className="h-[36px] px-[14px] rounded-[4px] text-[14px] bg-white hover:bg-[#f0f4ff] inline-flex items-center gap-[6px]"
-              style={{ border: '1.5px solid #1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500, whiteSpace: 'nowrap', cursor: 'pointer' }}>
-              <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <path d="M7 2v10M2 7h10"/>
-              </svg>
-              Add Outbound
-            </button>
-          )
+            {menuOpen && menuPos && (
+              <FlyoutMenu pos={menuPos} value="" options={actionOptions}
+                onSelect={v => {
+                  setMenuOpen(false);
+                  const ctx: DrawerCtx = { declNo, invoiceNo: inv.invoiceNo, invoiceId: inv.id, hsId: hs.id, hsCode: hs.hsCode, description: hs.description };
+                  if (v === 'add') onAdd(ctx, [hs.id]);
+                  else if (v === 'view' && list.length > 0) onViewOb(list);
+                }} />
+            )}
+          </>
         ) : (
           <span className="text-[16px]" style={{ color: '#c0c8d8' }}>—</span>
         )}
@@ -674,7 +760,7 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
   onToggleInv: (i: number) => void;
   onAdd: (ctx: DrawerCtx, hsIds: string[], onApplied?: () => void) => void;
   onEdit: (ctx: DrawerCtx, ob: OutboundDetail) => void;
-  onViewOb: (ob: OutboundDetail) => void;
+  onViewOb: (obs: OutboundDetail[]) => void;
   onDelete: (i: number) => void;
 }) {
   const invoices = getInvoices(d.declarationNo);
@@ -779,13 +865,23 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
               background: isAuto ? '#f8fafd' : '#fff' }} />
         </div>
 
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center gap-[6px]">
           <button type="button" onClick={() => onDelete(idx)} aria-label="Delete"
             className="size-[36px] inline-flex items-center justify-center rounded hover:bg-[#fef2f2] transition-colors" style={{ color: '#dc3545' }}>
             <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
               <path d="M3 5h14M8 5V3h4v2M17 5l-1 13H4L3 5" /><path d="M8 9v5M12 9v5" />
             </svg>
           </button>
+          {needsOb && (
+            <button type="button" onClick={() => onToggleInv(idx)} aria-label={invOpen ? 'Collapse outbound details' : 'Expand outbound details'}
+              className="size-[36px] rounded-full inline-flex items-center justify-center transition-colors"
+              style={{ background: '#fff', border: '1px solid #e0e6ef', color: '#455174', boxShadow: '0px 1px 4px rgba(19,96,210,0.10)' }}>
+              <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"
+                style={{ transition: 'transform 0.15s', transform: invOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                <path d="M5 8l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 
@@ -794,14 +890,14 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
         <>
           <div style={{ borderTop: '1px solid #eef1f6' }}>
             <button type="button" onClick={() => onToggleInv(idx)}
-              className="w-full flex items-center gap-[10px] px-[20px] py-[12px] hover:bg-[#f8fafd] text-left"
-              style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: font, minWidth: TBL_MIN }}>
+              className={`w-full flex items-center gap-[10px] px-[20px] py-[12px] text-left transition-colors ${invOpen ? '' : 'hover:bg-[#f8fafd]'}`}
+              style={{ border: 'none', background: invOpen ? '#e2ebf9' : 'transparent', cursor: 'pointer', fontFamily: font, minWidth: TBL_MIN }}>
               <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="#697498" strokeWidth="2.2" strokeLinecap="round"
                 style={{ transition: 'transform 0.15s', transform: invOpen ? 'rotate(90deg)' : 'rotate(0deg)', flexShrink: 0 }}>
                 <path d="M5 3l4 4-4 4"/>
               </svg>
               <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Outbound Declaration Details</span>
-              <span className="text-[14px] px-[10px] py-[3px] rounded-[12px]" style={{ background: '#e2ebf9', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: font }}>
+              <span className="text-[14px] px-[10px] py-[3px] rounded-[12px]" style={{ background: invOpen ? '#fff' : '#e2ebf9', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: font }}>
                 {allItems.length} HS Code{allItems.length !== 1 ? 's' : ''}
               </span>
 
@@ -835,9 +931,6 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
                       <path d="M6 9l6 6 6-6" />
                     </svg>
                   </button>
-                  <span className="pl-[12px] text-[#8f94ae] flex-shrink-0 pointer-events-none">
-                    <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="9" r="6" /><path d="M14 14l4 4" strokeLinecap="round" /></svg>
-                  </span>
                   <input
                     value={searchText}
                     onChange={e => setSearchText(e.target.value)}
@@ -847,10 +940,13 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
                   />
                   {searchText && (
                     <button type="button" onClick={() => setSearchText('')}
-                      className="mr-[8px] size-[22px] inline-flex items-center justify-center rounded-full text-[#697498] hover:bg-[#f0f4ff] flex-shrink-0">
+                      className="mr-[6px] size-[22px] inline-flex items-center justify-center rounded-full text-[#697498] hover:bg-[#f0f4ff] flex-shrink-0">
                       <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4l8 8M12 4l-8 8" strokeLinecap="round" /></svg>
                     </button>
                   )}
+                  <span className="pr-[12px] text-[#8f94ae] flex-shrink-0 pointer-events-none">
+                    <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="9" r="6" /><path d="M14 14l4 4" strokeLinecap="round" /></svg>
+                  </span>
                 </div>
                 {searchTypeOpen && (
                   <div className="absolute z-[80] top-[52px] left-0 bg-white rounded-[8px] py-[4px] overflow-hidden"
@@ -911,16 +1007,21 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
                       <th className="text-[16px]" style={{ textAlign: 'right' }}>Statistical Quantity</th>
                       <th className="text-[16px]" style={{ textAlign: 'right' }}>Supplementary Quantity</th>
                       <th className="text-[16px]" style={{ textAlign: 'right' }}>Weight</th>
-                      <th className="text-[16px]">Allocation Method</th>
-                      <th className="text-[16px]" style={{ textAlign: 'right' }}>Unit Price</th>
-                      <th className="text-[16px]">Currency</th>
+                      {/* Allocation Method / Unit Price / Currency only apply to Partial Export */}
+                      {d.refundType === 'partial' && (
+                        <>
+                          <th className="text-[16px]">Allocation Method</th>
+                          <th className="text-[16px]" style={{ textAlign: 'right' }}>Unit Price</th>
+                          <th className="text-[16px]">Currency</th>
+                        </>
+                      )}
                       <th className="text-[16px]" style={{ position: 'sticky', right: 0, zIndex: 2, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>Action</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredItems.length === 0 ? (
                       <tr>
-                        <td colSpan={13} className="text-[16px] text-[#697498]" style={{ textAlign: 'center', padding: '20px 12px', fontFamily: font }}>
+                        <td colSpan={d.refundType === 'partial' ? 13 : 10} className="text-[16px] text-[#697498]" style={{ textAlign: 'center', padding: '20px 12px', fontFamily: font }}>
                           No line items match “{searchText}”.
                         </td>
                       </tr>
@@ -990,7 +1091,7 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
   const [invOpen,   setInvOpen]   = useState<Record<number, boolean>>({});
   const [hsEdits,   setHsEdits]   = useState<Record<string, { allocationMethod?: string }>>(prefilled.hs0);
   const [modal,     setModal]     = useState<{ ctx: DrawerCtx; hsIds: string[]; onApplied?: () => void; existing?: OutboundDetail } | null>(null);
-  const [viewOb,    setViewOb]    = useState<OutboundDetail | null>(null);
+  const [viewOb,    setViewOb]    = useState<OutboundDetail[] | null>(null);
   const [saveModal, setSaveModal] = useState(false);
 
   const patchHs = (hsId: string, patch: { allocationMethod?: string }) =>
@@ -1094,7 +1195,7 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
                 onRefund={patchRefund} onAmount={patchAmount} onToggleInv={toggleInv}
                 onAdd={(ctx, hsIds, onApplied) => setModal({ ctx, hsIds, onApplied })}
                 onEdit={(ctx, ob) => setModal({ ctx: { ...ctx, editId: ob.id }, hsIds: [ctx.hsId], existing: ob })}
-                onViewOb={ob => setViewOb(ob)}
+                onViewOb={obs => setViewOb(obs)}
                 onDelete={setDeleteIdx} />
             ))}
           </div>
@@ -1140,13 +1241,14 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
       {/* Add/Edit outbound modal */}
       {modal && (
         <OutboundModal ctx={modal.ctx} existing={modal.existing} targetCount={modal.hsIds.length}
+          previousOutbounds={Array.from(new Map(Object.values(obs).flat().filter(o => o.declarationNo).map(o => [o.declarationNo, o])).values())}
           onSave={saveOb}
           onSaveAnother={saveObAnother}
           onClose={() => setModal(null)} />
       )}
 
       {/* View outbound popup */}
-      {viewOb && <OutboundViewPopup ob={viewOb} onClose={() => setViewOb(null)} />}
+      {viewOb && <OutboundViewPopup obs={viewOb} onClose={() => setViewOb(null)} />}
 
       {saveModal && <SaveExitModal onCancel={() => setSaveModal(false)} onBackToListing={onBackToListing ?? (() => {})} />}
 

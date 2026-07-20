@@ -8,6 +8,7 @@ import ClaimantBrokerDetail from './ClaimantBrokerDetail';
 import ClaimStepper, { NR_CLAIM_STEPS, REFUND_DEPOSIT_STEPS } from './ClaimStepper';
 import Dh from './Dh';
 import { DateInput } from './DatePicker';
+import { useTableBehaviors, DragDots, ScrollArrows } from '../hooks/useTableBehaviors';
 
 export type RefundType = 'full' | 'partial' | 'no';
 
@@ -509,30 +510,31 @@ export type Row = {
   exportExpiry: string;
   remarks: string;
   kind: RowKind;
-  importerCode?: string;     // for Non Remittance filtering
+  importerCode?: string;     // for Non Remittance / Refund of Deposits owner filtering
+  accountNumber?: string;    // only set when depositMethod === 'Standing Guarantee'
 };
 
 const ROWS: Row[] = [
   // ── Refund of Deposits ─────────────────────────────────────────────────────
   // Alternative Duty Deposit
-  { declarationNo: '105-01426431-24', declarationDate: '09/10/2024', depositType: 'Alternative Duty Deposit',          declarationCategory: 'Import for Re Export',          depositAmount: 'Dh 1,000', depositMethod: 'Standing Guarantee', claimExpiry: '04/03/2025', exportExpiry: '03/08/2025', remarks: '—', kind: 'requestExt' },
-  { declarationNo: '404-09988123-24', declarationDate: '07/02/2024', depositType: 'Alternative Duty Deposit',          declarationCategory: 'Temporary Admission',           depositAmount: 'Dh 5,000', depositMethod: 'Standing Guarantee', claimExpiry: '07/01/2025', exportExpiry: '05/15/2025', remarks: '—', kind: 'requestExt' },
-  { declarationNo: '201-07612301-24', declarationDate: '08/14/2024', depositType: 'Alternative Duty Deposit',          declarationCategory: 'Transit (ROW to ROW)',          depositAmount: 'Dh 2,200', depositMethod: 'Cash',               claimExpiry: '06/15/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
-  { declarationNo: '209-03312099-24', declarationDate: '10/05/2024', depositType: 'Alternative Duty Deposit',          declarationCategory: 'FZ Export',                    depositAmount: 'Dh 3,800', depositMethod: 'Cash',               claimExpiry: '05/01/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
+  { declarationNo: '105-01426431-24', declarationDate: '09/10/2024', depositType: 'Alternative Duty Deposit',          declarationCategory: 'Import for Re Export',          depositAmount: 'Dh 1,000', depositMethod: 'Standing Guarantee', claimExpiry: '04/03/2025', exportExpiry: '03/08/2025', remarks: '—', kind: 'requestExt', importerCode: 'A180', accountNumber: 'ACC-100234' },
+  { declarationNo: '404-09988123-24', declarationDate: '07/02/2024', depositType: 'Alternative Duty Deposit',          declarationCategory: 'Temporary Admission',           depositAmount: 'Dh 5,000', depositMethod: 'Standing Guarantee', claimExpiry: '07/01/2025', exportExpiry: '05/15/2025', remarks: '—', kind: 'requestExt', importerCode: 'A180', accountNumber: 'ACC-100567' },
+  { declarationNo: '201-07612301-24', declarationDate: '08/14/2024', depositType: 'Alternative Duty Deposit',          declarationCategory: 'Transit (ROW to ROW)',          depositAmount: 'Dh 2,200', depositMethod: 'Cash',               claimExpiry: '06/15/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request', importerCode: 'A180' },
+  { declarationNo: '209-03312099-24', declarationDate: '10/05/2024', depositType: 'Alternative Duty Deposit',          declarationCategory: 'FZ Export',                    depositAmount: 'Dh 3,800', depositMethod: 'Cash',               claimExpiry: '05/01/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request', importerCode: 'A220' },
   // Cargo Transfer Deposit
-  { declarationNo: '301-08821001-24', declarationDate: '10/21/2024', depositType: 'Cargo Transfer Deposit',            declarationCategory: 'Cargo Transfer from CTO to CH', depositAmount: 'Dh 1,500', depositMethod: 'Cash',               claimExpiry: '07/12/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
-  { declarationNo: '302-04490111-24', declarationDate: '11/02/2024', depositType: 'Cargo Transfer Deposit',            declarationCategory: 'Cargo Transfer from CH to CH',  depositAmount: 'Dh 2,000', depositMethod: 'Cash',               claimExpiry: '06/01/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
-  { declarationNo: '303-07731209-24', declarationDate: '09/18/2024', depositType: 'Cargo Transfer Deposit',            declarationCategory: 'Bonded Movement',              depositAmount: 'Dh 800',   depositMethod: 'Standing Guarantee', claimExpiry: '05/20/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
+  { declarationNo: '301-08821001-24', declarationDate: '10/21/2024', depositType: 'Cargo Transfer Deposit',            declarationCategory: 'Cargo Transfer from CTO to CH', depositAmount: 'Dh 1,500', depositMethod: 'Cash',               claimExpiry: '07/12/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request', importerCode: 'A220' },
+  { declarationNo: '302-04490111-24', declarationDate: '11/02/2024', depositType: 'Cargo Transfer Deposit',            declarationCategory: 'Cargo Transfer from CH to CH',  depositAmount: 'Dh 2,000', depositMethod: 'Cash',               claimExpiry: '06/01/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request', importerCode: 'A220' },
+  { declarationNo: '303-07731209-24', declarationDate: '09/18/2024', depositType: 'Cargo Transfer Deposit',            declarationCategory: 'Bonded Movement',              depositAmount: 'Dh 800',   depositMethod: 'Standing Guarantee', claimExpiry: '05/20/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request', importerCode: 'A350', accountNumber: 'ACC-100812' },
   // Duty Deposit (Refund of Deposit context — direct)
-  { declarationNo: '108-05512790-24', declarationDate: '11/02/2024', depositType: 'Duty Deposit',                      declarationCategory: 'Import',                       depositAmount: 'Dh 3,200', depositMethod: 'Standing Guarantee', claimExpiry: '05/01/2025', exportExpiry: '04/01/2025', remarks: '—', kind: 'requestExt' },
+  { declarationNo: '108-05512790-24', declarationDate: '11/02/2024', depositType: 'Duty Deposit',                      declarationCategory: 'Import',                       depositAmount: 'Dh 3,200', depositMethod: 'Standing Guarantee', claimExpiry: '05/01/2025', exportExpiry: '04/01/2025', remarks: '—', kind: 'requestExt', importerCode: 'A350', accountNumber: 'ACC-101045' },
   // Missing Document Deposit
-  { declarationNo: '101-04498436-24', declarationDate: '12/05/2024', depositType: 'Missing Document Deposit',          declarationCategory: null,                           depositAmount: 'Dh 1,000', depositMethod: 'Standing Guarantee', claimExpiry: '04/03/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
+  { declarationNo: '101-04498436-24', declarationDate: '12/05/2024', depositType: 'Missing Document Deposit',          declarationCategory: null,                           depositAmount: 'Dh 1,000', depositMethod: 'Standing Guarantee', claimExpiry: '04/03/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request', importerCode: 'A180', accountNumber: 'ACC-101299' },
   // CDM Deposit
-  { declarationNo: '202-08812205-24', declarationDate: '08/14/2024', depositType: 'CDM Deposit',                       declarationCategory: null,                           depositAmount: 'Dh 2,500', depositMethod: 'Cash',               claimExpiry: '06/15/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
+  { declarationNo: '202-08812205-24', declarationDate: '08/14/2024', depositType: 'CDM Deposit',                       declarationCategory: null,                           depositAmount: 'Dh 2,500', depositMethod: 'Cash',               claimExpiry: '06/15/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request', importerCode: 'A220' },
   // Declaration Amendment - Deposit
-  { declarationNo: '410-09912044-24', declarationDate: '07/15/2024', depositType: 'Declaration Amendment - Deposit',   declarationCategory: null,                           depositAmount: 'Dh 1,200', depositMethod: 'Cash',               claimExpiry: '07/01/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
+  { declarationNo: '410-09912044-24', declarationDate: '07/15/2024', depositType: 'Declaration Amendment - Deposit',   declarationCategory: null,                           depositAmount: 'Dh 1,200', depositMethod: 'Cash',               claimExpiry: '07/01/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request', importerCode: 'A350' },
   // Declaration Cancellation - Deposit
-  { declarationNo: '510-03318821-24', declarationDate: '06/22/2024', depositType: 'Declaration Cancellation - Deposit',declarationCategory: null,                           depositAmount: 'Dh 4,000', depositMethod: 'Cash',               claimExpiry: '06/30/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request' },
+  { declarationNo: '510-03318821-24', declarationDate: '06/22/2024', depositType: 'Declaration Cancellation - Deposit',declarationCategory: null,                           depositAmount: 'Dh 4,000', depositMethod: 'Cash',               claimExpiry: '06/30/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request', importerCode: 'A180' },
 
   // ── Refund of Duty ─────────────────────────────────────────────────────────
   // Duty + Import (needs refund type selection)
@@ -665,6 +667,18 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
   const [chargeTypeOpen, setChargeTypeOpen] = useState(false);
   const [chargeTypeSearch, setChargeTypeSearch] = useState('');
   const chargeTypeRef = useRef<HTMLDivElement>(null);
+
+  // Refund of Deposits — Account Number filter (only shown when Deposit Method = Standing Guarantee)
+  const [accountNumberFilter, setAccountNumberFilter] = useState('');
+  const [accountNumberOpen, setAccountNumberOpen] = useState(false);
+  const [accountNumberSearch, setAccountNumberSearch] = useState('');
+  const accountNumberRef = useRef<HTMLDivElement>(null);
+  const selectedPanelRef = useRef<HTMLDivElement>(null);
+  const scrollToSelected = () => selectedPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // Eligible Declarations — Add Manually / Upload File tab (all claim types)
+  const [declTab, setDeclTab] = useState<'manual' | 'upload'>('manual');
+  const [uploadDragging, setUploadDragging] = useState(false);
   // derive legacy query from combined field
   const query = searchType === 'Declaration Number' ? searchText : '';
   const [page, setPage] = useState(1);
@@ -699,14 +713,19 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
     if (ownerCodeFilter) rows = rows.filter((r) => r.importerCode === ownerCodeFilter);
     if (depositMethodFilter) rows = rows.filter((r) => r.depositMethod === depositMethodFilter);
     if (chargeTypeFilter) rows = rows.filter((r) => r.depositType === chargeTypeFilter);
+    if (accountNumberFilter) rows = rows.filter((r) => r.accountNumber === accountNumberFilter);
     return rows;
-  }, [query, ownerCodeFilter, depositMethodFilter, chargeTypeFilter, claimTypeFiltered]);
+  }, [query, ownerCodeFilter, depositMethodFilter, chargeTypeFilter, accountNumberFilter, claimTypeFiltered]);
 
   const isNonRemittance = claimType === 'nonRemittance';
+  const isRefundDeposit = claimType === 'refundDeposit';
+  // Owner-code search + the 10-per-importer / single-importer rule apply to both
+  // Non Remittance and Refund of Deposits.
+  const enforcesImporterLimit = isNonRemittance || isRefundDeposit;
 
   // Close search dropdowns when clicking outside
   useEffect(() => {
-    if (!ownerCodeSearchOpen && !searchTypeOpen && !depositMethodOpen && !chargeTypeOpen) return;
+    if (!ownerCodeSearchOpen && !searchTypeOpen && !depositMethodOpen && !chargeTypeOpen && !accountNumberOpen) return;
     const handler = (e: MouseEvent) => {
       if (ownerSearchRef.current && !ownerSearchRef.current.contains(e.target as Node)) {
         setOwnerCodeSearchOpen(false);
@@ -718,14 +737,17 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
       if (chargeTypeRef.current && !chargeTypeRef.current.contains(e.target as Node)) {
         setChargeTypeOpen(false);
       }
+      if (accountNumberRef.current && !accountNumberRef.current.contains(e.target as Node)) {
+        setAccountNumberOpen(false);
+      }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [ownerCodeSearchOpen, searchTypeOpen, depositMethodOpen, chargeTypeOpen]);
+  }, [ownerCodeSearchOpen, searchTypeOpen, depositMethodOpen, chargeTypeOpen, accountNumberOpen]);
 
   // Returns true if adding this row would exceed 10 selections for its importer code
   const wouldExceedLimit = (row: Row, currentSelected: Set<string>) => {
-    if (!isNonRemittance || !row.importerCode) return false;
+    if (!enforcesImporterLimit || !row.importerCode) return false;
     const countForCode = Array.from(currentSelected).filter(
       (no) => ROWS.find((r) => r.declarationNo === no)?.importerCode === row.importerCode
     ).length;
@@ -737,9 +759,22 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
         { label: 'Declaration Clearance Date',   w: 180 },
         { label: 'Declaration Type',             w: 180 },
         { label: 'Owner Code',                   w: 260 },
-        { label: 'Claim Expiry',                 w: 130 },
         { label: 'Export Expiry',                w: 130 },
         { label: 'Remarks',                      w: 110 },
+        { label: 'Claim Expiry',                 w: 130 },
+      ]
+    : isRefundDeposit
+    ? [
+        { label: 'Declaration Number',           w: 170 },
+        { label: 'Declaration Clearance Date',   w: 180 },
+        { label: 'Declaration Type',             w: 190 },
+        { label: 'Charge Type',                  w: 200 },
+        { label: 'Deposit Method',               w: 160 },
+        { label: 'Account Number',               w: 150 },
+        { label: 'Owner Code',                   w: 240 },
+        { label: 'Export Expiry',                w: 130 },
+        { label: 'Remarks',                      w: 110 },
+        { label: 'Claim Expiry',                 w: 130 },
       ]
     : [
         { label: 'Declaration No.',              w: 170 },
@@ -750,12 +785,61 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
         { label: 'Deposit Method',               w: 160 },
         { label: 'Remarks',                      w: 110 },
       ];
-  const tableMinWidth = headers.reduce((s, h) => s + h.w, 0) + 48 + 130;
+  // Last column is sticky (matches the main listing table pattern) — reserve extra width for the shadow gutter.
+  const tableMinWidth = headers.reduce((s, h) => s + h.w, 0) + 48 + 24;
 
-  const STATUS_STYLE = {
-    Active:  { bg: 'rgba(40,167,69,0.10)',  color: '#28a745' },
-    Expired: { bg: 'rgba(105,116,152,0.10)', color: '#697498' },
-  } as const;
+  // Column drag-to-reorder + resize — same behavior as the main Integrated Clearance / Refund & Claims tables.
+  const tableBehaviors = useTableBehaviors();
+  const {
+    tableRef, scrollRef, hoveredColKey, resizeIndicatorLeft, isNearResize,
+    atScrollStart, atScrollEnd, handleScroll, scrollToStart, scrollToEnd,
+    handleTableMouseMove, handleTableMouseLeave, handleTableMouseDown,
+    onDragStart, onDragEnd, onDragOver, onDragLeave, onDrop,
+    getThStyle, getTdBg, getW,
+  } = tableBehaviors;
+  const [colOrder, setColOrder] = useState<string[]>(() => headers.map(h => h.label));
+  useEffect(() => { setColOrder(headers.map(h => h.label)); }, [claimType]);
+  const orderedHeaders = colOrder.length === headers.length
+    ? (colOrder.map(label => headers.find(h => h.label === label)).filter(Boolean) as typeof headers)
+    : headers;
+
+  // Shared cell-value lookup — reused by the main table and the selected-declarations summary panel,
+  // returning a fully-styled node so both tables render identically column-for-column.
+  const cellValue = (row: Row, label: string): React.ReactNode => {
+    switch (label) {
+      case 'Declaration No.':
+      case 'Declaration Number':
+        return <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.declarationNo}</span>;
+      case 'Declaration Clearance Date':
+        return <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.declarationDate}</span>;
+      case 'Declaration Type':
+        return <span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3 }}>{isNonRemittance ? (row.declarationCategory ?? 'Freezone Export') : (row.declarationCategory ?? '—')}</span>;
+      case 'Charge Type':
+        return <span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3 }}>{row.depositType}</span>;
+      case 'Deposit Amount':
+        return (
+          <span className="text-[16px] whitespace-nowrap inline-flex items-baseline gap-[4px]" style={{ color: row.depositAmount === 'N/A' ? '#697498' : '#0e1b3d', fontWeight: row.depositAmount === 'N/A' ? 400 : 500 }}>
+            {row.depositAmount === 'N/A' ? row.depositAmount : (<><Dh /> {row.depositAmount.replace(/^Dh\s*/, '')}</>)}
+          </span>
+        );
+      case 'Deposit Method':
+        return <span className="text-[16px] whitespace-nowrap" style={{ color: row.depositMethod === 'N/A' ? '#697498' : '#0e1b3d' }}>{row.depositMethod}</span>;
+      case 'Account Number': {
+        const has = row.depositMethod === 'Standing Guarantee' && row.accountNumber;
+        return <span className="text-[16px] whitespace-nowrap" style={{ color: has ? '#0e1b3d' : '#697498' }}>{has ? row.accountNumber : '—'}</span>;
+      }
+      case 'Owner Code':
+        return <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.importerCode ? codeWithName(row.importerCode) : '—'}</span>;
+      case 'Claim Expiry':
+        return <span className="text-[16px] whitespace-nowrap" style={{ color: '#dc3545', fontWeight: 500 }}>{row.claimExpiry}</span>;
+      case 'Export Expiry':
+        return <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.exportExpiry}</span>;
+      case 'Remarks':
+        return <span className="text-[16px] text-[#697498] whitespace-nowrap">{row.remarks}</span>;
+      default:
+        return '—';
+    }
+  };
 
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full">
@@ -789,7 +873,7 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
                 return (
                   <button
                     key={opt.id}
-                    onClick={() => { setClaimType(opt.id); setSearchText(''); setOwnerCodeFilter(''); setPage(1); setSelectedDecls(new Set()); setDepositMethodFilter(''); setChargeTypeFilter(''); }}
+                    onClick={() => { setClaimType(opt.id); setSearchText(''); setOwnerCodeFilter(''); setPage(1); setSelectedDecls(new Set()); setDepositMethodFilter(''); setChargeTypeFilter(''); setAccountNumberFilter(''); setDeclTab('manual'); }}
                     className="flex items-start gap-[14px] px-[16px] py-[16px] rounded-[10px] text-left transition-colors h-full"
                     style={{ background: active ? '#f6f9fe' : '#fff', border: `1.5px solid ${active ? '#1360d2' : '#e0e6ef'}` }}
                   >
@@ -836,8 +920,65 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
             </div>
           )}
 
-          {/* Search + filters — only shown after claim type is selected */}
+          {/* Add Manually / Upload File tabs — same pattern as the declaration invoice flow */}
           {claimType && (
+            <div className="px-[24px] pt-[20px]">
+              <div className="flex items-center gap-[8px] bg-white rounded-[6px] p-[4px] w-max" style={{ boxShadow: '0px 2px 12px rgba(143,155,186,0.16)', border: '1px solid #eef1f6' }}>
+                {(['upload', 'manual'] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setDeclTab(t)}
+                    className="text-[15px] px-[18px] py-[9px] rounded-[4px] transition-colors"
+                    style={declTab === t
+                      ? { background: '#1360d2', color: '#fff', fontWeight: 500, fontFamily: "'Dubai', sans-serif" }
+                      : { color: '#5a6282', fontFamily: "'Dubai', sans-serif" }}
+                  >
+                    {t === 'upload' ? 'Upload Text File' : 'Add Manually'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Upload File tab */}
+          {claimType && declTab === 'upload' && (
+            <div className="px-[24px] py-[20px]">
+              <div className="rounded-[8px] p-[24px] max-w-[520px]" style={{ border: '1px solid #eef1f6' }}>
+                <div className="flex items-center justify-between mb-[6px]">
+                  <p className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 600, fontFamily: "'Dubai', sans-serif" }}>Upload Text File</p>
+                  <span className="flex items-center gap-[6px] text-[#1360d2] text-[14px] cursor-pointer" style={{ fontFamily: "'Dubai', sans-serif" }}>
+                    <svg viewBox="0 0 24 24" className="size-[16px]" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 3v12M7 10l5 5 5-5M5 21h14" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    Download Template
+                  </span>
+                </div>
+                <p className="text-[13px] text-[#8f94ae] mb-[14px]" style={{ fontFamily: "'Dubai', sans-serif" }}>*Supported file type of .TXT max file size up to 150 KB</p>
+                <div
+                  onDragOver={(e) => { e.preventDefault(); setUploadDragging(true); }}
+                  onDragLeave={() => setUploadDragging(false)}
+                  onDrop={(e) => { e.preventDefault(); setUploadDragging(false); }}
+                  className="flex flex-col items-center justify-center gap-[12px] rounded-[6px] py-[36px] transition-colors"
+                  style={{ border: `1.5px dashed ${uploadDragging ? '#1360d2' : '#b5c8e8'}`, background: uploadDragging ? '#edf3ff' : '#f8fafd' }}
+                >
+                  <div className="size-[54px] rounded-full inline-flex items-center justify-center" style={{ background: '#e2ebf9' }}>
+                    <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#6d707e" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" /></svg>
+                  </div>
+                  <p className="text-[15px] text-[#6d707e]" style={{ fontFamily: "'Dubai', sans-serif" }}>Drag and drop or</p>
+                  <button
+                    type="button"
+                    onClick={() => setDeclTab('manual')}
+                    className="h-[42px] px-[22px] rounded-[4px] border text-[15px] bg-white hover:bg-[#f0f4ff] transition-colors"
+                    style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: "'Dubai', sans-serif" }}
+                  >
+                    Upload File
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Search + filters — only shown after claim type is selected, on the Add Manually tab */}
+          {claimType && declTab === 'manual' && (
             <div className="px-[24px] pt-[20px] pb-[8px] flex flex-col gap-[12px]">
               <div className="flex flex-wrap gap-[12px] items-start">
                 {/* Combined search field — type dropdown + input */}
@@ -857,10 +998,6 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
                         <path d="M6 9l6 6 6-6" />
                       </svg>
                     </button>
-                    {/* Search icon */}
-                    <span className="pl-[12px] text-[#8f94ae] flex-shrink-0 pointer-events-none">
-                      <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="9" r="6" /><path d="M14 14l4 4" strokeLinecap="round" /></svg>
-                    </span>
                     {/* Input */}
                     <input
                       value={searchType === 'Owner Code' && ownerCodeFilter ? codeWithName(ownerCodeFilter) : searchText}
@@ -881,17 +1018,21 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
                       <button
                         type="button"
                         onClick={() => { setSearchText(''); setOwnerCodeFilter(''); setPage(1); setSelectedDecls(new Set()); }}
-                        className="mr-[8px] size-[22px] inline-flex items-center justify-center rounded-full text-[#697498] hover:bg-[#f0f4ff] flex-shrink-0"
+                        className="mr-[6px] size-[22px] inline-flex items-center justify-center rounded-full text-[#697498] hover:bg-[#f0f4ff] flex-shrink-0"
                       >
                         <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4l8 8M12 4l-8 8" strokeLinecap="round" /></svg>
                       </button>
                     )}
+                    {/* Search icon — always on the right */}
+                    <span className="pr-[12px] text-[#8f94ae] flex-shrink-0 pointer-events-none">
+                      <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="9" r="6" /><path d="M14 14l4 4" strokeLinecap="round" /></svg>
+                    </span>
                   </div>
 
                   {/* Search type options */}
                   {searchTypeOpen && (
                     <div className="absolute z-[80] top-[52px] left-0 bg-white rounded-[8px] py-[4px] overflow-hidden" style={{ minWidth: 200, boxShadow: '0px 2px 16px 0px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
-                      {(['Declaration Number', ...(isNonRemittance ? ['Owner Code'] : [])] as ('Declaration Number' | 'Owner Code')[]).map(opt => (
+                      {(['Declaration Number', ...(enforcesImporterLimit ? ['Owner Code'] : [])] as ('Declaration Number' | 'Owner Code')[]).map(opt => (
                         <button
                           key={opt}
                           type="button"
@@ -972,11 +1113,74 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
                               <button
                                 key={opt}
                                 type="button"
-                                onMouseDown={e => { e.preventDefault(); setDepositMethodFilter(opt === depositMethodFilter ? '' : opt); setDepositMethodOpen(false); setDepositMethodSearch(''); setPage(1); }}
+                                onMouseDown={e => { e.preventDefault(); const next = opt === depositMethodFilter ? '' : opt; setDepositMethodFilter(next); if (next !== 'Standing Guarantee') setAccountNumberFilter(''); setDepositMethodOpen(false); setDepositMethodSearch(''); setPage(1); }}
                                 className="group flex items-center justify-between w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
                               >
                                 <span className={`text-[16px] group-hover:text-white ${opt === depositMethodFilter ? 'text-[#1360d2]' : 'text-[#111838]'}`} style={{ fontFamily: "'Dubai', sans-serif", fontWeight: opt === depositMethodFilter ? 500 : 400 }}>{opt}</span>
                                 {opt === depositMethodFilter && <svg className="group-hover:stroke-white" viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#1360d2" strokeWidth="2.5"><path d="M4 10l4 4 8-8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+                              </button>
+                            ))
+                          }
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
+                {/* Account Number — appears next to Deposit Method once "Standing Guarantee" is selected */}
+                {claimType === 'refundDeposit' && depositMethodFilter === 'Standing Guarantee' && (() => {
+                  const AN_OPTIONS = Array.from(new Set(
+                    claimTypeFiltered.filter(r => r.depositMethod === 'Standing Guarantee' && r.accountNumber).map(r => r.accountNumber as string)
+                  )).sort();
+                  const filtered_an = AN_OPTIONS.filter(o => o.toLowerCase().includes(accountNumberSearch.toLowerCase()));
+                  const anFloated = accountNumberOpen || !!accountNumberFilter;
+                  return (
+                    <div ref={accountNumberRef} className="relative flex-shrink-0" style={{ minWidth: 200 }}>
+                      <div
+                        className="bg-white rounded-[4px] flex items-center px-[16px] h-[48px] transition-colors"
+                        style={{ border: `1px solid ${accountNumberOpen ? '#1360d2' : '#d5ddfb'}` }}
+                      >
+                        <input
+                          value={accountNumberOpen ? accountNumberSearch : accountNumberFilter}
+                          onChange={e => { setAccountNumberSearch(e.target.value); }}
+                          onFocus={() => { setAccountNumberOpen(true); setAccountNumberSearch(''); }}
+                          placeholder=""
+                          className="flex-1 text-[16px] text-[#0e1b3d] focus:outline-none bg-transparent"
+                          style={{ fontFamily: "'Dubai', sans-serif" }}
+                        />
+                        {accountNumberFilter && !accountNumberOpen
+                          ? <button type="button" onMouseDown={e => { e.preventDefault(); setAccountNumberFilter(''); setPage(1); }} className="flex-shrink-0 size-[20px] inline-flex items-center justify-center rounded-full hover:bg-[#f0f4ff]">
+                              <svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="#697498" strokeWidth="2"><path d="M4 4l8 8M12 4l-8 8" strokeLinecap="round" /></svg>
+                            </button>
+                          : <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0, transition: 'transform 0.15s', transform: accountNumberOpen ? 'rotate(180deg)' : 'none' }}><path d="M6 9l6 6 6-6" /></svg>
+                        }
+                      </div>
+                      <span
+                        className="absolute pointer-events-none transition-all"
+                        style={{
+                          left: anFloated ? 10 : 16, top: anFloated ? -9 : '50%',
+                          transform: anFloated ? 'none' : 'translateY(-50%)',
+                          background: anFloated ? '#fff' : 'transparent',
+                          padding: anFloated ? '0 4px' : 0,
+                          fontSize: anFloated ? 12 : 16,
+                          color: anFloated ? (accountNumberOpen ? '#1360d2' : '#000') : '#000',
+                          transitionDuration: '120ms', transitionProperty: 'top,left,font-size,transform,padding,background,color',
+                          fontFamily: "'Dubai', sans-serif",
+                        }}
+                      >Account Number</span>
+                      {accountNumberOpen && (
+                        <div className="absolute z-[80] left-0 right-0 bg-white rounded-[8px] py-[4px]" style={{ top: 'calc(100% + 4px)', boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5', maxHeight: 220, overflowY: 'auto' }}>
+                          {filtered_an.length === 0
+                            ? <p className="px-[14px] py-[10px] text-[14px] text-[#697498]" style={{ fontFamily: "'Dubai', sans-serif" }}>No results</p>
+                            : filtered_an.map(opt => (
+                              <button
+                                key={opt}
+                                type="button"
+                                onMouseDown={e => { e.preventDefault(); setAccountNumberFilter(opt === accountNumberFilter ? '' : opt); setAccountNumberOpen(false); setAccountNumberSearch(''); setPage(1); }}
+                                className="group flex items-center justify-between w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
+                              >
+                                <span className={`text-[16px] group-hover:text-white ${opt === accountNumberFilter ? 'text-[#1360d2]' : 'text-[#111838]'}`} style={{ fontFamily: "'Dubai', sans-serif", fontWeight: opt === accountNumberFilter ? 500 : 400 }}>{opt}</span>
+                                {opt === accountNumberFilter && <svg className="group-hover:stroke-white" viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#1360d2" strokeWidth="2.5"><path d="M4 10l4 4 8-8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
                               </button>
                             ))
                           }
@@ -1060,7 +1264,7 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
               {/* Info bar */}
               {claimType && (
                 <div className="flex flex-col gap-[8px]">
-                  {isNonRemittance && (
+                  {enforcesImporterLimit && (
                     <div className="flex items-start gap-[10px] rounded-[6px] px-[14px] py-[10px]" style={{ background: '#e2ebf9', border: '1px solid #d5ddfb' }}>
                       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#1360d2" strokeWidth="2" className="flex-shrink-0 mt-[2px]"><circle cx="12" cy="12" r="9" /><path d="M12 8h.01M11 12h1v4h1" strokeLinecap="round" /></svg>
                       <p className="text-[16px] text-[#0e1b3d]">
@@ -1074,9 +1278,27 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
                       Available: <span style={{ color: '#0e1b3d', fontWeight: 600 }}>{filtered.filter((r) => r.kind !== 'expired').length}</span>
                     </span>
                     {selectedDecls.size > 0 && (
-                      <span className="text-[16px] text-[#697498]" style={{ fontFamily: "'Dubai', sans-serif" }}>
-                        Selected: <span style={{ color: '#1360d2', fontWeight: 600 }}>{selectedDecls.size}</span>
-                      </span>
+                      <>
+                        <span className="text-[16px] text-[#697498]" style={{ fontFamily: "'Dubai', sans-serif" }}>
+                          Selected: <span style={{ color: '#1360d2', fontWeight: 600 }}>{selectedDecls.size}</span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={scrollToSelected}
+                          className="h-[32px] px-[14px] rounded-[4px] text-[14px] bg-white hover:bg-[#f0f4ff] transition-colors"
+                          style={{ border: '1.5px solid #1360d2', color: '#1360d2', fontWeight: 500, fontFamily: "'Dubai', sans-serif", cursor: 'pointer' }}
+                        >
+                          View Selected
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setSelectedDecls(new Set()); setOverLimitError(false); }}
+                          className="h-[32px] px-[14px] rounded-[4px] text-[14px] bg-white hover:bg-[#f0f4ff] transition-colors"
+                          style={{ border: '1.5px solid #d5ddfb', color: '#455174', fontWeight: 500, fontFamily: "'Dubai', sans-serif", cursor: 'pointer' }}
+                        >
+                          Clear Selection
+                        </button>
+                      </>
                     )}
                   </div>
                   {/* Over-limit error */}
@@ -1091,11 +1313,23 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
             </div>
           )}
 
-          {/* Table — only shown after claim type is selected */}
-          {claimType && (
+          {/* Table — only shown after claim type is selected, on the Add Manually tab */}
+          {claimType && declTab === 'manual' && (
           <>
-          <div className="overflow-x-auto px-[16px] pt-[8px] pb-[16px]">
-            <table style={{ minWidth: tableMinWidth, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: "'Dubai', sans-serif" }} className="w-full eligible-table">
+          <div className="px-[16px] pt-[8px] pb-[16px]" style={{ position: 'relative' }}>
+            <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={0} />
+            <div ref={scrollRef} onScroll={handleScroll} className="overflow-x-auto" style={{ position: 'relative' }}>
+              {resizeIndicatorLeft !== null && (
+                <div style={{ position: 'absolute', top: 0, bottom: 0, left: resizeIndicatorLeft, width: 3, background: '#1360d2', borderRadius: 2, pointerEvents: 'none', zIndex: 100 }} />
+              )}
+            <table
+              ref={tableRef}
+              onMouseMove={handleTableMouseMove}
+              onMouseLeave={handleTableMouseLeave}
+              onMouseDown={handleTableMouseDown}
+              style={{ minWidth: tableMinWidth, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: "'Dubai', sans-serif", cursor: isNearResize ? 'col-resize' : undefined }}
+              className="w-full eligible-table"
+            >
               <thead>
                 <tr>
                   <th style={{ width: 48, minWidth: 48, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, borderTopLeftRadius: 8, borderBottomLeftRadius: 8 }}>
@@ -1110,8 +1344,8 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
                             if (allSelected) {
                               setSelectedDecls(new Set());
                             } else {
-                              // For Non Remittance: respect 10-per-importer-code limit
-                              if (isNonRemittance) {
+                              // For Non Remittance / Refund of Deposits: respect 10-per-importer-code limit
+                              if (enforcesImporterLimit) {
                                 const byCode: Record<string, string[]> = {};
                                 selectableRows.forEach((r) => {
                                   const code = r.importerCode ?? '__none__';
@@ -1140,26 +1374,41 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
                       );
                     })()}
                   </th>
-                  {headers.map((col) => (
-                    <th key={col.label} style={{ width: col.w, minWidth: col.w, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500 }}>
-                      <div className="flex items-center gap-[4px]">
-                        <span className="text-[16px] text-[#000] whitespace-nowrap" style={{ letterSpacing: '0.07px' }}>{col.label}</span>
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#8f94ae" strokeWidth="1.5" strokeLinecap="round"><path d="M3 4h10M5 8h6M7 12h2" /></svg>
-                      </div>
-                    </th>
-                  ))}
-                  <th style={{ position: 'sticky', right: 0, width: 130, minWidth: 130, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2, borderTopRightRadius: 8, borderBottomRightRadius: 8 }}>
-                    <div className="flex items-center gap-[4px]">
-                      <span className="text-[16px] text-[#455174] whitespace-nowrap" style={{ letterSpacing: '0.07px' }}>Status</span>
-                      <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#8f94ae" strokeWidth="1.5" strokeLinecap="round"><path d="M3 4h10M5 8h6M7 12h2" /></svg>
-                    </div>
-                  </th>
+                  {orderedHeaders.map((col, ci) => {
+                    const isLast = ci === orderedHeaders.length - 1;
+                    return (
+                      <th key={col.label} data-col-key={col.label}
+                        style={{
+                          width: getW(col.label, col.w), minWidth: getW(col.label, col.w), padding: '10px 12px', textAlign: 'left', fontWeight: 500,
+                          position: isLast ? 'sticky' : 'relative',
+                          ...(isLast ? { right: 0, zIndex: 2, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', borderTopRightRadius: 8, borderBottomRightRadius: 8 } : {}),
+                          ...getThStyle(col.label),
+                        }}
+                        onDragOver={(e) => onDragOver(col.label, e)}
+                        onDragLeave={onDragLeave}
+                        onDrop={(e) => onDrop(col.label, e, colOrder, setColOrder)}
+                      >
+                        <div
+                          draggable
+                          onDragStart={(e) => onDragStart(col.label, e)}
+                          onDragEnd={onDragEnd}
+                          style={{ display: hoveredColKey === col.label ? 'flex' : 'none', position: 'absolute', top: 3, left: '50%', transform: 'translateX(-50%)', cursor: 'grab', alignItems: 'center', justifyContent: 'center', zIndex: 4 }}
+                        >
+                          <DragDots />
+                        </div>
+                        <div className="flex items-center gap-[4px]">
+                          <span className="text-[16px] text-[#000] whitespace-nowrap" style={{ letterSpacing: '0.07px' }}>{col.label}</span>
+                          <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#8f94ae" strokeWidth="1.5" strokeLinecap="round"><path d="M3 4h10M5 8h6M7 12h2" /></svg>
+                        </div>
+                      </th>
+                    );
+                  })}
                 </tr>
               </thead>
               <tbody>
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={headers.length + 2} style={{ background: '#fff', padding: '40px 12px', textAlign: 'center' }}>
+                    <td colSpan={orderedHeaders.length + 1} style={{ background: '#fff', padding: '40px 12px', textAlign: 'center' }}>
                       <span className="text-[16px] text-[#697498]">No matching declarations found.</span>
                     </td>
                   </tr>
@@ -1186,10 +1435,10 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
                         return next;
                       });
                     };
-                    const cell = (content: React.ReactNode, w: number) => (
-                      <td style={{ background: isSelected ? '#f6f9fe' : '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: w, opacity: expired ? 0.55 : 1 }}>{content}</td>
+                    const cell = (content: React.ReactNode, w: number, sticky?: boolean, colKey?: string) => (
+                      <td data-col-key={colKey} style={{ background: colKey ? (getTdBg(colKey) ?? (isSelected ? '#f6f9fe' : '#fff')) : (isSelected ? '#f6f9fe' : '#fff'), padding: '0 12px', height: 60, verticalAlign: 'middle', width: w, opacity: expired ? 0.55 : 1,
+                        ...(sticky ? { position: 'sticky', right: 0, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' } : {}) }}>{content}</td>
                     );
-                    const txt = (v: React.ReactNode) => <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{v}</span>;
                     return (
                       <tr key={i} className={`${expired ? 'is-disabled' : ''} ${isSelected ? 'is-selected' : ''}`.trim()} onClick={toggleRow} style={{ cursor: expired || atLimit ? 'default' : 'pointer' }}>
                         <td style={{ background: isSelected ? '#f6f9fe' : '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 48 }}>
@@ -1205,54 +1454,32 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
                             {isSelected && <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8l3 3 7-7" /></svg>}
                           </button>
                         </td>
-                        {cell(
-                          <a
-                            href="#"
-                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDeclarationOpen?.(row.declarationNo); }}
-                            className="text-[16px] text-[#1360d2] hover:underline whitespace-nowrap"
-                            style={{ fontWeight: 500 }}
-                          >{row.declarationNo}</a>,
-                          170
-                        )}
-                        {cell(txt(row.declarationDate), 140)}
-                        {isNonRemittance ? (
-                          <>
-                            {cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.declarationCategory ?? 'Freezone Export'}</span>, 180)}
-                            {cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.importerCode ? codeWithName(row.importerCode) : '—'}</span>, 140)}
-                            {cell(<span className="text-[16px] whitespace-nowrap" style={{ color: '#dc3545', fontWeight: 500 }}>{row.claimExpiry}</span>, 130)}
-                            {cell(<span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.exportExpiry}</span>, 130)}
-                          </>
-                        ) : (
-                          <>
-                            {cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3 }}>{row.depositType}</span>, 200)}
-                            {cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3 }}>{row.declarationCategory ?? '—'}</span>, 190)}
-                            {cell(
-                              <span className="text-[16px] whitespace-nowrap inline-flex items-baseline gap-[4px]" style={{ color: row.depositAmount === 'N/A' ? '#697498' : '#0e1b3d', fontWeight: row.depositAmount === 'N/A' ? 400 : 500 }}>
-                                {row.depositAmount === 'N/A' ? row.depositAmount : (<><Dh /> {row.depositAmount.replace(/^Dh\s*/, '')}</>)}
-                              </span>,
-                              150
-                            )}
-                            {cell(<span className="text-[16px]" style={{ color: row.depositMethod === 'N/A' ? '#697498' : '#0e1b3d' }}>{row.depositMethod}</span>, 160)}
-                          </>
-                        )}
-                        {cell(<span className="text-[16px] text-[#697498]">{row.remarks}</span>, 110)}
-                        <td style={{ position: 'sticky', right: 0, background: isSelected ? '#f6f9fe' : '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 130, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', borderBottom: '1px solid #f8f8f8' }}>
-                          {(() => {
-                            const st = expired ? STATUS_STYLE.Expired : STATUS_STYLE.Active;
-                            const label = expired ? 'Expired' : 'Cleared';
+                        {orderedHeaders.map((col, ci) => {
+                          const isLast = ci === orderedHeaders.length - 1;
+                          if (col.label === 'Declaration No.' || col.label === 'Declaration Number') {
                             return (
-                              <span className="text-[16px] font-medium whitespace-nowrap inline-flex items-center justify-center" style={{ background: st.bg, color: st.color, padding: '4px 12px', borderRadius: 4, lineHeight: '20px', fontFamily: "'Dubai', sans-serif" }}>
-                                {label}
-                              </span>
+                              <React.Fragment key={col.label}>
+                                {cell(
+                                  <a
+                                    href="#"
+                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDeclarationOpen?.(row.declarationNo); }}
+                                    className="text-[16px] text-[#1360d2] hover:underline whitespace-nowrap"
+                                    style={{ fontWeight: 500 }}
+                                  >{row.declarationNo}</a>,
+                                  col.w, isLast, col.label
+                                )}
+                              </React.Fragment>
                             );
-                          })()}
-                        </td>
+                          }
+                          return <React.Fragment key={col.label}>{cell(cellValue(row, col.label), col.w, isLast, col.label)}</React.Fragment>;
+                        })}
                       </tr>
                     );
                   })
                 )}
               </tbody>
             </table>
+            </div>
           </div>
 
           <div className="px-[12px] pb-[16px]">
@@ -1261,6 +1488,88 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
           </>
           )}
         </div>
+
+        {/* Selected declarations — view details together before proceeding. Same table component design as Eligible Declarations. */}
+        {claimType && selectedDecls.size > 0 && (() => {
+          const selectedRows = ROWS.filter((r) => selectedDecls.has(r.declarationNo));
+          return (
+            <div ref={selectedPanelRef} className="bg-white rounded-[8px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)', scrollMarginTop: 24 }}>
+              <div className="flex items-center justify-between px-[24px] py-[20px] border-b border-[#eef1f6] flex-wrap gap-[12px]">
+                <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
+                  Selected Declarations
+                  <span className="ml-[8px] text-[14px] text-[#1360d2]" style={{ fontWeight: 500 }}>({selectedRows.length})</span>
+                </p>
+              </div>
+              <div className="overflow-x-auto px-[16px] pt-[8px] pb-[16px]">
+                <table style={{ minWidth: tableMinWidth + 64, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: "'Dubai', sans-serif" }} className="w-full eligible-table">
+                  <thead>
+                    <tr>
+                      {orderedHeaders.map((col, ci) => {
+                        const isLast = ci === orderedHeaders.length - 1;
+                        return (
+                          <th key={col.label} data-col-key={col.label}
+                            style={{
+                              width: getW(col.label, col.w), minWidth: getW(col.label, col.w), padding: '10px 12px', textAlign: 'left', fontWeight: 500,
+                              position: isLast ? 'sticky' : 'relative',
+                              ...(ci === 0 ? { borderTopLeftRadius: 8, borderBottomLeftRadius: 8 } : {}),
+                              ...(isLast ? { right: 64, zIndex: 2, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' } : {}),
+                              ...getThStyle(col.label),
+                            }}
+                            onDragOver={(e) => onDragOver(col.label, e)}
+                            onDragLeave={onDragLeave}
+                            onDrop={(e) => onDrop(col.label, e, colOrder, setColOrder)}
+                          >
+                            <div
+                              draggable
+                              onDragStart={(e) => onDragStart(col.label, e)}
+                              onDragEnd={onDragEnd}
+                              style={{ display: hoveredColKey === col.label ? 'flex' : 'none', position: 'absolute', top: 3, left: '50%', transform: 'translateX(-50%)', cursor: 'grab', alignItems: 'center', justifyContent: 'center', zIndex: 4 }}
+                            >
+                              <DragDots />
+                            </div>
+                            <span className="text-[16px] text-[#000] whitespace-nowrap" style={{ letterSpacing: '0.07px' }}>{col.label}</span>
+                          </th>
+                        );
+                      })}
+                      <th style={{ position: 'sticky', right: 0, width: 64, minWidth: 64, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2, borderTopRightRadius: 8, borderBottomRightRadius: 8 }}>
+                        <span className="text-[16px] text-[#000] whitespace-nowrap" style={{ letterSpacing: '0.07px' }}>Action</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedRows.map((row) => (
+                      <tr key={row.declarationNo}>
+                        {orderedHeaders.map((col, ci) => {
+                          const isLast = ci === orderedHeaders.length - 1;
+                          const content = (col.label === 'Declaration No.' || col.label === 'Declaration Number')
+                            ? <span className="text-[16px] text-[#1360d2] whitespace-nowrap" style={{ fontWeight: 500 }}>{row.declarationNo}</span>
+                            : cellValue(row, col.label);
+                          return (
+                            <td key={col.label} data-col-key={col.label} style={{ background: getTdBg(col.label) ?? '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: col.w,
+                              ...(isLast ? { position: 'sticky', right: 64, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' } : {}) }}>
+                              {content}
+                            </td>
+                          );
+                        })}
+                        <td style={{ position: 'sticky', right: 0, background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 64, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>
+                          <button
+                            type="button"
+                            aria-label={`Remove ${row.declarationNo}`}
+                            onClick={() => setSelectedDecls((prev) => { const next = new Set(prev); next.delete(row.declarationNo); return next; })}
+                            className="size-[24px] inline-flex items-center justify-center rounded hover:bg-[#fef2f2] transition-colors flex-shrink-0"
+                            style={{ color: '#dc3545' }}
+                          >
+                            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+        })()}
 
         <ClaimantBrokerDetail />
       </div>
