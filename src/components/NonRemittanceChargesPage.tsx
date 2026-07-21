@@ -127,12 +127,13 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
                   <tr>
                     {(showChargeType
                       ? [
-                          { label: '#',                            w: 48  },
-                          { label: 'Declaration No.',              w: 170 },
-                          { label: 'Declaration Clearance Date',   w: 180 },
-                          { label: typeColumnLabel,                w: 180 },
-                          { label: 'Owner Code',                   w: 260 },
-                          { label: 'Amount',                       w: 140 },
+                          { label: '#',                              w: 48  },
+                          { label: 'Declaration No.',                w: 170 },
+                          { label: 'Declaration Clearance Date',     w: 180 },
+                          { label: typeColumnLabel,                  w: 180 },
+                          { label: 'Owner Code',                     w: 240 },
+                          { label: 'Claim Registration Charge',      w: 200 },
+                          { label: 'Knowledge & Innovation Dirham',  w: 240 },
                         ]
                       : [
                           { label: '#',                              w: 48  },
@@ -167,32 +168,24 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
                       <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 180 }}>
                         <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{showChargeType ? (row.depositType || '—') : (row.declarationCategory ?? 'Freezone Export')}</span>
                       </td>
-                      <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: showChargeType ? 260 : 240 }}>
+                      <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 240 }}>
                         <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.importerCode ? codeWithName(row.importerCode) : '—'}</span>
                       </td>
-                      {showChargeType ? (
-                        <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 140 }}>
-                          <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ fontWeight: 500 }}>AED 250.00</span>
-                        </td>
-                      ) : (
-                        <>
-                          <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 200 }}>
-                            <span className="inline-flex items-center gap-[4px] text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ fontWeight: 500 }}>
-                              <DirhamIcon size={13} color="#0e1b3d" />{REG_FEE}.00
-                            </span>
-                          </td>
-                          <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 240 }}>
-                            <span className="inline-flex items-center gap-[4px] text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ fontWeight: 500 }}>
-                              <DirhamIcon size={13} color="#0e1b3d" />{KNOW_FEE}.00
-                            </span>
-                          </td>
-                        </>
-                      )}
+                      <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 200 }}>
+                        <span className="inline-flex items-center gap-[4px] text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ fontWeight: 500 }}>
+                          <DirhamIcon size={13} color="#0e1b3d" />{REG_FEE}.00
+                        </span>
+                      </td>
+                      <td style={{ background: '#f6f9fe', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 240 }}>
+                        <span className="inline-flex items-center gap-[4px] text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ fontWeight: 500 }}>
+                          <DirhamIcon size={13} color="#0e1b3d" />{KNOW_FEE}.00
+                        </span>
+                      </td>
                     </tr>
                   ))}
                   {displayRows.length === 0 && (
                     <tr>
-                      <td colSpan={6} style={{ background: '#fff', padding: '40px 12px', textAlign: 'center' }}>
+                      <td colSpan={showChargeType ? 7 : 6} style={{ background: '#fff', padding: '40px 12px', textAlign: 'center' }}>
                         <span className="text-[16px] text-[#697498]">No declarations selected.</span>
                       </td>
                     </tr>

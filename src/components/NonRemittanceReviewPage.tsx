@@ -2,8 +2,129 @@ import React, { useEffect, useRef, useState } from 'react';
 import Dh from './Dh';
 import ClaimStepper, { NR_CLAIM_STEPS } from './ClaimStepper';
 import type { Row } from './EligibleDeclarationsPage';
+import { needsOutbound, type ChargeDetail, type OutboundDetail, type OutboundState } from './RDChargeFlowPage';
+import { UploadedDocsByDeclaration, type UploadedDoc } from './NonRemittanceDocumentsPage';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
+
+const REFUND_TYPE_LABELS: Record<string, string> = {
+  full: 'Full Export', fullImport: 'Full Import', partial: 'Partial Export', partialImport: 'Partial Import',
+  no: 'No Export', refund: 'Refund', noRefund: 'No Refund',
+};
+
+/* All outbound declarations added for a claim declaration, deduplicated across its HS line items —
+   the same outbound declaration number can cover several lines. */
+function outboundsForDeclaration(outbounds: OutboundState | undefined, declNo: string): OutboundDetail[] {
+  if (!outbounds) return [];
+  const seen = new Set<string>();
+  return Object.entries(outbounds)
+    .filter(([k]) => k.startsWith(`${declNo}::`))
+    .flatMap(([, list]) => list)
+    .filter(ob => {
+      if (seen.has(ob.declarationNo)) return false;
+      seen.add(ob.declarationNo);
+      return true;
+    });
+}
+
+const OB_FIELDS: { label: string; get: (ob: OutboundDetail) => string }[] = [
+  { label: 'Customs Authority',     get: ob => ob.customsAuthority },
+  { label: 'Declaration No.',       get: ob => ob.declarationNo },
+  { label: 'Declaration Type',      get: ob => ob.declarationType },
+  { label: 'Exit Point',            get: ob => ob.exitPoint },
+  { label: 'Actual Departure Date', get: ob => ob.actualDepartureDate },
+  { label: 'Re-Export To',          get: ob => ob.reExportTo },
+  { label: 'Statistical Qty',       get: ob => ob.statQty },
+  { label: 'Supplementary Qty',     get: ob => ob.suppQty },
+  { label: 'Weight (kg)',           get: ob => ob.weight },
+];
+
+/* Declaration + Outbound Details — read-only accordion, mirrors RDChargeFlowPage's DeclRow cards
+   but with no editable fields, add buttons, or dropdowns; used only to review what was entered. */
+function DeclarationOutboundReview({ chargeDetails, outbounds }: { chargeDetails: ChargeDetail[]; outbounds?: OutboundState }) {
+  const [openDecl, setOpenDecl] = useState<Set<string>>(new Set());
+  const toggle = (declNo: string) => setOpenDecl(prev => {
+    const next = new Set(prev);
+    if (next.has(declNo)) next.delete(declNo); else next.add(declNo);
+    return next;
+  });
+
+  return (
+    <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+      <div className="px-[24px] py-[16px] border-b border-[#eef1f6]">
+        <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Declaration &amp; Outbound Details</p>
+      </div>
+      <div className="flex flex-col gap-[10px] px-[24px] py-[16px]">
+        {chargeDetails.map(d => {
+          const obList = needsOutbound(d.refundType) ? outboundsForDeclaration(outbounds, d.declarationNo) : [];
+          const expandable = obList.length > 0;
+          const isOpen = expandable && openDecl.has(d.declarationNo);
+          const Header = (
+            <div className="flex flex-wrap items-center justify-between gap-[16px] px-[16px] py-[14px] rounded-[6px]" style={{ background: '#f8fafd', border: '1px solid #eef1f6' }}>
+              <div className="flex flex-wrap items-center gap-x-[28px] gap-y-[8px]">
+                <div className="flex flex-col gap-[2px]">
+                  <span className="text-[13px] text-[#697498]">Declaration No.</span>
+                  <span className="text-[16px] text-[#1360d2]" style={{ fontWeight: 500 }}>{d.declarationNo}</span>
+                </div>
+                <div className="flex flex-col gap-[2px]">
+                  <span className="text-[13px] text-[#697498]">Charge Type</span>
+                  <span className="text-[16px] text-[#0e1b3d]">{d.chargeType}</span>
+                </div>
+                <div className="flex flex-col gap-[2px]">
+                  <span className="text-[13px] text-[#697498]">Deposit Amount</span>
+                  <span className="text-[16px] text-[#0e1b3d]">{d.depositAmount === 'N/A' ? '—' : d.depositAmount.replace(/^Dh\s*/, '')}</span>
+                </div>
+                <div className="flex flex-col gap-[2px]">
+                  <span className="text-[13px] text-[#697498]">Refund Type</span>
+                  <span className="text-[16px] text-[#0e1b3d]">{REFUND_TYPE_LABELS[d.refundType] ?? '—'}</span>
+                </div>
+                <div className="flex flex-col gap-[2px]">
+                  <span className="text-[13px] text-[#697498]">Claim Amount (AED)</span>
+                  <span className="text-[16px] text-[#1360d2]" style={{ fontWeight: 600 }}>{d.claimAmount || '—'}</span>
+                </div>
+              </div>
+              {expandable && (
+                <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#697498" strokeWidth="2"
+                  style={{ transition: 'transform 0.15s', transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', flexShrink: 0 }}>
+                  <path d="M5 8l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
+            </div>
+          );
+          return (
+            <div key={d.declarationNo}>
+              {expandable ? (
+                <button type="button" onClick={() => toggle(d.declarationNo)} className="w-full text-left">{Header}</button>
+              ) : Header}
+              {isOpen && (
+                <div className="mt-[8px] border border-[#eef1f6] rounded-[8px] overflow-x-auto">
+                  <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 900, fontFamily: font }}>
+                    <thead>
+                      <tr style={{ background: '#a6c2e9' }}>
+                        {OB_FIELDS.map(c => (
+                          <th key={c.label} className="text-left text-[14px] text-[#000]" style={{ padding: '10px 12px', fontWeight: 500, whiteSpace: 'nowrap' }}>{c.label}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {obList.map(ob => (
+                        <tr key={ob.id} style={{ borderTop: '1px solid #eef1f6' }}>
+                          {OB_FIELDS.map(c => (
+                            <td key={c.label} className="text-[15px] text-[#0e1b3d]" style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>{c.get(ob) || '—'}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 const AMEND_REASONS = ['Wrong Details Entered', 'Other'];
 
@@ -75,9 +196,14 @@ type Props = {
   claimType?: string;
   /** Amend mode: show an editable Amendment Detail card at the top. */
   showAmendment?: boolean;
+  /** Refund of Deposits flow: declaration + outbound details entered on the Charge Details step, shown read-only. */
+  chargeDetails?: ChargeDetail[];
+  outbounds?: OutboundState;
+  /** Documents uploaded on the Upload Documents step, shown read-only grouped by declaration. */
+  uploadedDocs?: UploadedDoc[];
 };
 
-export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPreview, onViewClaim, selectedRows, paymentMode = 'Credit/Debit Account', accountNo = '1223193-SW LOGISTICS LLC', title, steps, activeIndex = 3, claimType = 'Non Remittance Claim', showAmendment = false }: Props) {
+export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPreview, onViewClaim, selectedRows, paymentMode = 'Credit/Debit Account', accountNo = '1223193-SW LOGISTICS LLC', title, steps, activeIndex = 3, claimType = 'Non Remittance Claim', showAmendment = false, chargeDetails, outbounds, uploadedDocs }: Props) {
   const [declared, setDeclared] = useState(false);
   const [amendReason, setAmendReason] = useState('');
   const [amendReasonDesc, setAmendReasonDesc] = useState('');
@@ -213,6 +339,16 @@ export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPre
               </table>
             </div>
           </div>
+
+          {/* Declaration & Outbound Details — read-only recap of the Charge Details step */}
+          {chargeDetails && chargeDetails.length > 0 && (
+            <DeclarationOutboundReview chargeDetails={chargeDetails} outbounds={outbounds} />
+          )}
+
+          {/* Document Details — read-only recap of the Upload Documents step, grouped by declaration */}
+          {uploadedDocs && uploadedDocs.length > 0 && (
+            <UploadedDocsByDeclaration docs={uploadedDocs} declOrder={selectedRows.map(r => r.declarationNo)} />
+          )}
 
           {/* Declaration checkbox */}
           <div

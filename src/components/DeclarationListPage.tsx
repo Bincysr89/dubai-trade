@@ -26,8 +26,7 @@ import StatusFilterHeader from './StatusFilterHeader';
 import EligibleDeclarationsPage from './EligibleDeclarationsPage';
 import RaiseClaimRequestPage from './RaiseClaimRequestPage';
 import type { ClaimType } from './ClaimTypeSelectionPage';
-import { type ChargeDetail } from './ClaimSubPages';
-import { RDChargeFlowPage, isMissingDocCharge } from './RDChargeFlowPage';
+import { RDChargeFlowPage, isMissingDocCharge, type OutboundState, type ChargeDetail } from './RDChargeFlowPage';
 import { REFUND_DEPOSIT_STEPS, REFUND_DEPOSIT_STEPS_NO_DOCS, REFUND_DEPOSIT_AMEND_STEPS } from './ClaimStepper';
 import CargoTransferPrePage from './CargoTransferPrePage';
 import CargoTransferRequestPage from './CargoTransferRequestPage';
@@ -260,6 +259,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
   // Missing/Document Deposit claims have no document upload step.
   const rdSkipDocs = claimSelectedRows.length > 0 && claimSelectedRows.every(r => isMissingDocCharge(r.depositType));
   const [claimChargeDetails, setClaimChargeDetails] = useState<ChargeDetail[]>([]);
+  const [claimOutbounds, setClaimOutbounds] = useState<OutboundState>({});
   const [claimStep, setClaimStep] = useState<ClaimSubStep>('list');
   const [nonRemittanceRows, setNonRemittanceRows] = useState<Row[]>([]);
   const [nonRemittanceUploadedDocs, setNonRemittanceUploadedDocs] = useState<NRUploadedDoc[]>([]);
@@ -487,8 +487,9 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
               steps={rdAmendMode ? REFUND_DEPOSIT_AMEND_STEPS : undefined}
               onBack={() => rdAmendMode ? setClaimStep('amendDeclDetails') : setClaimStep('eligible')}
               onBackToListing={() => rdAmendMode ? exitRdAmend() : setClaimStep('list')}
-              onContinue={({ details }) => {
+              onContinue={({ details, outbounds }) => {
                 setClaimChargeDetails(details);
+                setClaimOutbounds(outbounds);
                 // Missing/Document Deposit claims have no document upload step.
                 setClaimStep(rdSkipDocs ? 'rdPayment' : 'rdDocuments');
               }}
@@ -507,6 +508,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
               onBack={() => setClaimStep('chargeDetails')}
               onContinue={() => setClaimStep(rdAmendMode ? 'rdReview' : 'rdPayment')}
               onBackToListing={() => rdAmendMode ? exitRdAmend() : setClaimStep('list')}
+              onUploadedDocsChange={setNonRemittanceUploadedDocs}
             />
           )}
           {claimStep === 'rdPayment' && (
@@ -537,6 +539,9 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
               activeIndex={rdAmendMode ? 3 : (rdSkipDocs ? 3 : 4)}
               claimType={rdClaimLabel}
               showAmendment={rdAmendMode}
+              chargeDetails={claimChargeDetails}
+              outbounds={claimOutbounds}
+              uploadedDocs={nonRemittanceUploadedDocs}
               onBack={() => setClaimStep(rdAmendMode ? 'rdDocuments' : 'rdPayment')}
               onSubmit={() => nonRemittancePaymentMode === 'E-Payment' ? setClaimStep('rdPaymentPending') : setClaimStep('rdNrSuccess')}
               onViewClaim={() => { setClaimViewReturnStep('rdReview'); setClaimStep('nonRemittanceClaimView'); }}
@@ -612,6 +617,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
               selectedRows={nonRemittanceRows}
               paymentMode={nonRemittancePaymentMode}
               accountNo={nonRemittanceAccountNo}
+              uploadedDocs={nonRemittanceUploadedDocs}
               onBack={() => setClaimStep('nonRemittanceCharges')}
               onSubmit={() => nonRemittancePaymentMode === 'E-Payment' ? setClaimStep('nrPaymentPending') : setClaimStep('nonRemittanceSuccess')}
               onSaveAndPreview={() => { setClaimViewReturnStep('nonRemittanceReview'); setClaimStep('nonRemittanceClaimView'); }}
