@@ -423,21 +423,35 @@ type SubTab = 'manual' | 'upload';
 type Props = {
   onBack: () => void;
   onBackToListing: () => void;
+  viewOnly?: boolean;
+  amend?: boolean;
+  initialFlightNo?: string;
+  initialArrDepType?: string;
+  initialScheduleDate?: string;
+  initialAirportLoadingCode?: string;
+  initialAirportLoadingName?: string;
+  initialUnloadingRows?: UnloadingAirportRow[];
 };
 
-export default function FlightManifestNewRequestPage({ onBack, onBackToListing }: Props) {
-  const [step, setStep] = useState<Step>('flightDetails');
+export default function FlightManifestNewRequestPage({
+  onBack, onBackToListing, viewOnly, amend,
+  initialFlightNo, initialArrDepType, initialScheduleDate,
+  initialAirportLoadingCode, initialAirportLoadingName, initialUnloadingRows,
+}: Props) {
+  const skipIntro = !!(viewOnly || amend);
+  const pageTitle = viewOnly ? 'View Flight Manifest' : amend ? 'Amend Flight Manifest' : 'New Flight Manifest';
+  const [step, setStep] = useState<Step>(skipIntro ? 'manifest' : 'flightDetails');
   const [subTab, setSubTab] = useState<SubTab>('manual');
 
-  const [flightNo, setFlightNo] = useState('');
-  const [arrDepType, setArrDepType] = useState('');
-  const [scheduleDate, setScheduleDate] = useState('');
-  const [flightLocked, setFlightLocked] = useState(false);
+  const [flightNo, setFlightNo] = useState(initialFlightNo ?? '');
+  const [arrDepType, setArrDepType] = useState(initialArrDepType ?? '');
+  const [scheduleDate, setScheduleDate] = useState(initialScheduleDate ?? '');
+  const [flightLocked, setFlightLocked] = useState(skipIntro);
   const [showFlightSearch, setShowFlightSearch] = useState(false);
 
-  const [airportLoadingCode, setAirportLoadingCode] = useState('');
-  const [airportLoadingName, setAirportLoadingName] = useState('');
-  const [unloadingRows, setUnloadingRows] = useState<UnloadingAirportRow[]>([]);
+  const [airportLoadingCode, setAirportLoadingCode] = useState(initialAirportLoadingCode ?? '');
+  const [airportLoadingName, setAirportLoadingName] = useState(initialAirportLoadingName ?? '');
+  const [unloadingRows, setUnloadingRows] = useState<UnloadingAirportRow[]>(initialUnloadingRows ?? []);
   const [editingUnloadingId, setEditingUnloadingId] = useState<string | null>(null);
 
   const [manifestTypeUpload, setManifestTypeUpload] = useState('FFM');
@@ -492,14 +506,14 @@ export default function FlightManifestNewRequestPage({ onBack, onBackToListing }
         <div className="flex-shrink-0"><Header onServiceCatalogue={onBack} /></div>
         <Breadcrumb />
         <div className="flex items-center gap-[10px] px-4 sm:px-10 mb-[16px] flex-shrink-0">
-          <h1 className="text-[28px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>New Flight Manifest</h1>
+          <h1 className="text-[28px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>{pageTitle}</h1>
         </div>
         <div className="flex-1 overflow-y-auto px-4 sm:px-10 pb-[32px]">
           <div className="bg-white rounded-[8px] flex flex-col items-center gap-[16px] py-[56px] px-[24px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
             <div className="size-[72px] rounded-full flex items-center justify-center" style={{ background: '#d1f5df' }}>
               <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#28a745" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12l6 6L20 6" /></svg>
             </div>
-            <p className="text-[22px]" style={{ color: '#28a745', fontFamily: font, fontWeight: 700 }}>Flight Manifest Request Submitted Successfully</p>
+            <p className="text-[22px]" style={{ color: '#28a745', fontFamily: font, fontWeight: 700 }}>{amend ? 'Amend Manifest Created Successfully' : 'Flight Manifest Request Submitted Successfully'}</p>
             <div className="rounded-[6px] px-[24px] py-[16px] flex flex-col items-center gap-[6px]" style={{ background: '#f8fafd', border: '1px solid #eef1f6' }}>
               <p className="text-[16px] text-[#455174] text-center" style={{ fontFamily: font }}>Dear Customer Thank You For Using Flight Manifest Request Web Application.</p>
               <p className="text-[16px] text-[#455174] text-center" style={{ fontFamily: font }}>Please Find Below Details For Future Reference</p>
@@ -526,7 +540,7 @@ export default function FlightManifestNewRequestPage({ onBack, onBackToListing }
       <div className="flex-shrink-0"><Header onServiceCatalogue={onBack} /></div>
       <Breadcrumb />
       <div className="flex items-center gap-[10px] px-4 sm:px-10 mb-[16px] flex-shrink-0">
-        <h1 className="text-[28px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>New Flight Manifest Courier</h1>
+        <h1 className="text-[28px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>{pageTitle}</h1>
         <button className="flex items-center gap-[6px] text-[16px] text-[#1360d2]" style={{ fontFamily: font }}>
           Need Help
           <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#1360d2" strokeWidth="1.7"><circle cx="10" cy="10" r="7.5" /><path d="M10 14v-1" strokeLinecap="round" /><path d="M10 7c0-1.1.9-2 2-2" strokeLinecap="round" /></svg>
@@ -534,6 +548,7 @@ export default function FlightManifestNewRequestPage({ onBack, onBackToListing }
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 pb-[32px] flex flex-col gap-[20px]">
+        <fieldset disabled={viewOnly} style={{ border: 'none', padding: 0, margin: 0, display: 'contents' }}>
         {/* Flight Details — always visible; becomes read-only once a flight is selected */}
         <div className="flex flex-col gap-[16px]">
           <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>Flight Details</p>
@@ -541,32 +556,59 @@ export default function FlightManifestNewRequestPage({ onBack, onBackToListing }
             <FlightNumberCombo value={flightNo} onSelect={selectFlight} onOpenPopup={() => setShowFlightSearch(true)} locked={flightLocked} />
             <FSelect label="Arrival/Departure" value={arrDepType} onChange={() => {}} options={['Arrival', 'Departure']} req disabled />
             <FInput label="Scheduled Date" value={scheduleDate ? fmtDateTime(scheduleDate) : ''} onChange={() => {}} disabled />
+            {step === 'flightDetails' && (
+              <div className="flex items-end">
+                <button onClick={() => setStep('manifest')}
+                  className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors flex-shrink-0"
+                  style={{ background: '#1360d2', cursor: 'pointer', fontFamily: font, fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
+                  Proceed
+                </button>
+              </div>
+            )}
           </div>
-          {step === 'flightDetails' && (
-            <div>
-              <button onClick={() => setStep('manifest')}
-                className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors"
-                style={{ background: '#1360d2', cursor: 'pointer', fontFamily: font, fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
-                Proceed
-              </button>
-            </div>
-          )}
         </div>
+
+        {step === 'flightDetails' && (
+          <>
+            {/* Help and Guides */}
+            <div className="flex items-center gap-[8px]">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#0e1b3d" strokeWidth="1.6"><path d="M4 5h7v15H4z" /><path d="M20 5h-7v15h7z" /></svg>
+              <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>Help and Guides</p>
+            </div>
+            <div className="bg-white rounded-[8px] p-[16px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+              <div className="flex items-center gap-[8px]">
+                <span className="text-[16px] px-[16px] py-[8px] rounded-[4px] text-white" style={{ background: '#1360d2', fontFamily: font, fontWeight: 500 }}>Information</span>
+                {['Tutorials', 'FAQ’S', 'Updates', 'Downloads'].map(t => (
+                  <span key={t} className="text-[16px] px-[16px] py-[8px] text-[#1360d2]" style={{ fontFamily: font, fontWeight: 500 }}>{t}</span>
+                ))}
+              </div>
+            </div>
+            <div className="bg-white rounded-[8px] p-[20px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+              <p className="text-[18px] text-[#0e1b3d] mb-[10px]" style={{ fontFamily: font, fontWeight: 700 }}>About the Service</p>
+              <p className="text-[16px] text-[#455174]" style={{ fontFamily: font, lineHeight: 1.5 }}>
+                Flight Manifest lets registered airline agents submit inbound cargo manifest details to Dubai Customs
+                ahead of arrival, either manually or via a bulk file upload.
+              </p>
+            </div>
+          </>
+        )}
 
         {step === 'manifest' && (
           <>
             {/* Add Manually / Upload Manifest File tabs — same pill pattern as Refund & Claims */}
-            <div className="flex items-center gap-[8px] bg-white rounded-[6px] p-[4px] w-max" style={{ boxShadow: '0px 2px 12px rgba(143,155,186,0.16)', border: '1px solid #eef1f6' }}>
-              {(['manual', 'upload'] as const).map(t => (
-                <button key={t} type="button" onClick={() => setSubTab(t)}
-                  className="text-[15px] px-[18px] py-[9px] rounded-[4px] transition-colors"
-                  style={subTab === t
-                    ? { background: '#1360d2', color: '#fff', fontWeight: 500, fontFamily: font }
-                    : { color: '#5a6282', fontFamily: font }}>
-                  {t === 'manual' ? 'Add Manually' : 'Upload Manifest File'}
-                </button>
-              ))}
-            </div>
+            {!viewOnly && (
+              <div className="flex items-center gap-[8px] bg-white rounded-[6px] p-[4px] w-max" style={{ boxShadow: '0px 2px 12px rgba(143,155,186,0.16)', border: '1px solid #eef1f6' }}>
+                {(['manual', 'upload'] as const).map(t => (
+                  <button key={t} type="button" onClick={() => setSubTab(t)}
+                    className="text-[15px] px-[18px] py-[9px] rounded-[4px] transition-colors"
+                    style={subTab === t
+                      ? { background: '#1360d2', color: '#fff', fontWeight: 500, fontFamily: font }
+                      : { color: '#5a6282', fontFamily: font }}>
+                    {t === 'manual' ? 'Add Manually' : 'Upload Manifest File'}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {subTab === 'manual' ? (
               <>
@@ -588,12 +630,14 @@ export default function FlightManifestNewRequestPage({ onBack, onBackToListing }
                 <div className="flex flex-col gap-[16px]">
                   <div className="flex items-center justify-between flex-wrap gap-[8px]">
                     <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>List of Airport of Unloading</p>
-                    <button onClick={() => { setEditingUnloadingId(null); setStep('addUnloading'); }}
-                      className="h-[44px] px-[18px] rounded-[4px] text-[15px] text-white inline-flex items-center gap-[8px]"
-                      style={{ background: '#1360d2', fontFamily: font, fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
-                      <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M7 2v10M2 7h10" /></svg>
-                      Add Unloading Details
-                    </button>
+                    {!viewOnly && (
+                      <button onClick={() => { setEditingUnloadingId(null); setStep('addUnloading'); }}
+                        className="h-[44px] px-[18px] rounded-[4px] text-[15px] text-white inline-flex items-center gap-[8px]"
+                        style={{ background: '#1360d2', fontFamily: font, fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
+                        <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M7 2v10M2 7h10" /></svg>
+                        Add Unloading Details
+                      </button>
+                    )}
                   </div>
                   <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
                     <table className="w-full" style={{ borderCollapse: 'collapse' }}>
@@ -613,16 +657,18 @@ export default function FlightManifestNewRequestPage({ onBack, onBackToListing }
                             <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '14px 16px' }}>{r.nilCargo}</td>
                             <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '14px 16px' }}>{r.lines.length}</td>
                             <td style={{ padding: '14px 16px' }}>
-                              <div className="flex items-center gap-[8px]">
-                                <button type="button" onClick={() => { setEditingUnloadingId(r.id); setStep('addUnloading'); }}
-                                  className="h-[32px] px-[12px] rounded-[4px] text-[14px] text-white flex-shrink-0" style={{ background: '#1360d2', fontFamily: font, fontWeight: 500 }}>
-                                  Add AWB&apos;s
-                                </button>
-                                <button type="button" onClick={() => setUnloadingRows(p => p.filter(x => x.id !== r.id))} aria-label={`Remove ${r.airportCode}`}
-                                  className="size-[32px] inline-flex items-center justify-center rounded-[4px] hover:bg-[#fef2f2] transition-colors flex-shrink-0" style={{ color: '#dc3545' }}>
-                                  <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M3 5h14M8 5V3h4v2M17 5l-1 13H4L3 5" /><path d="M8 9v5M12 9v5" /></svg>
-                                </button>
-                              </div>
+                              {!viewOnly && (
+                                <div className="flex items-center gap-[8px]">
+                                  <button type="button" onClick={() => { setEditingUnloadingId(r.id); setStep('addUnloading'); }}
+                                    className="h-[32px] px-[12px] rounded-[4px] text-[14px] text-white flex-shrink-0" style={{ background: '#1360d2', fontFamily: font, fontWeight: 500 }}>
+                                    Add AWB&apos;s
+                                  </button>
+                                  <button type="button" onClick={() => setUnloadingRows(p => p.filter(x => x.id !== r.id))} aria-label={`Remove ${r.airportCode}`}
+                                    className="size-[32px] inline-flex items-center justify-center rounded-[4px] hover:bg-[#fef2f2] transition-colors flex-shrink-0" style={{ color: '#dc3545' }}>
+                                    <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M3 5h14M8 5V3h4v2M17 5l-1 13H4L3 5" /><path d="M8 9v5M12 9v5" /></svg>
+                                  </button>
+                                </div>
+                              )}
                             </td>
                           </tr>
                         ))}
@@ -680,24 +726,28 @@ export default function FlightManifestNewRequestPage({ onBack, onBackToListing }
             )}
           </>
         )}
+        </fieldset>
       </div>
 
       {step === 'manifest' && (
         <BackToListingBar
-          onBack={() => setStep('flightDetails')}
+          onBack={skipIntro ? undefined : () => setStep('flightDetails')}
+          onBackToListing={skipIntro ? onBackToListing : undefined}
           rightContent={
-            <div className="flex items-center gap-[12px]">
-              <button className="h-[48px] px-[24px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
-                Save As Draft
-              </button>
-              <button
-                onClick={() => { const ok = subTab === 'manual' ? canSubmitManual : canSubmitUpload; if (ok) setStep('success'); }}
-                disabled={subTab === 'manual' ? !canSubmitManual : !canSubmitUpload}
-                className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors"
-                style={{ background: (subTab === 'manual' ? canSubmitManual : canSubmitUpload) ? '#1360d2' : '#a7c3eb', cursor: (subTab === 'manual' ? canSubmitManual : canSubmitUpload) ? 'pointer' : 'not-allowed', fontFamily: font, fontWeight: 500, boxShadow: (subTab === 'manual' ? canSubmitManual : canSubmitUpload) ? '0px 0px 8px rgba(28,72,191,0.16)' : 'none' }}>
-                Submit
-              </button>
-            </div>
+            viewOnly ? undefined : (
+              <div className="flex items-center gap-[12px]">
+                <button className="h-[48px] px-[24px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
+                  Save As Draft
+                </button>
+                <button
+                  onClick={() => { const ok = subTab === 'manual' ? canSubmitManual : canSubmitUpload; if (ok) setStep('success'); }}
+                  disabled={subTab === 'manual' ? !canSubmitManual : !canSubmitUpload}
+                  className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors"
+                  style={{ background: (subTab === 'manual' ? canSubmitManual : canSubmitUpload) ? '#1360d2' : '#a7c3eb', cursor: (subTab === 'manual' ? canSubmitManual : canSubmitUpload) ? 'pointer' : 'not-allowed', fontFamily: font, fontWeight: 500, boxShadow: (subTab === 'manual' ? canSubmitManual : canSubmitUpload) ? '0px 0px 8px rgba(28,72,191,0.16)' : 'none' }}>
+                  Submit
+                </button>
+              </div>
+            )
           }
         />
       )}

@@ -362,6 +362,10 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
   const [cmSelectedRow, setCmSelectedRow]     = useState<ListingRow | null>(null);
   const [fmView, setFmView]                   = useState<'list' | 'new' | 'upload' | 'view'>('list');
   const [fmSelectedRow, setFmSelectedRow]     = useState<ListingRow | null>(null);
+  const [fmRequestKind, setFmRequestKind]     = useState<'new' | 'view' | 'amend'>('new');
+  const [fmPrefill, setFmPrefill]             = useState<{
+    flightNo: string; scheduleDate: string; airportLoadingCode: string;
+  } | null>(null);
 
   /* Sea Export Manifest / House Manifest / Delivery Advice — dedicated Figma-matched sub-flows */
   const [semView, setSemView]                 = useState<'list' | 'new' | 'upload'>('list');
@@ -399,7 +403,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
     setVisibleCols(next.columns.map(c => c.key));
     setColOrder(next.columns.map(c => c.key));
     setCmView('list'); setCmSelectedRow(null);
-    setFmView('list'); setFmSelectedRow(null);
+    setFmView('list'); setFmSelectedRow(null); setFmPrefill(null); setFmRequestKind('new');
     setSemView('list'); setSemSelectedRow(null);
     setHmView('list');
     setDaView('list');
@@ -450,6 +454,21 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
     });
   })() : [];
 
+  /* Flight Manifest — View/Amend prefill: convert the listing's "DD/MM/YYYY HH:mm" mock date to the ISO date the wizard's DatePicker expects, and synthesize a plausible pre-filled Airport of Unloading row */
+  const toIsoDate = (ddmmyyyy: string): string => {
+    const datePart = ddmmyyyy.split(' ')[0];
+    const [d, m, y] = datePart.split('/');
+    return d && m && y ? `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}` : '';
+  };
+  const AIRPORT_NAMES: Record<string, string> = { DXB: 'Dubai International Airport', JFK: 'John F. Kennedy International Airport' };
+  const fmInitialUnloadingRows = fmPrefill ? [{
+    id: 'ul-mock-1', airportCode: 'JFK', airportName: AIRPORT_NAMES.JFK, nilCargo: 'No',
+    lines: [
+      { id: 'awb-mock-1', awbNo: '176-88213456', goodsDescription: 'General Cargo', weight: '450', weightUnit: 'KG', shipperName: 'Acme Exports LLC', pieces: '12', shipmentDescCode: 'Total Consignment', consigneeName: 'Global Imports Inc', originCode: fmPrefill.airportLoadingCode, originName: AIRPORT_NAMES[fmPrefill.airportLoadingCode] ?? '', destCode: 'JFK', destName: AIRPORT_NAMES.JFK },
+      { id: 'awb-mock-2', awbNo: '176-88213457', goodsDescription: 'Electronics', weight: '210', weightUnit: 'KG', shipperName: 'Acme Exports LLC', pieces: '5', shipmentDescCode: 'Part Consignment', consigneeName: 'Global Imports Inc', originCode: fmPrefill.airportLoadingCode, originName: AIRPORT_NAMES[fmPrefill.airportLoadingCode] ?? '', destCode: 'JFK', destName: AIRPORT_NAMES.JFK },
+    ],
+  }] : [];
+
   /* Detail-view field values, used by both the "View Request" page and (implicitly) future amend/cancel flows */
   const Field = ({ label, value }: { label: string; value: string }) => (
     <div className="flex flex-col gap-[4px]">
@@ -479,7 +498,17 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
   }
   if (activeMenu === 'flightManifest' && fmView === 'new') {
     return (
-      <FlightManifestNewRequestPage onBack={onBack} onBackToListing={() => setFmView('list')} />
+      <FlightManifestNewRequestPage
+        viewOnly={fmRequestKind === 'view'}
+        amend={fmRequestKind === 'amend'}
+        initialFlightNo={fmPrefill?.flightNo}
+        initialScheduleDate={fmPrefill ? toIsoDate(fmPrefill.scheduleDate) : undefined}
+        initialAirportLoadingCode={fmPrefill?.airportLoadingCode}
+        initialAirportLoadingName={fmPrefill ? (AIRPORT_NAMES[fmPrefill.airportLoadingCode] ?? '') : undefined}
+        initialUnloadingRows={fmPrefill ? fmInitialUnloadingRows : undefined}
+        onBack={onBack}
+        onBackToListing={() => { setFmView('list'); setFmPrefill(null); setFmRequestKind('new'); }}
+      />
     );
   }
   if (activeMenu === 'flightManifest' && fmView === 'upload' && fmSelectedRow) {
@@ -814,7 +843,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                   )}
                   <button onClick={() => {
                       if (activeMenu === 'carrierMovement') setCmView('new');
-                      else if (activeMenu === 'flightManifest') setFmView('new');
+                      else if (activeMenu === 'flightManifest') { setFmRequestKind('new'); setFmPrefill(null); setFmView('new'); }
                       else if (activeMenu === 'seaExportManifest') { setSemMode('manual'); setSemRequestKind('new'); setSemPrefill(null); setSemView('new'); }
                       else if (activeMenu === 'houseManifest') setHmView('new');
                       else if (activeMenu === 'deliveryAdvice') setDaView('new');
@@ -1071,9 +1100,16 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                                               } else if (activeMenu === 'flightManifest') {
                                                 if (label === 'Upload Manifest') { setFmSelectedRow(row); setFmView('upload'); }
                                                 else if (label === 'View Manifest') { setFmSelectedRow(row); setFmView('view'); }
-                                                else if (label === 'View Manifest Request') setViewRow(row);
+                                                else if (label === 'View Manifest Request') {
+                                                  setFmPrefill({ flightNo: str(row.flightNo), scheduleDate: str(row.scheduleDate), airportLoadingCode: str(row.airportLoading) });
+                                                  setFmRequestKind('view'); setFmView('new');
+                                                }
+                                                else if (label === 'Amend') {
+                                                  setFmPrefill({ flightNo: str(row.flightNo), scheduleDate: str(row.scheduleDate), airportLoadingCode: str(row.airportLoading) });
+                                                  setFmRequestKind('amend'); setFmView('new');
+                                                }
                                                 else if (label === 'Error Files') setErrorFilesRow(row);
-                                                else setShowNewRequest(true); // Amend/Cancel — no design provided yet
+                                                else setShowNewRequest(true); // Cancel — no design provided yet
                                               } else if (activeMenu === 'seaExportManifest') {
                                                 if (label === 'Upload BOL') { setSemSelectedRow(row); setSemView('upload'); }
                                                 else if (label === 'View Manifest Request') {
