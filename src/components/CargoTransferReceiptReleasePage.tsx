@@ -589,14 +589,13 @@ export default function CargoTransferReceiptReleasePage({ onBack }: Props) {
 
             {/* Right: Confirm button */}
             <button
-              disabled={!canConfirm}
-              onClick={() => canConfirm && setConfirmType(tab)}
+              onClick={() => setConfirmType(tab)}
               className="h-[48px] px-[22px] rounded-[4px] text-[16px] text-white flex-shrink-0 transition-opacity"
               style={{
-                background: canConfirm ? '#1360d2' : '#a7c3eb',
-                cursor: canConfirm ? 'pointer' : 'not-allowed',
+                background: '#1360d2',
+                cursor: 'pointer',
                 fontFamily: font, fontWeight: 500,
-                boxShadow: canConfirm ? '0px 0px 8px rgba(28,72,191,0.16)' : 'none',
+                boxShadow: '0px 0px 8px rgba(28,72,191,0.16)',
               }}>
               {tab === 'release' ? 'Confirm Release' : 'Confirm Receipt'}
             </button>

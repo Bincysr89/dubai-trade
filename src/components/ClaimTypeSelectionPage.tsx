@@ -103,10 +103,9 @@ export default function ClaimTypeSelectionPage({ onBack, onContinue }: Props) {
         onBack={onBack}
         rightContent={
           <button
-            disabled={!selected}
-            onClick={() => selected && onContinue(selected)}
+            onClick={() => onContinue(selected!)}
             className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors"
-            style={{ background: selected ? '#1360d2' : '#a7c3eb', cursor: selected ? 'pointer' : 'not-allowed', fontWeight: 500, boxShadow: selected ? '0px 0px 8px rgba(28,72,191,0.16)' : 'none' }}
+            style={{ background: '#1360d2', cursor: 'pointer', fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}
           >
             Continue
           </button>

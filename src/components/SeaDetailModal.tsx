@@ -16,7 +16,6 @@ import DCServiceChooserPage from './DCServiceChooserPage';
 import JoinClientAccreditationPage from './JoinClientAccreditationPage';
 import SubmitVoluntaryDisclosurePage from './SubmitVoluntaryDisclosurePage';
 import GoodsLandingCertPage from './GoodsLandingCertPage';
-import CargoInformationPage from './CargoInformationPage';
 
 type Props = { onClose: () => void };
 
@@ -97,7 +96,6 @@ const SEA_COLUMNS: { title: string; items: string[] }[] = [
       'Request Goods Landing Certificate',
       'Request Customs Warehouse License',
       'Request Duty Account',
-      'Submit Cargo Information',
       'DC - landing Certificate', 'DC - Letter & Certificates', 'DM Permits',
       'DP World Work Permits', 'e-Certificates', 'IMDG NOC Management',
       'Marine NOC', 'Master Declaration', 'DC - Cargo Reconcilation',
@@ -292,9 +290,9 @@ const DCC_FILTER_FIELDS: AFFieldDef[] = [
   { key: 'dateTo',      label: 'Request Date To',   type: 'date' },
 ];
 
-type PageKey = 'glc' | 'jap' | 'cwl' | 'ctr' | 'rda' | 'pbf' | 'dcc' | 'cgi';
+type PageKey = 'glc' | 'jap' | 'cwl' | 'ctr' | 'rda' | 'pbf' | 'dcc';
 
-const PAGE_CONFIGS: Record<Exclude<PageKey, 'pbf' | 'dcc' | 'cgi' | 'ctr' | 'cwl'> | 'ctr' | 'cwl', {
+const PAGE_CONFIGS: Record<Exclude<PageKey, 'pbf' | 'dcc' | 'ctr' | 'cwl'> | 'ctr' | 'cwl', {
   title: string; breadcrumb: string; primaryLabel: string;
   searchLabel: string; searchPlaceholder: string; searchFields?: string[];
   advancedFilterFields?: AFFieldDef[];
@@ -358,7 +356,6 @@ const ITEM_PAGE_MAP: Record<string, PageKey> = {
   'Request Customs Transactions Report':  'ctr',
   'Request Duty Account':                 'rda',
   'DC - Service Request':                 'dcc',
-  'Submit Cargo Information':             'cgi',
 };
 /* ── Generic Form Configs ────────────────────────────────────────────────── */
 const CTR_CONFIG: GenericServiceConfig = {
@@ -539,9 +536,6 @@ export default function SeaDetailModal({ onClose }: Props) {
       />
     );
   }
-  if (activePage === 'cgi') {
-    return <CargoInformationPage onBack={() => setActivePage(null)} />;
-  }
   if (activePage) {
     const cfg = PAGE_CONFIGS[activePage as 'glc'];
     if (!cfg) return null;
@@ -707,7 +701,6 @@ export default function SeaDetailModal({ onClose }: Props) {
                         'Request Duty Account',
                         'Request Customs Warehouse License',
                         'DC - Service Request',
-                        'Submit Cargo Information',
                       ]);
                       const TALL_ITEMS = new Set([
                         'Request Goods Landing Certificate',

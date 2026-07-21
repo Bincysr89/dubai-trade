@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Header from './Header';
 import SeaDetailModal from './SeaDetailModal';
+import AirDetailModal from './AirDetailModal';
 import paymentsImg from '../assets/payments 1.jpg';
 import airImg from '../assets/air.jpg';
 import seaImg from '../assets/sea.jpg';
@@ -42,6 +43,7 @@ const POSITIONS: Record<number, { x: number; rotY: number; w: number; h: number;
 export default function ServiceCatalogueModal({ onClose }: Props) {
   const [active, setActive] = useState(2); // Sea by default
   const [showSeaDetail, setShowSeaDetail] = useState(false);
+  const [showAirDetail, setShowAirDetail] = useState(false);
 
   const prev = () => setActive(i => (i - 1 + ITEMS.length) % ITEMS.length);
   const next = () => setActive(i => (i + 1) % ITEMS.length);
@@ -49,13 +51,16 @@ export default function ServiceCatalogueModal({ onClose }: Props) {
   if (showSeaDetail) {
     return <SeaDetailModal onClose={() => setShowSeaDetail(false)} />;
   }
+  if (showAirDetail) {
+    return <AirDetailModal onClose={() => setShowAirDetail(false)} onHome={onClose} />;
+  }
 
   return (
     <div className="fixed inset-0 z-50 bg-white flex flex-col overflow-hidden">
 
       {/* Navigation header */}
       <div className="relative z-10 flex-shrink-0">
-        <Header onServiceCatalogue={onClose} catalogueClosesOnClick />
+        <Header onServiceCatalogue={onClose} catalogueClosesOnClick onHome={onClose} />
       </div>
 
       {/* Page title */}
@@ -107,7 +112,8 @@ export default function ServiceCatalogueModal({ onClose }: Props) {
               <div
                 key={item.label}
                 onClick={() => {
-                  if (!isActive) { setActive(idx); }
+                  if (item.label === 'Air') { setShowAirDetail(true); }
+                  else if (!isActive) { setActive(idx); }
                   else if (item.label === 'Sea') { setShowSeaDetail(true); }
                 }}
                 style={{

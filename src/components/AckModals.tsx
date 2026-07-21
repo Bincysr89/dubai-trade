@@ -44,7 +44,7 @@ export const AckAcceptConfirmModal: React.FC<AcceptProps> = ({ open, count, onCl
         </label>
         <div className="flex items-center gap-[12px]">
           <button onClick={onClose} className="h-[44px] px-[28px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors" style={{ fontWeight: 500 }}>Cancel</button>
-          <button disabled={!agreed} onClick={onConfirm} className="h-[44px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors" style={{ background: agreed ? '#1360d2' : '#a7c3eb', fontWeight: 500, boxShadow: agreed ? '0px 0px 8px rgba(28,72,191,0.16)' : 'none' }}>Accept</button>
+          <button onClick={onConfirm} className="h-[44px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors" style={{ background: '#1360d2', fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>Accept</button>
         </div>
       </div>
     </Backdrop>

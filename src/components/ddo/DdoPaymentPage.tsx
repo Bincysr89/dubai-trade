@@ -134,13 +134,8 @@ export default function DdoPaymentPage({ amount, onBack, onConfirm }: Props) {
           ))}
 
           <button
-            onClick={() => selected && onConfirm()}
-            disabled={!selected}
-            className={`w-full rounded-[14px] py-4 text-[16px] uppercase font-dubai font-bold shadow-[0px_10px_7.5px_rgba(0,0,0,0.1)] transition-all ${
-              selected
-                ? 'bg-[#1360d2] text-white hover:bg-[#1150b8]'
-                : 'bg-[#e5e7eb] text-[#99a1af] cursor-not-allowed'
-            } mb-4`}
+            onClick={() => onConfirm()}
+            className="w-full rounded-[14px] py-4 text-[16px] uppercase font-dubai font-bold shadow-[0px_10px_7.5px_rgba(0,0,0,0.1)] transition-all bg-[#1360d2] text-white hover:bg-[#1150b8] mb-4"
           >
             Confirm Payment
           </button>

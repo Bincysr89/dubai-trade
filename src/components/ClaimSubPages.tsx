@@ -1583,14 +1583,14 @@ function OutboundModal({
             style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
             Close
           </button>
-          <button type="button" disabled={!isValid} onClick={() => isValid && onSaveNew(form)}
+          <button type="button" onClick={() => onSaveNew(form)}
             className="h-[40px] px-[20px] rounded-[4px] border text-[15px] transition-colors"
-            style={{ borderColor: isValid ? '#1360d2' : '#d5ddfb', color: isValid ? '#1360d2' : '#b0b8cc', fontFamily: font, fontWeight: 500, cursor: isValid ? 'pointer' : 'not-allowed' }}>
+            style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500, cursor: 'pointer' }}>
             Save &amp; Create New
           </button>
-          <button type="button" disabled={!isValid} onClick={() => isValid && onSave(form)}
+          <button type="button" onClick={() => onSave(form)}
             className="h-[40px] px-[24px] rounded-[4px] text-[15px] text-white transition-colors"
-            style={{ background: isValid ? '#1360d2' : '#a7c3eb', fontFamily: font, fontWeight: 500, cursor: isValid ? 'pointer' : 'not-allowed' }}>
+            style={{ background: '#1360d2', fontFamily: font, fontWeight: 500, cursor: 'pointer' }}>
             Save
           </button>
         </div>
@@ -1677,7 +1677,7 @@ export function ChargeDetailsPage({
       activeIndex={1}
       steps={REFUND_DEPOSIT_STEPS}
       rightContent={
-        <div className="flex items-center gap-[12px]"><SaveExitBtn onBackToListing={onBackToListing} /><PrimaryBtn disabled={!allValid} onClick={() => allValid && onContinue(details)}>Next</PrimaryBtn></div>
+        <div className="flex items-center gap-[12px]"><SaveExitBtn onBackToListing={onBackToListing} /><PrimaryBtn onClick={() => onContinue(details)}>Next</PrimaryBtn></div>
       }
     >
       <Card>
@@ -2497,10 +2497,10 @@ export function RDReviewPage({
       </div>
 
       <BackToListingBar onBack={onBack} rightContent={
-        <button onClick={() => declared && onSubmit()} disabled={!declared}
+        <button onClick={() => onSubmit()}
           className="h-[48px] px-[36px] rounded-[4px] text-[16px] text-white transition-colors hover:opacity-90"
-          style={{ background: declared ? '#1360d2' : '#a7c3eb', fontWeight: 500, cursor: declared ? 'pointer' : 'not-allowed',
-            boxShadow: declared ? '0px 0px 8px rgba(28,72,191,0.16)' : 'none' }}>
+          style={{ background: '#1360d2', fontWeight: 500, cursor: 'pointer',
+            boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
           Submit Claim
         </button>
       } />

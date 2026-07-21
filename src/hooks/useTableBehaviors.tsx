@@ -199,19 +199,18 @@ export function useTableBehaviors() {
 
 /**
  * Left/right scroll arrow buttons — place inside a `position: relative` wrapper that also contains the scroll div.
- * stickyWidth = combined pixel width of sticky Status + Actions columns.
- * headerHeight = the table header row's height in px (every table in this app uses the same
- * `padding: '10px 12px'` / 16px single-line header convention, so 44px is a safe default) — the
- * fade + button start below this so they never wash out the header's column names, which is what
- * happens if the semi-transparent gradient is layered over the header's solid background color.
+ * stickyWidth = combined pixel width of sticky Status + Actions columns; the right-side fade sits
+ * flush against `right: stickyWidth` so it (and its button) sit immediately before the sticky
+ * columns, never on top of them, letting the user click there to scroll the non-sticky columns.
+ * The fade spans the full height of the table — header row included — as a soft neutral shadow
+ * (not a white wash) so it reads as one continuous edge instead of stopping short above the body.
  */
 export function ScrollArrows({
-  atStart, atEnd, onLeft, onRight, stickyWidth, headerHeight = 44,
+  atStart, atEnd, onLeft, onRight, stickyWidth,
 }: {
   atStart: boolean; atEnd: boolean;
   onLeft: () => void; onRight: () => void;
   stickyWidth: number;
-  headerHeight?: number;
 }) {
   const btn: React.CSSProperties = {
     width: 32, height: 32, borderRadius: '50%',
@@ -225,10 +224,11 @@ export function ScrollArrows({
     <>
       {!atStart && (
         <div style={{
-          position: 'absolute', left: 0, top: headerHeight, bottom: 0, width: 80, zIndex: 20,
-          background: 'linear-gradient(to right, rgba(255,255,255,0.85) 0%, transparent 100%)',
+          position: 'absolute', left: 0, top: 0, bottom: 0,
+          width: 80, maxWidth: `calc(100% - ${stickyWidth}px)`, zIndex: 20,
+          background: 'linear-gradient(to right, rgba(255,255,255,0.85) 0%, rgba(0,0,0,0) 100%)',
           display: 'flex', alignItems: 'center', paddingLeft: 12,
-          pointerEvents: 'none',
+          pointerEvents: 'none', overflow: 'hidden',
         }}>
           <button onClick={onLeft} style={{ ...btn, pointerEvents: 'auto' }} title="Scroll left">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -239,10 +239,11 @@ export function ScrollArrows({
       )}
       {!atEnd && (
         <div style={{
-          position: 'absolute', right: stickyWidth, top: headerHeight, bottom: 0, width: 80, zIndex: 20,
-          background: 'linear-gradient(to left, rgba(255,255,255,0.85) 0%, transparent 100%)',
+          position: 'absolute', right: stickyWidth, top: 0, bottom: 0,
+          width: 80, maxWidth: `calc(100% - ${stickyWidth}px)`, zIndex: 20,
+          background: 'linear-gradient(to left, rgba(255,255,255,0.85) 0%, rgba(0,0,0,0) 100%)',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: 12,
-          pointerEvents: 'none',
+          pointerEvents: 'none', overflow: 'hidden',
         }}>
           <button onClick={onRight} style={{ ...btn, pointerEvents: 'auto' }} title="Scroll right">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">

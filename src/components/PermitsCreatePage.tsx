@@ -768,7 +768,6 @@ export default function PermitsCreatePage({ onClose, initialStep, prefill, onOpe
 
   const submitInput = () => {
     const val = inputVal.trim();
-    if (!val) return;
     if (step === 'search') pickSearch(val);
     else if (step === 'cargo') {
       const match = CARGO_OPTIONS.find(o => o.label.toLowerCase().includes(val.toLowerCase()));
@@ -1005,9 +1004,9 @@ export default function PermitsCreatePage({ onClose, initialStep, prefill, onOpe
                   onKeyDown={e => e.key==='Enter' && submitInput()}
                   style={{ flex:1, height:42, background:'transparent', border:'none', padding:'0 16px', fontFamily:font, fontSize:13, color: isInputStep ? '#111838' : '#b0b8d4', outline:'none', cursor: isInputStep ? 'text' : 'default' }} />
                 {isInputStep && (
-                  <button onClick={submitInput} disabled={!inputVal.trim()}
-                    style={{ height:42, width:46, display:'flex', alignItems:'center', justifyContent:'center', background: inputVal.trim() ? '#1360d2' : '#e8eeff', border:'none', cursor: inputVal.trim() ? 'pointer' : 'default', transition:'all 0.18s', flexShrink:0 }}>
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke={inputVal.trim() ? '#fff' : '#97a3b8'} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                  <button onClick={submitInput}
+                    style={{ height:42, width:46, display:'flex', alignItems:'center', justifyContent:'center', background: '#1360d2', border:'none', cursor: 'pointer', transition:'all 0.18s', flexShrink:0 }}>
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                   </button>
                 )}
               </div>

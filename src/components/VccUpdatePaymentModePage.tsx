@@ -151,7 +151,6 @@ export default function VccUpdatePaymentModePage({
   const canSubmit = paymentMode === 'epayment' || (paymentMode === 'creditDebit' && !!creditAccount);
 
   const handleSubmit = () => {
-    if (!canSubmit) return;
     if (paymentMode === 'epayment') { onSubmit('epayment'); return; }
     if (paymentMode === 'creditDebit') {
       if (insufficientAccount !== null && creditAccount !== insufficientAccount) {
@@ -286,9 +285,8 @@ export default function VccUpdatePaymentModePage({
 
             <button
               onClick={handleSubmit}
-              disabled={!canSubmit}
-              className="mt-[16px] w-full h-[48px] rounded-[4px] text-[16px] text-white disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ background: '#1360d2', fontFamily: font, fontWeight: 500, boxShadow: canSubmit ? '0px 0px 8px rgba(28,72,191,0.16)' : undefined }}
+              className="mt-[16px] w-full h-[48px] rounded-[4px] text-[16px] text-white"
+              style={{ background: '#1360d2', fontFamily: font, fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}
             >
               Submit
             </button>

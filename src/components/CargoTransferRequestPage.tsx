@@ -767,9 +767,8 @@ export default function CargoTransferRequestPage({ onBack, onSubmit, mode = 'cre
           </button>
         ) : (
           <button
-            onClick={() => agreed && onSubmit()}
-            disabled={!agreed}
-            className="h-[48px] px-[40px] rounded-[4px] bg-[#1360d2] text-white text-[16px] hover:bg-[#0E4DB8] disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => onSubmit()}
+            className="h-[48px] px-[40px] rounded-[4px] bg-[#1360d2] text-white text-[16px] hover:bg-[#0E4DB8]"
             style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}
           >
             {mode === 'amend' ? 'Submit Amendment' : 'Submit'}
