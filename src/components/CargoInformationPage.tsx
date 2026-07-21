@@ -213,7 +213,7 @@ const SEA_EXPORT_MANIFEST: ListingConfig = {
   searchKeyLabels: { rotationNumber: 'Rotation Number', fileRefNo: 'File Reference Number' },
   noScrollArrows: true,
   advancedFilterKeys: ['bolNumber', 'rotationNumber', 'cargoType'],
-  flyoutItems: ['View Manifest Request', 'Upload BOL', 'Audit History', 'Download Error Report', 'Cancel'],
+  flyoutItems: ['View Manifest Request', 'Amend Request', 'Upload BOL', 'Audit History', 'Download Error Report', 'Cancel'],
   primaryLabel: 'New Request',
   refKey: 'bolNumber',
   detailSections: [
@@ -352,6 +352,9 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
   const [viewRow, setViewRow]                 = useState<ListingRow | null>(null);
   const [errorFilesRow, setErrorFilesRow]     = useState<ListingRow | null>(null);
   const [auditHistoryRow, setAuditHistoryRow] = useState<ListingRow | null>(null);
+  const [fileDetailsRow, setFileDetailsRow]   = useState<ListingRow | null>(null);
+  const [semPrefill, setSemPrefill]           = useState<{ bolNumber: string; rotationNumber: string; cargoCode?: string } | null>(null);
+  const [semRequestKind, setSemRequestKind]   = useState<'new' | 'view' | 'amend'>('new');
   const [colOrder, setColOrder]               = useState<string[]>(() => config.columns.map(c => c.key));
 
   /* Carrier Movement / Flight Manifest — dedicated Figma-matched sub-flows */
@@ -392,6 +395,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
     const next = MENU_CONFIGS[key];
     setPage(1); setSearchValue(''); setSearchQuery(''); setSearchKey(next.searchKeys[0]); setToolbarStatus(null);
     setShowDrafts(false); setShowFilters(false); setAfValues({}); setAfStatusType(''); setAfDateFrom(''); setAfDateTo(''); setViewRow(null);
+    setFileDetailsRow(null); setSemPrefill(null); setSemRequestKind('new');
     setVisibleCols(next.columns.map(c => c.key));
     setColOrder(next.columns.map(c => c.key));
     setCmView('list'); setCmSelectedRow(null);
@@ -425,6 +429,26 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
   const trackUploadRows = showTrackUpload
     ? config.rows.filter(r => str(r.fileRefNo).toLowerCase().includes(searchQuery.trim().toLowerCase()))
     : [];
+
+  /* File Details page — mock per-BOL line items derived from the uploaded file's aggregate counts */
+  type BolLine = { bolNo: string; cargoCode: string; requestId: string; status: 'Success' | 'Error'; remarks: string };
+  const bolLines: BolLine[] = fileDetailsRow ? (() => {
+    const total = Number(fileDetailsRow.noOfBols ?? 0) || 0;
+    const success = Number(fileDetailsRow.noOfSuccessfulBols ?? 0) || 0;
+    const failed = Math.max(0, total - success);
+    const baseNo = str(fileDetailsRow.bolNumber).replace(/\D/g, '') || '101';
+    const cargoLetter = (str(fileDetailsRow.cargoType)[0] || 'F').toUpperCase();
+    return Array.from({ length: total }, (_, i) => {
+      const isFailed = i < failed;
+      return {
+        bolNo: `BOL${baseNo}${String(i + 1).padStart(3, '0')}`,
+        cargoCode: cargoLetter,
+        requestId: isFailed ? '' : `${str(fileDetailsRow.uploadRefNo)}-${String(i + 1).padStart(3, '0')}`,
+        status: isFailed ? 'Error' as const : 'Success' as const,
+        remarks: isFailed ? 'Bill Of Lading record has been deleted.' : '',
+      };
+    });
+  })() : [];
 
   /* Detail-view field values, used by both the "View Request" page and (implicitly) future amend/cancel flows */
   const Field = ({ label, value }: { label: string; value: string }) => (
@@ -480,7 +504,16 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
   /* ─── Sea Export Manifest / House Manifest / Delivery Advice — dedicated Figma-matched sub-flows ─── */
   if (activeMenu === 'seaExportManifest' && semView === 'new') {
     return (
-      <SeaExportManifestNewRequestPage mode={semMode} onBack={onBack} onBackToListing={() => setSemView('list')} />
+      <SeaExportManifestNewRequestPage
+        mode={semMode}
+        amend={semRequestKind === 'amend'}
+        viewOnly={semRequestKind === 'view'}
+        initialBolNumber={semPrefill?.bolNumber}
+        initialRotationNumber={semPrefill?.rotationNumber}
+        initialCargoCode={semPrefill?.cargoCode}
+        onBack={onBack}
+        onBackToListing={() => { setSemView('list'); setSemPrefill(null); setSemRequestKind('new'); }}
+      />
     );
   }
   if (activeMenu === 'seaExportManifest' && semView === 'upload' && semSelectedRow) {
@@ -564,7 +597,15 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
               <span className="text-[#dc3545] text-[15px] leading-none">/</span>
               <span className="text-[#8f94ae] text-[16px]" style={{ fontFamily: font }}>Service Catalog</span>
               <span className="text-[#dc3545] text-[15px] leading-none">/</span>
-              {viewRow ? (
+              {fileDetailsRow ? (
+                <>
+                  <span className="text-[#8f94ae] text-[16px] cursor-pointer hover:text-[#1360d2] transition-colors" style={{ fontFamily: font }} onClick={() => setFileDetailsRow(null)}>
+                    {SIDEBAR_ITEMS.find(s => s.key === activeMenu)?.label}
+                  </span>
+                  <span className="text-[#dc3545] text-[15px] leading-none">/</span>
+                  <span className="text-[#111838] text-[16px] font-medium" style={{ fontFamily: font }}>File Details</span>
+                </>
+              ) : viewRow ? (
                 <>
                   <span className="text-[#8f94ae] text-[16px] cursor-pointer hover:text-[#1360d2] transition-colors" style={{ fontFamily: font }} onClick={() => setViewRow(null)}>
                     {SIDEBAR_ITEMS.find(s => s.key === activeMenu)?.label}
@@ -581,7 +622,65 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
             </div>
           </div>
 
-          {viewRow ? (
+          {fileDetailsRow ? (
+            /* ─── File Details — File Details card + List of BOL table, matching the Figma "Track Upload" detail reference ─── */
+            <>
+              <h1 className="text-[28px] font-bold text-[#0e1b3d] mb-[16px] flex-shrink-0" style={{ fontFamily: font }}>File Details</h1>
+
+              <div className="bg-white rounded-[8px] p-[24px] mb-[20px] flex-shrink-0" style={{ boxShadow: '0px 5px 32px 0px rgba(143,155,186,0.16)' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px 20px' }}>
+                  <Field label="File Name" value={str(fileDetailsRow.fileName)} />
+                  <Field label="Upload Ref. No." value={str(fileDetailsRow.uploadRefNo)} />
+                  <Field label="Rotation No." value={str(fileDetailsRow.rotationNumber)} />
+                  <Field label="No. of BOLs" value={str(fileDetailsRow.noOfBols)} />
+                  <Field label="No. of Successful BOLs" value={str(fileDetailsRow.noOfSuccessfulBols)} />
+                  <Field label="Upload Date" value={str(fileDetailsRow.uploadDate)} />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-[16px] flex-1">
+                <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>List of BOL</p>
+                <div className="bg-white rounded-[8px] p-[20px] flex-1" style={{ boxShadow: '0px 5px 32px 0px rgba(143,155,186,0.16)' }}>
+                  <p className="text-[15px] text-[#697498] mb-[16px]" style={{ fontFamily: font }}>Total No. of BOLs: <b style={{ color: '#0e1b3d' }}>{bolLines.length}</b></p>
+                  <div className="rounded-[6px] overflow-hidden overflow-x-auto" style={{ border: '1px solid #eef1f6' }}>
+                    <table className="w-full" style={{ fontFamily: font, borderCollapse: 'collapse', minWidth: 760 }}>
+                      <thead>
+                        <tr style={{ background: '#e2ebf9' }}>
+                          {['BOL No.', 'Cargo Code', 'Request ID', 'Status', 'Remarks', 'Action'].map(h => (
+                            <th key={h} className="text-left px-[16px] py-[10px] text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {bolLines.length === 0 ? (
+                          <tr><td colSpan={6} className="text-center py-[28px] text-[15px] text-[#8f94ae]">No BOL records found for this upload.</td></tr>
+                        ) : bolLines.map((line, i) => (
+                          <tr key={i} style={{ borderTop: '1px solid #f0f4ff' }}>
+                            <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{line.bolNo}</td>
+                            <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{line.cargoCode}</td>
+                            <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{line.requestId || '—'}</td>
+                            <td className="px-[16px] py-[10px] text-[15px]" style={{ color: line.status === 'Error' ? '#dc3545' : '#28a745', fontWeight: 500 }}>{line.status}</td>
+                            <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{line.remarks || '—'}</td>
+                            <td className="px-[16px] py-[10px]">
+                              {line.status === 'Success' && (
+                                <button
+                                  onClick={() => { setSemPrefill({ bolNumber: line.bolNo, rotationNumber: str(fileDetailsRow.rotationNumber) }); setSemRequestKind('amend'); setSemMode('manual'); setSemView('new'); setFileDetailsRow(null); }}
+                                  className="text-[15px] text-[#1360d2] hover:underline" style={{ fontWeight: 500, fontFamily: font }}>
+                                  Amend
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <BackToListingBar onBackToListing={() => setFileDetailsRow(null)} />
+            </>
+          ) : viewRow ? (
             /* ─── Detail / View Request page — same template for every listing, only the content changes ─── */
             <>
               <div className="flex items-center gap-[12px] mb-[16px] flex-shrink-0 flex-wrap">
@@ -707,7 +806,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                     </svg>
                   </button>
                   {activeMenu === 'seaExportManifest' && (
-                    <button onClick={() => { setSemMode('upload'); setSemView('new'); }}
+                    <button onClick={() => { setSemMode('upload'); setSemRequestKind('new'); setSemPrefill(null); setSemView('new'); }}
                       className="h-[48px] px-[22px] rounded-[4px] text-[16px] flex-shrink-0 transition-colors"
                       style={{ border: '1px solid #1360d2', color: '#1360d2', background: '#fff', fontFamily: font, fontWeight: 500 }}>
                       Upload BOL's
@@ -716,7 +815,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                   <button onClick={() => {
                       if (activeMenu === 'carrierMovement') setCmView('new');
                       else if (activeMenu === 'flightManifest') setFmView('new');
-                      else if (activeMenu === 'seaExportManifest') { setSemMode('manual'); setSemView('new'); }
+                      else if (activeMenu === 'seaExportManifest') { setSemMode('manual'); setSemRequestKind('new'); setSemPrefill(null); setSemView('new'); }
                       else if (activeMenu === 'houseManifest') setHmView('new');
                       else if (activeMenu === 'deliveryAdvice') setDaView('new');
                       else setShowNewRequest(true);
@@ -854,7 +953,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                                   <span className="text-[15px] font-medium px-[10px] py-[4px] rounded-[4px] whitespace-nowrap" style={{ background: st.bg, color: st.color }}>{uploadedStatus}</span>
                                 </td>
                                 <td style={{ position: 'sticky', right: 0, width: TU_ACTIONS_W, minWidth: TU_ACTIONS_W, padding: '12px', background: '#fff' }}>
-                                  <button type="button" onClick={() => { setAuditHistoryRow(row); }} aria-label="View details"
+                                  <button type="button" onClick={() => { setFileDetailsRow(row); }} aria-label="View file details"
                                     className="size-[32px] inline-flex items-center justify-center rounded-[4px] hover:bg-[#e8f0ff] transition-colors" style={{ border: '1px solid #d5ddfb', color: '#1360d2' }}>
                                     <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 10h12M11 5l5 5-5 5" /></svg>
                                   </button>
@@ -977,7 +1076,14 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                                                 else setShowNewRequest(true); // Amend/Cancel — no design provided yet
                                               } else if (activeMenu === 'seaExportManifest') {
                                                 if (label === 'Upload BOL') { setSemSelectedRow(row); setSemView('upload'); }
-                                                else if (label === 'View Manifest Request') setViewRow(row);
+                                                else if (label === 'View Manifest Request') {
+                                                  setSemPrefill({ bolNumber: str(row.bolNumber), rotationNumber: str(row.rotationNumber), cargoCode: str(row.cargoType) });
+                                                  setSemRequestKind('view'); setSemMode('manual'); setSemView('new');
+                                                }
+                                                else if (label === 'Amend Request') {
+                                                  setSemPrefill({ bolNumber: str(row.bolNumber), rotationNumber: str(row.rotationNumber), cargoCode: str(row.cargoType) });
+                                                  setSemRequestKind('amend'); setSemMode('manual'); setSemView('new');
+                                                }
                                                 else if (label === 'Audit History') setAuditHistoryRow(row);
                                                 else setShowNewRequest(true); // Download Error Report/Cancel — no design provided yet
                                               } else if (label === 'View Request') {

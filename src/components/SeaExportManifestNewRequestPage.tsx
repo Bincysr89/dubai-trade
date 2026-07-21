@@ -255,22 +255,27 @@ const formatSizeKb = (bytes: number) => `${Math.max(0.1, bytes / 1024).toFixed(1
 /* ─── Main page ─────────────────────────────────────────────────── */
 type Step = 'upload' | 'uploadSuccess' | StepKey | 'success';
 
-type Props = { onBack: () => void; onBackToListing: () => void; mode?: 'manual' | 'upload' };
+type Props = {
+  onBack: () => void; onBackToListing: () => void; mode?: 'manual' | 'upload';
+  amend?: boolean; viewOnly?: boolean;
+  initialBolNumber?: string; initialRotationNumber?: string; initialCargoCode?: string;
+};
 
-export default function SeaExportManifestNewRequestPage({ onBack, onBackToListing, mode = 'manual' }: Props) {
+export default function SeaExportManifestNewRequestPage({ onBack, onBackToListing, mode = 'manual', amend, viewOnly, initialBolNumber, initialRotationNumber, initialCargoCode }: Props) {
   const [step, setStep] = useState<Step>(mode === 'upload' ? 'upload' : 'bol');
+  const pageTitle = viewOnly ? 'View Export Manifest' : amend ? 'Amend Export Manifest' : 'New Export Manifest';
 
-  const [rotationNumber, setRotationNumber] = useState('');
+  const [rotationNumber, setRotationNumber] = useState(initialRotationNumber ?? '');
   const [showRotationSearch, setShowRotationSearch] = useState(false);
 
-  const [bolNumber, setBolNumber] = useState('');
+  const [bolNumber, setBolNumber] = useState(initialBolNumber ?? '');
   const [portOfOrigin, setPortOfOrigin] = useState('');
   const [portOfLoading] = useState('AEJEA');
   const [portOfDischarge, setPortOfDischarge] = useState('');
   const [placeOfDelivery, setPlaceOfDelivery] = useState('');
   const [showPortSearch, setShowPortSearch] = useState<'origin' | 'discharge' | 'delivery' | null>(null);
 
-  const [cargoCode, setCargoCode] = useState('');
+  const [cargoCode, setCargoCode] = useState(initialCargoCode ?? '');
   const [packageType, setPackageType] = useState('');
   const [totalPackages, setTotalPackages] = useState('');
   const [grossWeight, setGrossWeight] = useState('');
@@ -458,14 +463,14 @@ export default function SeaExportManifestNewRequestPage({ onBack, onBackToListin
         <div className="flex-shrink-0"><Header onServiceCatalogue={onBack} /></div>
         <Breadcrumb />
         <div className="flex items-center gap-[10px] px-4 sm:px-10 mb-[16px] flex-shrink-0">
-          <h1 className="text-[28px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>New Export Manifest</h1>
+          <h1 className="text-[28px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>{pageTitle}</h1>
         </div>
         <div className="flex-1 overflow-y-auto px-4 sm:px-10 pb-[32px]">
           <div className="bg-white rounded-[8px] flex flex-col items-center gap-[16px] py-[40px] px-[24px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
             <div className="size-[72px] rounded-full flex items-center justify-center" style={{ background: '#d1f5df' }}>
               <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#28a745" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12l6 6L20 6" /></svg>
             </div>
-            <p className="text-[22px]" style={{ color: '#28a745', fontFamily: font, fontWeight: 700 }}>New Export Manifest Submitted Successfully</p>
+            <p className="text-[22px]" style={{ color: '#28a745', fontFamily: font, fontWeight: 700 }}>{amend ? 'Request amended successfully' : `${pageTitle} Submitted Successfully`}</p>
             <div className="rounded-[6px] px-[24px] py-[14px] flex items-center gap-[10px] w-full max-w-[560px]" style={{ background: '#eafaf0', border: '1px solid #c9f0d8' }}>
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#28a745" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0"><path d="M4 12l6 6L20 6" /></svg>
               <p className="text-[15px] text-[#0e1b3d]" style={{ fontFamily: font }}>Bill of Lading <b>{bolNumber || 'BOL101'}</b> has been submitted successfully.</p>
@@ -499,7 +504,7 @@ export default function SeaExportManifestNewRequestPage({ onBack, onBackToListin
       <div className="flex-shrink-0"><Header onServiceCatalogue={onBack} /></div>
       <Breadcrumb />
       <div className="flex items-center gap-[10px] px-4 sm:px-10 mb-[16px] flex-shrink-0">
-        <h1 className="text-[28px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>New Export Manifest</h1>
+        <h1 className="text-[28px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>{pageTitle}</h1>
         <button className="flex items-center gap-[6px] text-[16px] text-[#1360d2]" style={{ fontFamily: font }}>
           Need Help
           <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#1360d2" strokeWidth="1.7"><circle cx="10" cy="10" r="7.5" /><path d="M10 14v-1" strokeLinecap="round" /><path d="M10 7c0-1.1.9-2 2-2" strokeLinecap="round" /></svg>
@@ -507,6 +512,7 @@ export default function SeaExportManifestNewRequestPage({ onBack, onBackToListin
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 pb-[32px] flex flex-col gap-[20px]">
+        <fieldset disabled={viewOnly} style={{ border: 'none', padding: 0, margin: 0, display: 'contents' }}>
         <Stepper step={stepKey} />
 
         {stepKey !== 'bol' && (
@@ -524,33 +530,33 @@ export default function SeaExportManifestNewRequestPage({ onBack, onBackToListin
             <div className="flex flex-col gap-[16px]">
               <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>Bill of Lading Header</p>
               <div className="bg-white rounded-[8px] p-[24px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-                <FInput label="Rotation Number" value={rotationNumber} onChange={setRotationNumber} req placeholder="Enter or search rotation number"
+                <FInput label="Rotation Number" value={rotationNumber} onChange={setRotationNumber} req placeholder="Enter or search rotation number" disabled={viewOnly}
                   trailing={() => setShowRotationSearch(true)} />
-                <FInput label="BOL Number" value={bolNumber} onChange={setBolNumber} req placeholder="e.g. BOL101" />
+                <FInput label="BOL Number" value={bolNumber} onChange={setBolNumber} req placeholder="e.g. BOL101" disabled={viewOnly} />
               </div>
             </div>
             <div className="flex flex-col gap-[16px]">
               <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>Location Details</p>
               <div className="bg-white rounded-[8px] p-[24px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-                <FInput label="Port Of Origin" value={portOfOrigin} onChange={setPortOfOrigin} req trailing={() => setShowPortSearch('origin')} placeholder="Search port" />
+                <FInput label="Port Of Origin" value={portOfOrigin} onChange={setPortOfOrigin} req trailing={() => setShowPortSearch('origin')} placeholder="Search port" disabled={viewOnly} />
                 <FInput label="Port Of Loading" value={portOfLoading} onChange={() => {}} disabled />
-                <FInput label="Port Of Discharge" value={portOfDischarge} onChange={setPortOfDischarge} req trailing={() => setShowPortSearch('discharge')} placeholder="Search port" />
-                <FInput label="Place Of Delivery" value={placeOfDelivery} onChange={setPlaceOfDelivery} trailing={() => setShowPortSearch('delivery')} placeholder="Search place" />
+                <FInput label="Port Of Discharge" value={portOfDischarge} onChange={setPortOfDischarge} req trailing={() => setShowPortSearch('discharge')} placeholder="Search port" disabled={viewOnly} />
+                <FInput label="Place Of Delivery" value={placeOfDelivery} onChange={setPlaceOfDelivery} trailing={() => setShowPortSearch('delivery')} placeholder="Search place" disabled={viewOnly} />
               </div>
             </div>
             <div className="flex flex-col gap-[16px]">
               <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>Cargo Details</p>
               <div className="bg-white rounded-[8px] p-[24px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-                <FSelect label="Cargo Code" value={cargoCode} onChange={setCargoCode} req options={CARGO_TYPES} />
+                <FSelect label="Cargo Code" value={cargoCode} onChange={setCargoCode} req options={CARGO_TYPES} disabled={viewOnly} />
                 <FInput label="Trade Code" value="Export" onChange={() => {}} disabled />
-                <FInput label="Package Type" value={packageType} onChange={setPackageType} req trailing={() => setShowPackageSearch(true)} placeholder="Search package type" />
-                <FInput label="Total Number Of Packages" value={totalPackages} onChange={setTotalPackages} req placeholder="Enter total" />
-                <FInput label="Gross Weight (in KG)" value={grossWeight} onChange={setGrossWeight} req placeholder="e.g. 1200" />
-                <FInput label="Cargo Weight (in KG)" value={cargoWeight} onChange={setCargoWeight} placeholder="e.g. 1150" />
-                <FInput label="Cargo Volume (in CBM)" value={cargoVolume} onChange={setCargoVolume} placeholder="e.g. 24.5" />
-                <FSelect label="INCO Terms" value={incoTerms} onChange={setIncoTerms} options={INCO_TERMS} />
-                <FInput label="Marks & Number" value={marksNumber} onChange={setMarksNumber} placeholder="Enter marks and number" />
-                <FInput label="Remarks" value={remarks} onChange={setRemarks} placeholder="Enter remarks" />
+                <FInput label="Package Type" value={packageType} onChange={setPackageType} req trailing={() => setShowPackageSearch(true)} placeholder="Search package type" disabled={viewOnly} />
+                <FInput label="Total Number Of Packages" value={totalPackages} onChange={setTotalPackages} req placeholder="Enter total" disabled={viewOnly} />
+                <FInput label="Gross Weight (in KG)" value={grossWeight} onChange={setGrossWeight} req placeholder="e.g. 1200" disabled={viewOnly} />
+                <FInput label="Cargo Weight (in KG)" value={cargoWeight} onChange={setCargoWeight} placeholder="e.g. 1150" disabled={viewOnly} />
+                <FInput label="Cargo Volume (in CBM)" value={cargoVolume} onChange={setCargoVolume} placeholder="e.g. 24.5" disabled={viewOnly} />
+                <FSelect label="INCO Terms" value={incoTerms} onChange={setIncoTerms} options={INCO_TERMS} disabled={viewOnly} />
+                <FInput label="Marks & Number" value={marksNumber} onChange={setMarksNumber} placeholder="Enter marks and number" disabled={viewOnly} />
+                <FInput label="Remarks" value={remarks} onChange={setRemarks} placeholder="Enter remarks" disabled={viewOnly} />
               </div>
             </div>
           </>
@@ -558,6 +564,7 @@ export default function SeaExportManifestNewRequestPage({ onBack, onBackToListin
 
         {stepKey === 'consignment' && (
           <>
+            {!viewOnly && (
             <div className="flex flex-col gap-[16px]">
               <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>Add Consignment</p>
               <div className="bg-white rounded-[8px] p-[24px] flex flex-col gap-[16px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
@@ -596,6 +603,7 @@ export default function SeaExportManifestNewRequestPage({ onBack, onBackToListin
                 </div>
               </div>
             </div>
+            )}
 
             <div className="flex flex-col gap-[16px]">
               <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>List of Consignments</p>
@@ -621,6 +629,7 @@ export default function SeaExportManifestNewRequestPage({ onBack, onBackToListin
                           <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{c.weight || '—'}</td>
                           <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{c.cargoDesc || '—'}</td>
                           <td className="px-[16px] py-[10px]">
+                            {!viewOnly && (
                             <div className="flex items-center gap-[12px]">
                               <button onClick={() => editConsignment(c)} className="text-[#1360d2] hover:opacity-70">
                                 <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9" strokeLinecap="round" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -629,6 +638,7 @@ export default function SeaExportManifestNewRequestPage({ onBack, onBackToListin
                                 <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" strokeLinecap="round" strokeLinejoin="round" /></svg>
                               </button>
                             </div>
+                            )}
                           </td>
                         </tr>
                       ))}
@@ -642,6 +652,7 @@ export default function SeaExportManifestNewRequestPage({ onBack, onBackToListin
 
         {stepKey === 'container' && (
           <>
+            {!viewOnly && (
             <div className="flex flex-col gap-[16px]">
               <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>Add Container</p>
               <div className="bg-white rounded-[8px] p-[24px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
@@ -657,6 +668,7 @@ export default function SeaExportManifestNewRequestPage({ onBack, onBackToListin
                 </div>
               </div>
             </div>
+            )}
             <div className="flex flex-col gap-[16px]">
               <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>List of Containers</p>
               <div className="bg-white rounded-[8px] p-[20px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
@@ -680,6 +692,7 @@ export default function SeaExportManifestNewRequestPage({ onBack, onBackToListin
                           <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{c.tareWeight}</td>
                           <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{c.sealNumber || '—'}</td>
                           <td className="px-[16px] py-[10px]">
+                            {!viewOnly && (
                             <div className="flex items-center gap-[12px]">
                               <button onClick={() => editContainer(c)} className="text-[#1360d2] hover:opacity-70">
                                 <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9" strokeLinecap="round" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -688,6 +701,7 @@ export default function SeaExportManifestNewRequestPage({ onBack, onBackToListin
                                 <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" strokeLinecap="round" strokeLinejoin="round" /></svg>
                               </button>
                             </div>
+                            )}
                           </td>
                         </tr>
                       ))}
@@ -704,32 +718,33 @@ export default function SeaExportManifestNewRequestPage({ onBack, onBackToListin
             <div className="flex flex-col gap-[16px]">
               <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>Shipper Address</p>
               <div className="bg-white rounded-[8px] p-[24px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-                <FInput label="Shipper Name" value={shipperName} onChange={setShipperName} req placeholder="Enter shipper name" />
+                <FInput label="Shipper Name" value={shipperName} onChange={setShipperName} req placeholder="Enter shipper name" disabled={viewOnly} />
                 <div className="lg:col-span-3">
-                  <FInput label="Shipper Address" value={shipperAddress} onChange={setShipperAddress} req placeholder="Enter shipper address" />
+                  <FInput label="Shipper Address" value={shipperAddress} onChange={setShipperAddress} req placeholder="Enter shipper address" disabled={viewOnly} />
                 </div>
               </div>
             </div>
             <div className="flex flex-col gap-[16px]">
               <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>Consignee Address</p>
               <div className="bg-white rounded-[8px] p-[24px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-                <FInput label="Consignee Name" value={consigneeName} onChange={setConsigneeName} req placeholder="Enter consignee name" />
+                <FInput label="Consignee Name" value={consigneeName} onChange={setConsigneeName} req placeholder="Enter consignee name" disabled={viewOnly} />
                 <div className="lg:col-span-3">
-                  <FInput label="Consignee Address" value={consigneeAddress} onChange={setConsigneeAddress} req placeholder="Enter consignee address" />
+                  <FInput label="Consignee Address" value={consigneeAddress} onChange={setConsigneeAddress} req placeholder="Enter consignee address" disabled={viewOnly} />
                 </div>
               </div>
             </div>
             <div className="flex flex-col gap-[16px]">
               <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>Notify Party 1 Address</p>
               <div className="bg-white rounded-[8px] p-[24px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-                <FInput label="Notify Party 1 Name" value={notifyPartyName} onChange={setNotifyPartyName} placeholder="Enter notify party name" />
+                <FInput label="Notify Party 1 Name" value={notifyPartyName} onChange={setNotifyPartyName} placeholder="Enter notify party name" disabled={viewOnly} />
                 <div className="lg:col-span-3">
-                  <FInput label="Notify Party 1 Address" value={notifyPartyAddress} onChange={setNotifyPartyAddress} placeholder="Enter notify party address" />
+                  <FInput label="Notify Party 1 Address" value={notifyPartyAddress} onChange={setNotifyPartyAddress} placeholder="Enter notify party address" disabled={viewOnly} />
                 </div>
               </div>
             </div>
           </>
         )}
+        </fieldset>
       </div>
 
       <BackToListingBar
@@ -737,9 +752,11 @@ export default function SeaExportManifestNewRequestPage({ onBack, onBackToListin
         onBackToListing={stepKey === 'bol' ? onBackToListing : undefined}
         rightContent={
           stepKey === 'address' ? (
-            <button onClick={() => setStep('success')} className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors" style={{ background: '#1360d2', fontFamily: font, fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
-              Submit
-            </button>
+            viewOnly ? null : (
+              <button onClick={() => setStep('success')} className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors" style={{ background: '#1360d2', fontFamily: font, fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
+                Submit
+              </button>
+            )
           ) : (
             <button
               onClick={() => setStep(STEP_KEYS[STEP_KEYS.indexOf(stepKey) + 1])}
