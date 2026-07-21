@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import SaveExitModal from './SaveExitModal';
 import BackToListingBar from './BackToListingBar';
 import ClaimStepper, { NR_CLAIM_STEPS } from './ClaimStepper';
@@ -214,6 +214,9 @@ export default function NonRemittanceDocumentsPage({ rows, onBack, onContinue, o
   const updateDocs = (fn: (prev: UploadedDoc[]) => UploadedDoc[]) => {
     setUploadedDocs(prev => { const next = fn(prev); onUploadedDocsChange?.(next); return next; });
   };
+  // Pre-seeded docs (amend flow) start in local state only — sync them up once so the
+  // parent's uploadedDocs (used by the Review step) knows about them without a user action.
+  useEffect(() => { if (initialDocs && initialDocs.length > 0) onUploadedDocsChange?.(initialDocs); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [dragging, setDragging] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
