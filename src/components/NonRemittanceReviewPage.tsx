@@ -42,7 +42,12 @@ const OB_FIELDS: { label: string; get: (ob: OutboundDetail) => string }[] = [
 /* Declaration + Outbound Details — read-only accordion, mirrors RDChargeFlowPage's DeclRow cards
    but with no editable fields, add buttons, or dropdowns; used only to review what was entered. */
 function DeclarationOutboundReview({ chargeDetails, outbounds }: { chargeDetails: ChargeDetail[]; outbounds?: OutboundState }) {
-  const [openDecl, setOpenDecl] = useState<Set<string>>(new Set());
+  /* Accordion — the first declaration that actually has outbound records opens by
+     default, so the table is visible without a click in the common single-declaration case. */
+  const [openDecl, setOpenDecl] = useState<Set<string>>(() => {
+    const firstWithObs = chargeDetails.find(d => needsOutbound(d.refundType) && outboundsForDeclaration(outbounds, d.declarationNo).length > 0);
+    return new Set(firstWithObs ? [firstWithObs.declarationNo] : []);
+  });
   const toggle = (declNo: string) => setOpenDecl(prev => {
     const next = new Set(prev);
     if (next.has(declNo)) next.delete(declNo); else next.add(declNo);
@@ -84,10 +89,15 @@ function DeclarationOutboundReview({ chargeDetails, outbounds }: { chargeDetails
                 </div>
               </div>
               {expandable && (
-                <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#697498" strokeWidth="2"
-                  style={{ transition: 'transform 0.15s', transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', flexShrink: 0 }}>
-                  <path d="M5 8l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <div className="flex items-center gap-[10px] flex-shrink-0">
+                  <span className="text-[14px] px-[10px] py-[2px] rounded-[12px]" style={{ background: 'rgba(19,96,210,0.10)', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                    {obList.length} outbound declaration{obList.length !== 1 ? 's' : ''}
+                  </span>
+                  <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#697498" strokeWidth="2"
+                    style={{ transition: 'transform 0.15s', transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', flexShrink: 0 }}>
+                    <path d="M5 8l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
               )}
             </div>
           );
