@@ -964,7 +964,7 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
   return (
     <div className="bg-white rounded-[8px] transition-colors"
       style={{ boxShadow: invOpen ? '0px 5px 32px rgba(19,96,210,0.18)' : '0px 5px 32px rgba(143,155,186,0.16)',
-        border: `1.5px solid ${invOpen ? '#1360d2' : 'transparent'}` }}>
+        border: `1.5px solid ${invOpen ? '#1360d2' : 'transparent'}`, minWidth: 0 }}>
       {/* Main data row */}
       <div style={{ display: 'grid', gridTemplateColumns: COLS, minWidth: TBL_MIN,
         padding: '14px 16px', alignItems: 'center', gap: 0 }}>
