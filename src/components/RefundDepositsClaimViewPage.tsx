@@ -299,6 +299,66 @@ function DeclarationCard({ d, idx, open, onToggle, onViewOb }: {
   );
 }
 
+/* ─── Uploaded Documents — one accordion card per declaration, each holding a
+       simple File Name / Download table (mirrors the Declaration Details accordion above). ─── */
+function DocDeclarationCard({ declNo, docs, open, onToggle }: {
+  declNo: string; docs: { id: string; fileName: string }[]; open: boolean; onToggle: () => void;
+}) {
+  return (
+    <div style={{ borderTop: '1px solid #eef1f6' }}>
+      <button type="button" onClick={onToggle}
+        className="w-full flex items-center gap-[10px] px-[20px] py-[14px] text-left transition-colors hover:bg-[#f8fafd]"
+        style={{ border: 'none', background: open ? '#e2ebf9' : 'transparent', cursor: 'pointer', fontFamily: font }}>
+        <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="#697498" strokeWidth="2.2" strokeLinecap="round"
+          style={{ transition: 'transform 0.15s', transform: open ? 'rotate(90deg)' : 'rotate(0deg)', flexShrink: 0 }}>
+          <path d="M5 3l4 4-4 4" />
+        </svg>
+        <span className="text-[16px] text-[#1360d2]" style={{ fontWeight: 500, fontFamily: font }}>Declaration No. {declNo}</span>
+        <span className="text-[14px] px-[10px] py-[3px] rounded-[12px]" style={{ background: open ? '#fff' : '#e2ebf9', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: font }}>
+          {docs.length} file{docs.length !== 1 ? 's' : ''}
+        </span>
+        <span className="text-[14px] text-[#697498] ml-auto" style={{ fontFamily: font, flexShrink: 0 }}>{open ? 'Collapse' : 'Expand'}</span>
+      </button>
+      {open && (
+        <div className="px-[20px] pb-[16px] pt-[4px]" style={{ borderTop: '1px solid #f5f7fc' }}>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontFamily: font, minWidth: 400 }}>
+              <thead>
+                <tr>
+                  {['File Name', 'Action'].map(h => (
+                    <th key={h} style={{ background: '#a6c2e9', padding: '10px 14px', textAlign: 'left', borderBottom: '1px solid #e8edf5', whiteSpace: 'nowrap' }}>
+                      <span className="text-[16px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>{h}</span>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {docs.map(doc => (
+                  <tr key={doc.id} style={{ borderBottom: '1px solid #f0f3fa' }}>
+                    <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{doc.fileName}</span></td>
+                    <td style={{ padding: '10px 14px' }}>
+                      <button
+                        title="Download"
+                        onClick={() => { const a = document.createElement('a'); a.href = '#'; a.download = doc.fileName; a.click(); }}
+                        className="inline-flex items-center justify-center w-[34px] h-[34px] rounded-[4px] hover:bg-[#e8f0ff] transition-colors"
+                        style={{ border: '1px solid #d5ddfb', color: '#1360d2' }}
+                      >
+                        <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M10 3v10M6 9l4 4 4-4" /><path d="M4 16h12" />
+                        </svg>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 type Props = {
   onBack: () => void;
   claimType?: string;
@@ -327,6 +387,24 @@ export default function RefundDepositsClaimViewPage({
     return next;
   });
   const [viewOb, setViewOb] = useState<OutboundEntry[] | null>(null);
+
+  // Uploaded Documents — grouped by declaration, first group open by default.
+  const docsByDecl = useMemo(() => {
+    const groups = new Map<string, typeof defaultDocs>();
+    defaultDocs.forEach(doc => {
+      const list = groups.get(doc.declNo) ?? [];
+      list.push(doc);
+      groups.set(doc.declNo, list);
+    });
+    return groups;
+  }, [defaultDocs]);
+  const docDeclNos = Array.from(docsByDecl.keys());
+  const [openDocDecl, setOpenDocDecl] = useState<Set<string>>(() => new Set(docDeclNos.slice(0, 1)));
+  const toggleDocDecl = (declNo: string) => setOpenDocDecl(prev => {
+    const next = new Set(prev);
+    next.has(declNo) ? next.delete(declNo) : next.add(declNo);
+    return next;
+  });
 
   return (
     <div className="flex flex-col h-full bg-[#f8fafd]">
@@ -413,44 +491,13 @@ export default function RefundDepositsClaimViewPage({
             </div>
           </Section>
 
-          {/* Uploaded Documents */}
-          <Section title="Uploaded Documents">
-            <div className="px-[16px] py-[12px] overflow-x-auto">
-              <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontFamily: font, minWidth: 700 }}>
-                <thead>
-                  <tr>
-                    {['S.No', 'Declaration No.', 'Document Type', 'File Name', 'Uploaded On', 'Remarks', 'Action'].map(h => (
-                      <th key={h} style={{ background: '#a6c2e9', padding: '10px 14px', textAlign: 'left', borderBottom: '1px solid #e8edf5', whiteSpace: 'nowrap' }}>
-                        <span className="text-[16px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>{h}</span>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {defaultDocs.map((doc, i) => (
-                    <tr key={doc.id} style={{ borderBottom: '1px solid #f0f3fa' }}>
-                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{i + 1}</span></td>
-                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#1360d2', fontFamily: font, fontWeight: 500 }}>{doc.declNo}</span></td>
-                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{doc.docType}</span></td>
-                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{doc.fileName}</span></td>
-                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{doc.uploadedOn}</span></td>
-                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#697498', fontFamily: font }}>{doc.remarks || '—'}</span></td>
-                      <td style={{ padding: '10px 14px' }}>
-                        <button
-                          title="Download"
-                          onClick={() => { const a = document.createElement('a'); a.href = '#'; a.download = doc.fileName; a.click(); }}
-                          className="inline-flex items-center justify-center w-[34px] h-[34px] rounded-[4px] hover:bg-[#e8f0ff] transition-colors"
-                          style={{ border: '1px solid #d5ddfb', color: '#1360d2' }}
-                        >
-                          <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M10 3v10M6 9l4 4 4-4" /><path d="M4 16h12" />
-                          </svg>
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          {/* Uploaded Documents — one accordion per declaration, first one open by default */}
+          <Section title="Uploaded Documents" badge={`${docDeclNos.length} declaration${docDeclNos.length !== 1 ? 's' : ''}`}>
+            <div className="flex flex-col">
+              {docDeclNos.map(declNo => (
+                <DocDeclarationCard key={declNo} declNo={declNo} docs={docsByDecl.get(declNo) ?? []}
+                  open={openDocDecl.has(declNo)} onToggle={() => toggleDocDecl(declNo)} />
+              ))}
             </div>
           </Section>
 
