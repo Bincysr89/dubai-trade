@@ -777,8 +777,8 @@ function UnitPriceModal({ ctx, existing, currency, onSave, onClose }: {
 /* ─── HS Code row in invoice table ──────────────────────────────── */
 function HSRow({ hs, inv, declNo, rt, obs, edit, onPatchHs, onAdd, onEdit, onViewOb, onOpenUnitPriceModal }: {
   hs: HSCodeEntry; inv: InvoiceEntry; declNo: string; rt: RefundType; obs: OutboundState;
-  edit: { allocationMethod?: string; currency?: string; unitPriceDetails?: UnitPriceDetail[] };
-  onPatchHs: (hsId: string, patch: { allocationMethod?: string; currency?: string; unitPriceDetails?: UnitPriceDetail[] }) => void;
+  edit: { allocationMethod?: string; currency?: string; unitPrice?: string; unitPriceDetails?: UnitPriceDetail[] };
+  onPatchHs: (hsId: string, patch: { allocationMethod?: string; currency?: string; unitPrice?: string; unitPriceDetails?: UnitPriceDetail[] }) => void;
   onAdd: (ctx: DrawerCtx, hsIds: string[]) => void;
   onEdit: (ctx: DrawerCtx, ob: OutboundDetail) => void;
   onOpenUnitPriceModal: (ctx: UnitPriceModalCtx & { currency: string }) => void;
@@ -858,6 +858,7 @@ function HSRow({ hs, inv, declNo, rt, obs, edit, onPatchHs, onAdd, onEdit, onVie
       {rt === 'partial' && (() => {
         const unitPriceDetails = edit.unitPriceDetails ?? [];
         const currency = edit.currency ?? hs.currency;
+        const unitPrice = edit.unitPrice ?? hs.unitPrice;
         return (
           <>
             <td style={{ minWidth: 120 }}>
@@ -881,15 +882,20 @@ function HSRow({ hs, inv, declNo, rt, obs, edit, onPatchHs, onAdd, onEdit, onVie
                     </>
                   )}
                 </button>
+              ) : alloc === 'single' ? (
+                <input type="number" min={0} value={unitPrice}
+                  onChange={e => onPatchHs(hs.id, { unitPrice: e.target.value })}
+                  className="w-full bg-white rounded-[4px] text-[16px]"
+                  style={{ height: 44, border: '1px solid #d5ddfb', padding: '0 10px', minWidth: 130, fontFamily: font, color: '#0e1b3d', outline: 'none' }} />
               ) : (
                 <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>{hs.unitPrice}</span>
               )}
             </td>
             <td style={{ minWidth: 110 }}>
-              {alloc === 'multiple' ? (
+              {alloc === 'single' ? (
                 <InlineSelect value={currency} onChange={v => onPatchHs(hs.id, { currency: v })} options={CURRENCY_OPTIONS} placeholder="Currency" />
               ) : (
-                <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>{hs.currency}</span>
+                <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>{currency}</span>
               )}
             </td>
           </>
@@ -924,8 +930,8 @@ function HSRow({ hs, inv, declNo, rt, obs, edit, onPatchHs, onAdd, onEdit, onVie
 /* ─── Declaration row card ──────────────────────────────────────── */
 function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount, onToggleInv, onAdd, onEdit, onViewOb, onDelete, onOpenUnitPriceModal }: {
   d: ChargeDetail; idx: number; obs: OutboundState; invOpen: boolean;
-  hsEdits: Record<string, { allocationMethod?: string; currency?: string; unitPriceDetails?: UnitPriceDetail[] }>;
-  onPatchHs: (hsId: string, patch: { allocationMethod?: string; currency?: string; unitPriceDetails?: UnitPriceDetail[] }) => void;
+  hsEdits: Record<string, { allocationMethod?: string; currency?: string; unitPrice?: string; unitPriceDetails?: UnitPriceDetail[] }>;
+  onPatchHs: (hsId: string, patch: { allocationMethod?: string; currency?: string; unitPrice?: string; unitPriceDetails?: UnitPriceDetail[] }) => void;
   onRefund: (i: number, rt: RefundType) => void;
   onAmount: (i: number, v: string) => void;
   onToggleInv: (i: number) => void;
@@ -1126,7 +1132,7 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
                       {d.refundType === 'partial' && (
                         <>
                           <th className="text-[16px]">Allocation Method</th>
-                          <th className="text-[16px]" style={{ textAlign: 'right' }}>Unit Price</th>
+                          <th className="text-[16px]">Unit Price</th>
                           <th className="text-[16px]">Currency</th>
                         </>
                       )}
@@ -1204,14 +1210,14 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
   const prefilled = prefill ? buildPrefill() : { obs0: {}, hs0: {} };
   const [obs,       setObs]       = useState<OutboundState>(prefilled.obs0);
   const [invOpen,   setInvOpen]   = useState<Record<number, boolean>>({});
-  const [hsEdits,   setHsEdits]   = useState<Record<string, { allocationMethod?: string; currency?: string; unitPriceDetails?: UnitPriceDetail[] }>>(prefilled.hs0);
+  const [hsEdits,   setHsEdits]   = useState<Record<string, { allocationMethod?: string; currency?: string; unitPrice?: string; unitPriceDetails?: UnitPriceDetail[] }>>(prefilled.hs0);
   const [modal,     setModal]     = useState<{ ctx: DrawerCtx; hsIds: string[]; onApplied?: () => void; existing?: OutboundDetail } | null>(null);
   const [viewOb,    setViewOb]    = useState<{ ctx: DrawerCtx; obs: OutboundDetail[] } | null>(null);
   const [deleteOb,  setDeleteOb]  = useState<{ ctx: DrawerCtx; ob: OutboundDetail } | null>(null);
   const [unitPriceModal, setUnitPriceModal] = useState<(UnitPriceModalCtx & { currency: string }) | null>(null);
   const [saveModal, setSaveModal] = useState(false);
 
-  const patchHs = (hsId: string, patch: { allocationMethod?: string; currency?: string; unitPriceDetails?: UnitPriceDetail[] }) =>
+  const patchHs = (hsId: string, patch: { allocationMethod?: string; currency?: string; unitPrice?: string; unitPriceDetails?: UnitPriceDetail[] }) =>
     setHsEdits(p => ({ ...p, [hsId]: { ...p[hsId], ...patch } }));
 
   const patchRefund = (i: number, rt: RefundType) => {
