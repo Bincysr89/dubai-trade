@@ -42,10 +42,11 @@ const OB_FIELDS: { label: string; get: (ob: OutboundDetail) => string }[] = [
 /* Declaration + Outbound Details — read-only accordion, mirrors RDChargeFlowPage's DeclRow cards
    but with no editable fields, add buttons, or dropdowns; used only to review what was entered. */
 function DeclarationOutboundReview({ chargeDetails, outbounds }: { chargeDetails: ChargeDetail[]; outbounds?: OutboundState }) {
-  /* Accordion — the first declaration that actually has outbound records opens by
-     default, so the table is visible without a click in the common single-declaration case. */
+  /* Accordion — the first declaration whose refund type requires outbound opens by
+     default (even with zero records added), so the section is visible without a click
+     in the common single-declaration case. */
   const [openDecl, setOpenDecl] = useState<Set<string>>(() => {
-    const firstWithObs = chargeDetails.find(d => needsOutbound(d.refundType) && outboundsForDeclaration(outbounds, d.declarationNo).length > 0);
+    const firstWithObs = chargeDetails.find(d => needsOutbound(d.refundType));
     return new Set(firstWithObs ? [firstWithObs.declarationNo] : []);
   });
   const toggle = (declNo: string) => setOpenDecl(prev => {
@@ -62,7 +63,7 @@ function DeclarationOutboundReview({ chargeDetails, outbounds }: { chargeDetails
       <div className="flex flex-col gap-[10px] px-[24px] py-[16px]">
         {chargeDetails.map(d => {
           const obList = needsOutbound(d.refundType) ? outboundsForDeclaration(outbounds, d.declarationNo) : [];
-          const expandable = obList.length > 0;
+          const expandable = needsOutbound(d.refundType);
           const isOpen = expandable && openDecl.has(d.declarationNo);
           const Header = (
             <div className="flex flex-wrap items-center justify-between gap-[16px] px-[16px] py-[14px] rounded-[6px]" style={{ background: '#f8fafd', border: '1px solid #eef1f6' }}>
@@ -107,6 +108,11 @@ function DeclarationOutboundReview({ chargeDetails, outbounds }: { chargeDetails
                 <button type="button" onClick={() => toggle(d.declarationNo)} className="w-full text-left">{Header}</button>
               ) : Header}
               {isOpen && (
+                obList.length === 0 ? (
+                  <div className="mt-[8px] border border-[#eef1f6] rounded-[8px] px-[16px] py-[20px] text-center">
+                    <span className="text-[15px]" style={{ color: '#697498' }}>No outbound declarations added for this declaration.</span>
+                  </div>
+                ) : (
                 <div className="mt-[8px] border border-[#eef1f6] rounded-[8px] overflow-x-auto">
                   <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 900, fontFamily: font }}>
                     <thead>
@@ -127,6 +133,7 @@ function DeclarationOutboundReview({ chargeDetails, outbounds }: { chargeDetails
                     </tbody>
                   </table>
                 </div>
+                )
               )}
             </div>
           );
