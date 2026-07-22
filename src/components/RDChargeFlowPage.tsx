@@ -892,11 +892,7 @@ function HSRow({ hs, inv, declNo, rt, obs, edit, onPatchHs, onAdd, onEdit, onVie
               )}
             </td>
             <td style={{ minWidth: 110 }}>
-              {alloc === 'single' ? (
-                <InlineSelect value={currency} onChange={v => onPatchHs(hs.id, { currency: v })} options={CURRENCY_OPTIONS} placeholder="Currency" />
-              ) : (
-                <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>{currency}</span>
-              )}
+              <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>{currency}</span>
             </td>
           </>
         );
