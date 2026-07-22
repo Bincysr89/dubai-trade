@@ -302,7 +302,7 @@ function DeclarationCard({ d, idx, open, onToggle, onViewOb }: {
 /* ─── Uploaded Documents — one accordion card per declaration, each holding a
        simple File Name / Download table (mirrors the Declaration Details accordion above). ─── */
 function DocDeclarationCard({ declNo, docs, open, onToggle }: {
-  declNo: string; docs: { id: string; fileName: string }[]; open: boolean; onToggle: () => void;
+  declNo: string; docs: { id: string; docType: string; fileName: string; uploadedOn: string; remarks: string }[]; open: boolean; onToggle: () => void;
 }) {
   return (
     <div style={{ borderTop: '1px solid #eef1f6' }}>
@@ -322,10 +322,10 @@ function DocDeclarationCard({ declNo, docs, open, onToggle }: {
       {open && (
         <div className="px-[20px] pb-[16px] pt-[4px]" style={{ borderTop: '1px solid #f5f7fc' }}>
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontFamily: font, minWidth: 400 }}>
+            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontFamily: font, minWidth: 700 }}>
               <thead>
                 <tr>
-                  {['File Name', 'Action'].map(h => (
+                  {['Document Type', 'File Name', 'Uploaded On', 'Remarks', 'Action'].map(h => (
                     <th key={h} style={{ background: '#a6c2e9', padding: '10px 14px', textAlign: 'left', borderBottom: '1px solid #e8edf5', whiteSpace: 'nowrap' }}>
                       <span className="text-[16px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>{h}</span>
                     </th>
@@ -335,7 +335,10 @@ function DocDeclarationCard({ declNo, docs, open, onToggle }: {
               <tbody>
                 {docs.map(doc => (
                   <tr key={doc.id} style={{ borderBottom: '1px solid #f0f3fa' }}>
+                    <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{doc.docType}</span></td>
                     <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{doc.fileName}</span></td>
+                    <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{doc.uploadedOn}</span></td>
+                    <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#697498', fontFamily: font }}>{doc.remarks || '—'}</span></td>
                     <td style={{ padding: '10px 14px' }}>
                       <button
                         title="Download"
