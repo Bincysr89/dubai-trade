@@ -38,7 +38,7 @@ const PAY_STATUS: Record<string, { bg: string; color: string }> = {
 /* ── Dummy data ─────────────────────────────────────────────────────────────── */
 const INVOICE_ROWS = [
   { type: 'Case Management Demand Notice',                    number: '70003764',   date: '05-Jun-26', amount: '5,520.00', settled: '0.00',     balance: '5520.00',  status: 'Unpaid',    txNo: '—',     txDate: '—',          source: 'CDR',   payMode: '—'         },
-  { type: 'Case Management Demand Notice',                    number: '70003765',   date: '06-Jun-26', amount: '1,000.00', settled: '1,000.00', balance: '0.00',     status: 'Paid',      txNo: '13133', txDate: '10-06-2026', source: 'SGRCS', payMode: 'E-Payment' },
+  { type: 'Case Management Demand Notice',                    number: '70003765',   date: '06-Jun-26', amount: '1,000.00', settled: '1,000.00', balance: '0.00',     status: 'Paid',      txNo: '13134', txDate: '06-06-2026', source: 'SGRCS', payMode: 'E-Payment' },
   { type: 'CRN SEA Discrepancy Export Manifest Fine Invoice', number: '1000004567', date: '07-Jun-26', amount: '520.00',   settled: '0.00',     balance: '520.00',   status: 'Unpaid',    txNo: '—',     txDate: '—',          source: 'SAS',   payMode: '—'         },
   { type: 'Case Management Demand Notice',                    number: '70003820',   date: '08-Jun-26', amount: '5,490.00', settled: '2,000.00', balance: '3490.00',  status: 'Partially Paid', txNo: '13132', txDate: '10-06-2026', source: 'CDR', payMode: 'Debit A/C' },
   { type: 'Case Management Demand Notice',                    number: '70003819',   date: '08-Jun-26', amount: '1,000.00', settled: '0.00',     balance: '1000.00',  status: 'Initiated', txNo: '13131', txDate: '10-06-2026', source: 'CRNS',  payMode: 'E-Payment' },
@@ -49,6 +49,8 @@ const INVOICE_ROWS = [
 const PAYMENT_ROWS = [
   { type: 'Case Management Demand Notice', txNo: '13136', txDate: '10-06-2026 11:57:00', invoiceNo: '70003787', status: 'Success',   amount: '200.00',   txDateFull: '10-06-2026', degTx: '590000237262582', ePayTx: '20021737', initiatedDate: '10-06-2026 11:58:00', initiatedBy: 'crnuser01', mode: 'Credit Card', payMsg: 'Payment Status Remarks: SUCCESS', colMsg: 'Collection Status Remarks: Transaction has been processed successfully.', details: [{ type: 'Case Management Demand Notice', invoiceNo: '70003786', amount: '5,520.00', receiptNo: 'Z-12645', remarks: 'M1CS 1927055; BPS Transaction for ECM-70003786', status: 'Success' }] },
   { type: 'Multiple Bill Settlement',      txNo: '13133', txDate: '10-06-2026 11:48:00', invoiceNo: '',          status: 'Success',   amount: '5,540.00', txDateFull: '10-06-2026', degTx: '590000237262583', ePayTx: '20021738', initiatedDate: '10-06-2026 11:48:00', initiatedBy: 'crnuser01', mode: 'Credit Card', payMsg: 'Payment Status Remarks: SUCCESS', colMsg: 'Collection Status Remarks: Transaction has been processed successfully.', details: [{ type: 'Case Management Demand Notice', invoiceNo: '70003820', amount: '5,490.00', receiptNo: 'Z-12647', remarks: 'M1CS 1927055; BPS Transaction for ECM-70003820', status: 'Success' }, { type: 'CRN SEA Discrepancy Export Manifest Fine Invoice', invoiceNo: '1000004567', amount: '50.00', receiptNo: 'Z-12648', remarks: 'M1CS 1927055; BPS Transaction for CRN-1000004567', status: 'Success' }] },
+  { type: 'Case Management Demand Notice', txNo: '13134', txDate: '01-06-2026 09:15:00', invoiceNo: '70003765', status: 'Success',   amount: '600.00',   txDateFull: '01-06-2026', degTx: '590000237132370', ePayTx: '20021570', initiatedDate: '01-06-2026 09:14:00', initiatedBy: 'crnuser01', mode: 'E-Payment',    payMsg: 'Payment Status Remarks: SUCCESS', colMsg: 'Collection Status Remarks: Transaction has been processed successfully.', details: [{ type: 'Case Management Demand Notice', invoiceNo: '70003765', amount: '600.00', receiptNo: 'Z-12650', remarks: 'M1CS 1927055; BPS Transaction for ECM-70003765', status: 'Success' }] },
+  { type: 'Case Management Demand Notice', txNo: '13135', txDate: '06-06-2026 10:00:00', invoiceNo: '70003765', status: 'Success',   amount: '400.00',   txDateFull: '06-06-2026', degTx: '590000237132371', ePayTx: '20021571', initiatedDate: '06-06-2026 09:59:00', initiatedBy: 'crnuser01', mode: 'E-Payment',    payMsg: 'Payment Status Remarks: SUCCESS', colMsg: 'Collection Status Remarks: Transaction has been processed successfully.', details: [{ type: 'Case Management Demand Notice', invoiceNo: '70003765', amount: '400.00', receiptNo: 'Z-12651', remarks: 'M1CS 1927055; BPS Transaction for ECM-70003765', status: 'Success' }] },
   { type: 'Case Management Demand Notice', txNo: '13130', txDate: '05-06-2026 09:30:00', invoiceNo: '70003820', status: 'Success',   amount: '800.00',   txDateFull: '05-06-2026', degTx: '590000237132365', ePayTx: '20021568', initiatedDate: '05-06-2026 09:29:00', initiatedBy: 'crnuser01', mode: 'Credit Card', payMsg: 'Payment Status Remarks: SUCCESS', colMsg: 'Collection Status Remarks: Transaction has been processed successfully.', details: [{ type: 'Case Management Demand Notice', invoiceNo: '70003820', amount: '800.00', receiptNo: 'Z-12646', remarks: 'M1CS 1927055; BPS Transaction for ECM-70003820', status: 'Success' }] },
   { type: 'Case Management Demand Notice', txNo: '13132', txDate: '10-06-2026 10:18:00', invoiceNo: '70003820', status: 'Success',   amount: '1,200.00', txDateFull: '10-06-2026', degTx: '590000237262584', ePayTx: '20021739', initiatedDate: '10-06-2026 10:18:00', initiatedBy: 'crnuser01', mode: 'Credit Card', payMsg: 'Payment Status Remarks: SUCCESS', colMsg: 'Collection Status Remarks: Transaction has been processed successfully.', details: [{ type: 'Case Management Demand Notice', invoiceNo: '70003820', amount: '1,200.00', receiptNo: 'Z-12647', remarks: 'M1CS 1927055; BPS Transaction for ECM-70003820', status: 'Success' }] },
   { type: 'Case Management Demand Notice', txNo: '13131', txDate: '10-06-2026 10:11:00', invoiceNo: '70003819', status: 'Success',   amount: '1,000.00', txDateFull: '10-06-2026', degTx: '590000237262585', ePayTx: '20021740', initiatedDate: '10-06-2026 10:11:00', initiatedBy: 'crnuser01', mode: 'Credit Card', payMsg: 'Payment Status Remarks: SUCCESS', colMsg: 'Collection Status Remarks: Transaction has been processed successfully.', details: [{ type: 'Case Management Demand Notice', invoiceNo: '70003819', amount: '1,000.00', receiptNo: 'Z-12648', remarks: 'M1CS 1927055; BPS Transaction for ECM-70003819', status: 'Success' }] },
@@ -692,9 +694,6 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const [payFlyoutReceiptRows, setPayFlyoutReceiptRows] = useState<typeof PAYMENT_ROWS[0]['details']>([]);
   const [showAccDetails, setShowAccDetails]       = useState(false);
   const [accDetailsAccount, setAccDetailsAccount] = useState<typeof ALL_ACCOUNTS[0] | null>(null);
-  const [searchType, setSearchType]         = useState('Invoice Number');
-  const [searchTypeOpen, setSearchTypeOpen] = useState(false);
-  const [searchValue, setSearchValue]       = useState('');
   const [invPage, setInvPage]               = useState(1);
   const [payPage, setPayPage]               = useState(1);
   const PAGE_SIZE = 8;
@@ -733,6 +732,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const [fSource,    setFSource]    = useState('');
   const [fInvType,   setFInvType]   = useState('');
   const [fInvNumber, setFInvNumber] = useState('');
+  const [invTypeOpen, setInvTypeOpen] = useState(false);
+  const invTypeRef = useRef<HTMLDivElement>(null);
   /* Invoices tab defaults to showing Unpaid records; multi-select via checkboxes. */
   const [fStatuses,  setFStatuses]  = useState<Set<string>>(() => new Set(['Unpaid']));
   const [statusOpen, setStatusOpen] = useState(false);
@@ -769,6 +770,15 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
     document.addEventListener('mousedown', h);
     return () => document.removeEventListener('mousedown', h);
   }, [openFlyout]);
+
+  useEffect(() => {
+    if (!invTypeOpen) return;
+    const h = (e: MouseEvent) => {
+      if (invTypeRef.current && !invTypeRef.current.contains(e.target as Node)) setInvTypeOpen(false);
+    };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, [invTypeOpen]);
 
   useEffect(() => {
     if (!accDebitOpen) return;
@@ -984,11 +994,9 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const selectedList = Array.from(selectedRows).map(i => INVOICE_ROWS[i]).filter(Boolean);
   const totalAmt     = selectedList.reduce((s, r) => s + parseFloat(r.balance.replace(',', '')), 0);
 
-  /* Invoices filtering — quick search (Invoice Type/Number), Advance Filters fields, and
+  /* Invoices filtering — Invoice Type/Number (toolbar), Advance Filters fields, and
      multi-select Status (defaults to Unpaid on first load of the Invoices tab). */
   const filteredInv = INVOICE_ROWS.filter(row => {
-    if (searchType === 'Invoice Type' && searchValue && row.type !== searchValue) return false;
-    if (searchType === 'Invoice Number' && searchValue && !row.number.toLowerCase().includes(searchValue.toLowerCase())) return false;
     if (fInvType && row.type !== fInvType) return false;
     if (fInvNumber && !row.number.toLowerCase().includes(fInvNumber.toLowerCase())) return false;
     if (fSource && row.source !== fSource) return false;
@@ -1758,51 +1766,49 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
           </svg>
         </button>
 
-        {/* Quick search */}
-        <div className="flex h-[48px] rounded-[4px] border border-[#d5ddfb] bg-white overflow-hidden relative" style={{ minWidth: 260 }}>
+        {/* Invoice Type filter */}
+        <div className="relative flex-shrink-0" ref={invTypeRef} style={{ width: 220 }}>
           <button
-            type="button"
-            onClick={() => setSearchTypeOpen(o => !o)}
-            className="flex items-center gap-[5px] border-r border-[#d5ddfb] px-[12px] h-full cursor-pointer hover:bg-[#f7faff] transition-colors flex-shrink-0"
+            onClick={() => setInvTypeOpen(o => !o)}
+            className="h-[48px] w-full px-[14px] flex items-center gap-[6px] rounded-[4px] border border-[#d5ddfb] bg-white text-[16px] hover:bg-[#f0f4ff] transition-colors"
+            style={{ fontFamily: font, color: fInvType ? '#1360d2' : '#0e1b3d' }}
           >
-            <span className="text-[16px] text-[#1360d2] font-medium whitespace-nowrap" style={{ fontFamily: font }}>{searchType}</span>
-            <svg viewBox="0 0 20 20" width="13" height="13" fill="none"><path d="M5 8l5 5 5-5" stroke="#0e1b3d" strokeWidth="1.5" strokeLinecap="round" /></svg>
+            <span className="flex-1 text-left truncate">{fInvType || 'Invoice Type'}</span>
+            <svg viewBox="0 0 20 20" width="14" height="14" fill="none" className="flex-shrink-0">
+              <path d="M5 8l5 5 5-5" stroke="#0e1b3d" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
           </button>
-          {searchTypeOpen && (
-            <div className="absolute z-[200] top-[50px] left-0 bg-white shadow-lg rounded border border-[#e0e8f5] w-[170px] py-1">
-              {['Invoice Type', 'Invoice Number'].map(opt => (
-                <button key={opt} className="w-full px-4 py-2 text-left text-[16px] text-[#0e1b3d] hover:bg-[#e2ebf9]" style={{ fontFamily: font }}
-                  onClick={() => { setSearchType(opt); setSearchTypeOpen(false); }}>{opt}</button>
+          {invTypeOpen && (
+            <div className="absolute z-20 top-[52px] left-0 bg-white shadow-lg rounded border border-[#e0e8f5] w-[300px] max-h-[320px] overflow-y-auto py-1">
+              <button onClick={() => { setFInvType(''); setInvTypeOpen(false); }}
+                className="w-full px-4 py-2 text-left text-[16px] hover:bg-[#e2ebf9]"
+                style={{ fontFamily: font, color: fInvType === '' ? '#1360d2' : '#0e1b3d', fontWeight: fInvType === '' ? 500 : 400 }}>
+                All types
+              </button>
+              {INVOICE_TYPES.map(t => (
+                <button key={t} onClick={() => { setFInvType(t); setInvTypeOpen(false); }}
+                  className="w-full px-4 py-2 text-left text-[16px] hover:bg-[#e2ebf9]"
+                  style={{ fontFamily: font, color: t === fInvType ? '#1360d2' : '#0e1b3d', fontWeight: t === fInvType ? 500 : 400 }}>
+                  {t}
+                </button>
               ))}
             </div>
           )}
-          {searchType === 'Invoice Type' ? (
-            <div className="flex items-center px-[12px] gap-[8px] flex-1">
-              <select
-                value={searchValue}
-                onChange={e => setSearchValue(e.target.value)}
-                className="flex-1 text-[16px] text-[#0e1b3d] bg-transparent focus:outline-none min-w-0 border-none appearance-none cursor-pointer"
-                style={{ fontFamily: font }}
-              >
-                <option value="">All types…</option>
-                {INVOICE_TYPES.map(t => <option key={t}>{t}</option>)}
-              </select>
-            </div>
-          ) : (
-            <div className="flex items-center px-[12px] gap-[8px] flex-1">
-              <input
-                type="text"
-                value={searchValue}
-                onChange={e => setSearchValue(e.target.value)}
-                placeholder="Invoice no…"
-                className="flex-1 text-[16px] text-[#0e1b3d] placeholder-[#8f94ae] bg-transparent focus:outline-none min-w-0"
-                style={{ fontFamily: font }}
-              />
-              <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="#8f94ae" strokeWidth="1.8">
-                <circle cx="9" cy="9" r="6" /><path d="M15 15l-3-3" strokeLinecap="round" />
-              </svg>
-            </div>
-          )}
+        </div>
+
+        {/* Invoice Number search */}
+        <div className="flex items-center h-[48px] rounded-[4px] border border-[#d5ddfb] bg-white px-[12px] gap-[8px] flex-shrink-0" style={{ minWidth: 220 }}>
+          <input
+            type="text"
+            value={fInvNumber}
+            onChange={e => setFInvNumber(e.target.value)}
+            placeholder="Invoice number…"
+            className="flex-1 text-[16px] text-[#0e1b3d] placeholder-[#8f94ae] bg-transparent focus:outline-none min-w-0"
+            style={{ fontFamily: font }}
+          />
+          <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="#8f94ae" strokeWidth="1.8">
+            <circle cx="9" cy="9" r="6" /><path d="M15 15l-3-3" strokeLinecap="round" />
+          </svg>
         </div>
 
         {/* Status dropdown — checkboxes so several statuses can be selected at once */}
@@ -1812,7 +1818,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             className="h-[48px] px-[14px] flex items-center gap-[6px] rounded-[4px] border border-[#d5ddfb] bg-white text-[16px] text-[#1360d2] font-medium hover:bg-[#f0f4ff] transition-colors"
             style={{ fontFamily: font }}
           >
-            {fStatuses.size === 0 ? 'Status' : fStatuses.size === 1 ? [...fStatuses][0] : `${fStatuses.size} statuses`}
+            {fStatuses.size === 0 ? 'Status' : fStatuses.size === 1 ? `Status: ${[...fStatuses][0]}` : `Status: ${fStatuses.size} selected`}
             <svg viewBox="0 0 20 20" width="14" height="14" fill="none">
               <path d="M5 8l5 5 5-5" stroke="#0e1b3d" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
@@ -1890,17 +1896,6 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
           </div>
           <div className="flex items-center gap-4">
             <div style={{ width: 'calc(25% - 12px)' }}>
-              <FloatDropdown
-                label="Invoice Type"
-                value={fInvType}
-                options={INVOICE_TYPES}
-                onChange={setFInvType}
-              />
-            </div>
-            <div style={{ width: 'calc(25% - 12px)' }}>
-              <FloatInput label="Invoice Number" value={fInvNumber} onChange={setFInvNumber} />
-            </div>
-            <div style={{ width: 'calc(25% - 12px)' }}>
               <StatusMultiDropdown
                 label="Status"
                 values={fStatuses}
@@ -1955,7 +1950,11 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               const isSelected = selectedRows.has(absIdx);
               const st = INV_STATUS[row.status] ?? { bg: 'rgba(105,116,152,0.10)', color: '#697498' };
               const canViewPayments = row.status === 'Paid' || row.status === 'Partially Paid';
-              const payRows = canViewPayments ? PAYMENT_ROWS.filter(r => r.invoiceNo === row.number) : [];
+              /* Match by invoiceNo (multi-transaction invoices), by txNo (Multiple Bill Settlement
+                 payments, whose own invoiceNo is blank), or via the settlement's line-item details. */
+              const payRows = canViewPayments ? PAYMENT_ROWS.filter(r =>
+                r.invoiceNo === row.number || r.txNo === row.txNo || r.details.some(d => d.invoiceNo === row.number)
+              ) : [];
               return (
                 <tr key={i} className={isSelected ? 'bg-[#dce8f8]' : 'bg-white hover:bg-[#dce8f8]'}>
                   <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', paddingLeft: 16, borderBottom: '1px solid #f0f4ff' }}>
