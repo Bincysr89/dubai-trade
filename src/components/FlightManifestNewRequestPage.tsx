@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import Header from './Header';
 import BackToListingBar from './BackToListingBar';
-import { fmtDateTime } from './DatePicker';
+import Pagination from './Pagination';
+import { fmtDateTime, DateInput } from './DatePicker';
 
 const font = "'Dubai', sans-serif";
 
@@ -115,9 +116,13 @@ const FLIGHT_HITS: FlightHit[] = [
 function FlightSearchPopup({ onSelect, onClose }: { onSelect: (f: FlightHit) => void; onClose: () => void }) {
   const [flightNo, setFlightNo] = useState('');
   const [arrDep, setArrDep] = useState('All');
+  const [scheduleDateFrom, setScheduleDateFrom] = useState('');
+  const [scheduleDateTo, setScheduleDateTo] = useState('');
   const results = FLIGHT_HITS.filter(f =>
     (!flightNo.trim() || f.flightNo.toLowerCase().includes(flightNo.trim().toLowerCase())) &&
-    (arrDep === 'All' || f.arrDep === arrDep));
+    (arrDep === 'All' || f.arrDep === arrDep) &&
+    (!scheduleDateFrom || f.scheduleDate.slice(0, 10) >= scheduleDateFrom) &&
+    (!scheduleDateTo || f.scheduleDate.slice(0, 10) <= scheduleDateTo));
   return (
     <ModalShell title="Search Flight" onClose={onClose}>
       <div>
@@ -125,9 +130,11 @@ function FlightSearchPopup({ onSelect, onClose }: { onSelect: (f: FlightHit) => 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px]">
           <FInput label="Flight Number" value={flightNo} onChange={setFlightNo} />
           <FSelect label="Arrival/Departure" value={arrDep} onChange={setArrDep} options={['All', 'Arrival', 'Departure']} />
+          <DateInput label="From Scheduled Date" value={scheduleDateFrom} onChange={setScheduleDateFrom} />
+          <DateInput label="To Scheduled Date" value={scheduleDateTo} onChange={setScheduleDateTo} />
         </div>
         <div className="flex gap-[10px] mt-[14px]">
-          <button type="button" onClick={() => { setFlightNo(''); setArrDep('All'); }}
+          <button type="button" onClick={() => { setFlightNo(''); setArrDep('All'); setScheduleDateFrom(''); setScheduleDateTo(''); }}
             className="h-[44px] px-[20px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Reset</button>
         </div>
       </div>
@@ -282,6 +289,8 @@ function AddUnloadingPage({ existing, onBack, onSave }: {
   const [lines, setLines] = useState<AwbLine[]>(existing?.lines ?? []);
   const [awb, setAwb] = useState<Omit<AwbLine, 'id'>>(BLANK_AWB);
   const [editingLineId, setEditingLineId] = useState<string | null>(null);
+  const [linesPage, setLinesPage] = useState(1);
+  const LINES_PAGE_SIZE = 5;
 
   const setF = <K extends keyof typeof BLANK_AWB>(k: K, v: typeof BLANK_AWB[K]) => setAwb(a => ({ ...a, [k]: v }));
   const canAddLine = awb.awbNo.trim() && awb.weight.trim() && awb.pieces.trim();
@@ -330,6 +339,9 @@ function AddUnloadingPage({ existing, onBack, onSave }: {
                   <FInput label="Goods Description" value={awb.goodsDescription} onChange={v => setF('goodsDescription', v)} req />
                   <FInput label="Weight" value={awb.weight} onChange={v => setF('weight', v)} req />
                   <FSelect label="Weight Unit" value={awb.weightUnit} onChange={v => setF('weightUnit', v)} options={['KG', 'LB']} req />
+                  <FInput label="Weight in KG's" disabled value={
+                    awb.weight.trim() === '' ? '' : (awb.weightUnit === 'LB' ? (parseFloat(awb.weight) * 0.453592).toFixed(2) : awb.weight)
+                  } onChange={() => {}} />
                   <FInput label="Shipper Name" value={awb.shipperName} onChange={v => setF('shipperName', v)} req />
                   <FInput label="Number of Pieces" value={awb.pieces} onChange={v => setF('pieces', v)} req />
                   <FSelect label="Shipment Description Code" value={awb.shipmentDescCode} onChange={v => setF('shipmentDescCode', v)} options={['Total Consignment', 'Part Consignment']} />
@@ -367,7 +379,7 @@ function AddUnloadingPage({ existing, onBack, onSave }: {
                     <tbody>
                       {lines.length === 0 ? (
                         <tr><td colSpan={8} className="text-center py-[28px] text-[15px] text-[#8f94ae]">No airway bills added yet.</td></tr>
-                      ) : lines.map(l => (
+                      ) : lines.slice((linesPage - 1) * LINES_PAGE_SIZE, linesPage * LINES_PAGE_SIZE).map(l => (
                         <tr key={l.id} style={{ borderTop: '1px solid #f0f4ff', background: editingLineId === l.id ? '#f0f6ff' : undefined }}>
                           <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{l.awbNo}</td>
                           <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{l.originCode || '—'}</td>
@@ -391,6 +403,10 @@ function AddUnloadingPage({ existing, onBack, onSave }: {
                     </tbody>
                   </table>
                 </div>
+                {lines.length > 0 && (
+                  <Pagination page={linesPage} totalPages={Math.max(1, Math.ceil(lines.length / LINES_PAGE_SIZE))}
+                    pageSize={LINES_PAGE_SIZE} totalItems={lines.length} onPageChange={setLinesPage} onPageSizeChange={() => {}} />
+                )}
               </div>
             </div>
           </>
@@ -452,6 +468,8 @@ export default function FlightManifestNewRequestPage({
   const [airportLoadingCode, setAirportLoadingCode] = useState(initialAirportLoadingCode ?? '');
   const [airportLoadingName, setAirportLoadingName] = useState(initialAirportLoadingName ?? '');
   const [unloadingRows, setUnloadingRows] = useState<UnloadingAirportRow[]>(initialUnloadingRows ?? []);
+  const [unloadingRowsPage, setUnloadingRowsPage] = useState(1);
+  const UNLOADING_ROWS_PAGE_SIZE = 5;
   const [editingUnloadingId, setEditingUnloadingId] = useState<string | null>(null);
 
   const [manifestTypeUpload, setManifestTypeUpload] = useState('FFM');
@@ -518,12 +536,10 @@ export default function FlightManifestNewRequestPage({
               <p className="text-[16px] text-[#455174] text-center" style={{ fontFamily: font }}>Dear Customer Thank You For Using Flight Manifest Request Web Application.</p>
               <p className="text-[16px] text-[#455174] text-center" style={{ fontFamily: font }}>Please Find Below Details For Future Reference</p>
               <p className="text-[16px] text-[#0e1b3d] text-center" style={{ fontFamily: font, fontWeight: 700 }}>Flight Number: {flightNo}</p>
+              <p className="text-[16px] text-[#0e1b3d] text-center" style={{ fontFamily: font, fontWeight: 700 }}>Scheduled Date: {scheduleDate ? fmtDateTime(scheduleDate) : '—'}</p>
               <p className="text-[16px] text-[#0e1b3d] text-center" style={{ fontFamily: font, fontWeight: 700 }}>Manifest Type: {subTab === 'manual' ? 'Inbound Manifest' : manifestTypeUpload}</p>
             </div>
             <div className="flex gap-[12px]">
-              <button className="h-[48px] px-[24px] rounded-[4px] border text-[16px] inline-flex items-center gap-[8px]" style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
-                Download <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M10 3v10M6 9l4 4 4-4" /><path d="M4 16h12" /></svg>
-              </button>
               <button className="h-[48px] px-[24px] rounded-[4px] border text-[16px] inline-flex items-center gap-[8px]" style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
                 Share <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="15" cy="4" r="2" /><circle cx="5" cy="10" r="2" /><circle cx="15" cy="16" r="2" /><path d="M6.7 9l6.6-3.3M6.7 11l6.6 3.3" /></svg>
               </button>
@@ -651,7 +667,7 @@ export default function FlightManifestNewRequestPage({
                       <tbody>
                         {unloadingRows.length === 0 ? (
                           <tr><td colSpan={4} className="text-[16px] text-[#697498]" style={{ padding: '32px 16px', textAlign: 'center' }}>No airports of unloading added yet.</td></tr>
-                        ) : unloadingRows.map(r => (
+                        ) : unloadingRows.slice((unloadingRowsPage - 1) * UNLOADING_ROWS_PAGE_SIZE, unloadingRowsPage * UNLOADING_ROWS_PAGE_SIZE).map(r => (
                           <tr key={r.id} style={{ borderTop: '1px solid #f0f3fa' }}>
                             <td className="text-[16px] text-[#1360d2]" style={{ padding: '14px 16px', fontWeight: 500 }}>{r.airportCode}{r.airportName ? ` (${r.airportName})` : ''}</td>
                             <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '14px 16px' }}>{r.nilCargo}</td>
@@ -675,6 +691,10 @@ export default function FlightManifestNewRequestPage({
                       </tbody>
                     </table>
                   </div>
+                  {unloadingRows.length > 0 && (
+                    <Pagination page={unloadingRowsPage} totalPages={Math.max(1, Math.ceil(unloadingRows.length / UNLOADING_ROWS_PAGE_SIZE))}
+                      pageSize={UNLOADING_ROWS_PAGE_SIZE} totalItems={unloadingRows.length} onPageChange={setUnloadingRowsPage} onPageSizeChange={() => {}} />
+                  )}
                 </div>
               </>
             ) : (
