@@ -5,6 +5,7 @@ import BackToListingBar from './BackToListingBar';
 import ClaimStepper, { REFUND_DEPOSIT_STEPS, REFUND_DEPOSIT_STEPS_NO_DOCS } from './ClaimStepper';
 import type { Row } from './EligibleDeclarationsPage';
 import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
+import Dh from './Dh';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
 
@@ -13,7 +14,7 @@ const COLS    = '56px repeat(7, minmax(160px, 1fr)) 104px';
 const TBL_MIN = 1280;
 
 /* ─── Domain types ──────────────────────────────────────────────── */
-type RefundType = 'full' | 'fullImport' | 'partial' | 'partialImport' | 'no' | 'refund' | 'noRefund' | '';
+type RefundType = 'full' | 'fullImport' | 'partial' | 'partialImport' | 'no' | 'refund' | 'noRefund' | 'na' | '';
 
 /* Charge types with no export linkage — plain Refund / No Refund only,
    and the flow skips the document upload step entirely. */
@@ -30,6 +31,11 @@ export const hasFullRefundOptions = (ct: string) => ct === 'Alternative Duty Dep
    Duty charge types (Declaration Amendment / Cancellation) are Refund / No Refund. */
 export const hasDutyRefundOptions = (ct: string) => ct === 'Duty';
 
+/* These charge types have no meaningful refund-type choice at all — Refund Type
+   is fixed to "NA" and the full deposit amount is auto-claimed. */
+const NA_REFUND_CHARGE_TYPES = ['CDM Deposit', 'Declaration Amendment - Deposit', 'Declaration Cancellation - Deposit'];
+export const hasNaRefundType = (ct: string) => NA_REFUND_CHARGE_TYPES.includes(ct);
+
 export type ChargeDetail = {
   declarationNo: string;
   chargeType: string;
@@ -38,6 +44,10 @@ export type ChargeDetail = {
   refundType: RefundType;
   outboundDeclNo: string;
   claimAmount: string;
+  /** CDM Deposit only — Additional Reference Details. */
+  refType?: string;
+  refCode?: string;
+  refNo?: string;
 };
 
 export type OutboundDetail = {
@@ -140,6 +150,12 @@ const MISSING_DOC_REFUND_OPTIONS: { value: RefundType; label: string }[] = [
   { value: 'noRefund', label: 'No Refund' },
 ];
 
+/* CDM Deposit / Declaration Amendment / Declaration Cancellation deposits — no real refund-type
+   choice, so the dropdown just shows the single preselected "NA" option. */
+const NA_REFUND_OPTIONS: { value: RefundType; label: string }[] = [
+  { value: 'na', label: 'NA' },
+];
+
 const ALLOCATION_OPTIONS = ['single', 'multiple'];
 const CURRENCY_OPTIONS = ['AED', 'USD'];
 const CUSTOMS_AUTHORITIES = ['Abu Dhabi Customs', 'AJMAN Customs', 'Dubai Customs', 'Dubai Customs (Manifest)', 'FUJAIRAH Customs', 'RAK Customs', 'Sharjah Customs', 'UMM AL QUWAIN Customs'];
@@ -158,7 +174,7 @@ export function needsOutbound(rt: RefundType) { return rt === 'full' || rt === '
 function parseAED(s: string)           { return parseFloat(s.replace(/[^0-9.]/g, '')) || 0; }
 function autoAmount(rt: RefundType, dep: string) {
   if (rt === 'no' || rt === 'noRefund') return '0';
-  if (rt === 'full' || rt === 'fullImport' || rt === 'refund') return String(parseAED(dep));
+  if (rt === 'full' || rt === 'fullImport' || rt === 'refund' || rt === 'na') return String(parseAED(dep));
   return '';
 }
 export function obKey(d: string, h: string) { return `${d}::${h}`; }
@@ -924,12 +940,13 @@ function HSRow({ hs, inv, declNo, rt, obs, edit, onPatchHs, onAdd, onEdit, onVie
 }
 
 /* ─── Declaration row card ──────────────────────────────────────── */
-function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount, onToggleInv, onAdd, onEdit, onViewOb, onDelete, onOpenUnitPriceModal }: {
+function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount, onRefField, onToggleInv, onAdd, onEdit, onViewOb, onDelete, onOpenUnitPriceModal }: {
   d: ChargeDetail; idx: number; obs: OutboundState; invOpen: boolean;
   hsEdits: Record<string, { allocationMethod?: string; currency?: string; unitPrice?: string; unitPriceDetails?: UnitPriceDetail[] }>;
   onPatchHs: (hsId: string, patch: { allocationMethod?: string; currency?: string; unitPrice?: string; unitPriceDetails?: UnitPriceDetail[] }) => void;
   onRefund: (i: number, rt: RefundType) => void;
   onAmount: (i: number, v: string) => void;
+  onRefField: (i: number, patch: { refType?: string; refCode?: string; refNo?: string }) => void;
   onToggleInv: (i: number) => void;
   onAdd: (ctx: DrawerCtx, hsIds: string[], onApplied?: () => void) => void;
   onEdit: (ctx: DrawerCtx, ob: OutboundDetail) => void;
@@ -939,6 +956,7 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
 }) {
   const invoices = getInvoices(d.declarationNo);
   const needsOb  = needsOutbound(d.refundType);
+  const isCdm    = d.chargeType === 'CDM Deposit';
   const isAuto   = d.refundType === 'no' || d.refundType === 'full' || d.refundType === 'fullImport' || d.refundType === 'refund' || d.refundType === 'noRefund';
   const meta     = DECL_META[d.declarationNo] ?? { declarationType: 'Import for Re-Export', depositMethod: 'Alternative Duty' };
   const { scrollRef: hsScrollRef, atScrollStart: hsAtScrollStart, atScrollEnd: hsAtScrollEnd, handleScroll: hsHandleScroll, scrollToStart: hsScrollToStart, scrollToEnd: hsScrollToEnd } = useTableBehaviors();
@@ -998,24 +1016,26 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
         </div>
 
         <div style={{ paddingRight: 8 }}>
-          <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>
-            {d.depositAmount === 'N/A' ? '—' : d.depositAmount.replace(/^Dh\s*/, '')}
+          <span className="text-[16px] text-[#0e1b3d] inline-flex items-baseline gap-[4px]" style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>
+            {d.depositAmount === 'N/A' ? '—' : <><Dh />{d.depositAmount.replace(/^Dh\s*/, '')}</>}
           </span>
         </div>
 
         <div style={{ paddingRight: 8 }}>
           <RefundSelect value={d.refundType} onChange={rt => onRefund(idx, rt)}
-            options={hasFullRefundOptions(d.chargeType) ? REFUND_OPTIONS
+            options={hasNaRefundType(d.chargeType) ? NA_REFUND_OPTIONS
+              : hasFullRefundOptions(d.chargeType) ? REFUND_OPTIONS
               : hasDutyRefundOptions(d.chargeType) ? REFUND_OPTIONS_DUTY
               : MISSING_DOC_REFUND_OPTIONS} />
         </div>
 
-        <div style={{ paddingRight: 8 }}>
+        <div style={{ paddingRight: 8, position: 'relative' }}>
+          <Dh style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#0e1b3d', pointerEvents: 'none' }} />
           <input type="number" min={0} value={d.claimAmount} onChange={e => onAmount(idx, e.target.value)}
             placeholder="Enter amount" readOnly={isAuto}
             className="w-full bg-white rounded-[4px] text-[16px]"
             style={{ height: 56, border: `1px solid ${d.refundType && !d.claimAmount.trim() && d.refundType !== 'no' ? '#dc3545' : '#d5ddfb'}`,
-              padding: '0 12px', fontFamily: font, color: '#0e1b3d', outline: 'none',
+              padding: '0 12px 0 28px', fontFamily: font, color: '#0e1b3d', outline: 'none',
               background: isAuto ? '#f8fafd' : '#fff' }} />
         </div>
 
@@ -1026,7 +1046,7 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
               <path d="M3 5h14M8 5V3h4v2M17 5l-1 13H4L3 5" /><path d="M8 9v5M12 9v5" />
             </svg>
           </button>
-          {needsOb && (
+          {(needsOb || isCdm) && (
             <button type="button" onClick={() => onToggleInv(idx)} aria-label={invOpen ? 'Collapse outbound details' : 'Expand outbound details'}
               className="size-[36px] rounded-full inline-flex items-center justify-center transition-colors"
               style={{ background: '#fff', border: '1px solid #e0e6ef', color: '#455174', boxShadow: '0px 1px 4px rgba(19,96,210,0.10)' }}>
@@ -1039,8 +1059,8 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
         </div>
       </div>
 
-      {/* Invoices toggle bar + content */}
-      {needsOb && d.refundType && (
+      {/* Invoices / Additional Reference Details toggle bar + content */}
+      {(needsOb || isCdm) && d.refundType && (
         <>
           <div style={{ borderTop: '1px solid #eef1f6' }}>
             <button type="button" onClick={() => onToggleInv(idx)}
@@ -1050,10 +1070,14 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
                 style={{ transition: 'transform 0.15s', transform: invOpen ? 'rotate(90deg)' : 'rotate(0deg)', flexShrink: 0 }}>
                 <path d="M5 3l4 4-4 4"/>
               </svg>
-              <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Outbound Declaration Details</span>
-              <span className="text-[14px] px-[10px] py-[3px] rounded-[12px]" style={{ background: invOpen ? '#fff' : '#e2ebf9', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: font }}>
-                {allItems.length} HS Code{allItems.length !== 1 ? 's' : ''}
+              <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>
+                {isCdm ? 'Additional Reference Details' : 'Outbound Declaration Details'}
               </span>
+              {!isCdm && (
+                <span className="text-[14px] px-[10px] py-[3px] rounded-[12px]" style={{ background: invOpen ? '#fff' : '#e2ebf9', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: font }}>
+                  {allItems.length} HS Code{allItems.length !== 1 ? 's' : ''}
+                </span>
+              )}
 
               <span className="text-[14px] text-[#697498] ml-auto" style={{ fontFamily: font, flexShrink: 0 }}>
                 {invOpen ? 'Collapse' : 'Expand'}
@@ -1061,7 +1085,19 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
             </button>
           </div>
 
-          {invOpen && (
+          {invOpen && isCdm && (
+            <div className="px-[20px] pb-[20px] pt-[16px]" style={{ borderTop: '1px solid #f5f7fc' }}>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-[16px]" style={{ maxWidth: 900 }}>
+                <FSelect label="Reference Type" value={d.refType ?? ''} onChange={v => onRefField(idx, { refType: v })}
+                  options={['Exemption Type', 'Decision Reference']} req />
+                <FSelect label="Reference Code" value={d.refCode ?? ''} onChange={v => onRefField(idx, { refCode: v })}
+                  options={['EXM-001', 'EXM-002', 'EXM-003']} req disabled={d.refType !== 'Exemption Type'} />
+                <FInput label="Reference No." value={d.refNo ?? ''} onChange={v => onRefField(idx, { refNo: v })} req />
+              </div>
+            </div>
+          )}
+
+          {invOpen && !isCdm && (
             <div className="px-[20px] pb-[16px] pt-[16px]" style={{ borderTop: '1px solid #f5f7fc' }}>
               {/* Search */}
               <div className="flex items-start justify-between gap-[12px] mb-[12px] flex-wrap">
@@ -1179,13 +1215,15 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
       const depositMethod = r.depositMethod && r.depositMethod !== 'N/A'
         ? r.depositMethod
         : (DECL_META[r.declarationNo]?.depositMethod ?? 'Alternative Duty');
-      const refundType: RefundType = prefill
+      const refundType: RefundType = hasNaRefundType(chargeType)
+        ? 'na'
+        : prefill
         ? ((hasFullRefundOptions(chargeType) || hasDutyRefundOptions(chargeType)) ? 'full' : 'refund')
         : '';
       return {
         declarationNo: r.declarationNo, chargeType, depositAmount, depositMethod,
         refundType,
-        outboundDeclNo: '', claimAmount: prefill ? autoAmount(refundType, depositAmount) : '',
+        outboundDeclNo: '', claimAmount: (prefill || refundType === 'na') ? autoAmount(refundType, depositAmount) : '',
       };
     })
   );
@@ -1221,6 +1259,8 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
     if (needsOutbound(rt)) setInvOpen(p => ({ ...p, [i]: p[i] !== false }));
   };
   const patchAmount  = (i: number, v: string) => setDetails(p => p.map((d, j) => j !== i ? d : { ...d, claimAmount: v }));
+  const patchRefField = (i: number, patch: { refType?: string; refCode?: string; refNo?: string }) =>
+    setDetails(p => p.map((d, j) => j !== i ? d : { ...d, ...patch, ...(patch.refType !== undefined && patch.refType !== 'Exemption Type' ? { refCode: '' } : {}) }));
   const toggleInv    = (i: number)            => setInvOpen(p => ({ ...p, [i]: !p[i] }));
 
   /* Delete a declaration row from the claim, with confirmation. */
@@ -1323,9 +1363,9 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
             {/* Declaration row cards */}
             {details.map((d, i) => (
               <DeclRow key={d.declarationNo} d={d} idx={i} obs={obs}
-                invOpen={invOpen[i] !== false && needsOutbound(d.refundType) && !!d.refundType}
+                invOpen={invOpen[i] !== false && (needsOutbound(d.refundType) || d.chargeType === 'CDM Deposit') && !!d.refundType}
                 hsEdits={hsEdits} onPatchHs={patchHs}
-                onRefund={patchRefund} onAmount={patchAmount} onToggleInv={toggleInv}
+                onRefund={patchRefund} onAmount={patchAmount} onRefField={patchRefField} onToggleInv={toggleInv}
                 onAdd={(ctx, hsIds, onApplied) => setModal({ ctx, hsIds, onApplied })}
                 onEdit={(ctx, ob) => setModal({ ctx: { ...ctx, editId: ob.id }, hsIds: [ctx.hsId], existing: ob })}
                 onViewOb={(ctx, obsList) => setViewOb({ ctx, obs: obsList })}
@@ -1340,8 +1380,8 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
           <div className="flex justify-end mt-[16px]">
             <div className="bg-white rounded-[8px] px-[24px] py-[16px] flex items-center gap-[20px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
               <span className="text-[16px] text-[#455174]" style={{ fontFamily: font }}>Total Claim Amount (AED)</span>
-              <span className="text-[24px] text-[#0e1b3d]" style={{ fontWeight: 500, fontFamily: font }}>
-                {totalClaim.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              <span className="text-[24px] text-[#0e1b3d] inline-flex items-baseline gap-[4px]" style={{ fontWeight: 500, fontFamily: font }}>
+                <Dh />{totalClaim.toLocaleString('en-US', { minimumFractionDigits: 2 })}
               </span>
             </div>
           </div>

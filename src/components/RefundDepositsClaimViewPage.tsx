@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import Dh from './Dh';
-import { hasFullRefundOptions, hasDutyRefundOptions } from './RDChargeFlowPage';
+import { hasFullRefundOptions, hasDutyRefundOptions, hasNaRefundType } from './RDChargeFlowPage';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
 
@@ -52,6 +52,7 @@ type DeclLine = {
   declarationNo: string; declarationType: string; chargeType: string;
   depositMethod: string; accountNumber: string; depositAmount: string;
   refundType: string; claimAmount: string; invoices: InvoiceGroup[];
+  refType?: string; refCode?: string; refNo?: string;
 };
 
 /* Only Alternative Duty Deposit (and Duty) declarations carry export/outbound linkage —
@@ -82,6 +83,8 @@ const DEFAULT_DECLARATIONS: IncomingDecl[] = [
 
 function buildDeclLines(declarations: IncomingDecl[], chargeType: string): DeclLine[] {
   const outbound = hasOutboundLinkage(chargeType);
+  const isNa = hasNaRefundType(chargeType);
+  const isCdm = chargeType === 'CDM Deposit';
   return declarations.map(d => ({
     declarationNo: d.declNo,
     declarationType: d.category,
@@ -89,9 +92,10 @@ function buildDeclLines(declarations: IncomingDecl[], chargeType: string): DeclL
     depositMethod: outbound ? 'Standing Guarantee' : 'N/A',
     accountNumber: outbound ? 'ACC-100234' : '—',
     depositAmount: '1,000.00',
-    refundType: outbound ? 'Full Export' : 'Refund',
+    refundType: isNa ? 'NA' : outbound ? 'Full Export' : 'Refund',
     claimAmount: '1,000.00',
     invoices: INVOICES_BY_DECL[d.declNo] ?? [],
+    ...(isCdm ? { refType: 'Exemption Type', refCode: 'EXM-001', refNo: 'REF-2025-0142' } : {}),
   }));
 }
 
@@ -182,9 +186,11 @@ function DeclarationCard({ d, idx, open, onToggle, onViewOb }: {
 }) {
   const allHs = d.invoices.flatMap(inv => inv.hsLines.map(hs => ({ inv, hs })));
   const outbound = hasOutboundLinkage(d.chargeType);
+  const isCdm = d.chargeType === 'CDM Deposit';
+  const expandable = outbound || isCdm;
 
   return (
-    <div className="bg-white rounded-[8px]" style={{ border: `1.5px solid ${open && outbound ? '#1360d2' : 'transparent'}`, borderTop: idx > 0 ? '1px solid #eef1f6' : undefined }}>
+    <div className="bg-white rounded-[8px]" style={{ border: `1.5px solid ${open && expandable ? '#1360d2' : 'transparent'}`, borderTop: idx > 0 ? '1px solid #eef1f6' : undefined }}>
       {/* Declaration summary row */}
       <div className="flex flex-wrap items-center gap-x-[24px] gap-y-[8px] px-[16px] py-[14px]">
         <span className="text-[16px] text-[#455174]" style={{ fontFamily: font }}>{idx + 1}</span>
@@ -198,7 +204,7 @@ function DeclarationCard({ d, idx, open, onToggle, onViewOb }: {
           <span className="text-[16px]" style={{ color: '#455174', fontFamily: font }}>Claim Amount (AED)</span>
           <span className="text-[16px] inline-flex items-baseline gap-[3px]" style={{ color: '#051937', fontFamily: font, fontWeight: 500 }}><Dh style={{ fontSize: 15 }} />{d.claimAmount}</span>
         </div>
-        {outbound && (
+        {expandable && (
           <button type="button" onClick={onToggle} aria-label={open ? 'Collapse outbound details' : 'Expand outbound details'}
             className="size-[36px] rounded-full inline-flex items-center justify-center transition-colors ml-auto"
             style={{ background: '#fff', border: '1px solid #e0e6ef', color: '#455174', boxShadow: '0px 1px 4px rgba(19,96,210,0.10)' }}>
@@ -210,11 +216,13 @@ function DeclarationCard({ d, idx, open, onToggle, onViewOb }: {
         )}
       </div>
 
-      {/* Outbound Declaration Details — read-only accordion toggle bar + HS code table.
-          Only charge types with export/outbound linkage (Alternative Duty Deposit, Duty) get
-          this section; Missing Document/CDM/Cargo Transfer/Declaration Amendment/Cancellation
-          Deposit claims have no invoice or outbound data, same as the create/amend claim flow. */}
-      {outbound && (
+      {/* Outbound Declaration Details / Additional Reference Details — read-only accordion
+          toggle bar. Charge types with export/outbound linkage (Alternative Duty Deposit, Duty)
+          get the Invoice/HS Code table; CDM Deposit gets a read-only "Additional Reference
+          Details" summary instead; every other charge type (Missing Document, Cargo Transfer,
+          Declaration Amendment/Cancellation Deposit) has no expandable section at all, same as
+          the create/amend claim flow. */}
+      {expandable && (
       <div style={{ borderTop: '1px solid #eef1f6' }}>
         <button type="button" onClick={onToggle}
           className={`w-full flex items-center gap-[10px] px-[20px] py-[12px] text-left transition-colors ${open ? '' : 'hover:bg-[#f8fafd]'}`}
@@ -223,13 +231,27 @@ function DeclarationCard({ d, idx, open, onToggle, onViewOb }: {
             style={{ transition: 'transform 0.15s', transform: open ? 'rotate(90deg)' : 'rotate(0deg)', flexShrink: 0 }}>
             <path d="M5 3l4 4-4 4"/>
           </svg>
-          <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Outbound Declaration Details</span>
-          <span className="text-[14px] px-[10px] py-[3px] rounded-[12px]" style={{ background: open ? '#fff' : '#e2ebf9', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: font }}>
-            {allHs.length} HS Code{allHs.length !== 1 ? 's' : ''}
+          <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>
+            {isCdm ? 'Additional Reference Details' : 'Outbound Declaration Details'}
           </span>
+          {!isCdm && (
+            <span className="text-[14px] px-[10px] py-[3px] rounded-[12px]" style={{ background: open ? '#fff' : '#e2ebf9', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: font }}>
+              {allHs.length} HS Code{allHs.length !== 1 ? 's' : ''}
+            </span>
+          )}
           <span className="text-[14px] text-[#697498] ml-auto" style={{ fontFamily: font, flexShrink: 0 }}>{open ? 'Collapse' : 'Expand'}</span>
         </button>
       </div>
+      )}
+
+      {isCdm && open && (
+        <div className="px-[20px] pb-[16px] pt-[16px]" style={{ borderTop: '1px solid #f5f7fc' }}>
+          <div className="flex flex-wrap" style={{ margin: '0 -16px' }}>
+            <FieldItem label="Reference Type" value={d.refType ?? ''} />
+            <FieldItem label="Reference Code" value={d.refCode ?? ''} />
+            <FieldItem label="Reference No." value={d.refNo ?? ''} />
+          </div>
+        </div>
       )}
 
       {outbound && open && (
