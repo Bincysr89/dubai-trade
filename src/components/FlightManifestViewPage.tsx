@@ -1,6 +1,6 @@
-import { Fragment } from 'react';
 import Header from './Header';
 import BackToListingBar from './BackToListingBar';
+import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
 
 const font = "'Dubai', sans-serif";
 
@@ -31,6 +31,8 @@ export default function FlightManifestViewPage({ row, onBack, onBackToListing }:
   const airportLoading = str(row.airportLoading) || 'DXB';
   const scheduleDate = str(row.scheduleDate) || '—';
   const airportUnloading = 'DXB';
+  const PCS_W = 110;
+  const { scrollRef, atScrollStart, atScrollEnd, handleScroll, scrollToStart, scrollToEnd } = useTableBehaviors();
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-[#f8fafd]">
@@ -77,42 +79,38 @@ export default function FlightManifestViewPage({ row, onBack, onBackToListing }:
               <span className="text-[15px] text-[#697498]" style={{ fontFamily: font }}>No. of AWBs : <b style={{ color: '#0e1b3d' }}>{AWBS.length}</b></span>
             </div>
 
-            <div className="rounded-[6px] overflow-hidden" style={{ border: '1px solid #eef1f6' }}>
-              <table className="w-full" style={{ fontFamily: font, borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ background: '#e2ebf9' }}>
-                    {['Airway Bill No', 'Source', 'Origin', 'Destination', 'Weight in Kgs', 'No. of Pcs', 'Shipper', 'Consignee'].map(h => (
-                      <th key={h} className="text-left px-[16px] py-[10px] text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
+            <div style={{ position: 'relative' }}>
+              <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={PCS_W} />
+              <div ref={scrollRef} onScroll={handleScroll} className="rounded-[6px] overflow-x-auto" style={{ border: '1px solid #eef1f6' }}>
+                <table style={{ fontFamily: font, borderCollapse: 'collapse', width: 'max-content', minWidth: '100%' }}>
+                  <thead>
+                    <tr style={{ background: '#e2ebf9' }}>
+                      {['Airway Bill No', 'Source', 'Origin', 'Destination', 'Weight in Kgs', 'Shipper', 'Consignee', 'Airport / City of Origin', 'Airport / City of Destination', 'Shipment Description Code', 'Goods Description'].map(h => (
+                        <th key={h} className="text-left px-[16px] py-[10px] text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
+                      ))}
+                      <th className="text-left px-[16px] py-[10px] text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500, whiteSpace: 'nowrap', position: 'sticky', right: 0, width: PCS_W, minWidth: PCS_W, background: '#e2ebf9', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>No. of Pcs</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {AWBS.map(a => (
+                      <tr key={a.awbNo} style={{ borderTop: '1px solid #f0f4ff' }}>
+                        <td className="px-[16px] py-[10px] text-[15px] text-[#1360d2] font-medium" style={{ whiteSpace: 'nowrap' }}>{a.awbNo}</td>
+                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{a.source}</td>
+                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{a.origin}</td>
+                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{a.destination}</td>
+                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{a.weightKg}</td>
+                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{a.shipper}</td>
+                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{a.consignee}</td>
+                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{a.originName}</td>
+                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{a.destinationName}</td>
+                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{a.descCode}</td>
+                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{a.goodsDesc}</td>
+                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap', position: 'sticky', right: 0, width: PCS_W, minWidth: PCS_W, background: '#fff', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>{a.pcs}</td>
+                      </tr>
                     ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {AWBS.map(a => (
-                    <Fragment key={a.awbNo}>
-                      <tr style={{ borderTop: '1px solid #f0f4ff' }}>
-                        <td className="px-[16px] py-[10px] text-[15px] text-[#1360d2] font-medium">{a.awbNo}</td>
-                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{a.source}</td>
-                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{a.origin}</td>
-                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{a.destination}</td>
-                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{a.weightKg}</td>
-                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{a.pcs}</td>
-                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{a.shipper}</td>
-                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{a.consignee}</td>
-                      </tr>
-                      <tr style={{ background: '#f8fafd' }}>
-                        <td colSpan={8} className="px-[16px] py-[12px]">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-[24px] gap-y-[4px]">
-                            <p className="text-[14px]" style={{ fontFamily: font }}><span style={{ color: '#697498' }}>Airport / City of Origin: </span><span style={{ color: '#0e1b3d', fontWeight: 500 }}>{a.originName}</span></p>
-                            <p className="text-[14px]" style={{ fontFamily: font }}><span style={{ color: '#697498' }}>Airport / City of Destination: </span><span style={{ color: '#0e1b3d', fontWeight: 500 }}>{a.destinationName}</span></p>
-                            <p className="text-[14px]" style={{ fontFamily: font }}><span style={{ color: '#697498' }}>Shipment Description Code: </span><span style={{ color: '#0e1b3d', fontWeight: 500 }}>{a.descCode}</span></p>
-                            <p className="text-[14px]" style={{ fontFamily: font }}><span style={{ color: '#697498' }}>Goods Description: </span><span style={{ color: '#0e1b3d', fontWeight: 500 }}>{a.goodsDesc}</span></p>
-                          </div>
-                        </td>
-                      </tr>
-                    </Fragment>
-                  ))}
-                </tbody>
-              </table>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>

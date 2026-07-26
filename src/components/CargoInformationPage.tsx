@@ -868,12 +868,28 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                 </div>
               </div>
 
-              {/* Row 2 — Status-as-on date badge (centered) + Drafts/Columns (right), mirrors the master listing template */}
-              <div className="flex items-center justify-between mb-[12px] flex-shrink-0">
-                <div className="flex-1 flex justify-center">
+              {/* Row 2 — All Records/Track File Upload tabs (left, Flight Manifest only) + Status-as-on date badge (centered) + Drafts/Columns (right), mirrors the master listing template */}
+              <div className="flex items-center justify-between mb-[12px] flex-shrink-0 gap-[12px]">
+                <div className="flex-shrink-0" style={{ minWidth: activeMenu === 'flightManifest' ? undefined : 1 }}>
+                  {activeMenu === 'flightManifest' && (
+                    <div className="flex items-center gap-[8px] bg-white rounded-[6px] p-[4px] w-max"
+                      style={{ boxShadow: '0px 2px 12px rgba(143,155,186,0.16)', border: '1px solid #eef1f6' }}>
+                      {([{ key: 'all', label: 'All Records' }, { key: 'trackUpload', label: 'Track File Upload' }] as const).map(t => (
+                        <button key={t.key} type="button" onClick={() => setFmTab(t.key)}
+                          className="text-[15px] px-[18px] py-[9px] rounded-[4px] transition-colors"
+                          style={fmTab === t.key
+                            ? { background: '#1360d2', color: '#fff', fontWeight: 500, fontFamily: font }
+                            : { color: '#5a6282', fontFamily: font }}>
+                          {t.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 flex justify-center min-w-0 overflow-x-auto">
                   <div
-                    className="inline-flex items-center gap-[10px] h-[44px] px-[24px] rounded-[8px] border border-[#d5ddfb] bg-white text-[16px] text-[#0e1b3d]"
-                    style={{ fontFamily: font }}
+                    className="inline-flex items-center gap-[10px] h-[44px] px-[24px] rounded-[8px] border border-[#d5ddfb] bg-white text-[16px] text-[#0e1b3d] flex-shrink-0"
+                    style={{ fontFamily: font, whiteSpace: 'nowrap' }}
                   >
                     <span>Status As On 28-Dec-22 To 10-Jan-23</span>
                     <button className="text-[#1360d2] font-medium hover:opacity-80 ml-[6px]" style={{ fontFamily: font }}>Modify</button>
@@ -944,21 +960,6 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                 </div>
               )}
 
-              {activeMenu === 'flightManifest' && (
-                <div className="flex items-center gap-[8px] bg-white rounded-[6px] p-[4px] w-max mb-[12px] flex-shrink-0"
-                  style={{ boxShadow: '0px 2px 12px rgba(143,155,186,0.16)', border: '1px solid #eef1f6' }}>
-                  {([{ key: 'all', label: 'All Records' }, { key: 'trackUpload', label: 'Track File Upload' }] as const).map(t => (
-                    <button key={t.key} type="button" onClick={() => setFmTab(t.key)}
-                      className="text-[15px] px-[18px] py-[9px] rounded-[4px] transition-colors"
-                      style={fmTab === t.key
-                        ? { background: '#1360d2', color: '#fff', fontWeight: 500, fontFamily: font }
-                        : { color: '#5a6282', fontFamily: font }}>
-                      {t.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-
               {activeMenu === 'flightManifest' && fmTab === 'trackUpload' ? (
                 (() => {
                   const FMU_ACTIONS_W = 72;
@@ -973,7 +974,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                         <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 1300 }}>
                           <thead>
                             <tr style={{ background: '#a6c2e9' }}>
-                              {['File Name', 'Upload Ref Number', 'Flight Number', 'Manifest File Type', 'No. of Successful Files', 'No. of Failed Files', 'Upload Date', 'Remarks'].map(h => (
+                              {['Upload Ref Number', 'Flight Number', 'Manifest File Type', 'No. of Successful Files', 'No. of Failed Files', 'Upload Date', 'Remarks'].map(h => (
                                 <th key={h} className="text-left text-[16px] text-[#051937]" style={{ padding: '10px 12px', fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
                               ))}
                               <th className="text-left text-[16px] text-[#051937]" style={{
@@ -988,13 +989,12 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                           </thead>
                           <tbody>
                             {fmuPaginated.length === 0 ? (
-                              <tr><td colSpan={10} style={{ padding: '40px 12px', textAlign: 'center' }}><span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>No matching upload records found.</span></td></tr>
+                              <tr><td colSpan={9} style={{ padding: '40px 12px', textAlign: 'center' }}><span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>No matching upload records found.</span></td></tr>
                             ) : fmuPaginated.map((row, i) => {
                               const st = row.uploadStatus === 'Failure' ? UPLOAD_STATUS_STYLE.Failure : UPLOAD_STATUS_STYLE.Successful;
                               const isFwb = row.manifestFileType === 'FWB';
                               return (
                               <tr key={i} style={{ borderTop: '1px solid #f0f4ff' }}>
-                                <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap', background: '#fff' }}>{row.fileName}</td>
                                 <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap', background: '#fff' }}>{row.uploadRefNo}</td>
                                 <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap', background: '#fff' }}>{row.flightNo}</td>
                                 <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', background: '#fff' }}>{row.manifestFileType}</td>
@@ -1005,35 +1005,27 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                                 <td style={{ position: 'sticky', right: FMU_ACTIONS_W, width: FMU_STATUS_W, minWidth: FMU_STATUS_W, padding: '12px', background: '#fff', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>
                                   <span className="text-[15px] font-medium px-[10px] py-[4px] rounded-[4px] whitespace-nowrap" style={{ background: st.bg, color: st.color }}>{row.uploadStatus.toUpperCase()}</span>
                                 </td>
-                                <td style={{ position: 'sticky', right: 0, width: FMU_ACTIONS_W, minWidth: FMU_ACTIONS_W, padding: '12px', background: '#fff' }}>
-                                  {isFwb ? (
-                                    <button type="button" onClick={() => { const matched = FLIGHT_MANIFEST.rows.find(r => r.flightNo === row.flightNo); setErrorFilesRow(matched ?? ({ flightNo: row.flightNo, uploadRefNo: row.uploadRefNo } as unknown as ListingRow)); }} aria-label="View error list"
-                                      title="View error list"
-                                      className="size-[32px] inline-flex items-center justify-center rounded-[4px] hover:bg-[#e8f0ff] transition-colors" style={{ border: '1px solid #d5ddfb', color: '#1360d2' }}>
-                                      <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 10h12M11 5l5 5-5 5" /></svg>
+                                <td style={{ position: 'sticky', right: 0, width: FMU_ACTIONS_W, minWidth: FMU_ACTIONS_W, padding: '12px', background: '#fff', zIndex: openFlyout === i ? 50 : 1 }}>
+                                  <div className="relative inline-block">
+                                    <button onClick={() => setOpenFlyout(openFlyout === i ? null : i)} className="size-[32px] rounded-full flex items-center justify-center hover:bg-[#e2ebf9] transition-colors">
+                                      <svg viewBox="0 0 20 20" width="18" height="18" fill="#697498"><circle cx="10" cy="4" r="1.7" /><circle cx="10" cy="10" r="1.7" /><circle cx="10" cy="16" r="1.7" /></svg>
                                     </button>
-                                  ) : (
-                                    <div className="relative inline-block">
-                                      <button onClick={() => setOpenFlyout(openFlyout === i ? null : i)} className="size-[32px] rounded-full flex items-center justify-center hover:bg-[#e2ebf9] transition-colors">
-                                        <svg viewBox="0 0 20 20" width="18" height="18" fill="#697498"><circle cx="10" cy="4" r="1.7" /><circle cx="10" cy="10" r="1.7" /><circle cx="10" cy="16" r="1.7" /></svg>
-                                      </button>
-                                      {openFlyout === i && (
-                                        <div className="absolute z-[100] right-0 bg-white rounded-[8px] py-[4px] overflow-hidden" style={{ top: 36, width: 200, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
-                                          {['View Manifest', 'Error Files'].map(label => (
-                                            <button key={label} className="group w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
-                                              onClick={() => {
-                                                setOpenFlyout(null);
-                                                const matched = FLIGHT_MANIFEST.rows.find(r => r.flightNo === row.flightNo);
-                                                if (label === 'Error Files') setErrorFilesRow(matched ?? ({ flightNo: row.flightNo, uploadRefNo: row.uploadRefNo } as unknown as ListingRow));
-                                                else if (matched) { setFmSelectedRow(matched); setFmView('view'); }
-                                              }}>
-                                              <span className="text-[15px] text-[#111838] group-hover:text-white" style={{ fontFamily: font }}>{label}</span>
-                                            </button>
-                                          ))}
-                                        </div>
-                                      )}
-                                    </div>
-                                  )}
+                                    {openFlyout === i && (
+                                      <div className="absolute z-[100] right-0 bg-white rounded-[8px] py-[4px] overflow-hidden" style={{ top: 36, width: 200, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
+                                        {(isFwb ? ['Error Files'] : ['View Manifest', 'Error Files']).map(label => (
+                                          <button key={label} className="group w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
+                                            onClick={() => {
+                                              setOpenFlyout(null);
+                                              const matched = FLIGHT_MANIFEST.rows.find(r => r.flightNo === row.flightNo);
+                                              if (label === 'Error Files') setErrorFilesRow(matched ?? ({ flightNo: row.flightNo, uploadRefNo: row.uploadRefNo } as unknown as ListingRow));
+                                              else if (matched) { setFmSelectedRow(matched); setFmView('view'); }
+                                            }}>
+                                            <span className="text-[15px] text-[#111838] group-hover:text-white" style={{ fontFamily: font }}>{label}</span>
+                                          </button>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
                                 </td>
                               </tr>
                               );

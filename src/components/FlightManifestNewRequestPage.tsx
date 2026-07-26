@@ -701,7 +701,7 @@ export default function FlightManifestNewRequestPage({
               <div className="flex flex-col gap-[16px]">
                 <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>Manifest File Details</p>
                 <div className="bg-white rounded-[8px] p-[24px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-                  <FSelect label="Manifest Type" value={manifestTypeUpload} onChange={setManifestTypeUpload} options={MANIFEST_TYPES} req />
+                  <FInput label="Manifest File Type" value={manifestTypeUpload} onChange={() => {}} disabled />
                 </div>
 
                 <div className="flex items-center justify-between flex-wrap gap-[8px]">

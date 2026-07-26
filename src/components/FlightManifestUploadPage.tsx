@@ -185,7 +185,7 @@ export default function FlightManifestUploadPage({ row, onBack, onBackToListing 
           <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>Manifest File Details</p>
           <div className="bg-white rounded-[8px] p-[24px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
             <div className="max-w-[320px]">
-              <FSelect label="Manifest Type" value={manifestType} onChange={setManifestType} options={MANIFEST_TYPES} req />
+              <FSelect label="Manifest File Type" value={manifestType} onChange={setManifestType} options={MANIFEST_TYPES} req />
             </div>
           </div>
         </div>
