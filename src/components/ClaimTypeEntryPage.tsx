@@ -119,7 +119,7 @@ export default function ClaimTypeEntryPage({ onBack, onContinue }: Props) {
                   key={opt.id}
                   onClick={() => {
                     setSelected(opt.id);
-                    if (opt.id === 'nonRemittance' || opt.id === 'refundDeposit') onContinue(opt.id);
+                    onContinue(opt.id);
                   }}
                   className="flex items-start gap-[14px] px-[16px] py-[16px] rounded-[10px] text-left transition-colors h-full"
                   style={{ background: active ? '#f6f9fe' : '#fff', border: `1.5px solid ${active ? '#1360d2' : '#e0e6ef'}` }}

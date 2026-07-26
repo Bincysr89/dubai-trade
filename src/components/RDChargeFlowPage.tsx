@@ -141,7 +141,6 @@ const REFUND_OPTIONS: { value: RefundType; label: string }[] = [
 const REFUND_OPTIONS_DUTY: { value: RefundType; label: string }[] = [
   { value: 'full',    label: 'Full Export'    },
   { value: 'partial', label: 'Partial Export' },
-  { value: 'no',      label: 'No Export'      },
 ];
 
 /* Every other charge type (Alternative Duty Deposit and Duty excepted) — plain Refund / No Refund. */
@@ -170,7 +169,10 @@ const DUBAI_DECLARATIONS: Omit<OutboundDetail, 'id' | 'customsAuthority'>[] = [
   { declarationNo: 'EX-20800075-24', declarationType: 'Transit',   exitPoint: 'Al Maktoum Airport',  actualDepartureDate: '2025-03-05', statQty: '120', suppQty: '120', weight: '2400', reExportTo: 'India' },
 ];
 
-export function needsOutbound(rt: RefundType) { return rt === 'full' || rt === 'fullImport' || rt === 'partial' || rt === 'partialImport'; }
+export function needsOutbound(rt: RefundType, chargeType?: string) {
+  if (chargeType === 'Duty') return false;
+  return rt === 'full' || rt === 'fullImport' || rt === 'partial' || rt === 'partialImport';
+}
 function parseAED(s: string)           { return parseFloat(s.replace(/[^0-9.]/g, '')) || 0; }
 function autoAmount(rt: RefundType, dep: string) {
   if (rt === 'no' || rt === 'noRefund') return '0';
@@ -955,7 +957,7 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
   onDelete: (i: number) => void;
 }) {
   const invoices = getInvoices(d.declarationNo);
-  const needsOb  = needsOutbound(d.refundType);
+  const needsOb  = needsOutbound(d.refundType, d.chargeType);
   const isCdm    = d.chargeType === 'CDM Deposit';
   const isAuto   = d.refundType === 'no' || d.refundType === 'full' || d.refundType === 'fullImport' || d.refundType === 'refund' || d.refundType === 'noRefund';
   const meta     = DECL_META[d.declarationNo] ?? { declarationType: 'Import for Re-Export', depositMethod: 'Alternative Duty' };
@@ -1256,7 +1258,7 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
 
   const patchRefund = (i: number, rt: RefundType) => {
     setDetails(p => p.map((d, j) => j !== i ? d : { ...d, refundType: rt, claimAmount: autoAmount(rt, d.depositAmount) }));
-    if (needsOutbound(rt)) setInvOpen(p => ({ ...p, [i]: p[i] !== false }));
+    if (needsOutbound(rt, details[i]?.chargeType)) setInvOpen(p => ({ ...p, [i]: p[i] !== false }));
   };
   const patchAmount  = (i: number, v: string) => setDetails(p => p.map((d, j) => j !== i ? d : { ...d, claimAmount: v }));
   const patchRefField = (i: number, patch: { refType?: string; refCode?: string; refNo?: string }) =>
@@ -1363,7 +1365,7 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
             {/* Declaration row cards */}
             {details.map((d, i) => (
               <DeclRow key={d.declarationNo} d={d} idx={i} obs={obs}
-                invOpen={invOpen[i] !== false && (needsOutbound(d.refundType) || d.chargeType === 'CDM Deposit') && !!d.refundType}
+                invOpen={invOpen[i] !== false && (needsOutbound(d.refundType, d.chargeType) || d.chargeType === 'CDM Deposit') && !!d.refundType}
                 hsEdits={hsEdits} onPatchHs={patchHs}
                 onRefund={patchRefund} onAmount={patchAmount} onRefField={patchRefField} onToggleInv={toggleInv}
                 onAdd={(ctx, hsIds, onApplied) => setModal({ ctx, hsIds, onApplied })}
