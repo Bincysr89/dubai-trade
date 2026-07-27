@@ -533,12 +533,12 @@ const ROWS: Row[] = [
 
   // ── Refund of Duty ─────────────────────────────────────────────────────────
   // Duty + Import (needs refund type selection)
-  { declarationNo: '506-02100934-24', declarationDate: '09/18/2024', depositType: 'Duty',                                       declarationCategory: 'Import',              depositAmount: 'Dh 1,800', depositMethod: 'Cash', claimExpiry: '05/20/2025', exportExpiry: 'N/A', remarks: '—', kind: 'request' },
+  { declarationNo: '506-02100934-24', declarationDate: '09/18/2024', depositType: 'Duty',                                       declarationCategory: 'Import',              depositAmount: 'Dh 1,800', depositMethod: 'Cash', claimExpiry: '05/20/2025', exportExpiry: 'N/A', remarks: '—', kind: 'request', importerCode: 'A180' },
   // Declaration Amendment - Duty / Charges (direct)
-  { declarationNo: '507-03219875-24', declarationDate: '08/03/2024', depositType: 'Declaration Amendment - Duty / Charges',     declarationCategory: 'Import',              depositAmount: 'Dh 6,200', depositMethod: 'Cash', claimExpiry: '06/05/2025', exportExpiry: 'N/A', remarks: '—', kind: 'request' },
-  { declarationNo: '511-04412309-24', declarationDate: '07/15/2024', depositType: 'Declaration Amendment - Duty / Charges',     declarationCategory: 'Import For Re-Export',depositAmount: 'Dh 2,400', depositMethod: 'Cash', claimExpiry: '07/01/2025', exportExpiry: 'N/A', remarks: '—', kind: 'request' },
+  { declarationNo: '507-03219875-24', declarationDate: '08/03/2024', depositType: 'Declaration Amendment - Duty / Charges',     declarationCategory: 'Import',              depositAmount: 'Dh 6,200', depositMethod: 'Cash', claimExpiry: '06/05/2025', exportExpiry: 'N/A', remarks: '—', kind: 'request', importerCode: 'A180' },
+  { declarationNo: '511-04412309-24', declarationDate: '07/15/2024', depositType: 'Declaration Amendment - Duty / Charges',     declarationCategory: 'Import For Re-Export',depositAmount: 'Dh 2,400', depositMethod: 'Cash', claimExpiry: '07/01/2025', exportExpiry: 'N/A', remarks: '—', kind: 'request', importerCode: 'A180' },
   // Declaration Cancellation Refund - Duty / Charges (direct)
-  { declarationNo: '512-05501201-24', declarationDate: '10/10/2024', depositType: 'Declaration Cancellation Refund - Duty / Charges', declarationCategory: 'Import For Re-Export', depositAmount: 'Dh 3,000', depositMethod: 'Cash', claimExpiry: '05/15/2025', exportExpiry: 'N/A', remarks: '—', kind: 'request' },
+  { declarationNo: '512-05501201-24', declarationDate: '10/10/2024', depositType: 'Declaration Cancellation Refund - Duty / Charges', declarationCategory: 'Import For Re-Export', depositAmount: 'Dh 3,000', depositMethod: 'Cash', claimExpiry: '05/15/2025', exportExpiry: 'N/A', remarks: '—', kind: 'request', importerCode: 'A180' },
 
   // ── Non Remittance ─────────────────────────────────────────────────────────
   { declarationNo: '303-02655456-24', declarationDate: '10/21/2024', depositType: 'Non Remittance Claim', declarationCategory: 'Freezone Export', depositAmount: 'N/A', depositMethod: 'N/A', claimExpiry: '12/19/2024', exportExpiry: '11/19/2024', remarks: '—', kind: 'expired',  importerCode: 'A180' },
@@ -712,9 +712,10 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
 
   const isNonRemittance = claimType === 'nonRemittance';
   const isRefundDeposit = claimType === 'refundDeposit';
-  // Owner-code search + the 10-per-importer / single-importer rule apply to both
-  // Non Remittance and Refund of Deposits.
-  const enforcesImporterLimit = isNonRemittance || isRefundDeposit;
+  const isRefundDuty = claimType === 'refundDuty';
+  // Owner-code search + the 10-per-importer / single-importer rule apply to
+  // Non Remittance, Refund of Deposits, and Refund of Duty.
+  const enforcesImporterLimit = isNonRemittance || isRefundDeposit || isRefundDuty;
 
   // Close search dropdowns when clicking outside
   useEffect(() => {
@@ -755,7 +756,7 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
         { label: 'Remarks',                      w: 110 },
         { label: 'Claim Expiry',                 w: 130 },
       ]
-    : isRefundDeposit
+    : (isRefundDeposit || isRefundDuty)
     ? [
         { label: 'Declaration Number',           w: 170 },
         { label: 'Declaration Clearance Date',   w: 180 },
@@ -851,11 +852,11 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
 
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-[24px] flex flex-col gap-[20px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
         <h1 className="text-2xl sm:text-3xl lg:text-[32px] text-[#111838] mb-[8px]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>
-          {claimType === 'refundDeposit' ? 'Raise New Claim - Refund of Deposits' : claimType === 'nonRemittance' ? 'Raise New Claim - Non Remittance' : 'Raise New Claim'}
+          {claimType === 'refundDeposit' ? 'Raise New Claim - Refund of Deposits' : claimType === 'refundDuty' ? 'Raise New Claim - Refund of Duty' : claimType === 'nonRemittance' ? 'Raise New Claim - Non Remittance' : 'Raise New Claim'}
         </h1>
 
         <div>
-          <ClaimStepper activeIndex={0} steps={claimType === 'nonRemittance' ? NR_CLAIM_STEPS : claimType === 'refundDeposit' ? REFUND_DEPOSIT_STEPS : undefined} />
+          <ClaimStepper activeIndex={0} steps={claimType === 'nonRemittance' ? NR_CLAIM_STEPS : (claimType === 'refundDeposit' || claimType === 'refundDuty') ? REFUND_DEPOSIT_STEPS : undefined} />
         </div>
         {/* Claim Type selection card — hidden if type already chosen via ClaimTypeEntryPage */}
         {!claimTypePreset && (
