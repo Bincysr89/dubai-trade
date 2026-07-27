@@ -138,10 +138,10 @@ const FLIGHT_MANIFEST: ListingConfig = {
     { key: 'actions', label: 'Actions' },
   ],
   lockedStatusStyles: { status: MANIFEST_STATUS_STYLE },
-  statuses: ['Submitted', 'Cancelled', 'Draft'],
+  statuses: ['Submitted', 'Cancelled'],
   searchKeys: ['flightNo', 'uploadRefNo'],
   advancedFilterKeys: ['flightNo', 'airportLoading', 'scheduleDate', 'createdDate'],
-  flyoutItems: ['View Manifest Request', 'View Manifest', 'Amend', 'Cancel', 'Upload Manifest', 'Error Files'],
+  flyoutItems: ['View Manifest Request', 'View Manifest', 'Amend', 'Cancel', 'Upload Manifest', 'View Error Details'],
   primaryLabel: 'New Manifest',
   refKey: 'flightNo',
   detailSections: [
@@ -150,30 +150,27 @@ const FLIGHT_MANIFEST: ListingConfig = {
   ],
   rows: [
     { flightNo: '337788',  scheduleDate: '06/07/2025 11:34', airportLoading: 'DXB', manifestType: 'FFM',             createdDate: '03/12/2025', uploadRefNo: 'MNF-337788', uploadedFiles: '1', filesSuccessful: '1', filesFailed: '0', manifestStatus: 'Submitted', uploadStatus: 'Successful', status: 'Submitted' },
-    { flightNo: 'B123456', scheduleDate: '06/07/2025 11:34', airportLoading: 'DXB', manifestType: 'FWB',             createdDate: '—',          uploadRefNo: '—',          uploadedFiles: '0', filesSuccessful: '0', filesFailed: '0', manifestStatus: 'Draft',     uploadStatus: 'Failure',    status: 'Draft' },
     { flightNo: 'C123456', scheduleDate: '06/07/2025 11:34', airportLoading: 'DXB', manifestType: 'Inbound Manifest', createdDate: '02/07/2025', uploadRefNo: 'MNF-C123456', uploadedFiles: '2', filesSuccessful: '1', filesFailed: '1', manifestStatus: 'Submitted', uploadStatus: 'Failure',    status: 'Submitted' },
     { flightNo: 'D123456', scheduleDate: '02/07/2025 10:15', airportLoading: 'DXB', manifestType: 'FFM',             createdDate: '02/07/2025', uploadRefNo: 'MNF-D123456', uploadedFiles: '1', filesSuccessful: '0', filesFailed: '1', manifestStatus: 'Cancelled', uploadStatus: 'Failure',    status: 'Cancelled' },
     { flightNo: 'E123456', scheduleDate: '02/07/2025 10:15', airportLoading: 'DXB', manifestType: 'FWB',             createdDate: '02/07/2025', uploadRefNo: 'MNF-E123456', uploadedFiles: '1', filesSuccessful: '1', filesFailed: '0', manifestStatus: 'Cancelled', uploadStatus: 'Successful', status: 'Cancelled' },
-    { flightNo: 'F123456', scheduleDate: '02/07/2025 10:15', airportLoading: 'DXB', manifestType: 'Inbound Manifest', createdDate: '—',          uploadRefNo: '—',          uploadedFiles: '0', filesSuccessful: '0', filesFailed: '0', manifestStatus: 'Draft',     uploadStatus: 'Failure',    status: 'Draft' },
     { flightNo: 'G123456', scheduleDate: '02/07/2025 10:15', airportLoading: 'DXB', manifestType: 'FFM',             createdDate: '02/07/2025', uploadRefNo: 'MNF-G123456', uploadedFiles: '3', filesSuccessful: '3', filesFailed: '0', manifestStatus: 'Submitted', uploadStatus: 'Successful', status: 'Submitted' },
     { flightNo: 'H123456', scheduleDate: '02/07/2025 10:15', airportLoading: 'DXB', manifestType: 'FWB',             createdDate: '02/07/2025', uploadRefNo: 'MNF-H123456', uploadedFiles: '1', filesSuccessful: '1', filesFailed: '0', manifestStatus: 'Submitted', uploadStatus: 'Successful', status: 'Submitted' },
-    { flightNo: 'FM-DRAFT01', scheduleDate: '02/08/2025 09:00', airportLoading: 'DXB', manifestType: 'Inbound Manifest', createdDate: '—', uploadRefNo: '—', uploadedFiles: '0', filesSuccessful: '0', filesFailed: '0', manifestStatus: 'Draft', uploadStatus: 'Failure', status: 'Draft', isDraft: true },
   ],
 };
 
 /* Flight Manifest — Track File Upload tab. Manifest File Type drives the Action column:
    FWB rows only ever get an error-list view, FFM rows keep the full action set. */
 type FlightManifestUploadRecord = {
-  fileName: string; uploadRefNo: string; flightNo: string; manifestFileType: 'FWB' | 'FFM';
+  fileName: string; uploadRefNo: string; flightNo: string; scheduledDate: string; manifestFileType: 'FWB' | 'FFM';
   filesSuccessful: string; filesFailed: string; uploadDate: string; remarks: string; uploadStatus: 'Successful' | 'Failure';
 };
 const FLIGHT_MANIFEST_UPLOADS: FlightManifestUploadRecord[] = [
-  { fileName: 'FFM_337788.xml',  uploadRefNo: 'MNF-337788',  flightNo: '337788',  manifestFileType: 'FFM', filesSuccessful: '1', filesFailed: '0', uploadDate: '03/12/2025', remarks: 'Processed successfully',              uploadStatus: 'Successful' },
-  { fileName: 'FWB_H123456.xml', uploadRefNo: 'MNF-H123456', flightNo: 'H123456', manifestFileType: 'FWB', filesSuccessful: '1', filesFailed: '0', uploadDate: '02/07/2025', remarks: 'Processed successfully',              uploadStatus: 'Successful' },
-  { fileName: 'FFM_D123456.xml', uploadRefNo: 'MNF-D123456', flightNo: 'D123456', manifestFileType: 'FFM', filesSuccessful: '0', filesFailed: '1', uploadDate: '02/07/2025', remarks: 'Invalid AWB format',                  uploadStatus: 'Failure' },
-  { fileName: 'FWB_E123456.xml', uploadRefNo: 'MNF-E123456', flightNo: 'E123456', manifestFileType: 'FWB', filesSuccessful: '1', filesFailed: '0', uploadDate: '02/07/2025', remarks: 'Processed successfully',              uploadStatus: 'Successful' },
-  { fileName: 'FFM_G123456.xml', uploadRefNo: 'MNF-G123456', flightNo: 'G123456', manifestFileType: 'FFM', filesSuccessful: '3', filesFailed: '0', uploadDate: '02/07/2025', remarks: 'Processed successfully',              uploadStatus: 'Successful' },
-  { fileName: 'FFM_C123456.xml', uploadRefNo: 'MNF-C123456', flightNo: 'C123456', manifestFileType: 'FFM', filesSuccessful: '1', filesFailed: '1', uploadDate: '02/07/2025', remarks: '1 AWB rejected — duplicate entry',    uploadStatus: 'Failure' },
+  { fileName: 'FFM_337788.xml',  uploadRefNo: 'MNF-337788',  flightNo: '337788',  scheduledDate: '06/07/2025 11:34', manifestFileType: 'FFM', filesSuccessful: '1', filesFailed: '0', uploadDate: '03/12/2025', remarks: 'Processed successfully',              uploadStatus: 'Successful' },
+  { fileName: 'FWB_H123456.xml', uploadRefNo: 'MNF-H123456', flightNo: 'H123456', scheduledDate: '02/07/2025 10:15', manifestFileType: 'FWB', filesSuccessful: '1', filesFailed: '0', uploadDate: '02/07/2025', remarks: 'Processed successfully',              uploadStatus: 'Successful' },
+  { fileName: 'FFM_D123456.xml', uploadRefNo: 'MNF-D123456', flightNo: 'D123456', scheduledDate: '02/07/2025 10:15', manifestFileType: 'FFM', filesSuccessful: '0', filesFailed: '1', uploadDate: '02/07/2025', remarks: 'Invalid AWB format',                  uploadStatus: 'Failure' },
+  { fileName: 'FWB_E123456.xml', uploadRefNo: 'MNF-E123456', flightNo: 'E123456', scheduledDate: '02/07/2025 10:15', manifestFileType: 'FWB', filesSuccessful: '1', filesFailed: '0', uploadDate: '02/07/2025', remarks: 'Processed successfully',              uploadStatus: 'Successful' },
+  { fileName: 'FFM_G123456.xml', uploadRefNo: 'MNF-G123456', flightNo: 'G123456', scheduledDate: '02/07/2025 10:15', manifestFileType: 'FFM', filesSuccessful: '3', filesFailed: '0', uploadDate: '02/07/2025', remarks: 'Processed successfully',              uploadStatus: 'Successful' },
+  { fileName: 'FFM_C123456.xml', uploadRefNo: 'MNF-C123456', flightNo: 'C123456', scheduledDate: '06/07/2025 11:34', manifestFileType: 'FFM', filesSuccessful: '1', filesFailed: '1', uploadDate: '02/07/2025', remarks: '1 AWB rejected — duplicate entry',    uploadStatus: 'Failure' },
 ];
 
 /* ─── House Manifest ────────────────────────────────────────────── */
@@ -874,7 +871,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                   {activeMenu === 'flightManifest' && (
                     <div className="flex items-center gap-[8px] bg-white rounded-[6px] p-[4px] w-max"
                       style={{ boxShadow: '0px 2px 12px rgba(143,155,186,0.16)', border: '1px solid #eef1f6' }}>
-                      {([{ key: 'all', label: 'All Records' }, { key: 'trackUpload', label: 'Track File Upload' }] as const).map(t => (
+                      {([{ key: 'all', label: 'FFM Records' }, { key: 'trackUpload', label: 'Track File Upload' }] as const).map(t => (
                         <button key={t.key} type="button" onClick={() => setFmTab(t.key)}
                           className="text-[15px] px-[18px] py-[9px] rounded-[4px] transition-colors"
                           style={fmTab === t.key
@@ -900,13 +897,15 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                   </div>
                 </div>
                 <div className="flex items-center gap-[16px] flex-shrink-0">
-                  <div className="flex items-center gap-[8px]">
-                    <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>Drafts</span>
-                    <button onClick={() => { setShowDrafts(d => !d); setPage(1); }}
-                      className={`relative w-[48px] h-[28px] rounded-full transition-colors ${showDrafts ? 'bg-[#1360d2]' : 'bg-[#e2ebf9]'}`}>
-                      <div className={`absolute top-[3px] size-[22px] rounded-full bg-white shadow transition-transform ${showDrafts ? 'translate-x-[22px]' : 'translate-x-[3px]'}`} />
-                    </button>
-                  </div>
+                  {activeMenu !== 'flightManifest' && (
+                    <div className="flex items-center gap-[8px]">
+                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>Drafts</span>
+                      <button onClick={() => { setShowDrafts(d => !d); setPage(1); }}
+                        className={`relative w-[48px] h-[28px] rounded-full transition-colors ${showDrafts ? 'bg-[#1360d2]' : 'bg-[#e2ebf9]'}`}>
+                        <div className={`absolute top-[3px] size-[22px] rounded-full bg-white shadow transition-transform ${showDrafts ? 'translate-x-[22px]' : 'translate-x-[3px]'}`} />
+                      </button>
+                    </div>
+                  )}
                   <button onClick={() => setShowColModal(true)}
                     className="flex items-center gap-[8px] h-[48px] px-[14px] rounded-[4px] border border-[#d5ddfb] bg-white text-[16px] text-[#0e1b3d] hover:bg-[#f0f4ff] transition-colors"
                     style={{ fontFamily: font }}>
@@ -974,7 +973,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                         <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 1300 }}>
                           <thead>
                             <tr style={{ background: '#a6c2e9' }}>
-                              {['Upload Ref Number', 'Flight Number', 'Manifest File Type', 'No. of Successful Files', 'No. of Failed Files', 'Upload Date', 'Remarks'].map(h => (
+                              {['Upload Ref Number', 'Flight Number', 'Scheduled Date', 'Manifest File Type', 'No. of Successful Files', 'No. of Failed Files', 'Upload Date', 'Remarks'].map(h => (
                                 <th key={h} className="text-left text-[16px] text-[#051937]" style={{ padding: '10px 12px', fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
                               ))}
                               <th className="text-left text-[16px] text-[#051937]" style={{
@@ -989,7 +988,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                           </thead>
                           <tbody>
                             {fmuPaginated.length === 0 ? (
-                              <tr><td colSpan={9} style={{ padding: '40px 12px', textAlign: 'center' }}><span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>No matching upload records found.</span></td></tr>
+                              <tr><td colSpan={10} style={{ padding: '40px 12px', textAlign: 'center' }}><span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>No matching upload records found.</span></td></tr>
                             ) : fmuPaginated.map((row, i) => {
                               const st = row.uploadStatus === 'Failure' ? UPLOAD_STATUS_STYLE.Failure : UPLOAD_STATUS_STYLE.Successful;
                               const isFwb = row.manifestFileType === 'FWB';
@@ -997,13 +996,14 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                               <tr key={i} style={{ borderTop: '1px solid #f0f4ff' }}>
                                 <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap', background: '#fff' }}>{row.uploadRefNo}</td>
                                 <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap', background: '#fff' }}>{row.flightNo}</td>
+                                <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap', background: '#fff' }}>{row.scheduledDate}</td>
                                 <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', background: '#fff' }}>{row.manifestFileType}</td>
                                 <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', background: '#fff' }}>{row.filesSuccessful}</td>
                                 <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', background: '#fff' }}>{row.filesFailed}</td>
                                 <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap', background: '#fff' }}>{row.uploadDate}</td>
                                 <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', background: '#fff', maxWidth: 220 }}>{row.remarks}</td>
                                 <td style={{ position: 'sticky', right: FMU_ACTIONS_W, width: FMU_STATUS_W, minWidth: FMU_STATUS_W, padding: '12px', background: '#fff', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>
-                                  <span className="text-[15px] font-medium px-[10px] py-[4px] rounded-[4px] whitespace-nowrap" style={{ background: st.bg, color: st.color }}>{row.uploadStatus.toUpperCase()}</span>
+                                  <span className="inline-flex items-center px-[10px] py-[3px] rounded-[4px] text-[16px] font-medium whitespace-nowrap" style={{ background: st.bg, color: st.color, fontFamily: font }}>{row.uploadStatus}</span>
                                 </td>
                                 <td style={{ position: 'sticky', right: 0, width: FMU_ACTIONS_W, minWidth: FMU_ACTIONS_W, padding: '12px', background: '#fff', zIndex: openFlyout === i ? 50 : 1 }}>
                                   <div className="relative inline-block">
@@ -1012,15 +1012,15 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                                     </button>
                                     {openFlyout === i && (
                                       <div className="absolute z-[100] right-0 bg-white rounded-[8px] py-[4px] overflow-hidden" style={{ top: 36, width: 200, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
-                                        {(isFwb ? ['Error Files'] : ['View Manifest', 'Error Files']).map(label => (
-                                          <button key={label} className="group w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
+                                        {(isFwb ? [{ key: 'error', label: 'View Error Details' }] : [{ key: 'view', label: 'View Manifest' }, { key: 'error', label: 'View Error Details' }]).map(opt => (
+                                          <button key={opt.key} className="group w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
                                             onClick={() => {
                                               setOpenFlyout(null);
                                               const matched = FLIGHT_MANIFEST.rows.find(r => r.flightNo === row.flightNo);
-                                              if (label === 'Error Files') setErrorFilesRow(matched ?? ({ flightNo: row.flightNo, uploadRefNo: row.uploadRefNo } as unknown as ListingRow));
+                                              if (opt.key === 'error') setErrorFilesRow(matched ?? ({ flightNo: row.flightNo, uploadRefNo: row.uploadRefNo } as unknown as ListingRow));
                                               else if (matched) { setFmSelectedRow(matched); setFmView('view'); }
                                             }}>
-                                            <span className="text-[15px] text-[#111838] group-hover:text-white" style={{ fontFamily: font }}>{label}</span>
+                                            <span className="text-[15px] text-[#111838] group-hover:text-white" style={{ fontFamily: font }}>{opt.label}</span>
                                           </button>
                                         ))}
                                       </div>
@@ -1221,7 +1221,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                                                   setFmPrefill({ flightNo: str(row.flightNo), scheduleDate: str(row.scheduleDate), airportLoadingCode: str(row.airportLoading) });
                                                   setFmRequestKind('amend'); setFmView('new');
                                                 }
-                                                else if (label === 'Error Files') setErrorFilesRow(row);
+                                                else if (label === 'View Error Details') setErrorFilesRow(row);
                                                 else setShowNewRequest(true); // Cancel — no design provided yet
                                               } else if (activeMenu === 'seaExportManifest') {
                                                 if (label === 'Upload BOL') { setSemSelectedRow(row); setSemView('upload'); }

@@ -289,24 +289,41 @@ function AddUnloadingPage({ existing, onBack, onSave }: {
   const [lines, setLines] = useState<AwbLine[]>(existing?.lines ?? []);
   const [awb, setAwb] = useState<Omit<AwbLine, 'id'>>(BLANK_AWB);
   const [editingLineId, setEditingLineId] = useState<string | null>(null);
+  const [editingOriginalAwbNo, setEditingOriginalAwbNo] = useState<string | null>(null);
+  const [viewingLineId, setViewingLineId] = useState<string | null>(null);
+  const [confirmAwbChange, setConfirmAwbChange] = useState(false);
   const [linesPage, setLinesPage] = useState(1);
   const LINES_PAGE_SIZE = 5;
 
   const setF = <K extends keyof typeof BLANK_AWB>(k: K, v: typeof BLANK_AWB[K]) => setAwb(a => ({ ...a, [k]: v }));
   const canAddLine = awb.awbNo.trim() && awb.weight.trim() && awb.pieces.trim();
 
+  /* Adds the current form as a brand-new line item — used both for the normal "+ Add" flow
+     and for the "Airway Bill No. changed" confirmation flow (the original line is left as-is). */
+  const appendAsNewLine = () => {
+    setLines(p => [...p, { ...awb, id: `awb-${p.length}-${Date.now().toString(36)}` }]);
+    setEditingLineId(null); setEditingOriginalAwbNo(null); setAwb(BLANK_AWB); setConfirmAwbChange(false);
+  };
   const addOrUpdateLine = () => {
     if (!canAddLine) return;
     if (editingLineId) {
+      if (awb.awbNo.trim() !== editingOriginalAwbNo) { setConfirmAwbChange(true); return; }
       setLines(p => p.map(l => l.id === editingLineId ? { ...awb, id: editingLineId } : l));
-      setEditingLineId(null);
+      setEditingLineId(null); setEditingOriginalAwbNo(null);
+      setAwb(BLANK_AWB);
     } else {
       setLines(p => [...p, { ...awb, id: `awb-${p.length}-${Date.now().toString(36)}` }]);
+      setAwb(BLANK_AWB);
     }
-    setAwb(BLANK_AWB);
   };
-  const editLine = (l: AwbLine) => { setAwb(l); setEditingLineId(l.id); };
-  const removeLine = (id: string) => { setLines(p => p.filter(l => l.id !== id)); if (editingLineId === id) { setEditingLineId(null); setAwb(BLANK_AWB); } };
+  const viewLine = (l: AwbLine) => { setAwb(l); setViewingLineId(l.id); setEditingLineId(null); setEditingOriginalAwbNo(null); };
+  const editLine = (l: AwbLine) => { setAwb(l); setEditingLineId(l.id); setEditingOriginalAwbNo(l.awbNo); setViewingLineId(null); };
+  const closeView = () => { setViewingLineId(null); setAwb(BLANK_AWB); };
+  const removeLine = (id: string) => {
+    setLines(p => p.filter(l => l.id !== id));
+    if (editingLineId === id) { setEditingLineId(null); setEditingOriginalAwbNo(null); setAwb(BLANK_AWB); }
+    if (viewingLineId === id) { setViewingLineId(null); setAwb(BLANK_AWB); }
+  };
 
   const canSave = airportCode.trim() && (nilCargo === 'Yes' || lines.length > 0);
 
@@ -332,32 +349,41 @@ function AddUnloadingPage({ existing, onBack, onSave }: {
         {nilCargo === 'No' && (
           <>
             <div className="flex flex-col gap-[16px]">
-              <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>Add Airway Bill</p>
+              <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>
+                {viewingLineId ? 'View Airway Bill' : 'Add Airway Bill'}
+              </p>
               <div className="bg-white rounded-[8px] p-[24px] flex flex-col gap-[16px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]">
-                  <FInput label="Airway Bill No." value={awb.awbNo} onChange={v => setF('awbNo', v)} req />
-                  <FInput label="Goods Description" value={awb.goodsDescription} onChange={v => setF('goodsDescription', v)} req />
-                  <FInput label="Weight" value={awb.weight} onChange={v => setF('weight', v)} req />
-                  <FSelect label="Weight Unit" value={awb.weightUnit} onChange={v => setF('weightUnit', v)} options={['KG', 'LB']} req />
+                  <FInput label="Airway Bill No." value={awb.awbNo} onChange={v => setF('awbNo', v)} req disabled={!!viewingLineId} />
+                  <FInput label="Goods Description" value={awb.goodsDescription} onChange={v => setF('goodsDescription', v)} req disabled={!!viewingLineId} />
+                  <FInput label="Weight" value={awb.weight} onChange={v => setF('weight', v)} req disabled={!!viewingLineId} />
+                  <FSelect label="Weight Unit" value={awb.weightUnit} onChange={v => setF('weightUnit', v)} options={['KG', 'LB']} req disabled={!!viewingLineId} />
                   <FInput label="Weight in KG's" disabled value={
                     awb.weight.trim() === '' ? '' : (awb.weightUnit === 'LB' ? (parseFloat(awb.weight) * 0.453592).toFixed(2) : awb.weight)
                   } onChange={() => {}} />
-                  <FInput label="Shipper Name" value={awb.shipperName} onChange={v => setF('shipperName', v)} req />
-                  <FInput label="Number of Pieces" value={awb.pieces} onChange={v => setF('pieces', v)} req />
-                  <FSelect label="Shipment Description Code" value={awb.shipmentDescCode} onChange={v => setF('shipmentDescCode', v)} options={['Total Consignment', 'Part Consignment']} />
-                  <FInput label="Consignee Name" value={awb.consigneeName} onChange={v => setF('consigneeName', v)} req />
-                  <AirportCombo label="Airport/City of Origin" req code={awb.originCode} name={awb.originName}
+                  <FInput label="Shipper Name" value={awb.shipperName} onChange={v => setF('shipperName', v)} req disabled={!!viewingLineId} />
+                  <FInput label="Number of Pieces" value={awb.pieces} onChange={v => setF('pieces', v)} req disabled={!!viewingLineId} />
+                  <FSelect label="Shipment Description Code" value={awb.shipmentDescCode} onChange={v => setF('shipmentDescCode', v)} options={['Total Consignment', 'Part Consignment']} disabled={!!viewingLineId} />
+                  <FInput label="Consignee Name" value={awb.consigneeName} onChange={v => setF('consigneeName', v)} req disabled={!!viewingLineId} />
+                  <AirportCombo label="Airport/City of Origin" req code={awb.originCode} name={awb.originName} disabled={!!viewingLineId}
                     onSelect={a => setAwb(x => ({ ...x, originCode: a.code, originName: a.name }))} />
-                  <AirportCombo label="Airport/City of Destination" req code={awb.destCode} name={awb.destName}
+                  <AirportCombo label="Airport/City of Destination" req code={awb.destCode} name={awb.destName} disabled={!!viewingLineId}
                     onSelect={a => setAwb(x => ({ ...x, destCode: a.code, destName: a.name }))} />
                 </div>
                 <div className="flex gap-[10px]">
-                  <button type="button" onClick={() => { setAwb(BLANK_AWB); setEditingLineId(null); }}
-                    className="h-[44px] px-[20px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>Reset</button>
-                  <button type="button" onClick={addOrUpdateLine} disabled={!canAddLine}
-                    className="h-[44px] px-[20px] rounded-[4px] text-[16px] text-white" style={{ background: canAddLine ? '#1360d2' : '#a7c3eb', cursor: canAddLine ? 'pointer' : 'not-allowed', fontWeight: 500, fontFamily: font }}>
-                    {editingLineId ? 'Update' : '+ Add'}
-                  </button>
+                  {viewingLineId ? (
+                    <button type="button" onClick={closeView}
+                      className="h-[44px] px-[20px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>Close</button>
+                  ) : (
+                    <>
+                      <button type="button" onClick={() => { setAwb(BLANK_AWB); setEditingLineId(null); setEditingOriginalAwbNo(null); }}
+                        className="h-[44px] px-[20px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>Reset</button>
+                      <button type="button" onClick={addOrUpdateLine} disabled={!canAddLine}
+                        className="h-[44px] px-[20px] rounded-[4px] text-[16px] text-white" style={{ background: canAddLine ? '#1360d2' : '#a7c3eb', cursor: canAddLine ? 'pointer' : 'not-allowed', fontWeight: 500, fontFamily: font }}>
+                        {editingLineId ? 'Update' : '+ Add'}
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -390,6 +416,9 @@ function AddUnloadingPage({ existing, onBack, onSave }: {
                           <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{l.consigneeName || '—'}</td>
                           <td className="px-[16px] py-[10px]">
                             <div className="flex items-center gap-[8px]">
+                              <button type="button" onClick={() => viewLine(l)} aria-label={`View ${l.awbNo}`} className="text-[#455174] hover:opacity-70">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" /><circle cx="12" cy="12" r="3" /></svg>
+                              </button>
                               <button type="button" onClick={() => editLine(l)} aria-label={`Edit ${l.awbNo}`} className="text-[#1360d2] hover:opacity-70">
                                 <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2l4 4-9 9H5v-4z" /></svg>
                               </button>
@@ -423,6 +452,21 @@ function AddUnloadingPage({ existing, onBack, onSave }: {
           </button>
         }
       />
+
+      {confirmAwbChange && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(14,27,61,0.45)', padding: 24 }}>
+          <div className="bg-white rounded-[8px] p-[24px] flex flex-col gap-[16px]" style={{ width: '100%', maxWidth: 440, boxShadow: '0px 20px 60px rgba(14,27,61,0.18)', fontFamily: font }}>
+            <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 700 }}>Are you sure to edit the Airway Bill Number?</p>
+            <p className="text-[15px] text-[#697498]">A new AWB will be added as a new line item to the table.</p>
+            <div className="flex justify-end gap-[10px]">
+              <button type="button" onClick={() => setConfirmAwbChange(false)}
+                className="h-[44px] px-[20px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>Cancel</button>
+              <button type="button" onClick={appendAsNewLine}
+                className="h-[44px] px-[20px] rounded-[4px] text-[16px] text-white" style={{ background: '#1360d2', fontWeight: 500, fontFamily: font, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>Update</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -471,6 +515,12 @@ export default function FlightManifestNewRequestPage({
   const [unloadingRowsPage, setUnloadingRowsPage] = useState(1);
   const UNLOADING_ROWS_PAGE_SIZE = 5;
   const [editingUnloadingId, setEditingUnloadingId] = useState<string | null>(null);
+  const [openUnloadingIds, setOpenUnloadingIds] = useState<Set<string>>(new Set());
+  const toggleUnloadingOpen = (id: string) => setOpenUnloadingIds(prev => {
+    const next = new Set(prev);
+    next.has(id) ? next.delete(id) : next.add(id);
+    return next;
+  });
 
   const [manifestTypeUpload, setManifestTypeUpload] = useState('FFM');
   const [uploadFiles, setUploadFiles] = useState<ManifestFile[]>([]);
@@ -655,42 +705,105 @@ export default function FlightManifestNewRequestPage({
                       </button>
                     )}
                   </div>
-                  <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-                    <table className="w-full" style={{ borderCollapse: 'collapse' }}>
-                      <thead>
-                        <tr style={{ background: '#a6c2e9' }}>
-                          {['Airport of Unloading', 'Nil Cargo', "No. of AWB's", 'Actions'].map(h => (
-                            <th key={h} className="text-left text-[16px] text-[#000]" style={{ padding: '12px 16px', fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {unloadingRows.length === 0 ? (
-                          <tr><td colSpan={4} className="text-[16px] text-[#697498]" style={{ padding: '32px 16px', textAlign: 'center' }}>No airports of unloading added yet.</td></tr>
-                        ) : unloadingRows.slice((unloadingRowsPage - 1) * UNLOADING_ROWS_PAGE_SIZE, unloadingRowsPage * UNLOADING_ROWS_PAGE_SIZE).map(r => (
-                          <tr key={r.id} style={{ borderTop: '1px solid #f0f3fa' }}>
-                            <td className="text-[16px] text-[#1360d2]" style={{ padding: '14px 16px', fontWeight: 500 }}>{r.airportCode}{r.airportName ? ` (${r.airportName})` : ''}</td>
-                            <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '14px 16px' }}>{r.nilCargo}</td>
-                            <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '14px 16px' }}>{r.lines.length}</td>
-                            <td style={{ padding: '14px 16px' }}>
-                              {!viewOnly && (
-                                <div className="flex items-center gap-[8px]">
-                                  <button type="button" onClick={() => { setEditingUnloadingId(r.id); setStep('addUnloading'); }}
-                                    className="h-[32px] px-[12px] rounded-[4px] text-[14px] text-white flex-shrink-0" style={{ background: '#1360d2', fontFamily: font, fontWeight: 500 }}>
-                                    Add AWB&apos;s
-                                  </button>
-                                  <button type="button" onClick={() => setUnloadingRows(p => p.filter(x => x.id !== r.id))} aria-label={`Remove ${r.airportCode}`}
-                                    className="size-[32px] inline-flex items-center justify-center rounded-[4px] hover:bg-[#fef2f2] transition-colors flex-shrink-0" style={{ color: '#dc3545' }}>
-                                    <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M3 5h14M8 5V3h4v2M17 5l-1 13H4L3 5" /><path d="M8 9v5M12 9v5" /></svg>
-                                  </button>
-                                </div>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  {unloadingRows.length === 0 ? (
+                    <div className="bg-white rounded-[8px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+                      <p className="text-[16px] text-[#697498]" style={{ padding: '32px 16px', textAlign: 'center' }}>No airports of unloading added yet.</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-[12px]">
+                      {unloadingRows.slice((unloadingRowsPage - 1) * UNLOADING_ROWS_PAGE_SIZE, unloadingRowsPage * UNLOADING_ROWS_PAGE_SIZE).map(r => {
+                        const hasAwbs = r.lines.length > 0;
+                        const isOpen = hasAwbs && openUnloadingIds.has(r.id);
+                        return (
+                        <div key={r.id} className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: isOpen ? '0px 5px 32px rgba(19,96,210,0.18)' : '0px 5px 32px rgba(143,155,186,0.16)', border: `1.5px solid ${isOpen ? '#1360d2' : 'transparent'}` }}>
+                          <div className="flex flex-wrap items-center gap-x-[28px] gap-y-[8px] px-[16px] py-[14px]">
+                            <div className="flex flex-col gap-[2px]">
+                              <span className="text-[13px] text-[#697498]" style={{ fontFamily: font }}>Airport of Unloading</span>
+                              <span className="text-[16px] text-[#1360d2]" style={{ fontFamily: font, fontWeight: 500 }}>{r.airportCode}{r.airportName ? ` (${r.airportName})` : ''}</span>
+                            </div>
+                            <div className="flex flex-col gap-[2px]">
+                              <span className="text-[13px] text-[#697498]" style={{ fontFamily: font }}>Nil Cargo</span>
+                              <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>{r.nilCargo}</span>
+                            </div>
+                            <div className="flex flex-col gap-[2px]">
+                              <span className="text-[13px] text-[#697498]" style={{ fontFamily: font }}>No. of AWB&apos;s</span>
+                              <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>{r.lines.length}</span>
+                            </div>
+                            {!viewOnly && (
+                              <div className="flex items-center gap-[8px] ml-auto">
+                                <button type="button" onClick={() => { setEditingUnloadingId(r.id); setStep('addUnloading'); }}
+                                  className="h-[32px] px-[12px] rounded-[4px] text-[14px] text-white flex-shrink-0" style={{ background: '#1360d2', fontFamily: font, fontWeight: 500 }}>
+                                  Add AWB&apos;s
+                                </button>
+                                <button type="button" onClick={() => setUnloadingRows(p => p.filter(x => x.id !== r.id))} aria-label={`Remove ${r.airportCode}`}
+                                  className="size-[32px] inline-flex items-center justify-center rounded-[4px] hover:bg-[#fef2f2] transition-colors flex-shrink-0" style={{ color: '#dc3545' }}>
+                                  <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M3 5h14M8 5V3h4v2M17 5l-1 13H4L3 5" /><path d="M8 9v5M12 9v5" /></svg>
+                                </button>
+                              </div>
+                            )}
+                            {hasAwbs && (
+                              <button type="button" onClick={() => toggleUnloadingOpen(r.id)} aria-label={isOpen ? 'Collapse AWB list' : 'Expand AWB list'}
+                                className="size-[36px] rounded-full inline-flex items-center justify-center transition-colors flex-shrink-0"
+                                style={{ background: '#fff', border: '1px solid #e0e6ef', color: '#455174', boxShadow: '0px 1px 4px rgba(19,96,210,0.10)' }}>
+                                <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"
+                                  style={{ transition: 'transform 0.15s', transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                                  <path d="M5 8l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              </button>
+                            )}
+                          </div>
+
+                          {hasAwbs && (
+                            <div style={{ borderTop: '1px solid #eef1f6' }}>
+                              <button type="button" onClick={() => toggleUnloadingOpen(r.id)}
+                                className={`w-full flex items-center gap-[10px] px-[20px] py-[12px] text-left transition-colors ${isOpen ? '' : 'hover:bg-[#f8fafd]'}`}
+                                style={{ border: 'none', background: isOpen ? '#e2ebf9' : 'transparent', cursor: 'pointer', fontFamily: font }}>
+                                <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="#697498" strokeWidth="2.2" strokeLinecap="round"
+                                  style={{ transition: 'transform 0.15s', transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)', flexShrink: 0 }}>
+                                  <path d="M5 3l4 4-4 4" />
+                                </svg>
+                                <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>List of Airway Bill of Unloading</span>
+                                <span className="text-[14px] px-[10px] py-[3px] rounded-[12px]" style={{ background: isOpen ? '#fff' : '#e2ebf9', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: font }}>
+                                  {r.lines.length} AWB{r.lines.length !== 1 ? 's' : ''}
+                                </span>
+                                <span className="text-[14px] text-[#697498] ml-auto" style={{ fontFamily: font, flexShrink: 0 }}>{isOpen ? 'Collapse' : 'Expand'}</span>
+                              </button>
+                            </div>
+                          )}
+
+                          {isOpen && (
+                            <div className="px-[20px] pb-[16px] pt-[16px]" style={{ borderTop: '1px solid #f5f7fc' }}>
+                              <div className="rounded-[6px] overflow-hidden overflow-x-auto" style={{ border: '1px solid #eef1f6' }}>
+                                <table className="w-full" style={{ fontFamily: font, borderCollapse: 'collapse', minWidth: 780 }}>
+                                  <thead>
+                                    <tr style={{ background: '#e2ebf9' }}>
+                                      {['Airway Bill No.', 'Origin', 'Destination', 'Weight', 'No. of Pcs', 'Shipper', 'Consignee'].map(h => (
+                                        <th key={h} className="text-left px-[16px] py-[10px] text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
+                                      ))}
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {r.lines.map(l => (
+                                      <tr key={l.id} style={{ borderTop: '1px solid #f0f4ff' }}>
+                                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{l.awbNo}</td>
+                                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{l.originCode || '—'}</td>
+                                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{l.destCode || '—'}</td>
+                                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{l.weight} {l.weightUnit}</td>
+                                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{l.pieces}</td>
+                                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{l.shipperName || '—'}</td>
+                                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{l.consigneeName || '—'}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        );
+                      })}
+                    </div>
+                  )}
                   {unloadingRows.length > 0 && (
                     <Pagination page={unloadingRowsPage} totalPages={Math.max(1, Math.ceil(unloadingRows.length / UNLOADING_ROWS_PAGE_SIZE))}
                       pageSize={UNLOADING_ROWS_PAGE_SIZE} totalItems={unloadingRows.length} onPageChange={setUnloadingRowsPage} onPageSizeChange={() => {}} />
