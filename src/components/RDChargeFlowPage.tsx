@@ -63,7 +63,7 @@ export type OutboundDetail = {
   reExportTo: string;
 };
 
-type HSCodeEntry = {
+export type HSCodeEntry = {
   id: string;
   lineItemNo: number;
   hsCode: string;
@@ -80,7 +80,7 @@ type HSCodeEntry = {
 /* Multiple-allocation — a single HS line's statistical quantity split across several unit prices. */
 type UnitPriceDetail = { id: string; statQty: string; unitPrice: string };
 
-type InvoiceEntry  = { id: string; invoiceNo: string; invoiceDate: string; hsCodes: HSCodeEntry[] };
+export type InvoiceEntry  = { id: string; invoiceNo: string; invoiceDate: string; hsCodes: HSCodeEntry[] };
 type DrawerCtx     = { declNo: string; invoiceNo: string; invoiceId: string; hsId: string; hsCode: string; description: string; editId?: string };
 export type OutboundState = Record<string, OutboundDetail[]>;
 
@@ -120,7 +120,7 @@ const DECL_META: Record<string, { declarationType: string; depositMethod: string
   '201-07612301-24': { declarationType: 'Transit (ROW to ROW)', depositMethod: 'Alternative Duty' },
 };
 
-function getInvoices(declNo: string): InvoiceEntry[] {
+export function getInvoices(declNo: string): InvoiceEntry[] {
   return MOCK_INVOICES[declNo] ?? [{
     id: `inv-${declNo}`, invoiceNo: 'INV-DEFAULT', invoiceDate: '01 Jan 2024', hsCodes: [
       { id: `h-${declNo}`, lineItemNo: 1, hsCode: '99999999', description: 'General Merchandise', statQty: 1, suppQty: 1, weight: 1.0, unit: 'PCS', allocationMethod: '', unitPrice: '0', currency: 'AED' },

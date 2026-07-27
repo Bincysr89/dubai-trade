@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import type { Row } from './EligibleDeclarationsPage';
-import type { UploadedDoc } from './NonRemittanceDocumentsPage';
+import { mergeDocsByBatch, type UploadedDoc } from './NonRemittanceDocumentsPage';
 import Dh from './Dh';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
@@ -55,7 +55,7 @@ export default function NonRemittanceClaimViewPage({ onBack, selectedRows, uploa
   const allDocs = uploadedDocs.length > 0 ? uploadedDocs : DEFAULT_DOCS;
   // Filter the uploaded-documents table by a declaration (View Attachments action).
   const [docFilter, setDocFilter] = useState<string | null>(null);
-  const filteredDocs = docFilter ? allDocs.filter(d => d.declNo === docFilter) : allDocs;
+  const filteredDocs = mergeDocsByBatch(docFilter ? allDocs.filter(d => d.declNo === docFilter) : allDocs);
 
   return (
     <div className="flex flex-col h-full bg-[#f8fafd]">

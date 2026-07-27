@@ -647,10 +647,17 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
           )}
           {claimStep === 'rdClaimView' && (
             /* Refund of Deposits / Refund of Duty in-progress claim — View Claim uses the
-               Alternative Duty Deposit-style claim view, not the Non Remittance one. */
+               Alternative Duty Deposit-style claim view, not the Non Remittance one. Passing
+               the real charge details/outbounds/uploaded docs captured on the earlier steps
+               makes this reflect exactly what the user selected, per declaration, instead of
+               generic mock content. */
             <RefundDepositsClaimViewPage
               claimType={rdClaimLabel}
               chargeType={claimSelectedRows[0]?.depositType}
+              rows={claimSelectedRows}
+              chargeDetails={claimChargeDetails}
+              outbounds={claimOutbounds}
+              uploadedDocs={nonRemittanceUploadedDocs}
               onBack={() => setClaimStep(claimViewReturnStep)}
             />
           )}

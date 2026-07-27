@@ -26,7 +26,29 @@ export type UploadedDoc = {
   fileSize: number;
   uploadedOn: string;
   remarks: string;
+  /** Groups the doc-type rows created from a single file upload — a file checked against
+      several document types produces one UploadedDoc per type sharing this id, so the
+      table can merge them back into a single row with a comma-separated Document Type. */
+  batchId?: string;
 };
+
+/** Merge doc-type rows that came from the same file upload (same batchId) back into one row,
+    with Document Type shown as a comma-separated list — a file uploaded against multiple
+    document types is one physical file, so the table should show one row per file, not one
+    per type. */
+export function mergeDocsByBatch<T extends { id: string; docType: string; batchId?: string }>(docs: T[]): T[] {
+  const order: string[] = [];
+  const groups = new Map<string, T[]>();
+  docs.forEach(doc => {
+    const key = doc.batchId ?? doc.id;
+    if (!groups.has(key)) { order.push(key); groups.set(key, []); }
+    groups.get(key)!.push(doc);
+  });
+  return order.map(key => {
+    const group = groups.get(key)!;
+    return { ...group[0], docType: group.map(g => g.docType).join(', ') };
+  });
+}
 
 type Props = {
   rows: Row[];
@@ -64,6 +86,9 @@ export function UploadedDocsByDeclaration({ docs, declOrder, onRemove }: {
     list.push(doc);
     groups.set(doc.declNo, list);
   });
+  // Merge doc-type rows from the same file upload — the "N files" badge and table below
+  // should both count physical files, not one row per document type.
+  groups.forEach((list, declNo) => groups.set(declNo, mergeDocsByBatch(list)));
   const orderedDeclNos = [
     ...(declOrder ?? []).filter(d => groups.has(d)),
     ...Array.from(groups.keys()).filter(d => !(declOrder ?? []).includes(d)),
@@ -228,23 +253,27 @@ export default function NonRemittanceDocumentsPage({ rows, onBack, onContinue, o
     if (!selectedDecl || selectedDocTypes.size === 0) return;
     if (f.size > MAX_SIZE_MB * 1024 * 1024) return;
     const declAtUpload = selectedDecl;
-    const newDocs = Array.from(selectedDocTypes).map(docType => {
-      docCounter += 1;
-      return {
-        id: `${f.name}-${f.size}-${docCounter}`,
-        declNo: declAtUpload,
-        docType,
-        fileName: f.name,
-        fileSize: f.size,
-        uploadedOn: today,
-        remarks: remarks.trim(),
-      };
-    });
+    docCounter += 1;
+    const batchId = `${f.name}-${f.size}-${docCounter}`;
+    const newDocs = Array.from(selectedDocTypes).map(docType => ({
+      id: `${batchId}-${docType}`,
+      declNo: declAtUpload,
+      docType,
+      fileName: f.name,
+      fileSize: f.size,
+      uploadedOn: today,
+      remarks: remarks.trim(),
+      batchId,
+    }));
     updateDocs(prev => [...prev, ...newDocs]);
     setRemarks('');
   };
 
-  const removeDoc = (id: string) => updateDocs(prev => prev.filter(d => d.id !== id));
+  /* Removing one merged row (one file) drops every doc-type entry uploaded alongside it. */
+  const removeDoc = (id: string) => updateDocs(prev => {
+    const key = prev.find(d => d.id === id)?.batchId ?? id;
+    return prev.filter(d => (d.batchId ?? d.id) !== key);
+  });
 
   const canUpload = !!selectedDecl && selectedDocTypes.size > 0;
 

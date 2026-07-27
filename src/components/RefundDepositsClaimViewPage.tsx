@@ -1,6 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import Dh from './Dh';
-import { hasFullRefundOptions, hasDutyRefundOptions, hasNaRefundType } from './RDChargeFlowPage';
+import {
+  hasFullRefundOptions, hasDutyRefundOptions, hasNaRefundType, getInvoices, obKey,
+  type ChargeDetail, type OutboundState, type OutboundDetail,
+} from './RDChargeFlowPage';
+import { mergeDocsByBatch, type UploadedDoc } from './NonRemittanceDocumentsPage';
+import type { Row } from './EligibleDeclarationsPage';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
 
@@ -32,19 +37,13 @@ function Section({ title, badge, children }: { title: string; badge?: string; ch
   );
 }
 
-/* ─── Mock claim data — a Refund of Deposits claim with export linkage, so the
-       Declaration Details accordion has real Invoice/HS/Outbound content. ─── */
-type OutboundEntry = {
-  id: string; customsAuthority: string; obDeclarationNo: string; obDeclarationType: string;
-  exitPoint: string; actualDepartureDate: string; reExportTo: string;
-  statQty: string; suppQty: string; weight: string;
-};
-const OB1: OutboundEntry = { id: 'ob1', customsAuthority: 'Dubai Customs', obDeclarationNo: 'EX-20800049-24', obDeclarationType: 'Re-Export', exitPoint: 'Jebel Ali Port', actualDepartureDate: '15/01/2025', reExportTo: 'Saudi Arabia', statQty: '50', suppQty: '50', weight: '1250' };
-const OB2: OutboundEntry = { id: 'ob2', customsAuthority: 'Dubai Customs', obDeclarationNo: 'EX-20800061-24', obDeclarationType: 'Export',    exitPoint: 'Port Rashid',    actualDepartureDate: '22/02/2025', reExportTo: 'Oman',         statQty: '32', suppQty: '30', weight: '880'  };
-
+/* ─── Declaration/invoice/outbound shapes — mirror RDChargeFlowPage's own types so the
+       real per-declaration data captured during the flow (refund type, claim amount, added
+       outbound declarations, CDM reference fields) can be rendered as-is, with no lossy
+       re-mapping. ─── */
 type HsLine = {
   id: string; lineItemNo: number; hsCode: string; description: string;
-  statQty: string; suppQty: string; weight: string; unit: string; outbound: OutboundEntry[];
+  statQty: string; suppQty: string; weight: string; unit: string; outbound: OutboundDetail[];
 };
 type InvoiceGroup = { invoiceNo: string; hsLines: HsLine[] };
 
@@ -55,23 +54,54 @@ type DeclLine = {
   refType?: string; refCode?: string; refNo?: string;
 };
 
+type ViewDoc = { id: string; declNo: string; docType: string; fileName: string; uploadedOn: string; remarks: string; batchId?: string };
+
 /* Only Alternative Duty Deposit (and Duty) declarations carry export/outbound linkage —
    every other charge type (Missing Document, CDM, Cargo Transfer, Declaration Amendment/
    Cancellation Deposit) is a plain Refund/No Refund with no Invoice & HS Code / Outbound
    Declaration Details section, mirroring the create/amend claim flow's RDChargeFlowPage. */
 const hasOutboundLinkage = (chargeType: string) => hasFullRefundOptions(chargeType) || hasDutyRefundOptions(chargeType);
 
-/* Real Invoice/HS/Outbound mock content — only exists for the one Alternative Duty Deposit
-   declaration used across this claim's demo data; every other declaration passed in gets no
-   invoices (harmless, since the accordion is hidden for those charge types anyway). */
-const INVOICES_BY_DECL: Record<string, InvoiceGroup[]> = {
-  '105-01426431-24': [
-    { invoiceNo: 'INV-2024-001', hsLines: [
-      { id: 'h1', lineItemNo: 1, hsCode: '39269050', description: 'Plastic Components & Fittings',       statQty: '100', suppQty: '100', weight: '45.5', unit: 'PCS', outbound: [OB1] },
-      { id: 'h2', lineItemNo: 2, hsCode: '84713000', description: 'Electronic Data Processing Machines', statQty: '5',   suppQty: '5',   weight: '22.0', unit: 'NOS', outbound: [OB2] },
-    ]},
-  ],
+const REFUND_TYPE_LABELS: Record<string, string> = {
+  full: 'Full Export', fullImport: 'Full Import', partial: 'Partial Export', partialImport: 'Partial Import',
+  no: 'No Export', refund: 'Refund', noRefund: 'No Refund', na: 'NA',
 };
+
+/* Real Invoice/HS-Code skeleton (same mock content RDChargeFlowPage showed while the user
+   built the claim), with the actual outbound declarations the user added attached per HS
+   line via the same obKey(declNo, hsId) lookup the flow itself uses. */
+function buildInvoiceGroups(declNo: string, outbounds?: OutboundState): InvoiceGroup[] {
+  return getInvoices(declNo).map(inv => ({
+    invoiceNo: inv.invoiceNo,
+    hsLines: inv.hsCodes.map(hs => ({
+      id: hs.id, lineItemNo: hs.lineItemNo, hsCode: hs.hsCode, description: hs.description,
+      statQty: String(hs.statQty), suppQty: String(hs.suppQty), weight: String(hs.weight), unit: hs.unit,
+      outbound: outbounds?.[obKey(declNo, hs.id)] ?? [],
+    })),
+  }));
+}
+
+/* Real flow path — one row per declaration the user actually selected, with the refund type,
+   claim amount, deposit method and (for CDM Deposit) reference fields exactly as entered on
+   the Refund Details step. */
+function buildDeclLinesFromCharges(chargeDetails: ChargeDetail[], rows: Row[] | undefined, outbounds: OutboundState | undefined): DeclLine[] {
+  return chargeDetails.map(d => {
+    const row = rows?.find(r => r.declarationNo === d.declarationNo);
+    const isCdm = d.chargeType === 'CDM Deposit';
+    return {
+      declarationNo: d.declarationNo,
+      declarationType: row?.declarationCategory ?? '—',
+      chargeType: d.chargeType,
+      depositMethod: d.depositMethod,
+      accountNumber: row?.accountNumber ?? '—',
+      depositAmount: d.depositAmount === 'N/A' ? 'N/A' : d.depositAmount.replace(/^Dh\s*/, ''),
+      refundType: REFUND_TYPE_LABELS[d.refundType] ?? (d.refundType || '—'),
+      claimAmount: d.claimAmount || '0',
+      invoices: buildInvoiceGroups(d.declarationNo, outbounds),
+      ...(isCdm ? { refType: d.refType, refCode: d.refCode, refNo: d.refNo } : {}),
+    };
+  });
+}
 
 type IncomingDecl = { declNo: string; date: string; category: string; ownerCode: string; claimExpiry: string; exportExpiry: string };
 
@@ -81,6 +111,15 @@ const DEFAULT_DECLARATIONS: IncomingDecl[] = [
   { declNo: '105-01426431-24', date: '09/10/2024', category: 'Import for Re Export', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '04/03/2025', exportExpiry: '03/08/2025' },
 ];
 
+/* Legacy demo outbound records — kept only so the main listing's "View Claim" (which has no
+   live flow data to draw from, just a static demo declaration) still shows a populated
+   Outbound Declaration Details table for its Alternative Duty Deposit example. */
+const LEGACY_OUTBOUNDS: OutboundState = {
+  [obKey('105-01426431-24', 'h1')]: [{ id: 'ob1', customsAuthority: 'Dubai Customs', declarationNo: 'EX-20800049-24', declarationType: 'Re-Export', exitPoint: 'Jebel Ali Port', actualDepartureDate: '15/01/2025', reExportTo: 'Saudi Arabia', statQty: '50', suppQty: '50', weight: '1250' }],
+  [obKey('105-01426431-24', 'h2')]: [{ id: 'ob2', customsAuthority: 'Dubai Customs', declarationNo: 'EX-20800061-24', declarationType: 'Export',    exitPoint: 'Port Rashid',    actualDepartureDate: '22/02/2025', reExportTo: 'Oman',         statQty: '32', suppQty: '30', weight: '880'  }],
+};
+
+/* Generic/listing path — used only when no real chargeDetails are available. */
 function buildDeclLines(declarations: IncomingDecl[], chargeType: string): DeclLine[] {
   const outbound = hasOutboundLinkage(chargeType);
   const isNa = hasNaRefundType(chargeType);
@@ -94,12 +133,12 @@ function buildDeclLines(declarations: IncomingDecl[], chargeType: string): DeclL
     depositAmount: '1,000.00',
     refundType: isNa ? 'NA' : outbound ? 'Full Export' : 'Refund',
     claimAmount: '1,000.00',
-    invoices: INVOICES_BY_DECL[d.declNo] ?? [],
+    invoices: buildInvoiceGroups(d.declNo, outbound ? LEGACY_OUTBOUNDS : undefined),
     ...(isCdm ? { refType: 'Exemption Type', refCode: 'EXM-001', refNo: 'REF-2025-0142' } : {}),
   }));
 }
 
-function buildDefaultDocs(declNo: string, outbound: boolean) {
+function buildDefaultDocs(declNo: string, outbound: boolean): ViewDoc[] {
   return outbound
     ? [
         { id: 'vd-1', declNo, docType: 'Standing Guarantee Letter', fileName: `Guarantee-${declNo}.pdf`, uploadedOn: '15/07/2025', remarks: '' },
@@ -115,10 +154,10 @@ const versionRows = [
 ];
 
 /* ─── Outbound Declaration — read-only view popup ─── */
-const OB_FIELDS: { label: string; get: (ob: OutboundEntry) => string }[] = [
+const OB_FIELDS: { label: string; get: (ob: OutboundDetail) => string }[] = [
   { label: 'Customs Authority',     get: ob => ob.customsAuthority },
-  { label: 'Outbound Declaration No.', get: ob => ob.obDeclarationNo },
-  { label: 'Declaration Type',      get: ob => ob.obDeclarationType },
+  { label: 'Outbound Declaration No.', get: ob => ob.declarationNo },
+  { label: 'Declaration Type',      get: ob => ob.declarationType },
   { label: 'Exit Point',            get: ob => ob.exitPoint },
   { label: 'Actual Departure Date', get: ob => ob.actualDepartureDate },
   { label: 'Re-Export To',          get: ob => ob.reExportTo },
@@ -126,7 +165,7 @@ const OB_FIELDS: { label: string; get: (ob: OutboundEntry) => string }[] = [
   { label: 'Supplementary Qty',     get: ob => ob.suppQty },
   { label: 'Weight (kg)',           get: ob => ob.weight },
 ];
-function OutboundViewPopup({ obs, onClose }: { obs: OutboundEntry[]; onClose: () => void }) {
+function OutboundViewPopup({ obs, onClose }: { obs: OutboundDetail[]; onClose: () => void }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(14,27,61,0.45)', padding: 24 }}>
       <div className="bg-white rounded-[8px] overflow-hidden" style={{ width: '100%', maxWidth: 1100, maxHeight: 'calc(100vh - 48px)', display: 'flex', flexDirection: 'column', boxShadow: '0px 20px 60px rgba(14,27,61,0.18)', fontFamily: font }}>
@@ -182,7 +221,7 @@ function OutboundViewPopup({ obs, onClose }: { obs: OutboundEntry[]; onClose: ()
        Outbound Declaration Details accordion with the Invoice/HS Code table,
        mirroring the Refund Details step of the create/amend claim flow. ─── */
 function DeclarationCard({ d, idx, open, onToggle, onViewOb }: {
-  d: DeclLine; idx: number; open: boolean; onToggle: () => void; onViewOb: (obs: OutboundEntry[]) => void;
+  d: DeclLine; idx: number; open: boolean; onToggle: () => void; onViewOb: (obs: OutboundDetail[]) => void;
 }) {
   const allHs = d.invoices.flatMap(inv => inv.hsLines.map(hs => ({ inv, hs })));
   const outbound = hasOutboundLinkage(d.chargeType);
@@ -283,7 +322,7 @@ function DeclarationCard({ d, idx, open, onToggle, onViewOb }: {
                           <button type="button" onClick={() => onViewOb(hs.outbound)}
                             className="text-[16px] hover:underline text-left"
                             style={{ color: '#1360d2', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontFamily: font, padding: 0, whiteSpace: 'nowrap' }}>
-                            {hs.outbound[0].obDeclarationNo}
+                            {hs.outbound[0].declarationNo}
                           </button>
                         ) : (
                           <button type="button" title={`${hs.outbound.length} outbound declarations`} onClick={() => onViewOb(hs.outbound)}
@@ -321,10 +360,46 @@ function DeclarationCard({ d, idx, open, onToggle, onViewOb }: {
   );
 }
 
+/* ─── Declaration Details section — reusable as-is anywhere a claim's real (or generic demo)
+       declaration data needs the same read-only card design: the View Claim page below, and
+       the Review & Submit step (NonRemittanceReviewPage), so both show identical UI. ─── */
+export function DeclarationDetailsSection({ chargeDetails, rows, outbounds, declarations, chargeType }: {
+  chargeDetails?: ChargeDetail[]; rows?: Row[]; outbounds?: OutboundState;
+  declarations?: IncomingDecl[]; chargeType?: string;
+}) {
+  const hasRealData = !!chargeDetails && chargeDetails.length > 0;
+  const declLines = useMemo(
+    () => hasRealData
+      ? buildDeclLinesFromCharges(chargeDetails!, rows, outbounds)
+      : buildDeclLines(declarations ?? DEFAULT_DECLARATIONS, chargeType ?? 'Alternative Duty Deposit'),
+    [hasRealData, chargeDetails, rows, outbounds, declarations, chargeType]
+  );
+  const [openDeclIds, setOpenDeclIds] = useState<Set<string>>(() => new Set([declLines[0]?.declarationNo].filter(Boolean) as string[]));
+  const toggleDecl = (declarationNo: string) => setOpenDeclIds(prev => {
+    const next = new Set(prev);
+    next.has(declarationNo) ? next.delete(declarationNo) : next.add(declarationNo);
+    return next;
+  });
+  const [viewOb, setViewOb] = useState<OutboundDetail[] | null>(null);
+
+  return (
+    <>
+      <Section title="Declaration Details" badge={`${declLines.length} declaration${declLines.length !== 1 ? 's' : ''}`}>
+        <div className="flex flex-col">
+          {declLines.map((d, i) => (
+            <DeclarationCard key={d.declarationNo} d={d} idx={i} open={openDeclIds.has(d.declarationNo)} onToggle={() => toggleDecl(d.declarationNo)} onViewOb={setViewOb} />
+          ))}
+        </div>
+      </Section>
+      {viewOb && <OutboundViewPopup obs={viewOb} onClose={() => setViewOb(null)} />}
+    </>
+  );
+}
+
 /* ─── Uploaded Documents — one accordion card per declaration, each holding a
        simple File Name / Download table (mirrors the Declaration Details accordion above). ─── */
 function DocDeclarationCard({ declNo, docs, open, onToggle }: {
-  declNo: string; docs: { id: string; docType: string; fileName: string; uploadedOn: string; remarks: string }[]; open: boolean; onToggle: () => void;
+  declNo: string; docs: ViewDoc[]; open: boolean; onToggle: () => void;
 }) {
   return (
     <div style={{ borderTop: '1px solid #eef1f6' }}>
@@ -389,41 +464,55 @@ type Props = {
   claimType?: string;
   /** Charge type of the claim being viewed (e.g. "Alternative Duty Deposit", "Missing Document
       Deposit") — determines whether the Invoice & HS Code / Outbound Declaration Details
-      accordion is shown at all. Defaults to the Alternative Duty Deposit demo claim. */
+      accordion is shown at all. Only used as a fallback when chargeDetails isn't provided. */
   chargeType?: string;
   declarations?: IncomingDecl[];
   claimNo?: string;
   claimStatus?: string;
   submissionDate?: string;
+  /** Real data captured on the Refund Details / Upload Documents steps (Raise New Claim or
+      Amend) — when chargeDetails is provided, it takes precedence over the generic
+      declarations+chargeType path, so this page reflects exactly what the user selected and
+      entered, per declaration, instead of demo/mock content. */
+  rows?: Row[];
+  chargeDetails?: ChargeDetail[];
+  outbounds?: OutboundState;
+  uploadedDocs?: UploadedDoc[];
 };
 
 export default function RefundDepositsClaimViewPage({
   onBack, claimType = 'Refund of Deposits', chargeType = 'Alternative Duty Deposit',
   declarations = DEFAULT_DECLARATIONS, claimNo = '3842063', claimStatus = 'Completed', submissionDate = '29/06/2026',
+  rows, chargeDetails, outbounds, uploadedDocs,
 }: Props) {
-  const declLines = useMemo(() => buildDeclLines(declarations, chargeType), [declarations, chargeType]);
-  const outbound = hasOutboundLinkage(chargeType);
+  const hasRealData = !!chargeDetails && chargeDetails.length > 0;
+  const declLines = useMemo(
+    () => hasRealData ? buildDeclLinesFromCharges(chargeDetails!, rows, outbounds) : buildDeclLines(declarations, chargeType),
+    [hasRealData, chargeDetails, rows, outbounds, declarations, chargeType]
+  );
+  const outbound = hasRealData ? declLines.some(d => hasOutboundLinkage(d.chargeType)) : hasOutboundLinkage(chargeType);
   const defaultDocs = useMemo(() => buildDefaultDocs(declLines[0]?.declarationNo ?? '—', outbound), [declLines, outbound]);
+  const docsSource: ViewDoc[] = (uploadedDocs && uploadedDocs.length > 0)
+    ? uploadedDocs.map(d => ({ id: d.id, declNo: d.declNo, docType: d.docType, fileName: d.fileName, uploadedOn: d.uploadedOn, remarks: d.remarks, batchId: d.batchId }))
+    : defaultDocs;
 
-  const [openDeclIds, setOpenDeclIds] = useState<Set<string>>(() => new Set([declLines[0]?.declarationNo].filter(Boolean) as string[]));
-  const toggleDecl = (declarationNo: string) => setOpenDeclIds(prev => {
-    const next = new Set(prev);
-    next.has(declarationNo) ? next.delete(declarationNo) : next.add(declarationNo);
-    return next;
-  });
-  const [viewOb, setViewOb] = useState<OutboundEntry[] | null>(null);
-
-  // Uploaded Documents — grouped by declaration, first group open by default.
+  // Uploaded Documents — grouped by declaration, ordered to match the declaration cards above.
+  // Merged by batch so a file uploaded against several document types shows as one row with
+  // a comma-separated Document Type, not one row per type.
   const docsByDecl = useMemo(() => {
-    const groups = new Map<string, typeof defaultDocs>();
-    defaultDocs.forEach(doc => {
+    const groups = new Map<string, ViewDoc[]>();
+    docsSource.forEach(doc => {
       const list = groups.get(doc.declNo) ?? [];
       list.push(doc);
       groups.set(doc.declNo, list);
     });
+    groups.forEach((list, declNo) => groups.set(declNo, mergeDocsByBatch(list)));
     return groups;
-  }, [defaultDocs]);
-  const docDeclNos = Array.from(docsByDecl.keys());
+  }, [docsSource]);
+  const docDeclNos = [
+    ...declLines.map(d => d.declarationNo).filter(dn => docsByDecl.has(dn)),
+    ...Array.from(docsByDecl.keys()).filter(dn => !declLines.some(d => d.declarationNo === dn)),
+  ];
   const [openDocDecl, setOpenDocDecl] = useState<Set<string>>(() => new Set(docDeclNos.slice(0, 1)));
   const toggleDocDecl = (declNo: string) => setOpenDocDecl(prev => {
     const next = new Set(prev);
@@ -508,13 +597,7 @@ export default function RefundDepositsClaimViewPage({
           {/* Declaration Details — merged with Invoice/HS Code + Outbound Declaration
               Details into one read-only accordion per declaration (mirrors the
               Refund Details step of the create/amend claim flow). */}
-          <Section title="Declaration Details" badge={`${declLines.length} declaration${declLines.length !== 1 ? 's' : ''}`}>
-            <div className="flex flex-col">
-              {declLines.map((d, i) => (
-                <DeclarationCard key={d.declarationNo} d={d} idx={i} open={openDeclIds.has(d.declarationNo)} onToggle={() => toggleDecl(d.declarationNo)} onViewOb={setViewOb} />
-              ))}
-            </div>
-          </Section>
+          <DeclarationDetailsSection chargeDetails={chargeDetails} rows={rows} outbounds={outbounds} declarations={declarations} chargeType={chargeType} />
 
           {/* Uploaded Documents — one accordion per declaration, first one open by default */}
           <Section title="Uploaded Documents" badge={`${docDeclNos.length} declaration${docDeclNos.length !== 1 ? 's' : ''}`}>
@@ -564,8 +647,6 @@ export default function RefundDepositsClaimViewPage({
           </Section>
         </div>
       </div>
-
-      {viewOb && <OutboundViewPopup obs={viewOb} onClose={() => setViewOb(null)} />}
 
       {/* Bottom bar */}
       <div className="flex-shrink-0 bg-white px-4 sm:px-10 py-[20px] flex items-center gap-[12px]" style={{ boxShadow: '0px -1px 20px rgba(0,0,0,0.08)' }}>
