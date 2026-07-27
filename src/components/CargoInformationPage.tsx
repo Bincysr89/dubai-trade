@@ -10,6 +10,7 @@ import CarrierMovementViewPage, { type CarrierMovementRow } from './CarrierMovem
 import FlightManifestNewRequestPage from './FlightManifestNewRequestPage';
 import FlightManifestUploadPage, { type FlightManifestUploadRow } from './FlightManifestUploadPage';
 import FlightManifestViewPage, { type FlightManifestViewRow } from './FlightManifestViewPage';
+import FlightManifestFileUploadDetailsPage from './FlightManifestFileUploadDetailsPage';
 import SeaExportManifestNewRequestPage from './SeaExportManifestNewRequestPage';
 import SeaExportManifestUploadPage, { type SeaExportManifestUploadRow } from './SeaExportManifestUploadPage';
 import HouseManifestNewRequestPage from './HouseManifestNewRequestPage';
@@ -84,7 +85,7 @@ const MANIFEST_STATUS_STYLE: Record<string, { bg: string; color: string }> = {
   'Cancelled': { bg: 'rgba(105,116,152,0.10)', color: '#697498' },
   'Draft':     { bg: 'rgba(255,169,26,0.16)',  color: '#b45309' },
 };
-const UPLOAD_STATUS_STYLE: Record<string, { bg: string; color: string }> = {
+export const UPLOAD_STATUS_STYLE: Record<string, { bg: string; color: string }> = {
   'Successful': { bg: 'rgba(40,167,69,0.10)',  color: '#28a745' },
   'Failure':    { bg: 'rgba(192,57,43,0.10)',  color: '#c0392b' },
 };
@@ -160,12 +161,12 @@ const FLIGHT_MANIFEST: ListingConfig = {
 
 /* Flight Manifest — Track File Upload tab. Manifest File Type drives the Action column:
    FWB rows only ever get an error-list view, FFM rows keep the full action set. */
-type FlightManifestUploadFile = {
+export type FlightManifestUploadFile = {
   id: string; fileName: string; awbNo: string; status: 'Success' | 'Failure'; remarks: string;
   /** Error detail lines shown in the inline accordion when this file's status is Failure. */
   errors?: string[];
 };
-type FlightManifestUploadRecord = {
+export type FlightManifestUploadRecord = {
   fileName: string; uploadRefNo: string; flightNo: string; scheduledDate: string; manifestFileType: 'FWB' | 'FFM';
   filesSuccessful: string; filesFailed: string; uploadDate: string; remarks: string; uploadStatus: 'Successful' | 'Failure';
   files: FlightManifestUploadFile[];
@@ -375,7 +376,6 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
   const [openFlyout, setOpenFlyout]           = useState<number | null>(null);
   const [showNewRequest, setShowNewRequest]   = useState(false);
   const [viewRow, setViewRow]                 = useState<ListingRow | null>(null);
-  const [errorFilesRow, setErrorFilesRow]     = useState<ListingRow | null>(null);
   const [auditHistoryRow, setAuditHistoryRow] = useState<ListingRow | null>(null);
   const [fileDetailsRow, setFileDetailsRow]   = useState<ListingRow | null>(null);
   const [fmuDetailRow, setFmuDetailRow]       = useState<FlightManifestUploadRecord | null>(null);
@@ -396,6 +396,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
   const [fmTab, setFmTab]                     = useState<'all' | 'trackUpload'>('all');
   const [fmUploadPage, setFmUploadPage]       = useState(1);
   const FM_UPLOAD_PAGE_SIZE = 5;
+  const [semTab, setSemTab]                   = useState<'all' | 'trackUpload'>('all');
 
   /* Sea Export Manifest / House Manifest / Delivery Advice — dedicated Figma-matched sub-flows */
   const [semView, setSemView]                 = useState<'list' | 'new' | 'upload'>('list');
@@ -456,12 +457,11 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
   });
   const paginated = filteredRows.slice((page - 1) * pageSize, page * pageSize);
 
-  /* Sea Export Manifest — searching by File Reference Number swaps in a dedicated upload-tracking table.
-     Requires a committed search (Enter / search icon), same as VCC Number search on the VCC listing —
-     not a live per-keystroke swap. */
-  const showTrackUpload = activeMenu === 'seaExportManifest' && searchKey === 'fileRefNo' && searchQuery.trim() !== '';
+  /* Sea Export Manifest — Track File Upload tab shows the dedicated upload-tracking table;
+     a File Reference Number search (top search bar) further filters within it. */
+  const showTrackUpload = activeMenu === 'seaExportManifest' && semTab === 'trackUpload';
   const trackUploadRows = showTrackUpload
-    ? config.rows.filter(r => str(r.fileRefNo).toLowerCase().includes(searchQuery.trim().toLowerCase()))
+    ? config.rows.filter(r => searchQuery.trim() === '' || str(r.fileRefNo).toLowerCase().includes(searchQuery.trim().toLowerCase()))
     : [];
 
   /* File Details page — mock per-BOL line items derived from the uploaded file's aggregate counts */
@@ -556,6 +556,16 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
         row={fmSelectedRow as unknown as FlightManifestViewRow}
         onBack={() => setFmView('list')}
         onBackToListing={() => { setFmView('list'); setFmSelectedRow(null); }}
+      />
+    );
+  }
+  if (activeMenu === 'flightManifest' && fmuDetailRow) {
+    return (
+      <FlightManifestFileUploadDetailsPage
+        row={fmuDetailRow}
+        initialOpenErrorFileIds={Array.from(openErrorFileIds)}
+        onBack={onBack}
+        onBackToListing={() => { setFmuDetailRow(null); setOpenErrorFileIds(new Set()); }}
       />
     );
   }
@@ -656,15 +666,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
               <span className="text-[#dc3545] text-[15px] leading-none">/</span>
               <span className="text-[#8f94ae] text-[16px]" style={{ fontFamily: font }}>Service Catalog</span>
               <span className="text-[#dc3545] text-[15px] leading-none">/</span>
-              {fmuDetailRow ? (
-                <>
-                  <span className="text-[#8f94ae] text-[16px] cursor-pointer hover:text-[#1360d2] transition-colors" style={{ fontFamily: font }} onClick={() => setFmuDetailRow(null)}>
-                    {SIDEBAR_ITEMS.find(s => s.key === activeMenu)?.label}
-                  </span>
-                  <span className="text-[#dc3545] text-[15px] leading-none">/</span>
-                  <span className="text-[#111838] text-[16px] font-medium" style={{ fontFamily: font }}>File Upload Details</span>
-                </>
-              ) : fileDetailsRow ? (
+              {fileDetailsRow ? (
                 <>
                   <span className="text-[#8f94ae] text-[16px] cursor-pointer hover:text-[#1360d2] transition-colors" style={{ fontFamily: font }} onClick={() => setFileDetailsRow(null)}>
                     {SIDEBAR_ITEMS.find(s => s.key === activeMenu)?.label}
@@ -689,102 +691,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
             </div>
           </div>
 
-          {fmuDetailRow ? (
-            /* ─── Flight Manifest — File Upload Details page, matching the eServices "File Upload Details"
-                   reference: summary card + List Of Files table, with an inline accordion under each
-                   Failure-status file row showing its error details. ─── */
-            <>
-              <h1 className="text-[28px] font-bold text-[#0e1b3d] mb-[16px] flex-shrink-0" style={{ fontFamily: font }}>File Upload Details</h1>
-
-              <div className="bg-white rounded-[8px] p-[24px] mb-[20px] flex-shrink-0" style={{ boxShadow: '0px 5px 32px 0px rgba(143,155,186,0.16)' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px 20px' }}>
-                  <Field label="Upload Reference Number" value={fmuDetailRow.uploadRefNo} />
-                  <Field label="Uploaded Date" value={fmuDetailRow.uploadDate} />
-                  <Field label="No. Of Uploaded Files" value={String(fmuDetailRow.files.length)} />
-                  <Field label="No. Of Files Successful" value={fmuDetailRow.filesSuccessful} />
-                  <Field label="No. Of Files Failed" value={fmuDetailRow.filesFailed} />
-                  <Field label="Manifest File Type" value={fmuDetailRow.manifestFileType} />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-[16px] flex-1">
-                <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>List Of Files</p>
-                <div className="bg-white rounded-[8px] p-[20px] flex-1" style={{ boxShadow: '0px 5px 32px 0px rgba(143,155,186,0.16)' }}>
-                  <div className="rounded-[6px] overflow-hidden overflow-x-auto" style={{ border: '1px solid #eef1f6' }}>
-                    <table className="w-full" style={{ fontFamily: font, borderCollapse: 'collapse', minWidth: 780 }}>
-                      <thead>
-                        <tr style={{ background: '#e2ebf9' }}>
-                          {['File Name', 'Airway Bill Number', 'Status', 'Remarks', 'Actions'].map(h => (
-                            <th key={h} className="text-left px-[16px] py-[10px] text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {fmuDetailRow.files.length === 0 ? (
-                          <tr><td colSpan={5} className="text-center py-[28px] text-[15px] text-[#8f94ae]">No files found for this upload.</td></tr>
-                        ) : fmuDetailRow.files.map(f => {
-                          const isFailure = f.status === 'Failure';
-                          const isOpen = openErrorFileIds.has(f.id);
-                          return (
-                          <Fragment key={f.id}>
-                            <tr style={{ borderTop: '1px solid #f0f4ff' }}>
-                              <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{f.fileName}</td>
-                              <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{f.awbNo}</td>
-                              <td className="px-[16px] py-[10px] text-[15px]" style={{ color: isFailure ? '#dc3545' : '#28a745', fontWeight: 500 }}>{f.status.toUpperCase()}</td>
-                              <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{f.remarks || '—'}</td>
-                              <td className="px-[16px] py-[10px]">
-                                {isFailure ? (
-                                  <button type="button" onClick={() => setOpenErrorFileIds(prev => { const next = new Set(prev); next.has(f.id) ? next.delete(f.id) : next.add(f.id); return next; })}
-                                    aria-label={isOpen ? `Collapse error details for ${f.fileName}` : `View error details for ${f.fileName}`}
-                                    className="size-[32px] inline-flex items-center justify-center rounded-[4px] transition-colors" style={{ background: '#dc3545', color: '#fff' }}>
-                                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" /><circle cx="12" cy="12" r="3" /></svg>
-                                  </button>
-                                ) : (
-                                  <span className="size-[32px] inline-flex items-center justify-center rounded-[4px]" style={{ background: '#0e1b3d', color: '#fff' }}>
-                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M5 2h7l3 3v12H5z" /><path d="M12 2v3h3" /></svg>
-                                  </span>
-                                )}
-                              </td>
-                            </tr>
-                            {isFailure && isOpen && (
-                              <tr>
-                                <td colSpan={5} style={{ padding: 0, background: '#fef2f2' }}>
-                                  <div className="px-[20px] py-[14px]">
-                                    <p className="text-[14px] mb-[8px]" style={{ color: '#455174', fontWeight: 600, fontFamily: font }}>Error Details — {f.fileName}</p>
-                                    <div className="rounded-[6px] overflow-hidden" style={{ border: '1px solid #f3c2c2', background: '#fff' }}>
-                                      <table className="w-full" style={{ fontFamily: font, borderCollapse: 'collapse' }}>
-                                        <thead>
-                                          <tr style={{ background: '#fbdada' }}>
-                                            <th className="text-left px-[14px] py-[8px] text-[13px] text-[#0e1b3d]" style={{ fontWeight: 500, width: 60 }}>S.No</th>
-                                            <th className="text-left px-[14px] py-[8px] text-[13px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Error</th>
-                                          </tr>
-                                        </thead>
-                                        <tbody>
-                                          {(f.errors && f.errors.length > 0 ? f.errors : [f.remarks || 'No error details available.']).map((err, ei) => (
-                                            <tr key={ei} style={{ borderTop: '1px solid #f5e0e0' }}>
-                                              <td className="px-[14px] py-[8px] text-[14px] text-[#697498]">{ei + 1}</td>
-                                              <td className="px-[14px] py-[8px] text-[14px] text-[#0e1b3d]">{err}</td>
-                                            </tr>
-                                          ))}
-                                        </tbody>
-                                      </table>
-                                    </div>
-                                  </div>
-                                </td>
-                              </tr>
-                            )}
-                          </Fragment>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-
-              <BackToListingBar onBackToListing={() => { setFmuDetailRow(null); setOpenErrorFileIds(new Set()); }} />
-            </>
-          ) : fileDetailsRow ? (
+          {fileDetailsRow ? (
             /* ─── File Details — File Details card + List of BOL table, matching the Figma "Track Upload" detail reference ─── */
             <>
               <h1 className="text-[28px] font-bold text-[#0e1b3d] mb-[16px] flex-shrink-0" style={{ fontFamily: font }}>File Details</h1>
@@ -989,21 +896,27 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                 </div>
               </div>
 
-              {/* Row 2 — All Records/Track File Upload tabs (left, Flight Manifest only) + Status-as-on date badge (centered) + Drafts/Columns (right), mirrors the master listing template */}
+              {/* Row 2 — All Records/Track File Upload tabs (left, Flight Manifest & Sea Export Manifest only) + Status-as-on date badge (centered) + Drafts/Columns (right), mirrors the master listing template */}
               <div className="flex items-center justify-between mb-[12px] flex-shrink-0 gap-[12px]">
-                <div className="flex-shrink-0" style={{ minWidth: activeMenu === 'flightManifest' ? undefined : 1 }}>
-                  {activeMenu === 'flightManifest' && (
+                <div className="flex-shrink-0" style={{ minWidth: (activeMenu === 'flightManifest' || activeMenu === 'seaExportManifest') ? undefined : 1 }}>
+                  {(activeMenu === 'flightManifest' || activeMenu === 'seaExportManifest') && (
                     <div className="flex items-center gap-[8px] bg-white rounded-[6px] p-[4px] w-max"
                       style={{ boxShadow: '0px 2px 12px rgba(143,155,186,0.16)', border: '1px solid #eef1f6' }}>
-                      {([{ key: 'all', label: 'FFM Records' }, { key: 'trackUpload', label: 'Track File Upload' }] as const).map(t => (
-                        <button key={t.key} type="button" onClick={() => setFmTab(t.key)}
-                          className="text-[15px] px-[18px] py-[9px] rounded-[4px] transition-colors"
-                          style={fmTab === t.key
-                            ? { background: '#1360d2', color: '#fff', fontWeight: 500, fontFamily: font }
-                            : { color: '#5a6282', fontFamily: font }}>
-                          {t.label}
-                        </button>
-                      ))}
+                      {(activeMenu === 'flightManifest'
+                        ? [{ key: 'all', label: 'FFM Records' }, { key: 'trackUpload', label: 'Track File Upload' }] as const
+                        : [{ key: 'all', label: 'All BOL Records' }, { key: 'trackUpload', label: 'Track File Upload' }] as const
+                      ).map(t => {
+                        const active = activeMenu === 'flightManifest' ? fmTab === t.key : semTab === t.key;
+                        return (
+                          <button key={t.key} type="button" onClick={() => activeMenu === 'flightManifest' ? setFmTab(t.key) : setSemTab(t.key)}
+                            className="text-[15px] px-[18px] py-[9px] rounded-[4px] transition-colors"
+                            style={active
+                              ? { background: '#1360d2', color: '#fff', fontWeight: 500, fontFamily: font }
+                              : { color: '#5a6282', fontFamily: font }}>
+                            {t.label}
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -1140,12 +1053,8 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                                           <button key={opt.key} className="group w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
                                             onClick={() => {
                                               setOpenFlyout(null);
-                                              if (opt.key === 'error') {
-                                                const matched = FLIGHT_MANIFEST.rows.find(r => r.flightNo === row.flightNo);
-                                                setErrorFilesRow(matched ?? ({ flightNo: row.flightNo, uploadRefNo: row.uploadRefNo } as unknown as ListingRow));
-                                              } else {
-                                                setFmuDetailRow(row);
-                                              }
+                                              setFmuDetailRow(row);
+                                              setOpenErrorFileIds(opt.key === 'error' ? new Set(row.files.filter(f => f.status === 'Failure').map(f => f.id)) : new Set());
                                             }}>
                                             <span className="text-[15px] text-[#111838] group-hover:text-white" style={{ fontFamily: font }}>{opt.label}</span>
                                           </button>
@@ -1348,7 +1257,13 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                                                   setFmPrefill({ flightNo: str(row.flightNo), scheduleDate: str(row.scheduleDate), airportLoadingCode: str(row.airportLoading) });
                                                   setFmRequestKind('amend'); setFmView('new');
                                                 }
-                                                else if (label === 'View Error Details') setErrorFilesRow(row);
+                                                else if (label === 'View Error Details') {
+                                                  const uploadMatch = FLIGHT_MANIFEST_UPLOADS.find(u => u.flightNo === str(row.flightNo));
+                                                  if (uploadMatch) {
+                                                    setFmuDetailRow(uploadMatch);
+                                                    setOpenErrorFileIds(new Set(uploadMatch.files.filter(f => f.status === 'Failure').map(f => f.id)));
+                                                  }
+                                                }
                                                 else setShowNewRequest(true); // Cancel — no design provided yet
                                               } else if (activeMenu === 'seaExportManifest') {
                                                 if (label === 'Upload BOL') { setSemSelectedRow(row); setSemView('upload'); }
@@ -1417,50 +1332,6 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
         />
       )}
 
-      {errorFilesRow && (
-        <div className="fixed inset-0 z-[2000] flex items-center justify-center px-[20px]" style={{ background: 'rgba(14,27,61,0.55)' }} onClick={() => setErrorFilesRow(null)}>
-          <div className="bg-white rounded-[8px] overflow-hidden" style={{ width: 'min(640px, 100%)', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', fontFamily: font }} onClick={e => e.stopPropagation()}>
-            <div className="bg-[#455174] flex items-center justify-between px-[24px] py-[16px]">
-              <p className="text-[18px] text-white" style={{ fontWeight: 500 }}>List Of Errors</p>
-              <button onClick={() => setErrorFilesRow(null)} className="size-[28px] inline-flex items-center justify-center rounded-full text-white hover:bg-white/10" aria-label="Close">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
-              </button>
-            </div>
-            <div className="px-[24px] py-[20px]">
-              <p className="text-[15px] text-[#697498] mb-[16px]" style={{ fontFamily: font }}>
-                File: <span style={{ color: '#0e1b3d', fontWeight: 500 }}>{str(errorFilesRow.flightNo)}_{str(errorFilesRow.manifestType)}_manifest.txt</span>
-              </p>
-              <div className="rounded-[6px] overflow-hidden" style={{ border: '1px solid #eef1f6' }}>
-                <table className="w-full" style={{ fontFamily: font, borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr style={{ background: '#f0f4ff' }}>
-                      <th className="text-left px-[16px] py-[10px] text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500, width: 60 }}>S.No</th>
-                      <th className="text-left px-[16px] py-[10px] text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Error</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(Number(errorFilesRow.filesFailed) > 0 ? [
-                      `Rejected Flight Manifest for Flight Number ${str(errorFilesRow.flightNo)} scheduled on ${str(errorFilesRow.scheduleDate)} identified as duplicate flight manifest.`,
-                    ] : ['No errors reported for this upload.']).map((msg, idx) => (
-                      <tr key={idx} style={{ borderTop: '1px solid #f0f4ff' }}>
-                        <td className="px-[16px] py-[12px] text-[15px] text-[#0e1b3d] align-top">{idx + 1}</td>
-                        <td className="px-[16px] py-[12px] text-[15px] text-[#0e1b3d]">{msg}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            <div className="flex justify-center pb-[20px]">
-              <button onClick={() => setErrorFilesRow(null)}
-                className="h-[42px] px-[22px] rounded-[4px] text-[15px] text-white inline-flex items-center gap-[8px]" style={{ background: '#455174', fontFamily: font, fontWeight: 500 }}>
-                <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 6l8 8M14 6l-8 8" /></svg>
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {auditHistoryRow && (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center px-[20px]" style={{ background: 'rgba(14,27,61,0.55)' }} onClick={() => setAuditHistoryRow(null)}>

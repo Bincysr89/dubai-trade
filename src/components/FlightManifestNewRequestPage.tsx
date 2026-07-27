@@ -3,8 +3,10 @@ import Header from './Header';
 import BackToListingBar from './BackToListingBar';
 import Pagination from './Pagination';
 import { fmtDateTime, DateInput } from './DatePicker';
+import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
 
 const font = "'Dubai', sans-serif";
+const cloudUploadIcon = 'https://www.figma.com/api/mcp/asset/9e722d4d-9a2d-4d15-bb37-70e5aba612d5';
 
 /* ─── Floating-label helpers ─── */
 function FInput({ label, value, onChange, req, placeholder, disabled, trailing, textarea }: {
@@ -280,16 +282,17 @@ const BLANK_AWB: Omit<AwbLine, 'id'> = {
 export type UnloadingAirportRow = { id: string; airportCode: string; airportName: string; nilCargo: string; lines: AwbLine[] };
 
 /* ─── Add Airport of Unloading — full page (not a modal) ────────── */
-function AddUnloadingPage({ existing, onBack, onSave }: {
-  existing: UnloadingAirportRow | null; onBack: () => void; onSave: (row: UnloadingAirportRow) => void;
+function AddUnloadingPage({ existing, initialEditingLineId, onBack, onSave }: {
+  existing: UnloadingAirportRow | null; initialEditingLineId?: string; onBack: () => void; onSave: (row: UnloadingAirportRow) => void;
 }) {
+  const preselected = initialEditingLineId ? existing?.lines.find(l => l.id === initialEditingLineId) ?? null : null;
   const [airportCode, setAirportCode] = useState(existing?.airportCode ?? '');
   const [airportName, setAirportName] = useState(existing?.airportName ?? '');
   const [nilCargo, setNilCargo] = useState(existing?.nilCargo ?? 'No');
   const [lines, setLines] = useState<AwbLine[]>(existing?.lines ?? []);
-  const [awb, setAwb] = useState<Omit<AwbLine, 'id'>>(BLANK_AWB);
-  const [editingLineId, setEditingLineId] = useState<string | null>(null);
-  const [editingOriginalAwbNo, setEditingOriginalAwbNo] = useState<string | null>(null);
+  const [awb, setAwb] = useState<Omit<AwbLine, 'id'>>(preselected ?? BLANK_AWB);
+  const [editingLineId, setEditingLineId] = useState<string | null>(preselected?.id ?? null);
+  const [editingOriginalAwbNo, setEditingOriginalAwbNo] = useState<string | null>(preselected?.awbNo ?? null);
   const [viewingLineId, setViewingLineId] = useState<string | null>(null);
   const [confirmAwbChange, setConfirmAwbChange] = useState(false);
   const [linesPage, setLinesPage] = useState(1);
@@ -343,11 +346,19 @@ function AddUnloadingPage({ existing, onBack, onSave }: {
         <div className="bg-white rounded-[8px] p-[24px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
           <AirportCombo label="Airport of Unloading" req code={airportCode} name={airportName}
             onSelect={a => { setAirportCode(a.code); setAirportName(a.name); }} />
-          <FSelect label="Nil Cargo" value={nilCargo} onChange={setNilCargo} options={['No', 'Yes']} req />
+          <label className="flex items-center gap-[8px] cursor-pointer self-end pb-[10px]">
+            <span className="size-[17px] rounded-[4px] inline-flex items-center justify-center flex-shrink-0"
+              style={{ border: `2px solid ${nilCargo === 'Yes' ? '#1360d2' : '#a7abb2'}`, background: nilCargo === 'Yes' ? '#1360d2' : '#fff' }}>
+              {nilCargo === 'Yes' && (
+                <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7l3 3 5-6" /></svg>
+              )}
+            </span>
+            <input type="checkbox" className="sr-only" checked={nilCargo === 'Yes'} onChange={e => setNilCargo(e.target.checked ? 'Yes' : 'No')} />
+            <span className="text-[16px]" style={{ color: nilCargo === 'Yes' ? '#0e1b3d' : '#455174', fontWeight: nilCargo === 'Yes' ? 500 : 400, fontFamily: font }}>Nil Cargo</span>
+          </label>
         </div>
 
-        {nilCargo === 'No' && (
-          <>
+        <>
             <div className="flex flex-col gap-[16px]">
               <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>
                 {viewingLineId ? 'View Airway Bill' : 'Add Airway Bill'}
@@ -398,7 +409,10 @@ function AddUnloadingPage({ existing, onBack, onSave }: {
                     <thead>
                       <tr style={{ background: '#e2ebf9' }}>
                         {['Airway Bill No.', 'Origin', 'Destination', 'Weight', 'No. of Pcs', 'Shipper', 'Consignee', 'Actions'].map(h => (
-                          <th key={h} className="text-left px-[16px] py-[10px] text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
+                          <th key={h} className="text-left px-[16px] py-[10px] text-[14px] text-[#0e1b3d]"
+                            style={h === 'Actions'
+                              ? { fontWeight: 500, whiteSpace: 'nowrap', background: '#e2ebf9', position: 'sticky', right: 0, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }
+                              : { fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -414,7 +428,7 @@ function AddUnloadingPage({ existing, onBack, onSave }: {
                           <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{l.pieces}</td>
                           <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{l.shipperName || '—'}</td>
                           <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{l.consigneeName || '—'}</td>
-                          <td className="px-[16px] py-[10px]">
+                          <td className="px-[16px] py-[10px]" style={{ position: 'sticky', right: 0, background: editingLineId === l.id ? '#f0f6ff' : '#fff', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>
                             <div className="flex items-center gap-[8px]">
                               <button type="button" onClick={() => viewLine(l)} aria-label={`View ${l.awbNo}`} className="text-[#455174] hover:opacity-70">
                                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" /><circle cx="12" cy="12" r="3" /></svg>
@@ -438,8 +452,7 @@ function AddUnloadingPage({ existing, onBack, onSave }: {
                 )}
               </div>
             </div>
-          </>
-        )}
+        </>
       </div>
 
       <BackToListingBar
@@ -512,22 +525,29 @@ export default function FlightManifestNewRequestPage({
   const [airportLoadingCode, setAirportLoadingCode] = useState(initialAirportLoadingCode ?? '');
   const [airportLoadingName, setAirportLoadingName] = useState(initialAirportLoadingName ?? '');
   const [unloadingRows, setUnloadingRows] = useState<UnloadingAirportRow[]>(initialUnloadingRows ?? []);
-  const [unloadingRowsPage, setUnloadingRowsPage] = useState(1);
-  const UNLOADING_ROWS_PAGE_SIZE = 5;
   const [editingUnloadingId, setEditingUnloadingId] = useState<string | null>(null);
-  const [openUnloadingIds, setOpenUnloadingIds] = useState<Set<string>>(new Set());
-  const toggleUnloadingOpen = (id: string) => setOpenUnloadingIds(prev => {
-    const next = new Set(prev);
-    next.has(id) ? next.delete(id) : next.add(id);
-    return next;
-  });
+  const [editingAwbLineId, setEditingAwbLineId] = useState<string | undefined>(undefined);
+  const [selectedUnloadingId, setSelectedUnloadingId] = useState<string | null>(initialUnloadingRows?.[0]?.id ?? null);
+  const selectedUnloadingRow = unloadingRows.find(r => r.id === selectedUnloadingId) ?? unloadingRows[0] ?? null;
   const [viewingAwbLine, setViewingAwbLine] = useState<AwbLine | null>(null);
+  const [editingAwbPopup, setEditingAwbPopup] = useState<AwbLine | null>(null);
+  const [editingAwbPopupRowId, setEditingAwbPopupRowId] = useState<string | null>(null);
+  const [awbTablePage, setAwbTablePage] = useState(1);
+  const AWB_TABLE_PAGE_SIZE = 5;
+  const selectUnloadingAirport = (id: string) => { setSelectedUnloadingId(id); setAwbTablePage(1); };
+  const [confirmDeleteUnloadingId, setConfirmDeleteUnloadingId] = useState<string | null>(null);
+  const { scrollRef: awbScrollRef, atScrollStart: awbAtScrollStart, atScrollEnd: awbAtScrollEnd, handleScroll: awbHandleScroll, scrollToStart: awbScrollToStart, scrollToEnd: awbScrollToEnd } = useTableBehaviors();
   const removeAwbLine = (rowId: string, lineId: string) =>
     setUnloadingRows(p => p.map(r => r.id === rowId ? { ...r, lines: r.lines.filter(l => l.id !== lineId) } : r));
+  const awbWeightKg = (l: AwbLine) => {
+    const w = parseFloat(l.weight) || 0;
+    return l.weightUnit === 'LB' ? w * 0.453592 : w;
+  };
 
   const [manifestTypeUpload, setManifestTypeUpload] = useState('FFM');
   const [uploadFiles, setUploadFiles] = useState<ManifestFile[]>([]);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [uploadDragging, setUploadDragging] = useState(false);
 
   const selectFlight = (f: FlightHit) => { setFlightNo(f.flightNo); setArrDepType(f.arrDep); setScheduleDate(f.scheduleDate); setFlightLocked(true); setShowFlightSearch(false); };
 
@@ -562,10 +582,12 @@ export default function FlightManifestNewRequestPage({
     return (
       <AddUnloadingPage
         existing={existing}
-        onBack={() => { setStep('manifest'); setEditingUnloadingId(null); }}
+        initialEditingLineId={editingAwbLineId}
+        onBack={() => { setStep('manifest'); setEditingUnloadingId(null); setEditingAwbLineId(undefined); }}
         onSave={row => {
           setUnloadingRows(p => existing ? p.map(r => r.id === row.id ? row : r) : [...p, row]);
-          setStep('manifest'); setEditingUnloadingId(null);
+          setSelectedUnloadingId(row.id);
+          setStep('manifest'); setEditingUnloadingId(null); setEditingAwbLineId(undefined);
         }}
       />
     );
@@ -681,147 +703,173 @@ export default function FlightManifestNewRequestPage({
 
             {subTab === 'manual' ? (
               <>
-                <div className="flex flex-col gap-[16px]">
-                  <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>Manifest Details</p>
-                  <div className="bg-white rounded-[8px] p-[24px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-                    <FSelect label="Manifest Type" value="Inbound Manifest" onChange={() => {}} options={MANIFEST_TYPES} req disabled />
+                <div className="flex flex-col lg:flex-row gap-[16px]">
+                  <div className="flex-1 flex flex-col gap-[16px] min-w-0">
+                    <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>Manifest Details</p>
+                    <div className="bg-white rounded-[8px] p-[24px] grid grid-cols-1 sm:grid-cols-2 gap-[16px] h-full" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+                      <FSelect label="Manifest Type" value="Inbound Manifest" onChange={() => {}} options={MANIFEST_TYPES} req disabled />
+                    </div>
+                  </div>
+
+                  <div className="flex-1 flex flex-col gap-[16px] min-w-0">
+                    <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>Port Details</p>
+                    <div className="bg-white rounded-[8px] p-[24px] grid grid-cols-1 sm:grid-cols-2 gap-[16px] h-full" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+                      <AirportCombo label="Airport of Loading" req code={airportLoadingCode} name={airportLoadingName}
+                        onSelect={a => { setAirportLoadingCode(a.code); setAirportLoadingName(a.name); }} />
+                    </div>
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-[16px]">
-                  <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>Port Details</p>
-                  <div className="bg-white rounded-[8px] p-[24px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-                    <AirportCombo label="Airport of Loading" req code={airportLoadingCode} name={airportLoadingName}
-                      onSelect={a => { setAirportLoadingCode(a.code); setAirportLoadingName(a.name); }} />
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-[16px]">
-                  <div className="flex items-center justify-between flex-wrap gap-[8px]">
-                    <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>List of Airport of Unloading</p>
-                    {!viewOnly && (
-                      <button onClick={() => { setEditingUnloadingId(null); setStep('addUnloading'); }}
-                        className="h-[44px] px-[18px] rounded-[4px] text-[15px] text-white inline-flex items-center gap-[8px]"
-                        style={{ background: '#1360d2', fontFamily: font, fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
-                        <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M7 2v10M2 7h10" /></svg>
-                        Add Unloading Details
-                      </button>
+                  <div className="flex flex-col gap-[4px]">
+                    <div className="flex items-center justify-between flex-wrap gap-[8px]">
+                      <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>List of Airport of Unloading</p>
+                      {!viewOnly && (
+                        <button type="button" onClick={() => { setEditingUnloadingId(null); setEditingAwbLineId(undefined); setStep('addUnloading'); }}
+                          className="h-[44px] px-[18px] rounded-[4px] text-[15px] text-white inline-flex items-center gap-[8px]"
+                          style={{ background: '#1360d2', fontFamily: font, fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
+                          <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M7 2v10M2 7h10" /></svg>
+                          Add Airport and AWB Details
+                        </button>
+                      )}
+                    </div>
+                    {unloadingRows.length > 0 && (
+                      <span className="text-[14px] text-[#8f94ae]" style={{ fontFamily: font }}>
+                        {unloadingRows.length} airport{unloadingRows.length !== 1 ? 's' : ''} · {unloadingRows.reduce((s, r) => s + r.lines.length, 0)} AWBs total
+                      </span>
                     )}
                   </div>
+
                   {unloadingRows.length === 0 ? (
-                    <div className="bg-white rounded-[8px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-                      <p className="text-[16px] text-[#697498]" style={{ padding: '32px 16px', textAlign: 'center' }}>No airports of unloading added yet.</p>
+                    <div className="bg-white rounded-[8px] flex flex-col items-center gap-[12px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)', padding: '32px 16px' }}>
+                      <p className="text-[16px] text-[#697498]">No airports of unloading added yet.</p>
                     </div>
                   ) : (
-                    <div className="flex flex-col gap-[12px]">
-                      {unloadingRows.slice((unloadingRowsPage - 1) * UNLOADING_ROWS_PAGE_SIZE, unloadingRowsPage * UNLOADING_ROWS_PAGE_SIZE).map(r => {
-                        const hasAwbs = r.lines.length > 0;
-                        const isOpen = hasAwbs && openUnloadingIds.has(r.id);
-                        return (
-                        <div key={r.id} className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: isOpen ? '0px 5px 32px rgba(19,96,210,0.18)' : '0px 5px 32px rgba(143,155,186,0.16)', border: `1.5px solid ${isOpen ? '#1360d2' : 'transparent'}` }}>
-                          <div className="flex flex-wrap items-center gap-x-[28px] gap-y-[8px] px-[16px] py-[14px]">
-                            <div className="flex flex-col gap-[2px]">
-                              <span className="text-[13px] text-[#697498]" style={{ fontFamily: font }}>Airport of Unloading</span>
-                              <span className="text-[16px] text-[#1360d2]" style={{ fontFamily: font, fontWeight: 500 }}>{r.airportCode}{r.airportName ? ` (${r.airportName})` : ''}</span>
-                            </div>
-                            <div className="flex flex-col gap-[2px]">
-                              <span className="text-[13px] text-[#697498]" style={{ fontFamily: font }}>Nil Cargo</span>
-                              <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>{r.nilCargo}</span>
-                            </div>
-                            <div className="flex flex-col gap-[2px]">
-                              <span className="text-[13px] text-[#697498]" style={{ fontFamily: font }}>No. of AWB&apos;s</span>
-                              <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>{r.lines.length}</span>
-                            </div>
-                            {!viewOnly && (
-                              <div className="flex items-center gap-[8px] ml-auto">
-                                <button type="button" onClick={() => { setEditingUnloadingId(r.id); setStep('addUnloading'); }} aria-label={`Edit ${r.airportCode}`}
-                                  className="size-[32px] inline-flex items-center justify-center rounded-[4px] hover:bg-[#f0f4ff] transition-colors flex-shrink-0" style={{ border: '1px solid #d5ddfb', color: '#1360d2' }}>
-                                  <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2l4 4-9 9H5v-4z" /></svg>
-                                </button>
-                                <button type="button" onClick={() => setUnloadingRows(p => p.filter(x => x.id !== r.id))} aria-label={`Remove ${r.airportCode}`}
-                                  className="size-[32px] inline-flex items-center justify-center rounded-[4px] hover:bg-[#fef2f2] transition-colors flex-shrink-0" style={{ color: '#dc3545' }}>
-                                  <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M3 5h14M8 5V3h4v2M17 5l-1 13H4L3 5" /><path d="M8 9v5M12 9v5" /></svg>
-                                </button>
+                    <div className="bg-white rounded-[8px] overflow-hidden flex flex-col md:flex-row" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)', minHeight: 420 }}>
+                      {/* Sidebar — airports */}
+                      <div className="flex flex-col flex-shrink-0 md:w-[260px]" style={{ borderBottom: '1px solid #f3f4f6' }}>
+                        <div className="flex-1 overflow-y-auto" style={{ maxHeight: 480 }}>
+                          {unloadingRows.map(r => {
+                            const isSelected = selectedUnloadingRow?.id === r.id;
+                            return (
+                              <div key={r.id} onClick={() => selectUnloadingAirport(r.id)}
+                                className="flex items-center gap-[10px] px-[14px] py-[12px] cursor-pointer transition-colors"
+                                style={{ background: isSelected ? '#f0f4ff' : 'transparent', borderLeft: `3px solid ${isSelected ? '#1360d2' : 'transparent'}`, borderBottom: '1px solid #f8fafd' }}>
+                                <div className="size-[36px] rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#1360d2' }}>
+                                  <span className="text-[12px] text-white" style={{ fontWeight: 700, fontFamily: font }}>{r.airportCode.slice(0, 3) || '—'}</span>
+                                </div>
+                                <div className="flex flex-col gap-[3px] min-w-0 flex-1">
+                                  <span className="text-[14px] text-[#051937] truncate" style={{ fontWeight: 500, fontFamily: font }}>{r.airportName || r.airportCode || 'Unnamed'}</span>
+                                  <label className="flex items-center gap-[6px]" style={{ cursor: viewOnly ? 'default' : 'pointer' }} onClick={e => e.stopPropagation()}>
+                                    <span className="size-[14px] rounded-[3px] inline-flex items-center justify-center flex-shrink-0"
+                                      style={{ border: `2px solid ${r.nilCargo === 'Yes' ? '#1360d2' : '#a7abb2'}`, background: r.nilCargo === 'Yes' ? '#1360d2' : '#fff' }}>
+                                      {r.nilCargo === 'Yes' && (
+                                        <svg viewBox="0 0 14 14" width="9" height="9" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7l3 3 5-6" /></svg>
+                                      )}
+                                    </span>
+                                    <input type="checkbox" className="sr-only" checked={r.nilCargo === 'Yes'} disabled={viewOnly}
+                                      onChange={e => setUnloadingRows(p => p.map(x => x.id === r.id ? { ...x, nilCargo: e.target.checked ? 'Yes' : 'No' } : x))} />
+                                    <span className="text-[14px] text-[#8f94ae]" style={{ fontFamily: font }}>Nil Cargo</span>
+                                  </label>
+                                  <span className="text-[14px]" style={{ color: '#219653', fontFamily: font }}>{r.lines.length} AWB{r.lines.length !== 1 ? 's' : ''}</span>
+                                </div>
+                                {!viewOnly && (
+                                  <button type="button" onClick={e => { e.stopPropagation(); setConfirmDeleteUnloadingId(r.id); }}
+                                    aria-label={`Remove ${r.airportCode}`}
+                                    className="size-[24px] flex-shrink-0 inline-flex items-center justify-center rounded-[4px] hover:bg-[#fef2f2] transition-colors" style={{ color: '#dc3545' }}>
+                                    <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M3 5h14M8 5V3h4v2M17 5l-1 13H4L3 5" /><path d="M8 9v5M12 9v5" /></svg>
+                                  </button>
+                                )}
                               </div>
-                            )}
-                            {hasAwbs && (
-                              <button type="button" onClick={() => toggleUnloadingOpen(r.id)} aria-label={isOpen ? 'Collapse AWB list' : 'Expand AWB list'}
-                                className="size-[36px] rounded-full inline-flex items-center justify-center transition-colors flex-shrink-0"
-                                style={{ background: '#fff', border: '1px solid #e0e6ef', color: '#455174', boxShadow: '0px 1px 4px rgba(19,96,210,0.10)' }}>
-                                <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"
-                                  style={{ transition: 'transform 0.15s', transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                                  <path d="M5 8l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
-                              </button>
-                            )}
-                          </div>
-
-                          {hasAwbs && (
-                            <div style={{ borderTop: '1px solid #eef1f6' }}>
-                              <button type="button" onClick={() => toggleUnloadingOpen(r.id)}
-                                className={`w-full flex items-center gap-[10px] px-[20px] py-[12px] text-left transition-colors ${isOpen ? '' : 'hover:bg-[#f8fafd]'}`}
-                                style={{ border: 'none', background: isOpen ? '#e2ebf9' : 'transparent', cursor: 'pointer', fontFamily: font }}>
-                                <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="#697498" strokeWidth="2.2" strokeLinecap="round"
-                                  style={{ transition: 'transform 0.15s', transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)', flexShrink: 0 }}>
-                                  <path d="M5 3l4 4-4 4" />
-                                </svg>
-                                <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>List of Airway Bill of Unloading</span>
-                                <span className="text-[14px] px-[10px] py-[3px] rounded-[12px]" style={{ background: isOpen ? '#fff' : '#e2ebf9', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: font }}>
-                                  {r.lines.length} AWB{r.lines.length !== 1 ? 's' : ''}
-                                </span>
-                                <span className="text-[14px] text-[#697498] ml-auto" style={{ fontFamily: font, flexShrink: 0 }}>{isOpen ? 'Collapse' : 'Expand'}</span>
-                              </button>
-                            </div>
-                          )}
-
-                          {isOpen && (
-                            <div className="px-[20px] pb-[16px] pt-[16px]" style={{ borderTop: '1px solid #f5f7fc' }}>
-                              <div className="rounded-[6px] overflow-hidden overflow-x-auto" style={{ border: '1px solid #eef1f6' }}>
-                                <table className="w-full" style={{ fontFamily: font, borderCollapse: 'collapse', minWidth: 900 }}>
-                                  <thead>
-                                    <tr style={{ background: '#e2ebf9' }}>
-                                      {['Airway Bill No.', 'Origin', 'Destination', 'Weight', 'No. of Pcs', 'Shipper', 'Consignee', 'Actions'].map(h => (
-                                        <th key={h} className="text-left px-[16px] py-[10px] text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
-                                      ))}
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {r.lines.map(l => (
-                                      <tr key={l.id} style={{ borderTop: '1px solid #f0f4ff' }}>
-                                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{l.awbNo}</td>
-                                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{l.originCode || '—'}</td>
-                                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{l.destCode || '—'}</td>
-                                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{l.weight} {l.weightUnit}</td>
-                                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{l.pieces}</td>
-                                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{l.shipperName || '—'}</td>
-                                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{l.consigneeName || '—'}</td>
-                                        <td className="px-[16px] py-[10px]">
-                                          <div className="flex items-center gap-[8px]">
-                                            <button type="button" onClick={() => setViewingAwbLine(l)} aria-label={`View ${l.awbNo}`} className="text-[#455174] hover:opacity-70">
-                                              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" /><circle cx="12" cy="12" r="3" /></svg>
-                                            </button>
-                                            {!viewOnly && (
-                                              <button type="button" onClick={() => removeAwbLine(r.id, l.id)} aria-label={`Remove ${l.awbNo}`} className="text-[#c0392b] hover:opacity-70">
-                                                <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 5h14M8 5V3h4v2M17 5l-1 13H4L3 5" /><path d="M8 9v5M12 9v5" /></svg>
-                                              </button>
-                                            )}
-                                          </div>
-                                        </td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                            </div>
-                          )}
+                            );
+                          })}
                         </div>
-                        );
-                      })}
+                      </div>
+
+                      {/* Detail pane — selected airport's AWBs */}
+                      <div className="flex-1 flex flex-col min-w-0" style={{ borderLeft: '1px solid #f3f4f6' }}>
+                        {selectedUnloadingRow && (
+                          <>
+                            <div className="flex items-center justify-between flex-wrap gap-[8px] px-[20px] py-[14px]" style={{ background: '#f8fafd', borderBottom: '1px solid #eef1f6' }}>
+                              <p className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500, fontFamily: font }}>List of Airway Bill of Unloading</p>
+                              {!viewOnly && (
+                                <button type="button" onClick={() => { setEditingUnloadingId(selectedUnloadingRow.id); setEditingAwbLineId(undefined); setStep('addUnloading'); }}
+                                  className="text-[14px] text-[#1360d2] hover:underline" style={{ fontFamily: font, fontWeight: 500 }}>
+                                  + Add AWB
+                                </button>
+                              )}
+                            </div>
+
+                            <div className="flex-1 overflow-auto">
+                              {selectedUnloadingRow.lines.length === 0 ? (
+                                <p className="text-[15px] text-[#697498] text-center" style={{ padding: '32px 16px', fontFamily: font }}>No airway bills added yet.</p>
+                              ) : (
+                                <div style={{ position: 'relative' }}>
+                                  <ScrollArrows atStart={awbAtScrollStart} atEnd={awbAtScrollEnd} onLeft={awbScrollToStart} onRight={awbScrollToEnd} stickyWidth={viewOnly ? 70 : 150} />
+                                  <div ref={awbScrollRef} onScroll={awbHandleScroll} className="overflow-x-auto">
+                                  <table className="w-full" style={{ fontFamily: font, borderCollapse: 'collapse', minWidth: 1180 }}>
+                                    <thead>
+                                      <tr style={{ background: '#e2ebf9' }}>
+                                        {['Sl. No.', 'AWB Number', 'Origin', 'Destination', 'Shipper', 'Consignee', 'Goods Description', 'Shipment Description Code', 'Pieces', 'Gross Wt (KG)', 'Actions'].map(h => (
+                                          <th key={h} className="text-left px-[16px] py-[10px] text-[14px] text-[#0e1b3d]"
+                                            style={h === 'Actions'
+                                              ? { fontWeight: 500, whiteSpace: 'nowrap', background: '#e2ebf9', position: 'sticky', right: 0, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }
+                                              : { fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
+                                        ))}
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {selectedUnloadingRow.lines.slice((awbTablePage - 1) * AWB_TABLE_PAGE_SIZE, awbTablePage * AWB_TABLE_PAGE_SIZE).map((l, idx) => (
+                                        <tr key={l.id} style={{ borderTop: '1px solid #f0f4ff' }}>
+                                          <td className="px-[16px] py-[10px] text-[14px] text-[#0e1b3d]">{(awbTablePage - 1) * AWB_TABLE_PAGE_SIZE + idx + 1}</td>
+                                          <td className="px-[16px] py-[10px] text-[14px]" style={{ color: '#1360d2', fontWeight: 500 }}>{l.awbNo}</td>
+                                          <td className="px-[16px] py-[10px] text-[14px] text-[#0e1b3d]">{l.originCode || '—'}</td>
+                                          <td className="px-[16px] py-[10px] text-[14px] text-[#0e1b3d]">{l.destCode || '—'}</td>
+                                          <td className="px-[16px] py-[10px] text-[14px] text-[#0e1b3d]">{l.shipperName || '—'}</td>
+                                          <td className="px-[16px] py-[10px] text-[14px] text-[#0e1b3d]">{l.consigneeName || '—'}</td>
+                                          <td className="px-[16px] py-[10px] text-[14px] text-[#0e1b3d]">{l.goodsDescription || '—'}</td>
+                                          <td className="px-[16px] py-[10px] text-[14px] text-[#0e1b3d]">{l.shipmentDescCode || '—'}</td>
+                                          <td className="px-[16px] py-[10px] text-[14px] text-[#0e1b3d]">{l.pieces}</td>
+                                          <td className="px-[16px] py-[10px] text-[14px] text-[#0e1b3d]">{awbWeightKg(l).toFixed(1)}</td>
+                                          <td className="px-[16px] py-[10px]" style={{ position: 'sticky', right: 0, background: '#fff', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>
+                                            <div className="flex items-center gap-[8px]">
+                                              <button type="button" onClick={() => setViewingAwbLine(l)} aria-label={`View ${l.awbNo}`}
+                                                className="size-[26px] inline-flex items-center justify-center rounded-[4px] hover:bg-[#f0f4ff] transition-colors" style={{ color: '#455174' }}>
+                                                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" /><circle cx="12" cy="12" r="3" /></svg>
+                                              </button>
+                                              {!viewOnly && (
+                                                <>
+                                                  <button type="button" onClick={() => { setEditingAwbPopup(l); setEditingAwbPopupRowId(selectedUnloadingRow.id); }}
+                                                    aria-label={`Edit ${l.awbNo}`} className="size-[26px] inline-flex items-center justify-center rounded-[4px] hover:bg-[#f0f4ff] transition-colors" style={{ color: '#1360d2' }}>
+                                                    <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2l4 4-9 9H5v-4z" /></svg>
+                                                  </button>
+                                                  <button type="button" onClick={() => removeAwbLine(selectedUnloadingRow.id, l.id)}
+                                                    aria-label={`Remove ${l.awbNo}`} className="size-[26px] inline-flex items-center justify-center rounded-[4px] hover:bg-[#fef2f2] transition-colors" style={{ color: '#dc3545' }}>
+                                                    <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M3 5h14M8 5V3h4v2M17 5l-1 13H4L3 5" /><path d="M8 9v5M12 9v5" /></svg>
+                                                  </button>
+                                                </>
+                                              )}
+                                            </div>
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+
+                            {selectedUnloadingRow.lines.length > 0 && (
+                              <div className="px-[20px] py-[10px]" style={{ borderTop: '1px solid #f5f7fc' }}>
+                                <Pagination page={awbTablePage} totalPages={Math.max(1, Math.ceil(selectedUnloadingRow.lines.length / AWB_TABLE_PAGE_SIZE))}
+                                  pageSize={AWB_TABLE_PAGE_SIZE} totalItems={selectedUnloadingRow.lines.length} onPageChange={setAwbTablePage} onPageSizeChange={() => {}} />
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
                     </div>
-                  )}
-                  {unloadingRows.length > 0 && (
-                    <Pagination page={unloadingRowsPage} totalPages={Math.max(1, Math.ceil(unloadingRows.length / UNLOADING_ROWS_PAGE_SIZE))}
-                      pageSize={UNLOADING_ROWS_PAGE_SIZE} totalItems={unloadingRows.length} onPageChange={setUnloadingRowsPage} onPageSizeChange={() => {}} />
                   )}
                 </div>
               </>
@@ -832,15 +880,32 @@ export default function FlightManifestNewRequestPage({
                   <FInput label="Manifest File Type" value={manifestTypeUpload} onChange={() => {}} disabled />
                 </div>
 
-                <div className="flex items-center justify-between flex-wrap gap-[8px]">
-                  <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>Upload Manifest File</p>
+                <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>Upload Manifest File</p>
+                <div
+                  onDragOver={e => { e.preventDefault(); setUploadDragging(true); }}
+                  onDragLeave={() => setUploadDragging(false)}
+                  onDrop={e => {
+                    e.preventDefault(); setUploadDragging(false);
+                    addUploadFiles(e.dataTransfer.files);
+                  }}
+                  className="w-full lg:max-w-[50%] flex flex-col items-center justify-center gap-[12px] rounded-[8px] py-[32px] px-[16px] transition-colors"
+                  style={{
+                    border: `1.5px dashed ${uploadDragging ? '#1360d2' : '#b5c8e8'}`,
+                    background: uploadDragging ? '#edf3ff' : '#f8fafd',
+                  }}
+                >
+                  <div className="size-[56px] rounded-full inline-flex items-center justify-center"
+                    style={{ background: uploadDragging ? '#d8e8ff' : '#e2ebf9' }}>
+                    <img src={cloudUploadIcon} alt="" style={{ width: 26, height: 24 }} />
+                  </div>
+                  <p className="text-[16px] text-[#697498] text-center" style={{ lineHeight: 1.5 }}>Drag and drop or</p>
                   <button type="button" onClick={() => fileInputRef.current?.click()}
-                    className="h-[42px] px-[18px] rounded-[4px] text-[15px] text-white inline-flex items-center gap-[6px]"
-                    style={{ background: '#1360d2', fontFamily: font, fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
-                    <span>+</span>Add
+                    className="h-[40px] px-[20px] rounded-[4px] text-[16px] transition-colors"
+                    style={{ border: '1.5px solid #1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500, background: '#fff' }}>
+                    Choose File
                   </button>
-                  <input ref={fileInputRef} type="file" multiple accept=".txt" className="hidden" onChange={e => addUploadFiles(e.target.files)} />
                 </div>
+                <input ref={fileInputRef} type="file" multiple accept=".txt" className="hidden" onChange={e => addUploadFiles(e.target.files)} />
                 <div className="bg-white rounded-[8px] p-[20px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
                   <p className="text-[15px] text-[#697498] mb-[12px]" style={{ fontFamily: font }}>No Of Files Added : <b style={{ color: '#0e1b3d' }}>{uploadFiles.length}</b></p>
                   <div className="rounded-[6px] overflow-hidden" style={{ border: '1px solid #eef1f6' }}>
@@ -907,9 +972,9 @@ export default function FlightManifestNewRequestPage({
 
       {viewingAwbLine && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(14,27,61,0.45)', padding: 24 }}>
-          <div className="bg-white rounded-[8px] p-[24px] flex flex-col gap-[16px]" style={{ width: '100%', maxWidth: 640, boxShadow: '0px 20px 60px rgba(14,27,61,0.18)', fontFamily: font }}>
+          <div className="bg-white rounded-[8px] p-[24px] flex flex-col gap-[16px]" style={{ width: '100%', maxWidth: 960, boxShadow: '0px 20px 60px rgba(14,27,61,0.18)', fontFamily: font }}>
             <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 700 }}>View Airway Bill</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]">
               <FInput label="Airway Bill No." value={viewingAwbLine.awbNo} onChange={() => {}} disabled />
               <FInput label="Goods Description" value={viewingAwbLine.goodsDescription} onChange={() => {}} disabled />
               <FInput label="Weight" value={viewingAwbLine.weight} onChange={() => {}} disabled />
@@ -924,6 +989,67 @@ export default function FlightManifestNewRequestPage({
             <div className="flex justify-end">
               <button type="button" onClick={() => setViewingAwbLine(null)}
                 className="h-[44px] px-[20px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editingAwbPopup && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(14,27,61,0.45)', padding: 24 }}>
+          <div className="bg-white rounded-[8px] p-[24px] flex flex-col gap-[16px]" style={{ width: '100%', maxWidth: 960, boxShadow: '0px 20px 60px rgba(14,27,61,0.18)', fontFamily: font }}>
+            <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 700 }}>Edit Airway Bill</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]">
+              <FInput label="Airway Bill No." value={editingAwbPopup.awbNo} onChange={() => {}} disabled />
+              <FInput label="Goods Description" value={editingAwbPopup.goodsDescription} onChange={v => setEditingAwbPopup(p => p && { ...p, goodsDescription: v })} req />
+              <FInput label="Weight" value={editingAwbPopup.weight} onChange={v => setEditingAwbPopup(p => p && { ...p, weight: v })} req />
+              <FSelect label="Weight Unit" value={editingAwbPopup.weightUnit} onChange={v => setEditingAwbPopup(p => p && { ...p, weightUnit: v })} options={['KG', 'LB']} req />
+              <FInput label="Shipper Name" value={editingAwbPopup.shipperName} onChange={v => setEditingAwbPopup(p => p && { ...p, shipperName: v })} req />
+              <FInput label="Number of Pieces" value={editingAwbPopup.pieces} onChange={v => setEditingAwbPopup(p => p && { ...p, pieces: v })} req />
+              <FSelect label="Shipment Description Code" value={editingAwbPopup.shipmentDescCode} onChange={v => setEditingAwbPopup(p => p && { ...p, shipmentDescCode: v })} options={['Total Consignment', 'Part Consignment']} />
+              <FInput label="Consignee Name" value={editingAwbPopup.consigneeName} onChange={v => setEditingAwbPopup(p => p && { ...p, consigneeName: v })} req />
+              <AirportCombo label="Airport/City of Origin" req code={editingAwbPopup.originCode} name={editingAwbPopup.originName}
+                onSelect={a => setEditingAwbPopup(p => p && { ...p, originCode: a.code, originName: a.name })} />
+              <AirportCombo label="Airport/City of Destination" req code={editingAwbPopup.destCode} name={editingAwbPopup.destName}
+                onSelect={a => setEditingAwbPopup(p => p && { ...p, destCode: a.code, destName: a.name })} />
+            </div>
+            <div className="flex justify-end gap-[10px]">
+              <button type="button" onClick={() => setEditingAwbPopup(null)}
+                className="h-[44px] px-[20px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>Cancel</button>
+              <button type="button" onClick={() => {
+                  setUnloadingRows(p => p.map(r => r.id !== editingAwbPopupRowId ? r : { ...r, lines: r.lines.map(l => l.id === editingAwbPopup.id ? editingAwbPopup : l) }));
+                  setEditingAwbPopup(null);
+                }}
+                className="h-[44px] px-[20px] rounded-[4px] text-[16px] text-white" style={{ background: '#1360d2', fontWeight: 500, fontFamily: font, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>Save</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirmDeleteUnloadingId && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/50" onClick={() => setConfirmDeleteUnloadingId(null)}>
+          <div className="bg-white rounded-[10px] flex flex-col items-center gap-[20px] px-[40px] py-[36px] max-w-[460px] mx-[16px]" style={{ boxShadow: '0 8px 40px rgba(0,0,0,0.18)', fontFamily: font }} onClick={e => e.stopPropagation()}>
+            <div className="size-[64px] rounded-full flex items-center justify-center" style={{ background: '#dc3545' }}>
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" />
+              </svg>
+            </div>
+            <div className="flex flex-col items-center gap-[8px] text-center">
+              <p className="text-[20px] text-[#0e1b3d]" style={{ fontWeight: 700 }}>Are you sure you want to delete this airport?</p>
+              <p className="text-[16px] text-[#455174]" style={{ lineHeight: 1.4 }}>All the added AWB&apos;s will be removed from this request.</p>
+            </div>
+            <div className="flex gap-[12px]">
+              <button type="button" onClick={() => setConfirmDeleteUnloadingId(null)}
+                className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>
+                Cancel
+              </button>
+              <button type="button" onClick={() => {
+                  setUnloadingRows(p => p.filter(x => x.id !== confirmDeleteUnloadingId));
+                  if (selectedUnloadingId === confirmDeleteUnloadingId) setSelectedUnloadingId(null);
+                  setConfirmDeleteUnloadingId(null);
+                }}
+                className="h-[48px] px-[36px] rounded-[4px] text-[16px] text-white transition-colors" style={{ background: '#1360d2', fontWeight: 500, fontFamily: font }}>
+                Yes
+              </button>
             </div>
           </div>
         </div>
