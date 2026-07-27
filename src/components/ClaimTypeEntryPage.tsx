@@ -256,27 +256,14 @@ export default function ClaimTypeEntryPage({ onBack, onContinue }: Props) {
         </div>
       </div>
 
-      {/* Bottom bar */}
-      <div className="flex-shrink-0 bg-white px-4 sm:px-10 py-[16px] flex items-center justify-between gap-[12px]" style={{ boxShadow: '0px -2px 8px rgba(0,0,0,0.08)' }}>
+      {/* Bottom bar — selecting a claim type card above navigates immediately, so there's no Continue action left to take here. */}
+      <div className="flex-shrink-0 bg-white px-4 sm:px-10 py-[16px] flex items-center gap-[12px]" style={{ boxShadow: '0px -2px 8px rgba(0,0,0,0.08)' }}>
         <button
           onClick={onBack}
           className="h-[48px] px-[28px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
           style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
         >
           Back
-        </button>
-        <button
-          onClick={() => onContinue(selected ?? 'refundDeposit')}
-          className="h-[48px] px-[40px] rounded-[4px] text-[16px] text-white transition-colors"
-          style={{
-            background: '#1360d2',
-            cursor: 'pointer',
-            fontFamily: font,
-            fontWeight: 500,
-            boxShadow: '0px 0px 8px rgba(28,72,191,0.16)',
-          }}
-        >
-          Continue
         </button>
       </div>
     </div>
