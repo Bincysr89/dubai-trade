@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import Header from './Header';
 import Pagination from './Pagination';
 import BackToListingBar from './BackToListingBar';
@@ -160,17 +160,36 @@ const FLIGHT_MANIFEST: ListingConfig = {
 
 /* Flight Manifest — Track File Upload tab. Manifest File Type drives the Action column:
    FWB rows only ever get an error-list view, FFM rows keep the full action set. */
+type FlightManifestUploadFile = {
+  id: string; fileName: string; awbNo: string; status: 'Success' | 'Failure'; remarks: string;
+  /** Error detail lines shown in the inline accordion when this file's status is Failure. */
+  errors?: string[];
+};
 type FlightManifestUploadRecord = {
   fileName: string; uploadRefNo: string; flightNo: string; scheduledDate: string; manifestFileType: 'FWB' | 'FFM';
   filesSuccessful: string; filesFailed: string; uploadDate: string; remarks: string; uploadStatus: 'Successful' | 'Failure';
+  files: FlightManifestUploadFile[];
 };
 const FLIGHT_MANIFEST_UPLOADS: FlightManifestUploadRecord[] = [
-  { fileName: 'FFM_337788.xml',  uploadRefNo: 'MNF-337788',  flightNo: '337788',  scheduledDate: '06/07/2025 11:34', manifestFileType: 'FFM', filesSuccessful: '1', filesFailed: '0', uploadDate: '03/12/2025', remarks: 'Processed successfully',              uploadStatus: 'Successful' },
-  { fileName: 'FWB_H123456.xml', uploadRefNo: 'MNF-H123456', flightNo: 'H123456', scheduledDate: '02/07/2025 10:15', manifestFileType: 'FWB', filesSuccessful: '1', filesFailed: '0', uploadDate: '02/07/2025', remarks: 'Processed successfully',              uploadStatus: 'Successful' },
-  { fileName: 'FFM_D123456.xml', uploadRefNo: 'MNF-D123456', flightNo: 'D123456', scheduledDate: '02/07/2025 10:15', manifestFileType: 'FFM', filesSuccessful: '0', filesFailed: '1', uploadDate: '02/07/2025', remarks: 'Invalid AWB format',                  uploadStatus: 'Failure' },
-  { fileName: 'FWB_E123456.xml', uploadRefNo: 'MNF-E123456', flightNo: 'E123456', scheduledDate: '02/07/2025 10:15', manifestFileType: 'FWB', filesSuccessful: '1', filesFailed: '0', uploadDate: '02/07/2025', remarks: 'Processed successfully',              uploadStatus: 'Successful' },
-  { fileName: 'FFM_G123456.xml', uploadRefNo: 'MNF-G123456', flightNo: 'G123456', scheduledDate: '02/07/2025 10:15', manifestFileType: 'FFM', filesSuccessful: '3', filesFailed: '0', uploadDate: '02/07/2025', remarks: 'Processed successfully',              uploadStatus: 'Successful' },
-  { fileName: 'FFM_C123456.xml', uploadRefNo: 'MNF-C123456', flightNo: 'C123456', scheduledDate: '06/07/2025 11:34', manifestFileType: 'FFM', filesSuccessful: '1', filesFailed: '1', uploadDate: '02/07/2025', remarks: '1 AWB rejected — duplicate entry',    uploadStatus: 'Failure' },
+  { fileName: 'FFM_337788.xml',  uploadRefNo: 'MNF-337788',  flightNo: '337788',  scheduledDate: '06/07/2025 11:34', manifestFileType: 'FFM', filesSuccessful: '1', filesFailed: '0', uploadDate: '03/12/2025', remarks: 'Processed successfully',              uploadStatus: 'Successful',
+    files: [{ id: 'f1', fileName: 'EK_FFM_337788_01.txt', awbNo: '12341200300801', status: 'Success', remarks: '' }] },
+  { fileName: 'FWB_H123456.xml', uploadRefNo: 'MNF-H123456', flightNo: 'H123456', scheduledDate: '02/07/2025 10:15', manifestFileType: 'FWB', filesSuccessful: '1', filesFailed: '0', uploadDate: '02/07/2025', remarks: 'Processed successfully',              uploadStatus: 'Successful',
+    files: [{ id: 'f1', fileName: 'EK_FWB_H123456_01.txt', awbNo: '12341200300802', status: 'Success', remarks: '' }] },
+  { fileName: 'FFM_D123456.xml', uploadRefNo: 'MNF-D123456', flightNo: 'D123456', scheduledDate: '02/07/2025 10:15', manifestFileType: 'FFM', filesSuccessful: '0', filesFailed: '1', uploadDate: '02/07/2025', remarks: 'Invalid AWB format',                  uploadStatus: 'Failure',
+    files: [{ id: 'f1', fileName: 'EK_FFM_D123456_01.txt', awbNo: '17665068814', status: 'Failure', remarks: 'Invalid AWB format', errors: ['AWB number 17665068814 does not match the expected 11-digit format.', 'Missing mandatory field: Goods Description.'] }] },
+  { fileName: 'FWB_E123456.xml', uploadRefNo: 'MNF-E123456', flightNo: 'E123456', scheduledDate: '02/07/2025 10:15', manifestFileType: 'FWB', filesSuccessful: '1', filesFailed: '0', uploadDate: '02/07/2025', remarks: 'Processed successfully',              uploadStatus: 'Successful',
+    files: [{ id: 'f1', fileName: 'EK_FWB_E123456_01.txt', awbNo: '12341200300803', status: 'Success', remarks: '' }] },
+  { fileName: 'FFM_G123456.xml', uploadRefNo: 'MNF-G123456', flightNo: 'G123456', scheduledDate: '02/07/2025 10:15', manifestFileType: 'FFM', filesSuccessful: '3', filesFailed: '0', uploadDate: '02/07/2025', remarks: 'Processed successfully',              uploadStatus: 'Successful',
+    files: [
+      { id: 'f1', fileName: 'EK_FFM_G123456_01.txt', awbNo: '12341200300804', status: 'Success', remarks: '' },
+      { id: 'f2', fileName: 'EK_FFM_G123456_02.txt', awbNo: '12341200300805', status: 'Success', remarks: '' },
+      { id: 'f3', fileName: 'EK_FFM_G123456_03.txt', awbNo: '12341200300806', status: 'Success', remarks: '' },
+    ] },
+  { fileName: 'FFM_C123456.xml', uploadRefNo: 'MNF-C123456', flightNo: 'C123456', scheduledDate: '06/07/2025 11:34', manifestFileType: 'FFM', filesSuccessful: '1', filesFailed: '1', uploadDate: '02/07/2025', remarks: '1 AWB rejected — duplicate entry',    uploadStatus: 'Failure',
+    files: [
+      { id: 'f1', fileName: 'EK_FFM_C123456_01.txt', awbNo: '12341200300807', status: 'Success', remarks: '' },
+      { id: 'f2', fileName: 'EK_FFM_C123456_02.txt', awbNo: '12341200300808', status: 'Failure', remarks: 'Duplicate entry', errors: ['AWB number 12341200300808 already exists in a previously submitted manifest for this flight.'] },
+    ] },
 ];
 
 /* ─── House Manifest ────────────────────────────────────────────── */
@@ -359,6 +378,8 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
   const [errorFilesRow, setErrorFilesRow]     = useState<ListingRow | null>(null);
   const [auditHistoryRow, setAuditHistoryRow] = useState<ListingRow | null>(null);
   const [fileDetailsRow, setFileDetailsRow]   = useState<ListingRow | null>(null);
+  const [fmuDetailRow, setFmuDetailRow]       = useState<FlightManifestUploadRecord | null>(null);
+  const [openErrorFileIds, setOpenErrorFileIds] = useState<Set<string>>(new Set());
   const [semPrefill, setSemPrefill]           = useState<{ bolNumber: string; rotationNumber: string; cargoCode?: string } | null>(null);
   const [semRequestKind, setSemRequestKind]   = useState<'new' | 'view' | 'amend'>('new');
   const [colOrder, setColOrder]               = useState<string[]>(() => config.columns.map(c => c.key));
@@ -635,7 +656,15 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
               <span className="text-[#dc3545] text-[15px] leading-none">/</span>
               <span className="text-[#8f94ae] text-[16px]" style={{ fontFamily: font }}>Service Catalog</span>
               <span className="text-[#dc3545] text-[15px] leading-none">/</span>
-              {fileDetailsRow ? (
+              {fmuDetailRow ? (
+                <>
+                  <span className="text-[#8f94ae] text-[16px] cursor-pointer hover:text-[#1360d2] transition-colors" style={{ fontFamily: font }} onClick={() => setFmuDetailRow(null)}>
+                    {SIDEBAR_ITEMS.find(s => s.key === activeMenu)?.label}
+                  </span>
+                  <span className="text-[#dc3545] text-[15px] leading-none">/</span>
+                  <span className="text-[#111838] text-[16px] font-medium" style={{ fontFamily: font }}>File Upload Details</span>
+                </>
+              ) : fileDetailsRow ? (
                 <>
                   <span className="text-[#8f94ae] text-[16px] cursor-pointer hover:text-[#1360d2] transition-colors" style={{ fontFamily: font }} onClick={() => setFileDetailsRow(null)}>
                     {SIDEBAR_ITEMS.find(s => s.key === activeMenu)?.label}
@@ -660,7 +689,102 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
             </div>
           </div>
 
-          {fileDetailsRow ? (
+          {fmuDetailRow ? (
+            /* ─── Flight Manifest — File Upload Details page, matching the eServices "File Upload Details"
+                   reference: summary card + List Of Files table, with an inline accordion under each
+                   Failure-status file row showing its error details. ─── */
+            <>
+              <h1 className="text-[28px] font-bold text-[#0e1b3d] mb-[16px] flex-shrink-0" style={{ fontFamily: font }}>File Upload Details</h1>
+
+              <div className="bg-white rounded-[8px] p-[24px] mb-[20px] flex-shrink-0" style={{ boxShadow: '0px 5px 32px 0px rgba(143,155,186,0.16)' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px 20px' }}>
+                  <Field label="Upload Reference Number" value={fmuDetailRow.uploadRefNo} />
+                  <Field label="Uploaded Date" value={fmuDetailRow.uploadDate} />
+                  <Field label="No. Of Uploaded Files" value={String(fmuDetailRow.files.length)} />
+                  <Field label="No. Of Files Successful" value={fmuDetailRow.filesSuccessful} />
+                  <Field label="No. Of Files Failed" value={fmuDetailRow.filesFailed} />
+                  <Field label="Manifest File Type" value={fmuDetailRow.manifestFileType} />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-[16px] flex-1">
+                <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>List Of Files</p>
+                <div className="bg-white rounded-[8px] p-[20px] flex-1" style={{ boxShadow: '0px 5px 32px 0px rgba(143,155,186,0.16)' }}>
+                  <div className="rounded-[6px] overflow-hidden overflow-x-auto" style={{ border: '1px solid #eef1f6' }}>
+                    <table className="w-full" style={{ fontFamily: font, borderCollapse: 'collapse', minWidth: 780 }}>
+                      <thead>
+                        <tr style={{ background: '#e2ebf9' }}>
+                          {['File Name', 'Airway Bill Number', 'Status', 'Remarks', 'Actions'].map(h => (
+                            <th key={h} className="text-left px-[16px] py-[10px] text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {fmuDetailRow.files.length === 0 ? (
+                          <tr><td colSpan={5} className="text-center py-[28px] text-[15px] text-[#8f94ae]">No files found for this upload.</td></tr>
+                        ) : fmuDetailRow.files.map(f => {
+                          const isFailure = f.status === 'Failure';
+                          const isOpen = openErrorFileIds.has(f.id);
+                          return (
+                          <Fragment key={f.id}>
+                            <tr style={{ borderTop: '1px solid #f0f4ff' }}>
+                              <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{f.fileName}</td>
+                              <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]" style={{ whiteSpace: 'nowrap' }}>{f.awbNo}</td>
+                              <td className="px-[16px] py-[10px] text-[15px]" style={{ color: isFailure ? '#dc3545' : '#28a745', fontWeight: 500 }}>{f.status.toUpperCase()}</td>
+                              <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{f.remarks || '—'}</td>
+                              <td className="px-[16px] py-[10px]">
+                                {isFailure ? (
+                                  <button type="button" onClick={() => setOpenErrorFileIds(prev => { const next = new Set(prev); next.has(f.id) ? next.delete(f.id) : next.add(f.id); return next; })}
+                                    aria-label={isOpen ? `Collapse error details for ${f.fileName}` : `View error details for ${f.fileName}`}
+                                    className="size-[32px] inline-flex items-center justify-center rounded-[4px] transition-colors" style={{ background: '#dc3545', color: '#fff' }}>
+                                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" /><circle cx="12" cy="12" r="3" /></svg>
+                                  </button>
+                                ) : (
+                                  <span className="size-[32px] inline-flex items-center justify-center rounded-[4px]" style={{ background: '#0e1b3d', color: '#fff' }}>
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M5 2h7l3 3v12H5z" /><path d="M12 2v3h3" /></svg>
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                            {isFailure && isOpen && (
+                              <tr>
+                                <td colSpan={5} style={{ padding: 0, background: '#fef2f2' }}>
+                                  <div className="px-[20px] py-[14px]">
+                                    <p className="text-[14px] mb-[8px]" style={{ color: '#455174', fontWeight: 600, fontFamily: font }}>Error Details — {f.fileName}</p>
+                                    <div className="rounded-[6px] overflow-hidden" style={{ border: '1px solid #f3c2c2', background: '#fff' }}>
+                                      <table className="w-full" style={{ fontFamily: font, borderCollapse: 'collapse' }}>
+                                        <thead>
+                                          <tr style={{ background: '#fbdada' }}>
+                                            <th className="text-left px-[14px] py-[8px] text-[13px] text-[#0e1b3d]" style={{ fontWeight: 500, width: 60 }}>S.No</th>
+                                            <th className="text-left px-[14px] py-[8px] text-[13px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Error</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {(f.errors && f.errors.length > 0 ? f.errors : [f.remarks || 'No error details available.']).map((err, ei) => (
+                                            <tr key={ei} style={{ borderTop: '1px solid #f5e0e0' }}>
+                                              <td className="px-[14px] py-[8px] text-[14px] text-[#697498]">{ei + 1}</td>
+                                              <td className="px-[14px] py-[8px] text-[14px] text-[#0e1b3d]">{err}</td>
+                                            </tr>
+                                          ))}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </Fragment>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <BackToListingBar onBackToListing={() => { setFmuDetailRow(null); setOpenErrorFileIds(new Set()); }} />
+            </>
+          ) : fileDetailsRow ? (
             /* ─── File Details — File Details card + List of BOL table, matching the Figma "Track Upload" detail reference ─── */
             <>
               <h1 className="text-[28px] font-bold text-[#0e1b3d] mb-[16px] flex-shrink-0" style={{ fontFamily: font }}>File Details</h1>
@@ -1012,13 +1136,16 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                                     </button>
                                     {openFlyout === i && (
                                       <div className="absolute z-[100] right-0 bg-white rounded-[8px] py-[4px] overflow-hidden" style={{ top: 36, width: 200, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
-                                        {(isFwb ? [{ key: 'error', label: 'View Error Details' }] : [{ key: 'view', label: 'View Manifest' }, { key: 'error', label: 'View Error Details' }]).map(opt => (
+                                        {(isFwb ? [{ key: 'error', label: 'View Error Details' }] : [{ key: 'view', label: 'View File Details' }, { key: 'error', label: 'View Error Details' }]).map(opt => (
                                           <button key={opt.key} className="group w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
                                             onClick={() => {
                                               setOpenFlyout(null);
-                                              const matched = FLIGHT_MANIFEST.rows.find(r => r.flightNo === row.flightNo);
-                                              if (opt.key === 'error') setErrorFilesRow(matched ?? ({ flightNo: row.flightNo, uploadRefNo: row.uploadRefNo } as unknown as ListingRow));
-                                              else if (matched) { setFmSelectedRow(matched); setFmView('view'); }
+                                              if (opt.key === 'error') {
+                                                const matched = FLIGHT_MANIFEST.rows.find(r => r.flightNo === row.flightNo);
+                                                setErrorFilesRow(matched ?? ({ flightNo: row.flightNo, uploadRefNo: row.uploadRefNo } as unknown as ListingRow));
+                                              } else {
+                                                setFmuDetailRow(row);
+                                              }
                                             }}>
                                             <span className="text-[15px] text-[#111838] group-hover:text-white" style={{ fontFamily: font }}>{opt.label}</span>
                                           </button>

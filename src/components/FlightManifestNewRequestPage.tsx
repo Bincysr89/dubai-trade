@@ -521,6 +521,9 @@ export default function FlightManifestNewRequestPage({
     next.has(id) ? next.delete(id) : next.add(id);
     return next;
   });
+  const [viewingAwbLine, setViewingAwbLine] = useState<AwbLine | null>(null);
+  const removeAwbLine = (rowId: string, lineId: string) =>
+    setUnloadingRows(p => p.map(r => r.id === rowId ? { ...r, lines: r.lines.filter(l => l.id !== lineId) } : r));
 
   const [manifestTypeUpload, setManifestTypeUpload] = useState('FFM');
   const [uploadFiles, setUploadFiles] = useState<ManifestFile[]>([]);
@@ -731,9 +734,9 @@ export default function FlightManifestNewRequestPage({
                             </div>
                             {!viewOnly && (
                               <div className="flex items-center gap-[8px] ml-auto">
-                                <button type="button" onClick={() => { setEditingUnloadingId(r.id); setStep('addUnloading'); }}
-                                  className="h-[32px] px-[12px] rounded-[4px] text-[14px] text-white flex-shrink-0" style={{ background: '#1360d2', fontFamily: font, fontWeight: 500 }}>
-                                  Add AWB&apos;s
+                                <button type="button" onClick={() => { setEditingUnloadingId(r.id); setStep('addUnloading'); }} aria-label={`Edit ${r.airportCode}`}
+                                  className="size-[32px] inline-flex items-center justify-center rounded-[4px] hover:bg-[#f0f4ff] transition-colors flex-shrink-0" style={{ border: '1px solid #d5ddfb', color: '#1360d2' }}>
+                                  <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2l4 4-9 9H5v-4z" /></svg>
                                 </button>
                                 <button type="button" onClick={() => setUnloadingRows(p => p.filter(x => x.id !== r.id))} aria-label={`Remove ${r.airportCode}`}
                                   className="size-[32px] inline-flex items-center justify-center rounded-[4px] hover:bg-[#fef2f2] transition-colors flex-shrink-0" style={{ color: '#dc3545' }}>
@@ -774,10 +777,10 @@ export default function FlightManifestNewRequestPage({
                           {isOpen && (
                             <div className="px-[20px] pb-[16px] pt-[16px]" style={{ borderTop: '1px solid #f5f7fc' }}>
                               <div className="rounded-[6px] overflow-hidden overflow-x-auto" style={{ border: '1px solid #eef1f6' }}>
-                                <table className="w-full" style={{ fontFamily: font, borderCollapse: 'collapse', minWidth: 780 }}>
+                                <table className="w-full" style={{ fontFamily: font, borderCollapse: 'collapse', minWidth: 900 }}>
                                   <thead>
                                     <tr style={{ background: '#e2ebf9' }}>
-                                      {['Airway Bill No.', 'Origin', 'Destination', 'Weight', 'No. of Pcs', 'Shipper', 'Consignee'].map(h => (
+                                      {['Airway Bill No.', 'Origin', 'Destination', 'Weight', 'No. of Pcs', 'Shipper', 'Consignee', 'Actions'].map(h => (
                                         <th key={h} className="text-left px-[16px] py-[10px] text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
                                       ))}
                                     </tr>
@@ -792,6 +795,18 @@ export default function FlightManifestNewRequestPage({
                                         <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{l.pieces}</td>
                                         <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{l.shipperName || '—'}</td>
                                         <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{l.consigneeName || '—'}</td>
+                                        <td className="px-[16px] py-[10px]">
+                                          <div className="flex items-center gap-[8px]">
+                                            <button type="button" onClick={() => setViewingAwbLine(l)} aria-label={`View ${l.awbNo}`} className="text-[#455174] hover:opacity-70">
+                                              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" /><circle cx="12" cy="12" r="3" /></svg>
+                                            </button>
+                                            {!viewOnly && (
+                                              <button type="button" onClick={() => removeAwbLine(r.id, l.id)} aria-label={`Remove ${l.awbNo}`} className="text-[#c0392b] hover:opacity-70">
+                                                <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 5h14M8 5V3h4v2M17 5l-1 13H4L3 5" /><path d="M8 9v5M12 9v5" /></svg>
+                                              </button>
+                                            )}
+                                          </div>
+                                        </td>
                                       </tr>
                                     ))}
                                   </tbody>
@@ -888,6 +903,30 @@ export default function FlightManifestNewRequestPage({
 
       {showFlightSearch && (
         <FlightSearchPopup onSelect={selectFlight} onClose={() => setShowFlightSearch(false)} />
+      )}
+
+      {viewingAwbLine && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(14,27,61,0.45)', padding: 24 }}>
+          <div className="bg-white rounded-[8px] p-[24px] flex flex-col gap-[16px]" style={{ width: '100%', maxWidth: 640, boxShadow: '0px 20px 60px rgba(14,27,61,0.18)', fontFamily: font }}>
+            <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 700 }}>View Airway Bill</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
+              <FInput label="Airway Bill No." value={viewingAwbLine.awbNo} onChange={() => {}} disabled />
+              <FInput label="Goods Description" value={viewingAwbLine.goodsDescription} onChange={() => {}} disabled />
+              <FInput label="Weight" value={viewingAwbLine.weight} onChange={() => {}} disabled />
+              <FInput label="Weight Unit" value={viewingAwbLine.weightUnit} onChange={() => {}} disabled />
+              <FInput label="Shipper Name" value={viewingAwbLine.shipperName} onChange={() => {}} disabled />
+              <FInput label="Number of Pieces" value={viewingAwbLine.pieces} onChange={() => {}} disabled />
+              <FInput label="Shipment Description Code" value={viewingAwbLine.shipmentDescCode} onChange={() => {}} disabled />
+              <FInput label="Consignee Name" value={viewingAwbLine.consigneeName} onChange={() => {}} disabled />
+              <FInput label="Airport/City of Origin" value={viewingAwbLine.originCode ? `${viewingAwbLine.originCode} — ${viewingAwbLine.originName}` : ''} onChange={() => {}} disabled />
+              <FInput label="Airport/City of Destination" value={viewingAwbLine.destCode ? `${viewingAwbLine.destCode} — ${viewingAwbLine.destName}` : ''} onChange={() => {}} disabled />
+            </div>
+            <div className="flex justify-end">
+              <button type="button" onClick={() => setViewingAwbLine(null)}
+                className="h-[44px] px-[20px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>Close</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
