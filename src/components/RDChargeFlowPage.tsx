@@ -690,6 +690,7 @@ function UnitPriceModal({ ctx, existing, currency, onSave, onClose }: {
   const [statQty, setStatQty] = useState('');
   const [unitPrice, setUnitPrice] = useState('');
   const totalEntered = rows.reduce((s, r) => s + (parseFloat(r.statQty) || 0), 0);
+  const qtyExceeded = ctx.totalStatQty > 0 && totalEntered >= ctx.totalStatQty;
 
   const addRow = () => {
     if (!statQty.trim() || !unitPrice.trim()) return;
@@ -743,8 +744,8 @@ function UnitPriceModal({ ctx, existing, currency, onSave, onClose }: {
               </div>
             </div>
             <div className="flex gap-[10px] mt-[14px]">
-              <button type="button" onClick={addRow}
-                className="h-[40px] px-[20px] rounded-[4px] text-[15px] text-white"
+              <button type="button" onClick={addRow} disabled={qtyExceeded}
+                className="h-[40px] px-[20px] rounded-[4px] text-[15px] text-white disabled:opacity-40 disabled:cursor-not-allowed"
                 style={{ background: '#1360d2', border: 'none', fontFamily: font, fontWeight: 500, cursor: 'pointer' }}>
                 Add
               </button>
@@ -759,6 +760,16 @@ function UnitPriceModal({ ctx, existing, currency, onSave, onClose }: {
           {rows.length > 0 && (
             <div>
               <p className="text-[16px] text-[#0e1b3d] mb-[12px]" style={{ fontWeight: 500, fontFamily: font, borderBottom: '1px solid #eef1f6', paddingBottom: 8 }}>Unit Price Details</p>
+              {qtyExceeded && (
+                <div className="flex items-start gap-[10px] rounded-[6px] px-[16px] py-[12px] mb-[14px]" style={{ background: '#fdecec', border: '1px solid #f5c2c2' }}>
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#dc3545" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-[1px]">
+                    <circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16h.01" />
+                  </svg>
+                  <p className="text-[14px] text-[#dc3545]" style={{ fontFamily: font, lineHeight: 1.4 }}>
+                    The total entered statistical quantity ({totalEntered} {ctx.unit}) has reached the total exported statistical quantity ({ctx.totalStatQty} {ctx.unit}). No further quantity can be allocated.
+                  </p>
+                </div>
+              )}
               <table className="w-full" style={{ borderCollapse: 'collapse', fontFamily: font }}>
                 <thead>
                   <tr style={{ background: '#a6c2e9' }}>
