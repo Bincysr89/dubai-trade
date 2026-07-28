@@ -6,7 +6,7 @@ import type { Row } from './EligibleDeclarationsPage';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
 
-const PAYMENT_MODES = ['Credit/Debit Account', 'E-Payment'];
+const PAYMENT_MODES = ['Credit/Debit Account', 'E-Payment', 'Cash'];
 const PAYMENT_REFS  = ['Account Number', 'Reference No'];
 
 const REG_FEE   = 80;
@@ -75,6 +75,7 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
   const [paymentRef,  setPaymentRef]  = useState('Account Number');
   const [showSaveModal, setShowSaveModal] = useState(false);
   const isEPayment = paymentMode === 'E-Payment';
+  const isCash = paymentMode === 'Cash';
   const handlePaymentMode = (v: string) => { setPaymentMode(v); if (v === 'E-Payment') setPaymentRef('Reference No'); else setPaymentRef('Account Number'); };
 
   const displayRows = selectedRows.length > 0 ? selectedRows : [];
@@ -231,11 +232,13 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
                 <PlainSelect value={paymentMode} onChange={handlePaymentMode} options={PAYMENT_MODES} disabled={!!chargesNote} />
               </div>
 
-              {/* Payment Reference */}
-              <div className="flex flex-col gap-[6px]">
-                <label className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>Payment Reference</label>
-                <PlainSelect value={paymentRef} onChange={setPaymentRef} options={PAYMENT_REFS} disabled={isEPayment || !!chargesNote} />
-              </div>
+              {/* Payment Reference — not applicable for Cash */}
+              {!isCash && (
+                <div className="flex flex-col gap-[6px]">
+                  <label className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>Payment Reference</label>
+                  <PlainSelect value={paymentRef} onChange={setPaymentRef} options={PAYMENT_REFS} disabled={isEPayment || !!chargesNote} />
+                </div>
+              )}
             </div>
           </div>
 

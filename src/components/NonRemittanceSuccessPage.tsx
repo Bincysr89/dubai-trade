@@ -55,13 +55,6 @@ export default function NonRemittanceSuccessPage({ onBack, onViewAck, onViewClai
                 <circle cx="11" cy="11" r="10" fill="#f5c842" />
                 <text x="11" y="16" textAnchor="middle" fontSize="13" fontWeight="700" fill="#fff">i</text>
               </svg>
-              <p className="text-[15px] text-[#b45309]" style={{ lineHeight: 1.5 }}>Please Submit Mandatory Doc. for further Claim Processing.</p>
-            </div>
-            <div className="flex items-start gap-[12px] rounded-[6px] px-[16px] py-[14px]" style={{ background: '#fff8e1', border: '1px solid #f5c842' }}>
-              <svg width="22" height="22" viewBox="0 0 22 22" fill="none" style={{ flexShrink: 0, marginTop: 1 }}>
-                <circle cx="11" cy="11" r="10" fill="#f5c842" />
-                <text x="11" y="16" textAnchor="middle" fontSize="13" fontWeight="700" fill="#fff">i</text>
-              </svg>
               <p className="text-[15px] text-[#b45309]" style={{ lineHeight: 1.5 }}>
                 All email messages, related to submission, suspension, approval or rejection of this claim, will be sent to <strong>infogain.sandeepk@dubaicustoms.ae</strong> for <strong>AE-9106286</strong>.
               </p>

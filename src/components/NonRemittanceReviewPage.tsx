@@ -5,6 +5,8 @@ import type { Row } from './EligibleDeclarationsPage';
 import { type ChargeDetail, type OutboundState } from './RDChargeFlowPage';
 import { UploadedDocsByDeclaration, type UploadedDoc } from './NonRemittanceDocumentsPage';
 import { DeclarationDetailsSection } from './RefundDepositsClaimViewPage';
+import { DateInput } from './DatePicker';
+import FloatingField from './FloatingField';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
 
@@ -89,6 +91,9 @@ export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPre
   const [declared, setDeclared] = useState(false);
   const [amendReason, setAmendReason] = useState('');
   const [amendReasonDesc, setAmendReasonDesc] = useState('');
+  const [cashReceiptNo, setCashReceiptNo] = useState('');
+  const [cashPaymentDate, setCashPaymentDate] = useState('');
+  const isCash = paymentMode === 'Cash';
 
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full" style={{ fontFamily: font }}>
@@ -178,6 +183,20 @@ export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPre
               ))}
             </div>
           </div>
+
+          {/* Additional Details — Cash payment only */}
+          {isCash && (
+            <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+              <div className="px-[24px] py-[16px] border-b border-[#eef1f6]">
+                <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Additional Details</p>
+                <p className="text-[14px] text-[#697498] mt-[2px]">Cash payment requires the following details.</p>
+              </div>
+              <div className="px-[24px] py-[20px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-[24px] gap-y-[20px]">
+                <FloatingField label="Cash Receipt Number" required value={cashReceiptNo} onChange={setCashReceiptNo} placeholder="Enter cash receipt number" />
+                <DateInput label="Payment Date" required value={cashPaymentDate} onChange={setCashPaymentDate} />
+              </div>
+            </div>
+          )}
 
           {/* Declaration checkbox */}
           <div

@@ -52,17 +52,6 @@ export default function ClaimSubmittedSuccessPage({
           </p>
         </div>
 
-        {/* Yellow info banner — mandatory doc */}
-        <div className="flex items-start gap-[12px] rounded-[8px] px-[20px] py-[14px]" style={{ background: '#fff8e1', border: '1px solid #ffe082' }}>
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#856404" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-[2px]">
-            <circle cx="12" cy="12" r="9" />
-            <path d="M12 8h.01M11 12h1v4h1" />
-          </svg>
-          <p className="text-[16px] text-[#856404]" style={{ lineHeight: 1.5 }}>
-            Please Submit Mandatory Doc. for further Claim Processing.
-          </p>
-        </div>
-
         {/* Yellow info banner — email notification */}
         <div className="flex items-start gap-[12px] rounded-[8px] px-[20px] py-[14px]" style={{ background: '#fff8e1', border: '1px solid #ffe082' }}>
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#856404" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-[2px]">
