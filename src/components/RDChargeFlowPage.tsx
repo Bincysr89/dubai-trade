@@ -222,6 +222,20 @@ function RefundSelect({ value, onChange, options = REFUND_OPTIONS }: {
   const btnRef          = useRef<HTMLButtonElement>(null);
   const opt             = options.find(o => o.value === value);
 
+  // CDM Deposit / Amendment / Cancellation only ever offer "NA" — show it as a
+  // static greyed-out field instead of an interactive dropdown with one choice.
+  if (options.length === 1) {
+    return (
+      <div className="w-full flex items-center px-[16px] rounded-[4px]"
+        style={{ height: 56, border: '1px solid #d5ddfb', background: '#f8fafd', fontFamily: font, position: 'relative' }}>
+        <span className="absolute pointer-events-none" style={{ left: 10, top: -9, background: '#f8fafd', padding: '0 4px', fontSize: 12, color: '#697498', fontFamily: font }}>
+          Refund Type
+        </span>
+        <span className="flex-1 text-[16px]" style={{ color: '#697498', fontFamily: font }}>{options[0].label}</span>
+      </div>
+    );
+  }
+
   const openMenu = () => {
     if (btnRef.current) {
       const r = btnRef.current.getBoundingClientRect();
@@ -1032,13 +1046,19 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
         </div>
 
         <div style={{ paddingRight: 8, position: 'relative' }}>
-          <Dh style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#0e1b3d', pointerEvents: 'none' }} />
-          <input type="number" min={0} value={d.claimAmount} onChange={e => onAmount(idx, e.target.value)}
-            placeholder="Enter amount" readOnly={isAuto}
-            className="w-full bg-white rounded-[4px] text-[16px]"
-            style={{ height: 56, border: `1px solid ${d.refundType && !d.claimAmount.trim() && d.refundType !== 'no' ? '#dc3545' : '#d5ddfb'}`,
-              padding: '0 12px 0 28px', fontFamily: font, color: '#0e1b3d', outline: 'none',
-              background: isAuto ? '#f8fafd' : '#fff' }} />
+          {(d.refundType === 'no' || d.refundType === 'noRefund') ? (
+            <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>—</span>
+          ) : (
+            <>
+              <Dh style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#0e1b3d', pointerEvents: 'none' }} />
+              <input type="number" min={0} value={d.claimAmount} onChange={e => onAmount(idx, e.target.value)}
+                placeholder="Enter amount" readOnly={isAuto}
+                className="w-full bg-white rounded-[4px] text-[16px]"
+                style={{ height: 56, border: `1px solid ${d.refundType && !d.claimAmount.trim() ? '#dc3545' : '#d5ddfb'}`,
+                  padding: '0 12px 0 28px', fontFamily: font, color: '#0e1b3d', outline: 'none',
+                  background: isAuto ? '#f8fafd' : '#fff' }} />
+            </>
+          )}
         </div>
 
         <div className="flex items-center justify-center gap-[6px]">
