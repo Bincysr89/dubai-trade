@@ -1272,6 +1272,9 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
   const [deleteOb,  setDeleteOb]  = useState<{ ctx: DrawerCtx; ob: OutboundDetail } | null>(null);
   const [unitPriceModal, setUnitPriceModal] = useState<(UnitPriceModalCtx & { currency: string }) | null>(null);
   const [saveModal, setSaveModal] = useState(false);
+  const [noRefundAlertOpen, setNoRefundAlertOpen] = useState(false);
+  const hasDutyDepositNoRefund = details.some(d => d.chargeType === 'Duty Deposit' && d.refundType === 'noRefund');
+  const handleProceed = () => { if (hasDutyDepositNoRefund) setNoRefundAlertOpen(true); else onContinue({ details, outbounds: obs }); };
 
   const patchHs = (hsId: string, patch: { allocationMethod?: string; currency?: string; unitPrice?: string; unitPriceDetails?: UnitPriceDetail[] }) =>
     setHsEdits(p => ({ ...p, [hsId]: { ...p[hsId], ...patch } }));
@@ -1410,7 +1413,7 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
                 Save &amp; Exit
               </button>
             )}
-            <button onClick={() => onContinue({ details, outbounds: obs })}
+            <button onClick={handleProceed}
               className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white"
               style={{ background: '#1360d2', border: 'none', fontFamily: font, fontWeight: 500,
                 cursor: 'pointer',
@@ -1470,6 +1473,40 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
                 No
               </button>
               <button onClick={confirmDeleteRow}
+                className="h-[48px] px-[36px] rounded-[4px] text-[16px] text-white transition-colors"
+                style={{ background: '#1360d2', fontWeight: 500 }}>
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* No Export / No Refund on a Duty Deposit sub claim — confirm before proceeding */}
+      {noRefundAlertOpen && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/50" onClick={() => setNoRefundAlertOpen(false)}>
+          <div onClick={e => e.stopPropagation()} className="bg-white rounded-[10px] flex flex-col items-center gap-[20px] px-[40px] py-[36px] max-w-[460px] mx-[16px]"
+            style={{ boxShadow: '0 8px 40px rgba(0,0,0,0.18)', fontFamily: font }}>
+            <div className="size-[64px] rounded-full flex items-center justify-center" style={{ background: '#fff8e6' }}>
+              <svg viewBox="0 0 96 96" fill="none" width="34" height="34">
+                <circle cx="48" cy="48" r="42" fill="none" stroke="#FFC020" strokeWidth="7" />
+                <rect x="44.5" y="22" width="7" height="32" rx="3.5" fill="#FFC020" />
+                <circle cx="48" cy="68" r="4.5" fill="#FFC020" />
+              </svg>
+            </div>
+            <div className="text-center flex flex-col gap-[8px]">
+              <p className="text-[20px] text-[#0e1b3d]" style={{ fontWeight: 700 }}>No Export / No Refund Selected</p>
+              <p className="text-[16px] text-[#697498]" style={{ lineHeight: 1.4 }}>
+                You have opted No Export / No Refund on sub claims. This will result in collection of charges instead of refund. Do you want to continue?
+              </p>
+            </div>
+            <div className="flex gap-[12px]">
+              <button onClick={() => setNoRefundAlertOpen(false)}
+                className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors"
+                style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>
+                No
+              </button>
+              <button onClick={() => { setNoRefundAlertOpen(false); onContinue({ details, outbounds: obs }); }}
                 className="h-[48px] px-[36px] rounded-[4px] text-[16px] text-white transition-colors"
                 style={{ background: '#1360d2', fontWeight: 500 }}>
                 Yes
