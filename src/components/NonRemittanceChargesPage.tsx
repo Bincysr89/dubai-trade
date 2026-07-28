@@ -8,6 +8,10 @@ const font = "'Dubai', 'Segoe UI', sans-serif";
 
 const PAYMENT_MODES = ['Credit/Debit Account', 'E-Payment', 'Cash'];
 const PAYMENT_REFS  = ['Account Number', 'Reference No'];
+const CREDIT_DEBIT_ACCOUNTS = [
+  { label: '1223193 - SW Logistics LLC', balance: 45 },
+  { label: '4487210 - SW Logistics LLC', balance: 5000 },
+];
 
 const REG_FEE   = 80;
 const KNOW_FEE  = 20;
@@ -21,14 +25,14 @@ function DirhamIcon({ size = 14, color = 'currentColor' }: { size?: number; colo
   );
 }
 
-function PlainSelect({ value, onChange, options, disabled }: { value: string; onChange: (v: string) => void; options: string[]; disabled?: boolean }) {
+function PlainSelect({ value, onChange, options, disabled, placeholder = 'Select payment mode' }: { value: string; onChange: (v: string) => void; options: string[]; disabled?: boolean; placeholder?: string }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="relative">
       <button type="button" onClick={() => !disabled && setOpen(o => !o)}
         className="w-full flex items-center px-[12px]"
         style={{ height: 48, border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}`, borderRadius: 4, fontFamily: font, background: disabled ? '#f4f6fb' : '#fff', cursor: disabled ? 'not-allowed' : 'pointer' }}>
-        <span className="flex-1 text-left text-[16px]" style={{ color: disabled ? '#b0b8cc' : value ? '#051937' : '#697498' }}>{value || 'Select payment mode'}</span>
+        <span className="flex-1 text-left text-[16px]" style={{ color: disabled ? '#b0b8cc' : value ? '#051937' : '#697498' }}>{value || placeholder}</span>
         <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke={disabled ? '#b0b8cc' : '#697498'} strokeWidth="2" className={`flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}>
           <path d="M5 8l5 5 5-5" />
         </svg>
@@ -72,11 +76,17 @@ type Props = {
 
 export default function NonRemittanceChargesPage({ onBack, onBackToListing, onContinue, selectedRows, onDeclarationOpen, title, steps, activeIndex = 2, typeColumnLabel = 'Declaration Type', showChargeType = false, hideSaveExit = false, chargesNote }: Props) {
   const [paymentMode, setPaymentMode] = useState('Credit/Debit Account');
-  const [paymentRef,  setPaymentRef]  = useState('Account Number');
+  const [paymentRef,  setPaymentRef]  = useState('');
   const [showSaveModal, setShowSaveModal] = useState(false);
+  const [insufficientOpen, setInsufficientOpen] = useState(false);
   const isEPayment = paymentMode === 'E-Payment';
   const isCash = paymentMode === 'Cash';
-  const handlePaymentMode = (v: string) => { setPaymentMode(v); if (v === 'E-Payment') setPaymentRef('Reference No'); else setPaymentRef('Account Number'); };
+  const handlePaymentMode = (v: string) => { setPaymentMode(v); setPaymentRef(v === 'E-Payment' ? 'Reference No' : ''); };
+  const handleAccountSelect = (v: string) => {
+    setPaymentRef(v);
+    const acc = CREDIT_DEBIT_ACCOUNTS.find(a => a.label === v);
+    if (acc && acc.balance < TOTAL_AED * displayRows.length) setInsufficientOpen(true);
+  };
 
   const displayRows = selectedRows.length > 0 ? selectedRows : [];
 
@@ -235,8 +245,10 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
               {/* Payment Reference — not applicable for Cash */}
               {!isCash && (
                 <div className="flex flex-col gap-[6px]">
-                  <label className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>Payment Reference</label>
-                  <PlainSelect value={paymentRef} onChange={setPaymentRef} options={PAYMENT_REFS} disabled={isEPayment || !!chargesNote} />
+                  <label className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>{isEPayment ? 'Payment Reference' : 'Account Number'}</label>
+                  <PlainSelect value={paymentRef} onChange={isEPayment ? setPaymentRef : handleAccountSelect}
+                    options={isEPayment ? PAYMENT_REFS : CREDIT_DEBIT_ACCOUNTS.map(a => a.label)} disabled={isEPayment || !!chargesNote}
+                    placeholder={isEPayment ? 'Select reference' : 'Select account number'} />
                 </div>
               )}
             </div>
@@ -273,6 +285,39 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
       </div>
 
       {showSaveModal && <SaveExitModal onCancel={() => setShowSaveModal(false)} onBackToListing={onBackToListing} />}
+
+      {/* Insufficient balance on the selected Credit/Debit account */}
+      {insufficientOpen && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/50" onClick={() => { setInsufficientOpen(false); setPaymentRef(''); }}>
+          <div onClick={e => e.stopPropagation()} className="bg-white rounded-[10px] flex flex-col items-center gap-[20px] px-[40px] py-[36px] max-w-[460px] mx-[16px]"
+            style={{ boxShadow: '0 8px 40px rgba(0,0,0,0.18)', fontFamily: font }}>
+            <div className="size-[64px] rounded-full flex items-center justify-center" style={{ background: '#fdecec' }}>
+              <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#dc3545" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 8v5M12 16h.01" />
+              </svg>
+            </div>
+            <div className="text-center flex flex-col gap-[8px]">
+              <p className="text-[20px] text-[#0e1b3d]" style={{ fontWeight: 700 }}>Insufficient Balance</p>
+              <p className="text-[16px] text-[#697498]" style={{ lineHeight: 1.4 }}>
+                The selected account does not have enough balance to complete this payment. Please select a different account or top up this one to proceed.
+              </p>
+            </div>
+            <div className="flex gap-[12px]">
+              <button onClick={() => { setInsufficientOpen(false); setPaymentRef(''); }}
+                className="h-[48px] px-[28px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors"
+                style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>
+                Go Back
+              </button>
+              <button onClick={() => { setInsufficientOpen(false); setPaymentRef(''); }}
+                className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors"
+                style={{ background: '#1360d2', fontWeight: 500 }}>
+                Top Up Account
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
