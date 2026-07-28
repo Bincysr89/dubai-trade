@@ -544,6 +544,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
               uploadedDocs={nonRemittanceUploadedDocs}
               onBack={() => setClaimStep(rdAmendMode ? 'rdDocuments' : 'rdPayment')}
               onSubmit={() => nonRemittancePaymentMode === 'E-Payment' ? setClaimStep('rdPaymentPending') : setClaimStep('rdNrSuccess')}
+              onSaveAndPreview={() => { setClaimViewReturnStep('rdReview'); setClaimStep('rdClaimView'); }}
               onViewClaim={() => { setClaimViewReturnStep('rdReview'); setClaimStep('rdClaimView'); }}
             />
           )}

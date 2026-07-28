@@ -695,7 +695,7 @@ export default function FlightManifestNewRequestPage({
                     style={subTab === t
                       ? { background: '#1360d2', color: '#fff', fontWeight: 500, fontFamily: font }
                       : { color: '#5a6282', fontFamily: font }}>
-                    {t === 'manual' ? 'Add Manually' : 'Upload Manifest File'}
+                    {t === 'manual' ? 'Add Manifest' : 'Upload Manifest File'}
                   </button>
                 ))}
               </div>
@@ -729,7 +729,7 @@ export default function FlightManifestNewRequestPage({
                           className="h-[44px] px-[18px] rounded-[4px] text-[15px] text-white inline-flex items-center gap-[8px]"
                           style={{ background: '#1360d2', fontFamily: font, fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
                           <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M7 2v10M2 7h10" /></svg>
-                          Add Airport and AWB Details
+                          Add Unloading Details
                         </button>
                       )}
                     </div>
@@ -760,17 +760,15 @@ export default function FlightManifestNewRequestPage({
                                 </div>
                                 <div className="flex flex-col gap-[3px] min-w-0 flex-1">
                                   <span className="text-[14px] text-[#051937] truncate" style={{ fontWeight: 500, fontFamily: font }}>{r.airportName || r.airportCode || 'Unnamed'}</span>
-                                  <label className="flex items-center gap-[6px]" style={{ cursor: viewOnly ? 'default' : 'pointer' }} onClick={e => e.stopPropagation()}>
+                                  <div className="flex items-center gap-[6px]" onClick={e => e.stopPropagation()}>
                                     <span className="size-[14px] rounded-[3px] inline-flex items-center justify-center flex-shrink-0"
                                       style={{ border: `2px solid ${r.nilCargo === 'Yes' ? '#1360d2' : '#a7abb2'}`, background: r.nilCargo === 'Yes' ? '#1360d2' : '#fff' }}>
                                       {r.nilCargo === 'Yes' && (
                                         <svg viewBox="0 0 14 14" width="9" height="9" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7l3 3 5-6" /></svg>
                                       )}
                                     </span>
-                                    <input type="checkbox" className="sr-only" checked={r.nilCargo === 'Yes'} disabled={viewOnly}
-                                      onChange={e => setUnloadingRows(p => p.map(x => x.id === r.id ? { ...x, nilCargo: e.target.checked ? 'Yes' : 'No' } : x))} />
                                     <span className="text-[14px] text-[#8f94ae]" style={{ fontFamily: font }}>Nil Cargo</span>
-                                  </label>
+                                  </div>
                                   <span className="text-[14px]" style={{ color: '#219653', fontFamily: font }}>{r.lines.length} AWB{r.lines.length !== 1 ? 's' : ''}</span>
                                 </div>
                                 {!viewOnly && (

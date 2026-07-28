@@ -229,6 +229,7 @@ const CARGO_TYPES = ['BULK LIQUID', 'BULK SOLID', 'EMPTY CONTAINER', 'FCL CONTAI
 const SEA_EXPORT_MANIFEST: ListingConfig = {
   columns: [
     { key: 'bolNumber',         label: 'BOL Number',            w: 150 },
+    { key: 'requestId',         label: 'Request ID',            w: 150 },
     { key: 'rotationNumber',    label: 'Rotation Number',       w: 160 },
     { key: 'cargoType',         label: 'Cargo Type',            w: 190 },
     { key: 'lastModifiedDate',  label: 'Last Modified Date',    w: 190 },
@@ -238,8 +239,8 @@ const SEA_EXPORT_MANIFEST: ListingConfig = {
   searchKeys: ['bolNumber', 'rotationNumber', 'fileRefNo'],
   searchKeyLabels: { rotationNumber: 'Rotation Number', fileRefNo: 'File Reference Number' },
   noScrollArrows: true,
-  advancedFilterKeys: ['bolNumber', 'rotationNumber', 'cargoType'],
-  flyoutItems: ['View Manifest Request', 'Amend Request', 'Upload BOL', 'Audit History', 'Download Error Report', 'Cancel'],
+  advancedFilterKeys: ['bolNumber', 'rotationNumber', 'cargoType', 'lastModifiedDate'],
+  flyoutItems: ['View Manifest Request', 'Amend', 'Audit History', 'Delete'],
   primaryLabel: 'New Request',
   refKey: 'bolNumber',
   detailSections: [
@@ -247,14 +248,14 @@ const SEA_EXPORT_MANIFEST: ListingConfig = {
     { title: 'Upload Information', fields: [{ key: 'uploadRefNo', label: 'Upload Reference No.' }, { key: 'uploadDate', label: 'Upload Date' }, { key: 'remarks', label: 'Remarks' }] },
   ],
   rows: [
-    { bolNumber: 'BOL101',      rotationNumber: '210101', cargoType: 'FCL CONTAINER',   lastModifiedDate: '01/06/2026 10:52:40', uploadRefNo: '26060160001', fileRefNo: '26060160001', fileName: 'Success BOL_3 new.csv', noOfBols: '3', noOfSuccessfulBols: '3', uploadDate: '01/06/2026 10:55:00', remarks: '—', status: 'Active' },
-    { bolNumber: 'BOL102',      rotationNumber: '210102', cargoType: 'GENERAL CARGO (BREAK BULK)', lastModifiedDate: '21/05/2026 09:03:57', uploadRefNo: '26052160001', fileRefNo: '26052160001', fileName: 'Valid and Invalid ports.csv', noOfBols: '8', noOfSuccessfulBols: '8', uploadDate: '21/05/2026 09:03:57', remarks: '—', status: 'Active' },
-    { bolNumber: 'BOL103',      rotationNumber: '210103', cargoType: 'BULK LIQUID',     lastModifiedDate: '18/05/2026 12:18:10', uploadRefNo: '26051860001', fileRefNo: '26051860001', fileName: 'emxn.csv', noOfBols: '1', noOfSuccessfulBols: '1', uploadDate: '18/05/2026 12:18:10', remarks: '—', status: 'Active' },
-    { bolNumber: 'BOL104',      rotationNumber: '210104', cargoType: 'LCL CONTAINER',   lastModifiedDate: '17/05/2026 08:40:00', uploadRefNo: '—', fileRefNo: '—', fileName: '—', noOfBols: '—', noOfSuccessfulBols: '—', uploadDate: '—', remarks: 'Missing seal number', status: 'Active' },
-    { bolNumber: 'BOL105',      rotationNumber: '210105', cargoType: 'BULK SOLID',      lastModifiedDate: '16/05/2026 14:20:00', uploadRefNo: '—', fileRefNo: '—', fileName: '—', noOfBols: '—', noOfSuccessfulBols: '—', uploadDate: '—', remarks: '—', status: 'Active' },
-    { bolNumber: 'BOL106',      rotationNumber: '210106', cargoType: 'RO-RO UNIT',      lastModifiedDate: '15/05/2026 11:05:00', uploadRefNo: '—', fileRefNo: '—', fileName: '—', noOfBols: '—', noOfSuccessfulBols: '—', uploadDate: '—', remarks: '—', status: 'Active' },
-    { bolNumber: 'BOL107',      rotationNumber: '210107', cargoType: 'EMPTY CONTAINER', lastModifiedDate: '14/05/2026 16:30:00', uploadRefNo: '—', fileRefNo: '—', fileName: '—', noOfBols: '—', noOfSuccessfulBols: '—', uploadDate: '—', remarks: '—', status: 'Active' },
-    { bolNumber: 'BOL-DRAFT01', rotationNumber: '210108', cargoType: 'FCL CONTAINER',   lastModifiedDate: '—', uploadRefNo: '—', fileRefNo: '—', fileName: '—', noOfBols: '—', noOfSuccessfulBols: '—', uploadDate: '—', remarks: '—', status: 'Active', isDraft: true },
+    { bolNumber: 'BOL101',      requestId: '—', rotationNumber: '210101', cargoType: 'FCL CONTAINER',   lastModifiedDate: '01/06/2026 10:52:40', uploadRefNo: '26060160001', fileRefNo: '26060160001', fileName: 'Success BOL_3 new.csv', noOfBols: '3', noOfSuccessfulBols: '3', uploadDate: '01/06/2026 10:55:00', remarks: '—', status: 'Active' },
+    { bolNumber: 'BOL102',      requestId: '—', rotationNumber: '210102', cargoType: 'GENERAL CARGO (BREAK BULK)', lastModifiedDate: '21/05/2026 09:03:57', uploadRefNo: '26052160001', fileRefNo: '26052160001', fileName: 'Valid and Invalid ports.csv', noOfBols: '8', noOfSuccessfulBols: '8', uploadDate: '21/05/2026 09:03:57', remarks: '—', status: 'Active' },
+    { bolNumber: 'BOL103',      requestId: '—', rotationNumber: '210103', cargoType: 'BULK LIQUID',     lastModifiedDate: '18/05/2026 12:18:10', uploadRefNo: '26051860001', fileRefNo: '26051860001', fileName: 'emxn.csv', noOfBols: '1', noOfSuccessfulBols: '1', uploadDate: '18/05/2026 12:18:10', remarks: '—', status: 'Active' },
+    { bolNumber: 'BOL104',      requestId: '—', rotationNumber: '210104', cargoType: 'LCL CONTAINER',   lastModifiedDate: '17/05/2026 08:40:00', uploadRefNo: '—', fileRefNo: '—', fileName: '—', noOfBols: '—', noOfSuccessfulBols: '—', uploadDate: '—', remarks: 'Missing seal number', status: 'Active' },
+    { bolNumber: 'BOL105',      requestId: '—', rotationNumber: '210105', cargoType: 'BULK SOLID',      lastModifiedDate: '16/05/2026 14:20:00', uploadRefNo: '—', fileRefNo: '—', fileName: '—', noOfBols: '—', noOfSuccessfulBols: '—', uploadDate: '—', remarks: '—', status: 'Active' },
+    { bolNumber: 'BOL106',      requestId: '—', rotationNumber: '210106', cargoType: 'RO-RO UNIT',      lastModifiedDate: '15/05/2026 11:05:00', uploadRefNo: '—', fileRefNo: '—', fileName: '—', noOfBols: '—', noOfSuccessfulBols: '—', uploadDate: '—', remarks: '—', status: 'Active' },
+    { bolNumber: 'BOL107',      requestId: '—', rotationNumber: '210107', cargoType: 'EMPTY CONTAINER', lastModifiedDate: '14/05/2026 16:30:00', uploadRefNo: '—', fileRefNo: '—', fileName: '—', noOfBols: '—', noOfSuccessfulBols: '—', uploadDate: '—', remarks: '—', status: 'Active' },
+    { bolNumber: 'BOL-DRAFT01', requestId: 'REQ-4402198', rotationNumber: '210108', cargoType: 'FCL CONTAINER',   lastModifiedDate: '—', uploadRefNo: '—', fileRefNo: '—', fileName: '—', noOfBols: '—', noOfSuccessfulBols: '—', uploadDate: '—', remarks: '—', status: 'Active', isDraft: true },
   ],
 };
 
@@ -369,6 +370,8 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
   const [toolbarStatus, setToolbarStatus]     = useState<string | null>(null);
   const [toolbarStatusOpen, setToolbarStatusOpen] = useState(false);
   const [showDrafts, setShowDrafts]           = useState(false);
+  const [deletedRowKeys, setDeletedRowKeys]   = useState<Set<string>>(new Set());
+  const [deleteRow, setDeleteRow]             = useState<ListingRow | null>(null);
   const [showColModal, setShowColModal]       = useState(false);
   const [visibleCols, setVisibleCols]         = useState<string[]>(config.columns.map(c => c.key));
   const [page, setPage]                       = useState(1);
@@ -447,6 +450,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
   const colLabel = (key: string) => config.columns.find(c => c.key === key)?.label ?? config.searchKeyLabels?.[key] ?? key;
 
   const filteredRows = config.rows.filter(r => {
+    if (deletedRowKeys.has(str(r[config.refKey]))) return false;
     if (showDrafts !== !!r.isDraft) return false;
     if (toolbarStatus && r.status !== toolbarStatus) return false;
     if (searchValue.trim() && !str(r[searchKey]).toLowerCase().includes(searchValue.trim().toLowerCase())) return false;
@@ -1085,26 +1089,20 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                 /* ─── Sea Export Manifest: File Reference Number search swaps just the table below, matching the Figma "Track Upload" reference ─── */
                 (() => {
                   const TU_ACTIONS_W = 72;
-                  const TU_STATUS_W = 150;
-                  const tuStickyWidth = TU_ACTIONS_W + TU_STATUS_W;
                   return (
                   <div className="pb-[20px] flex-1 flex flex-col">
                     <p className="text-[15px] text-[#0e1b3d] mb-[12px] flex-shrink-0" style={{ fontFamily: font }}>
                       Total No. of records found: <b>{trackUploadRows.length}</b>
                     </p>
                     <div className="flex-1" style={{ position: 'relative' }}>
-                      <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={tuStickyWidth} />
+                      <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={TU_ACTIONS_W} />
                       <div ref={scrollRef} onScroll={handleScroll} className="bg-white rounded-[8px] overflow-x-auto" style={{ boxShadow: '0px 5px 32px 0px rgba(143,155,186,0.16)', position: 'relative' }}>
-                        <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 1100 }}>
+                        <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 1180 }}>
                           <thead>
                             <tr style={{ background: '#a6c2e9' }}>
-                              {['Upload Reference Number', 'Date Of Upload', 'Rotation No.', 'BOL Number', 'No. Of Uploaded Files', 'No. Of Files Successful', 'No. Of Files Failed'].map(h => (
+                              {['Upload Reference Number', 'Date Of Upload', 'Rotation No.', 'BOL Number', 'File Name', 'BOL Uploaded', 'Successful BOL', 'Failed BOL'].map(h => (
                                 <th key={h} className="text-left text-[16px] text-[#051937]" style={{ padding: '10px 12px', fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
                               ))}
-                              <th className="text-left text-[16px] text-[#051937]" style={{
-                                position: 'sticky', right: TU_ACTIONS_W, width: TU_STATUS_W, minWidth: TU_STATUS_W,
-                                padding: '10px 12px', fontWeight: 500, whiteSpace: 'nowrap', background: '#a6c2e9', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2,
-                              }}>Uploaded Status</th>
                               <th className="text-left text-[16px] text-[#051937]" style={{
                                 position: 'sticky', right: 0, width: TU_ACTIONS_W, minWidth: TU_ACTIONS_W,
                                 padding: '10px 12px', fontWeight: 500, whiteSpace: 'nowrap', background: '#a6c2e9', zIndex: 2, borderRadius: '0 8px 0 0',
@@ -1116,20 +1114,16 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                               <tr><td colSpan={9} style={{ padding: '40px 12px', textAlign: 'center' }}><span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>No matching upload records found.</span></td></tr>
                             ) : trackUploadRows.map((row, i) => {
                               const failed = Number(row.noOfBols ?? 0) - Number(row.noOfSuccessfulBols ?? 0);
-                              const uploadedStatus = failed > 0 ? 'FAILURE' : 'SUCCESS';
-                              const st = uploadedStatus === 'FAILURE' ? { bg: 'rgba(220,53,69,0.10)', color: '#dc3545' } : { bg: 'rgba(40,167,69,0.10)', color: '#28a745' };
                               return (
                               <tr key={i} style={{ borderTop: '1px solid #f0f4ff' }}>
                                 <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap', background: '#fff' }}>{str(row.uploadRefNo)}</td>
                                 <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap', background: '#fff' }}>{str(row.uploadDate)}</td>
                                 <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', background: '#fff' }}>{str(row.rotationNumber)}</td>
                                 <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', background: '#fff' }}>{str(row.bolNumber)}</td>
+                                <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap', background: '#fff' }}>{str(row.fileName)}</td>
                                 <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', background: '#fff' }}>{str(row.noOfBols)}</td>
                                 <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', background: '#fff' }}>{str(row.noOfSuccessfulBols)}</td>
                                 <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', background: '#fff' }}>{failed > 0 ? failed : '0'}</td>
-                                <td style={{ position: 'sticky', right: TU_ACTIONS_W, width: TU_STATUS_W, minWidth: TU_STATUS_W, padding: '12px', background: '#fff', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>
-                                  <span className="text-[15px] font-medium px-[10px] py-[4px] rounded-[4px] whitespace-nowrap" style={{ background: st.bg, color: st.color }}>{uploadedStatus}</span>
-                                </td>
                                 <td style={{ position: 'sticky', right: 0, width: TU_ACTIONS_W, minWidth: TU_ACTIONS_W, padding: '12px', background: '#fff' }}>
                                   <button type="button" onClick={() => { setFileDetailsRow(row); }} aria-label="View file details"
                                     className="size-[32px] inline-flex items-center justify-center rounded-[4px] hover:bg-[#e8f0ff] transition-colors" style={{ border: '1px solid #d5ddfb', color: '#1360d2' }}>
@@ -1239,11 +1233,12 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                                     </button>
                                     {openFlyout === i && (
                                       <div className="absolute z-[100] right-0 bg-white rounded-[8px] py-[4px] overflow-hidden" style={{ top: 36, width: 208, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
-                                        {(config.flyoutItems ?? ['View Request', 'Amend Request', 'Cancel Request']).map(label => (
+                                        {(row.isDraft ? ['Continue', 'Delete'] : (config.flyoutItems ?? ['View Request', 'Amend Request', 'Cancel Request'])).map(label => (
                                           <button key={label} className="group w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
                                             onClick={() => {
                                               setOpenFlyout(null);
-                                              if (activeMenu === 'carrierMovement') {
+                                              if (label === 'Delete') { setDeleteRow(row); }
+                                              else if (activeMenu === 'carrierMovement') {
                                                 if (label === 'View Request' || label === 'Cancel') { setCmSelectedRow(row); setCmView('view'); }
                                                 else setShowNewRequest(true); // Amend — no design provided yet
                                               } else if (activeMenu === 'flightManifest') {
@@ -1266,17 +1261,20 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                                                 }
                                                 else setShowNewRequest(true); // Cancel — no design provided yet
                                               } else if (activeMenu === 'seaExportManifest') {
-                                                if (label === 'Upload BOL') { setSemSelectedRow(row); setSemView('upload'); }
-                                                else if (label === 'View Manifest Request') {
+                                                if (label === 'View Manifest Request') {
                                                   setSemPrefill({ bolNumber: str(row.bolNumber), rotationNumber: str(row.rotationNumber), cargoCode: str(row.cargoType) });
                                                   setSemRequestKind('view'); setSemMode('manual'); setSemView('new');
                                                 }
-                                                else if (label === 'Amend Request') {
+                                                else if (label === 'Amend') {
                                                   setSemPrefill({ bolNumber: str(row.bolNumber), rotationNumber: str(row.rotationNumber), cargoCode: str(row.cargoType) });
                                                   setSemRequestKind('amend'); setSemMode('manual'); setSemView('new');
                                                 }
+                                                else if (label === 'Continue') {
+                                                  setSemPrefill({ bolNumber: str(row.bolNumber), rotationNumber: str(row.rotationNumber), cargoCode: str(row.cargoType) });
+                                                  setSemRequestKind('new'); setSemMode('manual'); setSemView('new');
+                                                }
                                                 else if (label === 'Audit History') setAuditHistoryRow(row);
-                                                else setShowNewRequest(true); // Download Error Report/Cancel — no design provided yet
+                                                else if (label === 'Delete') setDeleteRow(row);
                                               } else if (label === 'View Request') {
                                                 setViewRow(row);
                                               }
@@ -1333,9 +1331,15 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
       )}
 
 
-      {auditHistoryRow && (
+      {auditHistoryRow && (() => {
+        const auditEvents = [
+          { icon: 'clock', color: '#1360d2', title: 'Created', ts: str(auditHistoryRow.createdDate) || str(auditHistoryRow.lastModifiedDate) || '—', by: 'mohd.hamdan@trade.ae' },
+          ...(auditHistoryRow.status === 'Cancelled' ? [{ icon: 'trash', color: '#dc3545', title: 'Deleted', ts: str(auditHistoryRow.lastModifiedDate) || '—', by: 'mohd.hamdan@trade.ae' }]
+            : [{ icon: 'check', color: '#28a745', title: 'Modified', ts: str(auditHistoryRow.lastModifiedDate) || '—', by: 'mohd.hamdan@trade.ae' }]),
+        ];
+        return (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center px-[20px]" style={{ background: 'rgba(14,27,61,0.55)' }} onClick={() => setAuditHistoryRow(null)}>
-          <div className="bg-white rounded-[8px] overflow-hidden" style={{ width: 'min(600px, 100%)', maxHeight: '86vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', fontFamily: font }} onClick={e => e.stopPropagation()}>
+          <div className="bg-white rounded-[8px] overflow-hidden" style={{ width: 'min(520px, 100%)', maxHeight: '86vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', fontFamily: font }} onClick={e => e.stopPropagation()}>
             <div className="bg-[#0e1b3d] flex items-center justify-between px-[24px] py-[16px] flex-shrink-0">
               <div className="flex items-center gap-[10px]">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" /><path d="M12 7v5l3 3" /></svg>
@@ -1345,37 +1349,15 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
               </button>
             </div>
-            <div className="px-[24px] py-[16px] flex items-center gap-[32px] flex-wrap flex-shrink-0" style={{ background: '#f8fafd', borderBottom: '1px solid #eef1f6' }}>
-              <div className="flex flex-col gap-[2px]">
-                <span className="text-[11px] text-[#8f94ae]" style={{ fontWeight: 600, letterSpacing: '0.06em' }}>BOL NUMBER</span>
-                <span className="text-[15px] text-[#1360d2]" style={{ fontWeight: 500 }}>{str(auditHistoryRow.bolNumber) || str(auditHistoryRow.flightNo)}</span>
-              </div>
-              <div className="flex flex-col gap-[2px]">
-                <span className="text-[11px] text-[#8f94ae]" style={{ fontWeight: 600, letterSpacing: '0.06em' }}>ROTATION NO.</span>
-                <span className="text-[15px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{str(auditHistoryRow.rotationNumber) || '—'}</span>
-              </div>
-              <div className="flex flex-col gap-[2px]">
-                <span className="text-[11px] text-[#8f94ae]" style={{ fontWeight: 600, letterSpacing: '0.06em' }}>CURRENT STATUS</span>
-                <span className="inline-flex items-center gap-[6px] text-[14px]" style={{ color: '#28a745', fontWeight: 500 }}>
-                  <span className="size-[6px] rounded-full" style={{ background: '#28a745' }} />
-                  {str(auditHistoryRow.status) === 'Active' && str(auditHistoryRow.uploadRefNo) !== '—' && str(auditHistoryRow.uploadRefNo) ? 'Uploaded' : str(auditHistoryRow.status)}
-                </span>
-              </div>
-            </div>
             <div className="px-[24px] py-[20px] overflow-y-auto" style={{ flex: 1 }}>
-              {[
-                { icon: 'clock', color: '#1360d2', title: 'Manifest Created', desc: `${str(auditHistoryRow.bolNumber) || str(auditHistoryRow.flightNo)} created with rotation ${str(auditHistoryRow.rotationNumber) || '—'}`, ts: str(auditHistoryRow.createdDate) || str(auditHistoryRow.lastModifiedDate) || '—', by: 'mohd.hamdan@trade.ae' },
-                { icon: 'check', color: '#28a745', title: 'BOL Submitted', desc: 'Manifest submitted to DP World port system', ts: str(auditHistoryRow.lastModifiedDate) || '—', by: 'mohd.hamdan@trade.ae' },
-                ...(str(auditHistoryRow.uploadRefNo) && str(auditHistoryRow.uploadRefNo) !== '—' ? [
-                  { icon: 'clock', color: '#1360d2', title: 'File Uploaded', desc: `${str(auditHistoryRow.fileName) || 'manifest file'} uploaded (${str(auditHistoryRow.uploadRefNo)})`, ts: str(auditHistoryRow.uploadDate) || '—', by: 'mohd.hamdan@trade.ae' },
-                  { icon: 'check', color: '#28a745', title: 'Upload Processed', desc: `${str(auditHistoryRow.noOfSuccessfulBols) || '0'} of ${str(auditHistoryRow.noOfBols) || '0'} BOL records processed successfully`, ts: str(auditHistoryRow.uploadDate) || '—', by: 'System' },
-                ] : []),
-              ].map((ev, idx, arr) => (
+              {auditEvents.map((ev, idx, arr) => (
                 <div key={idx} className="flex gap-[14px]">
                   <div className="flex flex-col items-center flex-shrink-0">
-                    <span className="size-[32px] rounded-full flex items-center justify-center" style={{ background: ev.color === '#28a745' ? '#eafaf0' : '#e2ebf9' }}>
+                    <span className="size-[32px] rounded-full flex items-center justify-center" style={{ background: ev.color === '#28a745' ? '#eafaf0' : ev.color === '#dc3545' ? '#fef2f2' : '#e2ebf9' }}>
                       {ev.icon === 'clock' ? (
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke={ev.color} strokeWidth="2"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+                      ) : ev.icon === 'trash' ? (
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke={ev.color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" /></svg>
                       ) : (
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke={ev.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12l6 6L20 6" /></svg>
                       )}
@@ -1385,7 +1367,6 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                   <div className="pb-[24px] flex-1 flex items-start justify-between gap-[12px]">
                     <div>
                       <p className="text-[15px] text-[#0e1b3d]" style={{ fontWeight: 700 }}>{ev.title}</p>
-                      <p className="text-[14px] text-[#455174]">{ev.desc}</p>
                       <p className="text-[13px] text-[#8f94ae]">By: {ev.by}</p>
                     </div>
                     <span className="text-[13px] text-[#8f94ae] whitespace-nowrap">{ev.ts}</span>
@@ -1397,6 +1378,36 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
               <button onClick={() => setAuditHistoryRow(null)}
                 className="h-[42px] px-[22px] rounded-[4px] border text-[15px]" style={{ borderColor: '#d5ddfb', color: '#455174', fontFamily: font, fontWeight: 500 }}>
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+        );
+      })()}
+
+      {deleteRow && (
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center px-[20px]" style={{ background: 'rgba(14,27,61,0.55)' }} onClick={() => setDeleteRow(null)}>
+          <div className="bg-white rounded-[10px] flex flex-col items-center gap-[20px] px-[40px] py-[36px]" style={{ width: '100%', maxWidth: 460, boxShadow: '0 8px 40px rgba(0,0,0,0.18)', fontFamily: font }} onClick={e => e.stopPropagation()}>
+            <div className="size-[64px] rounded-full flex items-center justify-center" style={{ background: '#dc3545' }}>
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" />
+              </svg>
+            </div>
+            <div className="flex flex-col items-center gap-[8px] text-center">
+              <p className="text-[20px] text-[#0e1b3d]" style={{ fontWeight: 700 }}>Are you sure you want to delete this record?</p>
+              <p className="text-[16px] text-[#455174]" style={{ lineHeight: 1.4 }}>{str(deleteRow[config.refKey])} will be permanently removed from this listing.</p>
+            </div>
+            <div className="flex gap-[12px]">
+              <button type="button" onClick={() => setDeleteRow(null)}
+                className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>
+                Cancel
+              </button>
+              <button type="button" onClick={() => {
+                  setDeletedRowKeys(prev => new Set(prev).add(str(deleteRow[config.refKey])));
+                  setDeleteRow(null);
+                }}
+                className="h-[48px] px-[36px] rounded-[4px] text-[16px] text-white transition-colors" style={{ background: '#dc3545', fontWeight: 500, fontFamily: font }}>
+                Yes, Delete
               </button>
             </div>
           </div>

@@ -753,7 +753,6 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
         { label: 'Declaration Type',             w: 180 },
         { label: 'Owner Code',                   w: 260 },
         { label: 'Export Expiry',                w: 130 },
-        { label: 'Remarks',                      w: 110 },
         { label: 'Claim Expiry',                 w: 130 },
       ]
     : (isRefundDeposit || isRefundDuty)
@@ -766,7 +765,6 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
         { label: 'Account Number',               w: 150 },
         { label: 'Owner Code',                   w: 240 },
         { label: 'Export Expiry',                w: 130 },
-        { label: 'Remarks',                      w: 110 },
         { label: 'Claim Expiry',                 w: 130 },
       ]
     : [
@@ -776,7 +774,6 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
         { label: 'Declaration Type',             w: 190 },
         { label: 'Deposit Amount',               w: 150 },
         { label: 'Deposit Method',               w: 160 },
-        { label: 'Remarks',                      w: 110 },
       ];
   // Last column is sticky (matches the main listing table pattern) — reserve extra width for the shadow gutter.
   const tableMinWidth = headers.reduce((s, h) => s + h.w, 0) + 48 + 24;

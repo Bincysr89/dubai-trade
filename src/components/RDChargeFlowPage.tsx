@@ -1319,7 +1319,6 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
     });
     setDeleteOb(null);
   };
-  const totalClaim = details.reduce((s, d) => s + parseAED(d.claimAmount), 0);
 
   /* Missing/Document Deposit claims skip the document upload step. */
   const allMissingDoc = details.length > 0 && details.every(d => isMissingDocCharge(d.chargeType));
@@ -1376,18 +1375,6 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
             ))}
           </div>
         </div>
-
-        {/* Total */}
-        {details.some(d => d.claimAmount !== '') && (
-          <div className="flex justify-end mt-[16px]">
-            <div className="bg-white rounded-[8px] px-[24px] py-[16px] flex items-center gap-[20px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-              <span className="text-[16px] text-[#455174]" style={{ fontFamily: font }}>Total Claim Amount (AED)</span>
-              <span className="text-[24px] text-[#0e1b3d] inline-flex items-baseline gap-[4px]" style={{ fontWeight: 500, fontFamily: font }}>
-                <Dh />{totalClaim.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-              </span>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Bottom bar */}

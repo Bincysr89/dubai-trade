@@ -1750,17 +1750,6 @@ export function ChargeDetailsPage({
             </tbody>
           </table>
         </div>
-
-        {details.some(d => d.claimAmount !== '') && (
-          <div className="flex justify-end pt-[16px] mt-[4px]" style={{ borderTop: '1px solid #eef1f6' }}>
-            <div className="flex items-center gap-[24px]">
-              <span className="text-[16px] text-[#455174]" style={{ fontFamily: "'Dubai', sans-serif" }}>Total Claim Amount (AED)</span>
-              <span className="text-[20px] text-[#0e1b3d]" style={{ fontWeight: 700, fontFamily: "'Dubai', sans-serif" }}>
-                {details.reduce((sum, d) => sum + (parseFloat(d.claimAmount) || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
-            </div>
-          </div>
-        )}
       </Card>
 
       <OutboundModal

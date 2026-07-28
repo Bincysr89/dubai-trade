@@ -109,13 +109,6 @@ export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPre
           <div className="flex items-center gap-[16px] flex-wrap">
             <h1 className="text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>{title ?? 'Raise New Claim - Non Remittance'}</h1>
           </div>
-          <button
-            onClick={() => onViewClaim?.()}
-            className="h-[40px] px-[20px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
-            style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
-          >
-            View Claim
-          </button>
         </div>
 
         <div className="px-4 sm:px-10 mb-[24px]">
@@ -186,53 +179,6 @@ export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPre
             </div>
           </div>
 
-          {/* Charge & Payment Summary */}
-          <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-            <div className="px-[24px] py-[16px] border-b border-[#eef1f6]">
-              <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Charges &amp; Payment</p>
-            </div>
-            <div className="px-[24px] py-[16px] overflow-x-auto">
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: font }}>
-                <thead>
-                  <tr style={{ background: '#a6c2e9' }}>
-                    {['Charge Type', 'Amount (AED)', 'Payment Mode', 'Payment Reference'].map((h) => (
-                      <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#051937', whiteSpace: 'nowrap' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    { type: 'Claim Registration Charge', amt: '50.00' },
-                    { type: 'Knowledge-Innovation Dirham', amt: '20.00' },
-                  ].map((row) => (
-                    <tr key={row.type} style={{ borderBottom: '1px solid #eef1f6' }}>
-                      <td style={{ padding: '12px 14px', fontSize: 16, color: '#0e1b3d' }}>{row.type}</td>
-                      <td style={{ padding: '12px 14px', fontSize: 16, color: '#0e1b3d' }}><span className="inline-flex items-baseline gap-[3px]"><Dh style={{ fontSize: 15 }} />{row.amt}</span></td>
-                      <td style={{ padding: '12px 14px', fontSize: 16, color: '#0e1b3d' }}>{paymentMode}</td>
-                      <td style={{ padding: '12px 14px', fontSize: 16, color: '#0e1b3d' }}>{paymentMode === 'Credit/Debit Account' ? accountNo : '—'}</td>
-                    </tr>
-                  ))}
-                  <tr style={{ background: '#dce8f7' }}>
-                    <td style={{ padding: '12px 14px', fontSize: 16, color: '#051937', fontWeight: 700 }}>Total</td>
-                    <td style={{ padding: '12px 14px', fontSize: 16, color: '#051937', fontWeight: 700 }}><span className="inline-flex items-baseline gap-[3px]"><Dh style={{ fontSize: 15 }} />70.00</span></td>
-                    <td colSpan={2} />
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Declaration Details — read-only recap of the Charge Details step, using the exact
-              same card design as the View Claim page so both stay visually identical. */}
-          {chargeDetails && chargeDetails.length > 0 && (
-            <DeclarationDetailsSection chargeDetails={chargeDetails} rows={selectedRows} outbounds={outbounds} />
-          )}
-
-          {/* Document Details — read-only recap of the Upload Documents step, grouped by declaration */}
-          {uploadedDocs && uploadedDocs.length > 0 && (
-            <UploadedDocsByDeclaration docs={uploadedDocs} declOrder={selectedRows.map(r => r.declarationNo)} />
-          )}
-
           {/* Declaration checkbox */}
           <div
             className="flex items-start gap-[14px] rounded-[8px] px-[20px] py-[16px]"
@@ -266,6 +212,15 @@ export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPre
           Previous
         </button>
         <div className="flex items-center gap-[12px]">
+          {onSaveAndPreview && (
+            <button
+              onClick={onSaveAndPreview}
+              className="h-[48px] px-[28px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
+              style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
+            >
+              Save &amp; Preview Claim
+            </button>
+          )}
           <button
             onClick={onSubmit}
             className="h-[48px] px-[40px] rounded-[4px] text-[16px] text-white transition-colors"

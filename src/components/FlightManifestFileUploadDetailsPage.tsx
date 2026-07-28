@@ -103,11 +103,9 @@ export default function FlightManifestFileUploadDetailsPage({ row, initialOpenEr
                             {isFailure && (
                               <button type="button" onClick={() => setOpenErrorFileIds(prev => { const next = new Set(prev); next.has(f.id) ? next.delete(f.id) : next.add(f.id); return next; })}
                                 aria-label={isOpen ? `Collapse error details for ${f.fileName}` : `View error details for ${f.fileName}`}
-                                className="size-[32px] rounded-full inline-flex items-center justify-center transition-colors" style={{ background: '#fff', border: '1px solid #e0e6ef', color: '#455174', boxShadow: '0px 1px 4px rgba(19,96,210,0.10)' }}>
-                                <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"
-                                  style={{ transition: 'transform 0.15s', transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                                  <path d="M5 8l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
+                                className="size-[32px] rounded-full inline-flex items-center justify-center transition-colors"
+                                style={{ background: isOpen ? '#1360d2' : '#fff', border: `1px solid ${isOpen ? '#1360d2' : '#e0e6ef'}`, color: isOpen ? '#fff' : '#455174', boxShadow: '0px 1px 4px rgba(19,96,210,0.10)' }}>
+                                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" /><circle cx="12" cy="12" r="3" /></svg>
                               </button>
                             )}
                           </div>

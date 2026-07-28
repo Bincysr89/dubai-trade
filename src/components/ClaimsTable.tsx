@@ -271,7 +271,6 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
   const CLAIMS_COL_DEFS: (ColDef & { w: number; draftsOnly?: boolean; claimsOnly?: boolean })[] = [
     { key: 'reqNo',           label: 'Claim Request No.',     w: 150 },
     { key: 'claimNo',         label: 'Claim No.',             w: 120, claimsOnly: true },
-    { key: 'ver',             label: 'Ver.',                  w: 70  },
     { key: 'claimType',       label: 'Claim Type',            w: 160 },
     { key: 'declarations',    label: 'No. of Declarations',   w: 150 },
     { key: 'depositType',     label: 'Charge Type',           w: 220 },
@@ -442,7 +441,6 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
               <tr key={i}>
                 {vis('reqNo') && cell(txt(row.reqNo), 'reqNo', 150, { paddingLeft: 16 })}
                 {!showDrafts && vis('claimNo') && cell(txt(row.claimNo), 'claimNo', 120)}
-                {vis('ver') && cell(txt(row.ver), 'ver', 70)}
                 {vis('claimType') && cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3, fontFamily: font }}>{row.claimType}</span>, 'claimType', 160)}
                 {vis('declarations') && cell(declLink(row.declarations), 'declarations', 150)}
                 {vis('depositType') && cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3, fontFamily: font }}>{row.depositType}</span>, 'depositType', 220)}
