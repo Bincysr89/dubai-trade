@@ -86,110 +86,125 @@ export function UploadedDocsByDeclaration({ docs, declOrder, onRemove }: {
     list.push(doc);
     groups.set(doc.declNo, list);
   });
-  // Merge doc-type rows from the same file upload — the "N files" badge and table below
+  // Merge doc-type rows from the same file upload — the file count and table below
   // should both count physical files, not one row per document type.
   groups.forEach((list, declNo) => groups.set(declNo, mergeDocsByBatch(list)));
   const orderedDeclNos = [
     ...(declOrder ?? []).filter(d => groups.has(d)),
     ...Array.from(groups.keys()).filter(d => !(declOrder ?? []).includes(d)),
   ];
-  /* Accordion — only the first declaration opens by default; with multiple
-     declarations in a claim this keeps the section scannable. */
-  const [openDecl, setOpenDecl] = useState<Set<string>>(() => new Set(orderedDeclNos.slice(0, 1)));
-  const toggle = (declNo: string) => setOpenDecl(prev => {
-    const next = new Set(prev);
-    if (next.has(declNo)) next.delete(declNo); else next.add(declNo);
-    return next;
-  });
+  const [selectedDeclNo, setSelectedDeclNo] = useState<string | null>(orderedDeclNos[0] ?? null);
+  const selectedDoc = orderedDeclNos.includes(selectedDeclNo ?? '') ? selectedDeclNo : orderedDeclNos[0] ?? null;
+  const selectedDocs = selectedDoc ? (groups.get(selectedDoc) ?? []) : [];
 
   return (
-    <div className="flex flex-col gap-[4px]">
-      <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Documents Uploaded</p>
-      <p className="text-[16px] text-[#697498]">Attachments uploaded against each declaration in this claim.</p>
-      <div className="flex flex-col gap-[12px] mt-[8px]">
-        {orderedDeclNos.map(declNo => {
-          const declDocs = groups.get(declNo) ?? [];
-          const isOpen = openDecl.has(declNo);
-          return (
-            <div key={declNo} className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-              <button type="button" onClick={() => toggle(declNo)}
-                className="w-full px-[24px] py-[12px] border-b border-[#eef1f6] flex items-center gap-[10px] text-left"
-                style={{ background: '#f8fafd', border: 'none', borderBottom: '1px solid #eef1f6', cursor: 'pointer' }}>
-                <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Declaration No. {declNo}</span>
-                <span className="text-[14px] px-[10px] py-[2px] rounded-[12px]" style={{ background: 'rgba(19,96,210,0.10)', color: '#1360d2', fontWeight: 500 }}>
-                  {declDocs.length} file{declDocs.length !== 1 ? 's' : ''}
-                </span>
-                <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#697498" strokeWidth="2" className="ml-auto flex-shrink-0"
-                  style={{ transition: 'transform 0.15s', transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                  <path d="M5 8l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
-              {isOpen && (
-              <div className="overflow-x-auto">
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: FONT }}>
-                  <thead>
-                    <tr style={{ background: '#a6c2e9' }}>
-                      {['Document Type', 'File Name', 'Uploaded On', 'Remarks', 'Action'].map(h => (
-                        <th key={h} style={{ padding: '11px 16px', textAlign: 'left', fontSize: 14, fontWeight: 600, color: '#000', whiteSpace: 'nowrap' }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {declDocs.map(doc => (
-                      <tr key={doc.id} style={{ borderBottom: '1px solid #f0f3fa' }}>
-                        <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
-                          <span className="text-[16px] text-[#0e1b3d]">{doc.docType}</span>
-                        </td>
-                        <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
-                          <div className="flex items-center gap-[8px]">
-                            <div className="size-[28px] rounded-[4px] flex-shrink-0 inline-flex items-center justify-center" style={{ background: '#e8f0ff' }}>
-                              <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#1360d2" strokeWidth="1.8" strokeLinecap="round">
-                                <path d="M5 2h7l3 3v12H5z" /><path d="M12 2v3h3" />
-                              </svg>
-                            </div>
-                            <div className="flex flex-col gap-[1px]">
-                              <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{doc.fileName}</span>
-                              <span className="text-[11px] text-[#697498]">{formatBytes(doc.fileSize)}</span>
-                            </div>
-                          </div>
-                        </td>
-                        <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
-                          <span className="text-[16px] text-[#697498]">{doc.uploadedOn}</span>
-                        </td>
-                        <td style={{ padding: '12px 16px', verticalAlign: 'middle', maxWidth: 180 }}>
-                          <span className="text-[16px] text-[#455174]">{doc.remarks || '—'}</span>
-                        </td>
-                        <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
-                          <div className="flex items-center gap-[4px]">
-                            <button type="button" onClick={() => {}}
-                              title="Download"
-                              className="size-[32px] inline-flex items-center justify-center rounded hover:bg-[#e8f0ff] transition-colors"
-                              style={{ color: '#1360d2' }}>
-                              <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M10 3v10M5 12l5 5 5-5" /><path d="M3 17h14" />
-                              </svg>
-                            </button>
-                            {onRemove && (
-                              <button type="button" onClick={() => onRemove(doc.id)}
-                                title="Delete"
-                                className="size-[32px] inline-flex items-center justify-center rounded hover:bg-[#fef2f2] transition-colors"
-                                style={{ color: '#dc3545' }}>
-                                <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                                  <path d="M3 5h14M8 5V3h4v2M17 5l-1 13H4L3 5" /><path d="M8 9v5M12 9v5" />
-                                </svg>
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+    <div className="flex flex-col gap-[16px]">
+      <div className="flex flex-col gap-[4px]">
+        <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Documents Uploaded</p>
+        <p className="text-[16px] text-[#697498]">Attachments uploaded against each declaration in this claim.</p>
+      </div>
+
+      <div className="bg-white rounded-[8px] overflow-hidden flex flex-col md:flex-row" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)', minHeight: 320 }}>
+        {/* Sidebar — declarations */}
+        <div className="flex flex-col flex-shrink-0 md:w-[260px]" style={{ borderBottom: '1px solid #f3f4f6' }}>
+          <div className="flex-1 overflow-y-auto" style={{ maxHeight: 420 }}>
+            {orderedDeclNos.map(declNo => {
+              const declDocs = groups.get(declNo) ?? [];
+              const isSelected = selectedDoc === declNo;
+              return (
+                <div key={declNo} onClick={() => setSelectedDeclNo(declNo)}
+                  className="flex items-center gap-[10px] px-[14px] py-[12px] cursor-pointer transition-colors"
+                  style={{ background: isSelected ? '#f0f4ff' : 'transparent', borderLeft: `3px solid ${isSelected ? '#1360d2' : 'transparent'}`, borderBottom: '1px solid #f8fafd' }}>
+                  <div className="size-[36px] rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#1360d2' }}>
+                    <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round"><path d="M5 2h7l3 3v12H5z" /><path d="M12 2v3h3" /></svg>
+                  </div>
+                  <div className="flex flex-col gap-[1px] min-w-0 flex-1">
+                    <span className="text-[14px] text-[#051937] truncate" style={{ fontWeight: 500, fontFamily: FONT }}>Declaration No. {declNo}</span>
+                    <span className="text-[14px]" style={{ color: '#219653', fontFamily: FONT }}>{declDocs.length} file{declDocs.length !== 1 ? 's' : ''}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Detail pane — selected declaration's files */}
+        <div className="flex-1 flex flex-col min-w-0" style={{ borderLeft: '1px solid #f3f4f6' }}>
+          {selectedDoc && (
+            <>
+              <div className="px-[20px] py-[14px]" style={{ background: '#f8fafd', borderBottom: '1px solid #eef1f6' }}>
+                <p className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500, fontFamily: FONT }}>Files — Declaration No. {selectedDoc}</p>
               </div>
-              )}
-            </div>
-          );
-        })}
+              <div className="flex-1 overflow-auto">
+                {selectedDocs.length === 0 ? (
+                  <p className="text-[15px] text-[#697498] text-center" style={{ padding: '32px 16px', fontFamily: FONT }}>No files uploaded yet.</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: FONT }}>
+                      <thead>
+                        <tr style={{ background: '#e2ebf9' }}>
+                          {['Document Type', 'File Name', 'Uploaded On', 'Remarks', 'Action'].map(h => (
+                            <th key={h} style={{ padding: '11px 16px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#0e1b3d', whiteSpace: 'nowrap' }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selectedDocs.map(doc => (
+                          <tr key={doc.id} style={{ borderTop: '1px solid #f0f4ff' }}>
+                            <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                              <span className="text-[15px] text-[#0e1b3d]">{doc.docType}</span>
+                            </td>
+                            <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                              <div className="flex items-center gap-[8px]">
+                                <div className="size-[28px] rounded-[4px] flex-shrink-0 inline-flex items-center justify-center" style={{ background: '#e8f0ff' }}>
+                                  <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#1360d2" strokeWidth="1.8" strokeLinecap="round">
+                                    <path d="M5 2h7l3 3v12H5z" /><path d="M12 2v3h3" />
+                                  </svg>
+                                </div>
+                                <div className="flex flex-col gap-[1px]">
+                                  <span className="text-[15px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{doc.fileName}</span>
+                                  <span className="text-[11px] text-[#697498]">{formatBytes(doc.fileSize)}</span>
+                                </div>
+                              </div>
+                            </td>
+                            <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                              <span className="text-[15px] text-[#697498]">{doc.uploadedOn}</span>
+                            </td>
+                            <td style={{ padding: '12px 16px', verticalAlign: 'middle', maxWidth: 180 }}>
+                              <span className="text-[15px] text-[#455174]">{doc.remarks || '—'}</span>
+                            </td>
+                            <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                              <div className="flex items-center gap-[4px]">
+                                <button type="button" onClick={() => {}}
+                                  title="Download"
+                                  className="size-[32px] inline-flex items-center justify-center rounded hover:bg-[#e8f0ff] transition-colors"
+                                  style={{ color: '#1360d2' }}>
+                                  <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M10 3v10M5 12l5 5 5-5" /><path d="M3 17h14" />
+                                  </svg>
+                                </button>
+                                {onRemove && (
+                                  <button type="button" onClick={() => onRemove(doc.id)}
+                                    title="Delete"
+                                    className="size-[32px] inline-flex items-center justify-center rounded hover:bg-[#fef2f2] transition-colors"
+                                    style={{ color: '#dc3545' }}>
+                                    <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                                      <path d="M3 5h14M8 5V3h4v2M17 5l-1 13H4L3 5" /><path d="M8 9v5M12 9v5" />
+                                    </svg>
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
