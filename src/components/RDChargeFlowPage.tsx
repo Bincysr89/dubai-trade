@@ -48,6 +48,8 @@ export type ChargeDetail = {
   refType?: string;
   refCode?: string;
   refNo?: string;
+  /** CDM Deposit only — reference entries added via the Add button. */
+  refEntries?: { id: string; refType: string; refCode: string; refNo: string }[];
 };
 
 export type OutboundDetail = {
@@ -956,12 +958,14 @@ function HSRow({ hs, inv, declNo, rt, obs, edit, onPatchHs, onAdd, onEdit, onVie
 }
 
 /* ─── Declaration row card ──────────────────────────────────────── */
-function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount, onRefField, onToggleInv, onAdd, onEdit, onViewOb, onDelete, onOpenUnitPriceModal }: {
+function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount, onRefField, onAddRefEntry, onDeleteRefEntry, onToggleInv, onAdd, onEdit, onViewOb, onDelete, onOpenUnitPriceModal }: {
   d: ChargeDetail; idx: number; obs: OutboundState; invOpen: boolean;
   hsEdits: Record<string, { allocationMethod?: string; currency?: string; unitPrice?: string; unitPriceDetails?: UnitPriceDetail[] }>;
   onPatchHs: (hsId: string, patch: { allocationMethod?: string; currency?: string; unitPrice?: string; unitPriceDetails?: UnitPriceDetail[] }) => void;
   onRefund: (i: number, rt: RefundType) => void;
   onAmount: (i: number, v: string) => void;
+  onAddRefEntry: (i: number) => void;
+  onDeleteRefEntry: (i: number, entryId: string) => void;
   onRefField: (i: number, patch: { refType?: string; refCode?: string; refNo?: string }) => void;
   onToggleInv: (i: number) => void;
   onAdd: (ctx: DrawerCtx, hsIds: string[], onApplied?: () => void) => void;
@@ -1109,13 +1113,63 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
 
           {invOpen && isCdm && (
             <div className="px-[20px] pb-[20px] pt-[16px]" style={{ borderTop: '1px solid #f5f7fc' }}>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-[16px]" style={{ maxWidth: 900 }}>
-                <FSelect label="Reference Type" value={d.refType ?? ''} onChange={v => onRefField(idx, { refType: v })}
-                  options={['Exemption Type', 'Decision Reference']} req />
-                <FSelect label="Reference Code" value={d.refCode ?? ''} onChange={v => onRefField(idx, { refCode: v })}
-                  options={['EXM-001', 'EXM-002', 'EXM-003']} req disabled={d.refType !== 'Exemption Type'} />
-                <FInput label="Reference No." value={d.refNo ?? ''} onChange={v => onRefField(idx, { refNo: v })} req />
+              <div className="flex flex-wrap items-end gap-[16px]" style={{ maxWidth: 1100 }}>
+                <div style={{ flex: '1 1 240px', minWidth: 200 }}>
+                  <FSelect label="Reference Type" value={d.refType ?? ''} onChange={v => onRefField(idx, { refType: v })}
+                    options={['Exemption Type', 'Decision Reference']} req />
+                </div>
+                <div style={{ flex: '1 1 240px', minWidth: 200 }}>
+                  <FSelect label="Reference Code" value={d.refCode ?? ''} onChange={v => onRefField(idx, { refCode: v })}
+                    options={['EXM-001', 'EXM-002', 'EXM-003']} req disabled={d.refType !== 'Exemption Type'} />
+                </div>
+                <div style={{ flex: '1 1 240px', minWidth: 200 }}>
+                  <FInput label="Reference No." value={d.refNo ?? ''} onChange={v => onRefField(idx, { refNo: v })} req />
+                </div>
+                <div className="flex items-center gap-[10px]" style={{ height: 56 }}>
+                  <button type="button" onClick={() => onRefField(idx, { refType: '', refCode: '', refNo: '' })}
+                    className="h-[48px] px-[24px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors"
+                    style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
+                    Reset
+                  </button>
+                  <button type="button" onClick={() => onAddRefEntry(idx)}
+                    disabled={!d.refType || !d.refNo || (d.refType === 'Exemption Type' && !d.refCode)}
+                    className="h-[48px] px-[24px] rounded-[4px] text-[16px] text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    style={{ background: '#1360d2', fontFamily: font, fontWeight: 500 }}>
+                    Add
+                  </button>
+                </div>
               </div>
+
+              {!!d.refEntries?.length && (
+                <div className="mt-[20px] overflow-hidden rounded-[8px]" style={{ border: '1px solid #eef1f6' }}>
+                  <table className="w-full" style={{ borderCollapse: 'collapse', fontFamily: font }}>
+                    <thead>
+                      <tr>
+                        {['Reference Type', 'Reference Code', 'Reference No.', 'Action'].map(h => (
+                          <th key={h} className="text-left text-[16px]" style={{ background: '#e2ebf9', color: '#0e1b3d', fontWeight: 500, padding: '10px 16px' }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {d.refEntries.map(e => (
+                        <tr key={e.id} style={{ borderTop: '1px solid #eef1f6' }}>
+                          <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '10px 16px' }}>{e.refType}</td>
+                          <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '10px 16px' }}>{e.refCode || '—'}</td>
+                          <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '10px 16px' }}>{e.refNo}</td>
+                          <td style={{ padding: '10px 16px' }}>
+                            <button type="button" onClick={() => onDeleteRefEntry(idx, e.id)}
+                              className="inline-flex items-center justify-center size-[32px] rounded-[4px] hover:bg-[#fdecec] transition-colors" aria-label="Delete">
+                              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#dc3545" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6h16Z" />
+                              </svg>
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
 
@@ -1286,6 +1340,12 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
   const patchAmount  = (i: number, v: string) => setDetails(p => p.map((d, j) => j !== i ? d : { ...d, claimAmount: v }));
   const patchRefField = (i: number, patch: { refType?: string; refCode?: string; refNo?: string }) =>
     setDetails(p => p.map((d, j) => j !== i ? d : { ...d, ...patch, ...(patch.refType !== undefined && patch.refType !== 'Exemption Type' ? { refCode: '' } : {}) }));
+  const addRefEntry = (i: number) => setDetails(p => p.map((d, j) => {
+    if (j !== i || !d.refType || !d.refNo || (d.refType === 'Exemption Type' && !d.refCode)) return d;
+    const entry = { id: `ref-${i}-${(d.refEntries?.length ?? 0)}-${Date.now()}`, refType: d.refType, refCode: d.refCode ?? '', refNo: d.refNo };
+    return { ...d, refEntries: [...(d.refEntries ?? []), entry], refType: '', refCode: '', refNo: '' };
+  }));
+  const deleteRefEntry = (i: number, entryId: string) => setDetails(p => p.map((d, j) => j !== i ? d : { ...d, refEntries: (d.refEntries ?? []).filter(e => e.id !== entryId) }));
   const toggleInv    = (i: number)            => setInvOpen(p => ({ ...p, [i]: !p[i] }));
 
   /* Delete a declaration row from the claim, with confirmation. */
@@ -1389,7 +1449,8 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
               <DeclRow key={d.declarationNo} d={d} idx={i} obs={obs}
                 invOpen={invOpen[i] !== false && (needsOutbound(d.refundType, d.chargeType) || d.chargeType === 'CDM Deposit') && !!d.refundType}
                 hsEdits={hsEdits} onPatchHs={patchHs}
-                onRefund={patchRefund} onAmount={patchAmount} onRefField={patchRefField} onToggleInv={toggleInv}
+                onRefund={patchRefund} onAmount={patchAmount} onRefField={patchRefField}
+                onAddRefEntry={addRefEntry} onDeleteRefEntry={deleteRefEntry} onToggleInv={toggleInv}
                 onAdd={(ctx, hsIds, onApplied) => setModal({ ctx, hsIds, onApplied })}
                 onEdit={(ctx, ob) => setModal({ ctx: { ...ctx, editId: ob.id }, hsIds: [ctx.hsId], existing: ob })}
                 onViewOb={(ctx, obsList) => setViewOb({ ctx, obs: obsList })}
