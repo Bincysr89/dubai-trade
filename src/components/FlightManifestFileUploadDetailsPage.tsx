@@ -153,7 +153,7 @@ export default function FlightManifestFileUploadDetailsPage({ row, initialOpenEr
       {viewFileContentRow && (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center px-[20px]" style={{ background: 'rgba(14,27,61,0.55)' }} onClick={() => setViewFileContentRow(null)}>
           <div className="bg-white rounded-[8px] overflow-hidden" style={{ width: 'min(640px, 100%)', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', fontFamily: font }} onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-[24px] py-[16px]" style={{ background: '#1360d2' }}>
+            <div className="flex items-center justify-between px-[24px] py-[16px]" style={{ background: '#0e1b3d' }}>
               <p className="text-[18px] text-white" style={{ fontWeight: 500 }}>View File Content</p>
               <button onClick={() => setViewFileContentRow(null)} className="size-[28px] inline-flex items-center justify-center rounded-full text-white hover:bg-white/20" aria-label="Close">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>

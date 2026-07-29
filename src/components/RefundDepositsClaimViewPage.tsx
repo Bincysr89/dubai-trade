@@ -229,7 +229,7 @@ function DeclarationCard({ d, idx, open, onToggle, onViewOb }: {
   const expandable = outbound || isCdm;
 
   return (
-    <div className="bg-white rounded-[8px]" style={{ border: `1.5px solid ${open && expandable ? '#1360d2' : 'transparent'}`, borderTop: idx > 0 ? '1px solid #eef1f6' : undefined }}>
+    <div className="bg-white rounded-[8px] overflow-hidden" style={{ border: `1.5px solid ${open && expandable ? '#1360d2' : '#eef1f6'}`, boxShadow: '0px 2px 8px rgba(143,155,186,0.12)' }}>
       {/* Declaration summary row */}
       <div className="flex flex-wrap items-center gap-x-[24px] gap-y-[8px] px-[16px] py-[14px]">
         <span className="text-[16px] text-[#455174]" style={{ fontFamily: font }}>{idx + 1}</span>
@@ -385,7 +385,7 @@ export function DeclarationDetailsSection({ chargeDetails, rows, outbounds, decl
   return (
     <>
       <Section title="Declaration Details" badge={`${declLines.length} declaration${declLines.length !== 1 ? 's' : ''}`}>
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-[16px]">
           {declLines.map((d, i) => (
             <DeclarationCard key={d.declarationNo} d={d} idx={i} open={openDeclIds.has(d.declarationNo)} onToggle={() => toggleDecl(d.declarationNo)} onViewOb={setViewOb} />
           ))}

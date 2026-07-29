@@ -689,15 +689,21 @@ function UnitPriceModal({ ctx, existing, currency, onSave, onClose }: {
   const [rows, setRows] = useState<UnitPriceDetail[]>(existing);
   const [statQty, setStatQty] = useState('');
   const [unitPrice, setUnitPrice] = useState('');
+  const [qtyError, setQtyError] = useState('');
   const totalEntered = rows.reduce((s, r) => s + (parseFloat(r.statQty) || 0), 0);
-  const qtyExceeded = ctx.totalStatQty > 0 && totalEntered >= ctx.totalStatQty;
 
   const addRow = () => {
     if (!statQty.trim() || !unitPrice.trim()) return;
+    const prospectiveTotal = totalEntered + (parseFloat(statQty) || 0);
+    if (ctx.totalStatQty > 0 && prospectiveTotal > ctx.totalStatQty) {
+      setQtyError(`No further quantity can be allocated — the total exported statistical quantity (${ctx.totalStatQty} ${ctx.unit}) has already been reached.`);
+      return;
+    }
+    setQtyError('');
     setRows(r => [...r, { id: `up-${r.length}-${statQty}-${unitPrice}`, statQty, unitPrice }]);
     setStatQty(''); setUnitPrice('');
   };
-  const resetForm = () => { setStatQty(''); setUnitPrice(''); };
+  const resetForm = () => { setStatQty(''); setUnitPrice(''); setQtyError(''); };
   const removeRow = (id: string) => setRows(r => r.filter(x => x.id !== id));
 
   return (
@@ -735,17 +741,25 @@ function UnitPriceModal({ ctx, existing, currency, onSave, onClose }: {
 
           <div>
             <p className="text-[16px] text-[#0e1b3d] mb-[12px]" style={{ fontWeight: 500, fontFamily: font, borderBottom: '1px solid #eef1f6', paddingBottom: 8 }}>Add Unit Price Details</p>
+            {qtyError && (
+              <div className="flex items-start gap-[10px] rounded-[6px] px-[16px] py-[12px] mb-[14px]" style={{ background: '#fdecec', border: '1px solid #f5c2c2' }}>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#dc3545" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-[1px]">
+                  <circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16h.01" />
+                </svg>
+                <p className="text-[14px] text-[#dc3545]" style={{ fontFamily: font, lineHeight: 1.4 }}>{qtyError}</p>
+              </div>
+            )}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, alignItems: 'end' }}>
-              <FInput label="Statistical Qty" value={statQty} onChange={setStatQty} type="number" placeholder="0" req />
-              <FInput label="Unit Price" value={unitPrice} onChange={setUnitPrice} type="number" placeholder="0.00" req />
+              <FInput label="Statistical Qty" value={statQty} onChange={v => { setStatQty(v); setQtyError(''); }} type="number" placeholder="0" req />
+              <FInput label="Unit Price" value={unitPrice} onChange={v => { setUnitPrice(v); setQtyError(''); }} type="number" placeholder="0.00" req />
               <div className="flex flex-col gap-[4px]" style={{ paddingBottom: 14 }}>
                 <span className="text-[13px] text-[#697498]" style={{ fontFamily: font }}>Currency</span>
                 <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500, fontFamily: font }}>{currency}</span>
               </div>
             </div>
             <div className="flex gap-[10px] mt-[14px]">
-              <button type="button" onClick={addRow} disabled={qtyExceeded}
-                className="h-[40px] px-[20px] rounded-[4px] text-[15px] text-white disabled:opacity-40 disabled:cursor-not-allowed"
+              <button type="button" onClick={addRow}
+                className="h-[40px] px-[20px] rounded-[4px] text-[15px] text-white"
                 style={{ background: '#1360d2', border: 'none', fontFamily: font, fontWeight: 500, cursor: 'pointer' }}>
                 Add
               </button>
@@ -760,16 +774,6 @@ function UnitPriceModal({ ctx, existing, currency, onSave, onClose }: {
           {rows.length > 0 && (
             <div>
               <p className="text-[16px] text-[#0e1b3d] mb-[12px]" style={{ fontWeight: 500, fontFamily: font, borderBottom: '1px solid #eef1f6', paddingBottom: 8 }}>Unit Price Details</p>
-              {qtyExceeded && (
-                <div className="flex items-start gap-[10px] rounded-[6px] px-[16px] py-[12px] mb-[14px]" style={{ background: '#fdecec', border: '1px solid #f5c2c2' }}>
-                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#dc3545" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-[1px]">
-                    <circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16h.01" />
-                  </svg>
-                  <p className="text-[14px] text-[#dc3545]" style={{ fontFamily: font, lineHeight: 1.4 }}>
-                    The total entered statistical quantity ({totalEntered} {ctx.unit}) has reached the total exported statistical quantity ({ctx.totalStatQty} {ctx.unit}). No further quantity can be allocated.
-                  </p>
-                </div>
-              )}
               <table className="w-full" style={{ borderCollapse: 'collapse', fontFamily: font }}>
                 <thead>
                   <tr style={{ background: '#a6c2e9' }}>
@@ -969,13 +973,14 @@ function HSRow({ hs, inv, declNo, rt, obs, edit, onPatchHs, onAdd, onEdit, onVie
 }
 
 /* ─── Declaration row card ──────────────────────────────────────── */
-function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount, onRefField, onAddRefEntry, onDeleteRefEntry, onToggleInv, onAdd, onEdit, onViewOb, onDelete, onOpenUnitPriceModal }: {
+function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount, onRefField, onAddRefEntry, onEditRefEntry, onDeleteRefEntry, onToggleInv, onAdd, onEdit, onViewOb, onDelete, onOpenUnitPriceModal }: {
   d: ChargeDetail; idx: number; obs: OutboundState; invOpen: boolean;
   hsEdits: Record<string, { allocationMethod?: string; currency?: string; unitPrice?: string; unitPriceDetails?: UnitPriceDetail[] }>;
   onPatchHs: (hsId: string, patch: { allocationMethod?: string; currency?: string; unitPrice?: string; unitPriceDetails?: UnitPriceDetail[] }) => void;
   onRefund: (i: number, rt: RefundType) => void;
   onAmount: (i: number, v: string) => void;
   onAddRefEntry: (i: number) => void;
+  onEditRefEntry: (i: number, entryId: string) => void;
   onDeleteRefEntry: (i: number, entryId: string) => void;
   onRefField: (i: number, patch: { refType?: string; refCode?: string; refNo?: string }) => void;
   onToggleInv: (i: number) => void;
@@ -1168,12 +1173,20 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
                           <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '10px 16px' }}>{e.refCode || '—'}</td>
                           <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '10px 16px' }}>{e.refNo}</td>
                           <td style={{ padding: '10px 16px' }}>
-                            <button type="button" onClick={() => onDeleteRefEntry(idx, e.id)}
-                              className="inline-flex items-center justify-center size-[32px] rounded-[4px] hover:bg-[#fdecec] transition-colors" aria-label="Delete">
-                              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#dc3545" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6h16Z" />
-                              </svg>
-                            </button>
+                            <div className="flex items-center gap-[4px]">
+                              <button type="button" onClick={() => onEditRefEntry(idx, e.id)}
+                                className="inline-flex items-center justify-center size-[32px] rounded-[4px] hover:bg-[#e2ebf9] transition-colors" aria-label="Edit">
+                                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#1360d2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                                </svg>
+                              </button>
+                              <button type="button" onClick={() => onDeleteRefEntry(idx, e.id)}
+                                className="inline-flex items-center justify-center size-[32px] rounded-[4px] hover:bg-[#fdecec] transition-colors" aria-label="Delete">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#dc3545" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6h16Z" />
+                                </svg>
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -1338,8 +1351,8 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
   const [unitPriceModal, setUnitPriceModal] = useState<(UnitPriceModalCtx & { currency: string }) | null>(null);
   const [saveModal, setSaveModal] = useState(false);
   const [noRefundAlertOpen, setNoRefundAlertOpen] = useState(false);
-  const hasDutyDepositNoRefund = details.some(d => d.chargeType === 'Duty Deposit' && d.refundType === 'noRefund');
-  const handleProceed = () => { if (hasDutyDepositNoRefund) setNoRefundAlertOpen(true); else onContinue({ details, outbounds: obs }); };
+  const hasNoRefundSelection = details.some(d => d.refundType === 'no' || d.refundType === 'noRefund');
+  const handleProceed = () => { if (hasNoRefundSelection) setNoRefundAlertOpen(true); else onContinue({ details, outbounds: obs }); };
 
   const patchHs = (hsId: string, patch: { allocationMethod?: string; currency?: string; unitPrice?: string; unitPriceDetails?: UnitPriceDetail[] }) =>
     setHsEdits(p => ({ ...p, [hsId]: { ...p[hsId], ...patch } }));
@@ -1355,6 +1368,12 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
     if (j !== i || !d.refType || !d.refNo || (d.refType === 'Exemption Type' && !d.refCode)) return d;
     const entry = { id: `ref-${i}-${(d.refEntries?.length ?? 0)}-${Date.now()}`, refType: d.refType, refCode: d.refCode ?? '', refNo: d.refNo };
     return { ...d, refEntries: [...(d.refEntries ?? []), entry], refType: '', refCode: '', refNo: '' };
+  }));
+  const editRefEntry = (i: number, entryId: string) => setDetails(p => p.map((d, j) => {
+    if (j !== i) return d;
+    const entry = d.refEntries?.find(e => e.id === entryId);
+    if (!entry) return d;
+    return { ...d, refType: entry.refType, refCode: entry.refCode, refNo: entry.refNo, refEntries: (d.refEntries ?? []).filter(e => e.id !== entryId) };
   }));
   const deleteRefEntry = (i: number, entryId: string) => setDetails(p => p.map((d, j) => j !== i ? d : { ...d, refEntries: (d.refEntries ?? []).filter(e => e.id !== entryId) }));
   const toggleInv    = (i: number)            => setInvOpen(p => ({ ...p, [i]: !p[i] }));
@@ -1461,7 +1480,7 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
                 invOpen={invOpen[i] !== false && (needsOutbound(d.refundType, d.chargeType) || d.chargeType === 'CDM Deposit') && !!d.refundType}
                 hsEdits={hsEdits} onPatchHs={patchHs}
                 onRefund={patchRefund} onAmount={patchAmount} onRefField={patchRefField}
-                onAddRefEntry={addRefEntry} onDeleteRefEntry={deleteRefEntry} onToggleInv={toggleInv}
+                onAddRefEntry={addRefEntry} onEditRefEntry={editRefEntry} onDeleteRefEntry={deleteRefEntry} onToggleInv={toggleInv}
                 onAdd={(ctx, hsIds, onApplied) => setModal({ ctx, hsIds, onApplied })}
                 onEdit={(ctx, ob) => setModal({ ctx: { ...ctx, editId: ob.id }, hsIds: [ctx.hsId], existing: ob })}
                 onViewOb={(ctx, obsList) => setViewOb({ ctx, obs: obsList })}

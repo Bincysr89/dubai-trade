@@ -372,6 +372,8 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
   const [showDrafts, setShowDrafts]           = useState(false);
   const [deletedRowKeys, setDeletedRowKeys]   = useState<Set<string>>(new Set());
   const [deleteRow, setDeleteRow]             = useState<ListingRow | null>(null);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<Set<string>>(new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen]   = useState(false);
   const [showColModal, setShowColModal]       = useState(false);
   const [visibleCols, setVisibleCols]         = useState<string[]>(config.columns.map(c => c.key));
   const [page, setPage]                       = useState(1);
@@ -441,6 +443,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
     setSemView('list'); setSemSelectedRow(null);
     setHmView('list');
     setDaView('list');
+    setSelectedRowKeys(new Set());
   };
 
   const orderedVisible = (colOrder.length === config.columns.length ? colOrder : config.columns.map(c => c.key))
@@ -448,6 +451,10 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
     .map(k => config.columns.find(c => c.key === k))
     .filter((c): c is FieldCol => Boolean(c));
   const colLabel = (key: string) => config.columns.find(c => c.key === key)?.label ?? config.searchKeyLabels?.[key] ?? key;
+  // Sea Export Manifest drafts have no meaningful status yet — hide the column while viewing drafts.
+  const effectiveLockedColumns = (activeMenu === 'seaExportManifest' && showDrafts)
+    ? config.lockedColumns.filter(c => c.key !== 'status')
+    : config.lockedColumns;
 
   const filteredRows = config.rows.filter(r => {
     if (deletedRowKeys.has(str(r[config.refKey]))) return false;
@@ -460,6 +467,16 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
     return true;
   });
   const paginated = filteredRows.slice((page - 1) * pageSize, page * pageSize);
+
+  /* Sea Export Manifest — checkbox multi-select + bulk delete. */
+  const semAllSelected = activeMenu === 'seaExportManifest' && filteredRows.length > 0 && filteredRows.every(r => selectedRowKeys.has(str(r[config.refKey])));
+  const semSomeSelected = activeMenu === 'seaExportManifest' && !semAllSelected && filteredRows.some(r => selectedRowKeys.has(str(r[config.refKey])));
+  const toggleSelectAll = () => setSelectedRowKeys(semAllSelected ? new Set() : new Set(filteredRows.map(r => str(r[config.refKey]))));
+  const toggleRowSelected = (key: string) => setSelectedRowKeys(prev => {
+    const next = new Set(prev);
+    next.has(key) ? next.delete(key) : next.add(key);
+    return next;
+  });
 
   /* Sea Export Manifest — Track File Upload tab shows the dedicated upload-tracking table;
      a File Reference Number search (top search bar) further filters within it. */
@@ -941,11 +958,19 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                   {activeMenu !== 'flightManifest' && (
                     <div className="flex items-center gap-[8px]">
                       <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>Drafts</span>
-                      <button onClick={() => { setShowDrafts(d => !d); setPage(1); }}
+                      <button onClick={() => { setShowDrafts(d => !d); setPage(1); setSelectedRowKeys(new Set()); }}
                         className={`relative w-[48px] h-[28px] rounded-full transition-colors ${showDrafts ? 'bg-[#1360d2]' : 'bg-[#e2ebf9]'}`}>
                         <div className={`absolute top-[3px] size-[22px] rounded-full bg-white shadow transition-transform ${showDrafts ? 'translate-x-[22px]' : 'translate-x-[3px]'}`} />
                       </button>
                     </div>
+                  )}
+                  {activeMenu === 'seaExportManifest' && selectedRowKeys.size > 0 && (
+                    <button onClick={() => setBulkDeleteOpen(true)}
+                      className="flex items-center gap-[8px] h-[48px] px-[16px] rounded-[4px] text-[16px] text-white hover:opacity-90 transition-opacity"
+                      style={{ background: '#dc3545', fontFamily: font, fontWeight: 500 }}>
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" /></svg>
+                      Delete ({selectedRowKeys.size})
+                    </button>
                   )}
                   <button onClick={() => setShowColModal(true)}
                     className="flex items-center gap-[8px] h-[48px] px-[14px] rounded-[4px] border border-[#d5ddfb] bg-white text-[16px] text-[#0e1b3d] hover:bg-[#f0f4ff] transition-colors"
@@ -1143,7 +1168,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
               ) : (
               <div className="pb-[20px] flex-1" style={{ position: 'relative' }}>
                 {!config.noScrollArrows && (
-                  <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={config.lockedColumns.reduce((s, c) => s + lockedColW(c), 0)} />
+                  <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={effectiveLockedColumns.reduce((s, c) => s + lockedColW(c), 0)} />
                 )}
                 <div ref={scrollRef} onScroll={handleScroll} className="overflow-x-auto" style={{ position: 'relative' }}>
                   {resizeIndicatorLeft !== null && (
@@ -1158,9 +1183,25 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                 >
                   <thead>
                     <tr>
+                      {activeMenu === 'seaExportManifest' && (
+                        <th style={{ width: 44, minWidth: 44, padding: '10px 12px 10px 16px', borderTopLeftRadius: 8, borderBottomLeftRadius: 8, background: '#a6c2e9' }}>
+                          <button type="button" role="checkbox" aria-checked={semAllSelected} aria-label="Select all rows" onClick={toggleSelectAll}
+                            className="size-[20px] rounded-[4px] flex-shrink-0 inline-flex items-center justify-center"
+                            style={{ border: `2px solid ${semAllSelected || semSomeSelected ? '#1360d2' : '#a7abb2'}`, background: semAllSelected ? '#1360d2' : '#fff' }}>
+                            {semAllSelected ? (
+                              <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8l3 3 7-7" /></svg>
+                            ) : semSomeSelected ? (
+                              <span className="block" style={{ width: 10, height: 2, background: '#1360d2', borderRadius: 1 }} />
+                            ) : null}
+                          </button>
+                        </th>
+                      )}
                       {orderedVisible.map((col, i) => (
                         <th key={col.key} data-col-key={col.key} style={{
-                          padding: '10px 12px', textAlign: 'left', fontWeight: 500, borderTopLeftRadius: i === 0 ? 8 : 0, borderBottomLeftRadius: i === 0 ? 8 : 0, paddingLeft: i === 0 ? 16 : 12,
+                          padding: '10px 12px', textAlign: 'left', fontWeight: 500,
+                          borderTopLeftRadius: i === 0 && activeMenu !== 'seaExportManifest' ? 8 : 0,
+                          borderBottomLeftRadius: i === 0 && activeMenu !== 'seaExportManifest' ? 8 : 0,
+                          paddingLeft: i === 0 && activeMenu !== 'seaExportManifest' ? 16 : 12,
                           width: getW(col.key, col.w), minWidth: getW(col.key, col.w), whiteSpace: 'nowrap', position: 'relative',
                           ...getThStyle(col.key),
                         }}
@@ -1179,10 +1220,10 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                           <span className="text-[16px] font-medium text-[#051937] whitespace-nowrap">{col.label}</span>
                         </th>
                       ))}
-                      {config.lockedColumns.map((col, li) => {
-                        const right = config.lockedColumns.slice(li + 1).reduce((s, c) => s + lockedColW(c), 0);
+                      {effectiveLockedColumns.map((col, li) => {
+                        const right = effectiveLockedColumns.slice(li + 1).reduce((s, c) => s + lockedColW(c), 0);
                         const w = lockedColW(col);
-                        const isLast = li === config.lockedColumns.length - 1;
+                        const isLast = li === effectiveLockedColumns.length - 1;
                         return (
                           <th key={col.key} style={{
                             background: '#a6c2e9', padding: '10px 12px', textAlign: col.key === 'actions' ? 'center' : 'left', fontWeight: 500,
@@ -1199,14 +1240,25 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                   </thead>
                   <tbody>
                     {paginated.length === 0 ? (
-                      <tr><td colSpan={orderedVisible.length + config.lockedColumns.length} style={{ background: '#fff', padding: '40px 12px', textAlign: 'center' }}>
+                      <tr><td colSpan={orderedVisible.length + effectiveLockedColumns.length + (activeMenu === 'seaExportManifest' ? 1 : 0)} style={{ background: '#fff', padding: '40px 12px', textAlign: 'center' }}>
                         <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>No matching records found.</span>
                       </td></tr>
                     ) : paginated.map((row, i) => {
+                      const rowKey = str(row[config.refKey]);
                       return (
-                        <tr key={str(row[config.refKey])}>
+                        <tr key={rowKey}>
+                          {activeMenu === 'seaExportManifest' && (
+                            <td style={{ background: '#fff', padding: '0 12px 0 16px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff', width: 44, minWidth: 44 }}>
+                              <button type="button" role="checkbox" aria-checked={selectedRowKeys.has(rowKey)} aria-label={`Select ${rowKey}`}
+                                onClick={() => toggleRowSelected(rowKey)}
+                                className="size-[20px] rounded-[4px] flex-shrink-0 inline-flex items-center justify-center"
+                                style={{ border: `2px solid ${selectedRowKeys.has(rowKey) ? '#1360d2' : '#a7abb2'}`, background: selectedRowKeys.has(rowKey) ? '#1360d2' : '#fff' }}>
+                                {selectedRowKeys.has(rowKey) && <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8l3 3 7-7" /></svg>}
+                              </button>
+                            </td>
+                          )}
                           {orderedVisible.map((col, ci) => (
-                            <td key={col.key} data-col-key={col.key} style={{ background: getTdBg(col.key) ?? '#fff', padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff', paddingLeft: ci === 0 ? 16 : 12, width: getW(col.key, col.w), minWidth: getW(col.key, col.w), whiteSpace: 'nowrap' }}>
+                            <td key={col.key} data-col-key={col.key} style={{ background: getTdBg(col.key) ?? '#fff', padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff', paddingLeft: ci === 0 && activeMenu !== 'seaExportManifest' ? 16 : 12, width: getW(col.key, col.w), minWidth: getW(col.key, col.w), whiteSpace: 'nowrap' }}>
                               {col.key === config.refKey ? (
                                 <button onClick={() => {
                                     if (activeMenu === 'carrierMovement') { setCmSelectedRow(row); setCmView('view'); }
@@ -1220,8 +1272,8 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                               )}
                             </td>
                           ))}
-                          {config.lockedColumns.map((col, li) => {
-                            const right = config.lockedColumns.slice(li + 1).reduce((s, c) => s + lockedColW(c), 0);
+                          {effectiveLockedColumns.map((col, li) => {
+                            const right = effectiveLockedColumns.slice(li + 1).reduce((s, c) => s + lockedColW(c), 0);
                             const w = lockedColW(col);
                             const cellZ = openFlyout === i ? (col.key === 'actions' ? 50 : 49) : 1;
                             if (col.key === 'actions') {
@@ -1408,6 +1460,42 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                 }}
                 className="h-[48px] px-[36px] rounded-[4px] text-[16px] text-white transition-colors" style={{ background: '#dc3545', fontWeight: 500, fontFamily: font }}>
                 Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {bulkDeleteOpen && (
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center px-[20px]" style={{ background: 'rgba(0,0,0,0.5)' }} onClick={() => setBulkDeleteOpen(false)}>
+          <div className="bg-white rounded-[6px] overflow-hidden" style={{ width: '100%', maxWidth: 460, boxShadow: '0 8px 40px rgba(0,0,0,0.25)', fontFamily: font }} onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-[20px] py-[14px]" style={{ background: '#565f6d' }}>
+              <span className="text-[17px] text-white" style={{ fontWeight: 500 }}>Confirmation Message</span>
+              <button onClick={() => setBulkDeleteOpen(false)} aria-label="Close" className="size-[24px] inline-flex items-center justify-center text-white hover:opacity-80">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+              </button>
+            </div>
+            <div className="px-[24px] py-[28px] text-center">
+              <p className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>
+                Are you sure you want to Delete all {selectedRowKeys.size} BOL{selectedRowKeys.size !== 1 ? 's' : ''} available for this Rotation ?
+              </p>
+            </div>
+            <div className="flex items-center justify-center gap-[14px] pb-[24px]">
+              <button type="button" onClick={() => {
+                  setDeletedRowKeys(prev => { const next = new Set(prev); selectedRowKeys.forEach(k => next.add(k)); return next; });
+                  setSelectedRowKeys(new Set());
+                  setBulkDeleteOpen(false);
+                }}
+                className="h-[42px] px-[22px] rounded-[3px] border-2 bg-white text-[15px] inline-flex items-center gap-[8px] hover:bg-[#fff7ee] transition-colors"
+                style={{ borderColor: '#e08b1f', color: '#e08b1f', fontFamily: font, fontWeight: 500 }}>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12l6 6L20 6" /></svg>
+                OK
+              </button>
+              <button type="button" onClick={() => setBulkDeleteOpen(false)}
+                className="h-[42px] px-[22px] rounded-[3px] text-[15px] text-white inline-flex items-center gap-[8px] hover:opacity-90 transition-opacity"
+                style={{ background: '#2d333b', fontFamily: font, fontWeight: 500 }}>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9" /><path d="M6 6l12 12" strokeLinecap="round" /></svg>
+                Cancel
               </button>
             </div>
           </div>

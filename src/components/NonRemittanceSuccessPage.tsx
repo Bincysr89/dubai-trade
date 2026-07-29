@@ -89,15 +89,6 @@ export default function NonRemittanceSuccessPage({ onBack, onViewAck, onViewClai
             >
               Print Claim Acknowledgement Receipt
             </button>
-            {onViewDocs && (
-              <button
-                onClick={onViewDocs}
-                className="h-[52px] px-[28px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
-                style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
-              >
-                View Documents to be Submitted
-              </button>
-            )}
             <button
               onClick={onViewClaim}
               className="h-[52px] px-[32px] rounded-[4px] text-[16px] text-white hover:bg-[#0f4fb5] transition-colors"

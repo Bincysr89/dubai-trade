@@ -94,6 +94,12 @@ export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPre
   const [cashReceiptNo, setCashReceiptNo] = useState('');
   const [cashPaymentDate, setCashPaymentDate] = useState('');
   const isCash = paymentMode === 'Cash';
+  const parseAED = (s: string) => parseFloat((s || '').replace(/[^0-9.]/g, '')) || 0;
+  const totalClaimAmount = chargeDetails && chargeDetails.length > 0
+    ? chargeDetails.reduce((sum, d) => sum + parseAED(d.claimAmount), 0)
+    : null;
+  const depositMethods = chargeDetails ? Array.from(new Set(chargeDetails.map(d => d.depositMethod).filter(Boolean))) : [];
+  const depositMethodDisplay = depositMethods.length === 0 ? '—' : depositMethods.length === 1 ? depositMethods[0] : 'Multiple';
 
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full" style={{ fontFamily: font }}>
@@ -172,9 +178,13 @@ export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPre
             </div>
             <div className="px-[24px] py-[20px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-[32px] gap-y-[20px]">
               {[
-                { label: 'Request No.',                         value: '2588017' },
-                { label: 'Claim Type',                          value: claimType },
-                { label: 'Total No. of Sub Claims in the Claim', value: String(selectedRows.length || 1) },
+                { label: 'Request No.',                         value: '2588017' as React.ReactNode },
+                { label: 'Claim Type',                          value: claimType as React.ReactNode },
+                { label: 'Total No. of Sub Claims in the Claim', value: String(selectedRows.length || 1) as React.ReactNode },
+                { label: 'Deposit Method',                      value: depositMethodDisplay as React.ReactNode },
+                { label: 'Total Claim Amount (AED)',            value: totalClaimAmount !== null
+                    ? <span className="inline-flex items-baseline gap-[3px]"><Dh style={{ fontSize: 15 }} />{totalClaimAmount.toFixed(2)}</span>
+                    : '—' },
               ].map((f) => (
                 <div key={f.label} className="flex flex-col gap-[4px]">
                   <span className="text-[16px] text-[#697498]">{f.label}</span>
