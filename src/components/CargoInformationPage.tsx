@@ -350,6 +350,55 @@ function FilterSelect({ label, value, onChange, options }: { label: string; valu
   );
 }
 
+function FilterMultiSelect({ label, selected, options, onChange }: { label: string; selected: string[]; options: string[]; onChange: (v: string[]) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, []);
+  const active = open || selected.length > 0;
+  const displayVal = selected.length === 0 ? '' : selected.length === 1 ? selected[0] : `${selected.length} selected`;
+  const toggle = (opt: string) => onChange(selected.includes(opt) ? selected.filter(s => s !== opt) : [...selected, opt]);
+  return (
+    <div className="relative" ref={ref}>
+      <button type="button" onClick={() => setOpen(o => !o)}
+        className="h-[56px] w-full rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none bg-white flex items-center justify-between"
+        style={{ fontFamily: font, border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}` }}>
+        <span className="flex-1 text-left truncate">{displayVal}</span>
+        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" className={`transition-transform flex-shrink-0 ${open ? 'rotate-180' : ''}`}>
+          <path d="M5 8l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+      <span style={flLabel(active)}>{label}</span>
+      {open && (
+        <div className="absolute z-[80] top-[60px] left-0 w-full bg-white rounded-[8px] py-[4px] overflow-hidden" style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
+          {options.map(opt => {
+            const checked = selected.includes(opt);
+            return (
+              <button key={opt} type="button" onClick={() => toggle(opt)}
+                className="w-full px-[14px] py-[10px] flex items-center gap-[10px] text-left hover:bg-[#e2ebf9] transition-colors">
+                <span className="size-[16px] rounded-[3px] border-2 flex items-center justify-center flex-shrink-0"
+                  style={{ borderColor: checked ? '#1360d2' : '#c0c8e0', background: checked ? '#1360d2' : '#fff' }}>
+                  {checked && (
+                    <svg viewBox="0 0 12 12" width="9" height="9" fill="none">
+                      <path d="M2 6l3 3 5-5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </span>
+                <span className="text-[16px]" style={{ fontFamily: font, color: checked ? '#1360d2' : '#0e1b3d', fontWeight: checked ? 500 : 400 }}>{opt}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const SEM_CARGO_TYPE_OPTIONS = ['FCL CONTAINER', 'LCL CONTAINER', 'GENERAL CARGO (BREAK BULK)', 'BULK LIQUID', 'BULK SOLID', 'RO-RO UNIT', 'EMPTY CONTAINER'];
+
 type Props = { onBack: () => void; onHome?: () => void };
 
 export default function CargoInformationPage({ onBack, onHome }: Props) {
@@ -360,6 +409,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
   /* Toolbar state — shared by every listing, reset whenever the active menu changes */
   const [showFilters, setShowFilters]         = useState(false);
   const [afValues, setAfValues]               = useState<Record<string, string>>({});
+  const [afCargoTypes, setAfCargoTypes]       = useState<string[]>([]);
   const [afStatusType, setAfStatusType]       = useState('');
   const [afDateFrom, setAfDateFrom]           = useState('');
   const [afDateTo, setAfDateTo]               = useState('');
@@ -373,7 +423,6 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
   const [deletedRowKeys, setDeletedRowKeys]   = useState<Set<string>>(new Set());
   const [deleteRow, setDeleteRow]             = useState<ListingRow | null>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Set<string>>(new Set());
-  const [semSelectionMode, setSemSelectionMode] = useState<'page' | 'all' | null>(null);
   const [bulkDeleteOpen, setBulkDeleteOpen]   = useState(false);
   const [showColModal, setShowColModal]       = useState(false);
   const [visibleCols, setVisibleCols]         = useState<string[]>(config.columns.map(c => c.key));
@@ -435,7 +484,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
     setActiveMenu(key);
     const next = MENU_CONFIGS[key];
     setPage(1); setSearchValue(''); setSearchQuery(''); setSearchKey(next.searchKeys[0]); setToolbarStatus(null);
-    setShowDrafts(false); setShowFilters(false); setAfValues({}); setAfStatusType(''); setAfDateFrom(''); setAfDateTo(''); setViewRow(null);
+    setShowDrafts(false); setShowFilters(false); setAfValues({}); setAfCargoTypes([]); setAfStatusType(''); setAfDateFrom(''); setAfDateTo(''); setViewRow(null);
     setFileDetailsRow(null); setSemPrefill(null); setSemRequestKind('new');
     setVisibleCols(next.columns.map(c => c.key));
     setColOrder(next.columns.map(c => c.key));
@@ -445,7 +494,6 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
     setHmView('list');
     setDaView('list');
     setSelectedRowKeys(new Set());
-    setSemSelectionMode(null);
   };
 
   const orderedVisible = (colOrder.length === config.columns.length ? colOrder : config.columns.map(c => c.key))
@@ -463,6 +511,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
     if (showDrafts !== !!r.isDraft) return false;
     if (toolbarStatus && r.status !== toolbarStatus) return false;
     if (searchValue.trim() && !str(r[searchKey]).toLowerCase().includes(searchValue.trim().toLowerCase())) return false;
+    if (activeMenu === 'seaExportManifest' && afCargoTypes.length > 0 && !afCargoTypes.includes(str(r.cargoType))) return false;
     for (const [k, v] of Object.entries(afValues)) {
       if (v.trim() && !str(r[k]).toLowerCase().includes(v.trim().toLowerCase())) return false;
     }
@@ -471,17 +520,14 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
   const paginated = filteredRows.slice((page - 1) * pageSize, page * pageSize);
 
   /* Sea Export Manifest — checkbox multi-select + bulk delete.
-     The header checkbox and the "per page" radio both select only the
-     current page; the "select all" radio spans every filtered row across
-     pages. Picking either radio is equivalent to using the header
-     checkbox — they drive the same selectedRowKeys state. */
+     The header checkbox selects only the current page; "Delete All BOL's"
+     selects every filtered row across pages before opening the confirm
+     dialog. Both drive the same selectedRowKeys state. */
   const semPageKeys = activeMenu === 'seaExportManifest' ? paginated.map(r => str(r[config.refKey])) : [];
   const semAllKeys = activeMenu === 'seaExportManifest' ? filteredRows.map(r => str(r[config.refKey])) : [];
   const semAllOnPageSelected = semPageKeys.length > 0 && semPageKeys.every(k => selectedRowKeys.has(k));
   const semSomeOnPageSelected = !semAllOnPageSelected && semPageKeys.some(k => selectedRowKeys.has(k));
-  const semAllAcrossSelected = semAllKeys.length > 0 && semAllKeys.every(k => selectedRowKeys.has(k));
   const toggleSelectPage = () => {
-    setSemSelectionMode('page');
     setSelectedRowKeys(prev => {
       const next = new Set(prev);
       if (semAllOnPageSelected) semPageKeys.forEach(k => next.delete(k));
@@ -489,9 +535,8 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
       return next;
     });
   };
-  const selectAllAcrossPages = () => { setSemSelectionMode('all'); setSelectedRowKeys(new Set(semAllKeys)); };
+  const selectAllAcrossPages = () => { setSelectedRowKeys(new Set(semAllKeys)); };
   const toggleRowSelected = (key: string) => {
-    setSemSelectionMode(null);
     setSelectedRowKeys(prev => {
       const next = new Set(prev);
       next.has(key) ? next.delete(key) : next.add(key);
@@ -979,7 +1024,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                   {activeMenu !== 'flightManifest' && (
                     <div className="flex items-center gap-[8px]">
                       <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>Drafts</span>
-                      <button onClick={() => { setShowDrafts(d => !d); setPage(1); setSelectedRowKeys(new Set()); setSemSelectionMode(null); }}
+                      <button onClick={() => { setShowDrafts(d => !d); setPage(1); setSelectedRowKeys(new Set()); }}
                         className={`relative w-[48px] h-[28px] rounded-full transition-colors ${showDrafts ? 'bg-[#1360d2]' : 'bg-[#e2ebf9]'}`}>
                         <div className={`absolute top-[3px] size-[22px] rounded-full bg-white shadow transition-transform ${showDrafts ? 'translate-x-[22px]' : 'translate-x-[3px]'}`} />
                       </button>
@@ -1005,35 +1050,54 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                   </div>
                   {/* Standing rule: Apply/Reset always sit inline as the grid cell right after the last filter field, never on their own row below. */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {(config.advancedFilterKeys ?? config.columns.slice(1, 4).map(c => c.key)).flatMap(key => {
-                      const col = config.columns.find(c => c.key === key);
-                      if (!col) return [];
-                      const isDate = col.key.toLowerCase().includes('date') || col.key === 'eta' || col.key === 'etd' || col.key === 'ata';
-                      return isDate ? [
-                        <DateInput key={`${col.key}From`} label={`${col.label} From`} value={afValues[`${col.key}From`] ?? ''} onChange={v => setAfValues(p => ({ ...p, [`${col.key}From`]: v }))} />,
-                        <DateInput key={`${col.key}To`} label={`${col.label} To`} value={afValues[`${col.key}To`] ?? ''} onChange={v => setAfValues(p => ({ ...p, [`${col.key}To`]: v }))} />,
-                      ] : [
-                        <FilterInput key={col.key} label={col.label} value={afValues[col.key] ?? ''} onChange={v => setAfValues(p => ({ ...p, [col.key]: v }))} />,
-                      ];
-                    })}
-                    {activeMenu === 'seaExportManifest' && (
-                      <FilterSelect label="Status Type" value={afStatusType} onChange={setAfStatusType} options={['Upload Status', 'BOL Status']} />
-                    )}
-                    {activeMenu === 'seaExportManifest' && afStatusType !== '' && (
+                    {activeMenu === 'seaExportManifest' ? (
                       <>
-                        <DateInput label="Date From" value={afDateFrom} onChange={setAfDateFrom} />
-                        <DateInput label="Date To" value={afDateTo} onChange={setAfDateTo} />
+                        <FilterInput label="BOL Number" value={afValues.bolNumber ?? ''} onChange={v => setAfValues(p => ({ ...p, bolNumber: v }))} />
+                        <FilterInput label="Rotation Number" value={afValues.rotationNumber ?? ''} onChange={v => setAfValues(p => ({ ...p, rotationNumber: v }))} />
+                        <FilterMultiSelect label="Cargo Type" selected={afCargoTypes} options={SEM_CARGO_TYPE_OPTIONS} onChange={setAfCargoTypes} />
+                        <FilterSelect label="Status Type" value={afStatusType} onChange={setAfStatusType} options={['Upload Status', 'BOL Status']} />
+                        {afStatusType !== '' && (
+                          <>
+                            <DateInput label="Date From" value={afDateFrom} onChange={setAfDateFrom} />
+                            <DateInput label="Date To" value={afDateTo} onChange={setAfDateTo} />
+                          </>
+                        )}
+                        <DateInput label="Last Modified Date From" value={afValues.lastModifiedDateFrom ?? ''} onChange={v => setAfValues(p => ({ ...p, lastModifiedDateFrom: v }))} />
+                        <DateInput label="Last Modified Date To" value={afValues.lastModifiedDateTo ?? ''} onChange={v => setAfValues(p => ({ ...p, lastModifiedDateTo: v }))} />
+                        <div className="flex items-end gap-[10px]">
+                          <button onClick={() => { setAfValues({}); setAfCargoTypes([]); setAfStatusType(''); setAfDateFrom(''); setAfDateTo(''); setPage(1); }}
+                            className="h-[44px] px-5 rounded-[4px] border border-[#1360d2] text-[15px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] flex-shrink-0" style={{ fontFamily: font }}>
+                            Reset
+                          </button>
+                          <button onClick={() => setPage(1)} className="h-[44px] px-5 rounded-[4px] text-[15px] text-white flex-shrink-0" style={{ background: '#1360d2', fontFamily: font }}>
+                            Apply
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {(config.advancedFilterKeys ?? config.columns.slice(1, 4).map(c => c.key)).flatMap(key => {
+                          const col = config.columns.find(c => c.key === key);
+                          if (!col) return [];
+                          const isDate = col.key.toLowerCase().includes('date') || col.key === 'eta' || col.key === 'etd' || col.key === 'ata';
+                          return isDate ? [
+                            <DateInput key={`${col.key}From`} label={`${col.label} From`} value={afValues[`${col.key}From`] ?? ''} onChange={v => setAfValues(p => ({ ...p, [`${col.key}From`]: v }))} />,
+                            <DateInput key={`${col.key}To`} label={`${col.label} To`} value={afValues[`${col.key}To`] ?? ''} onChange={v => setAfValues(p => ({ ...p, [`${col.key}To`]: v }))} />,
+                          ] : [
+                            <FilterInput key={col.key} label={col.label} value={afValues[col.key] ?? ''} onChange={v => setAfValues(p => ({ ...p, [col.key]: v }))} />,
+                          ];
+                        })}
+                        <div className="flex items-end gap-[10px]">
+                          <button onClick={() => setPage(1)} className="h-[44px] px-5 rounded-[4px] text-[15px] text-white flex-shrink-0" style={{ background: '#1360d2', fontFamily: font }}>
+                            Apply
+                          </button>
+                          <button onClick={() => { setAfValues({}); setAfStatusType(''); setAfDateFrom(''); setAfDateTo(''); setPage(1); }}
+                            className="h-[44px] px-5 rounded-[4px] border border-[#1360d2] text-[15px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] flex-shrink-0" style={{ fontFamily: font }}>
+                            Reset
+                          </button>
+                        </div>
                       </>
                     )}
-                    <div className="flex items-end gap-[10px]">
-                      <button onClick={() => setPage(1)} className="h-[44px] px-5 rounded-[4px] text-[15px] text-white flex-shrink-0" style={{ background: '#1360d2', fontFamily: font }}>
-                        Apply
-                      </button>
-                      <button onClick={() => { setAfValues({}); setAfStatusType(''); setAfDateFrom(''); setAfDateTo(''); setPage(1); }}
-                        className="h-[44px] px-5 rounded-[4px] border border-[#1360d2] text-[15px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] flex-shrink-0" style={{ fontFamily: font }}>
-                        Reset
-                      </button>
-                    </div>
                   </div>
                 </div>
               )}
@@ -1191,29 +1255,23 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                         </>
                       )}
                     </div>
-                    <div className="flex items-center gap-[24px]">
-                      <label className="flex items-center gap-[8px] text-[15px] text-[#0e1b3d] cursor-pointer" style={{ fontFamily: font }}>
-                        <span className="size-[18px] rounded-full flex-shrink-0 inline-flex items-center justify-center" style={{ border: `2px solid ${semSelectionMode === 'page' ? '#1360d2' : '#a7abb2'}` }}>
-                          {semSelectionMode === 'page' && <span className="block size-[8px] rounded-full" style={{ background: '#1360d2' }} />}
-                        </span>
-                        <input type="radio" className="sr-only" checked={semSelectionMode === 'page'} onChange={toggleSelectPage} />
-                        Delete {semPageKeys.length} selected per page
-                      </label>
-                      <label className="flex items-center gap-[8px] text-[15px] text-[#0e1b3d] cursor-pointer" style={{ fontFamily: font }}>
-                        <span className="size-[18px] rounded-full flex-shrink-0 inline-flex items-center justify-center" style={{ border: `2px solid ${semSelectionMode === 'all' ? '#1360d2' : '#a7abb2'}` }}>
-                          {semSelectionMode === 'all' && <span className="block size-[8px] rounded-full" style={{ background: '#1360d2' }} />}
-                        </span>
-                        <input type="radio" className="sr-only" checked={semSelectionMode === 'all'} onChange={selectAllAcrossPages} />
-                        Delete all {semAllKeys.length} BOL's
-                      </label>
-                      {selectedRowKeys.size > 0 && (
-                        <button onClick={() => setBulkDeleteOpen(true)}
-                          className="flex items-center gap-[6px] h-[36px] px-[14px] rounded-[4px] text-[14px] text-white hover:opacity-90 transition-opacity flex-shrink-0"
-                          style={{ background: '#dc3545', fontFamily: font, fontWeight: 500 }}>
-                          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" /></svg>
-                          Delete
-                        </button>
-                      )}
+                    <div className="flex items-center gap-[10px]">
+                      <button type="button" onClick={() => setBulkDeleteOpen(true)} disabled={selectedRowKeys.size === 0}
+                        className="flex items-center gap-[6px] h-[36px] px-[14px] rounded-[4px] text-[14px] transition-opacity flex-shrink-0"
+                        style={selectedRowKeys.size === 0
+                          ? { background: '#f0f4ff', color: '#a7abb2', cursor: 'not-allowed', fontFamily: font, fontWeight: 500 }
+                          : { background: '#dc3545', color: '#fff', fontFamily: font, fontWeight: 500 }}>
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" /></svg>
+                        Delete Selected
+                      </button>
+                      <button type="button" onClick={() => { selectAllAcrossPages(); setBulkDeleteOpen(true); }} disabled={semAllKeys.length === 0}
+                        className="flex items-center gap-[6px] h-[36px] px-[14px] rounded-[4px] border text-[14px] transition-colors flex-shrink-0"
+                        style={semAllKeys.length === 0
+                          ? { borderColor: '#e1e7f4', color: '#a7abb2', cursor: 'not-allowed', fontFamily: font, fontWeight: 500 }
+                          : { borderColor: '#dc3545', color: '#dc3545', background: '#fff', fontFamily: font, fontWeight: 500 }}>
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" /></svg>
+                        Delete All BOL's
+                      </button>
                     </div>
                   </div>
                 )}
@@ -1534,7 +1592,6 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
               <button type="button" onClick={() => {
                   setDeletedRowKeys(prev => { const next = new Set(prev); selectedRowKeys.forEach(k => next.add(k)); return next; });
                   setSelectedRowKeys(new Set());
-    setSemSelectionMode(null);
                   setBulkDeleteOpen(false);
                 }}
                 className="h-[42px] px-[22px] rounded-[3px] border-2 bg-white text-[15px] inline-flex items-center gap-[8px] hover:bg-[#fff7ee] transition-colors"

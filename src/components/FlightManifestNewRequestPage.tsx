@@ -358,7 +358,7 @@ function AddUnloadingPage({ existing, initialEditingLineId, onBack, onSave }: {
           </label>
         </div>
 
-        <>
+        <div style={nilCargo === 'Yes' ? { opacity: 0.5, pointerEvents: 'none' } : undefined} className="flex flex-col gap-[20px]">
             <div className="flex flex-col gap-[16px]">
               <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>
                 {viewingLineId ? 'View Airway Bill' : 'Add Airway Bill'}
@@ -452,7 +452,7 @@ function AddUnloadingPage({ existing, initialEditingLineId, onBack, onSave }: {
                 )}
               </div>
             </div>
-        </>
+        </div>
       </div>
 
       <BackToListingBar
@@ -760,9 +760,9 @@ export default function FlightManifestNewRequestPage({
                                 </div>
                                 <div className="flex flex-col gap-[3px] min-w-0 flex-1">
                                   <span className="text-[14px] text-[#051937] truncate" style={{ fontWeight: 500, fontFamily: font }}>{r.airportName || r.airportCode || 'Unnamed'}</span>
-                                  <div className="flex items-center gap-[6px]" onClick={e => e.stopPropagation()}>
+                                  <div className="flex items-center gap-[6px]" onClick={e => e.stopPropagation()} style={r.nilCargo === 'Yes' ? { cursor: 'not-allowed' } : undefined}>
                                     <span className="size-[14px] rounded-[3px] inline-flex items-center justify-center flex-shrink-0"
-                                      style={{ border: `2px solid ${r.nilCargo === 'Yes' ? '#1360d2' : '#a7abb2'}`, background: r.nilCargo === 'Yes' ? '#1360d2' : '#fff' }}>
+                                      style={{ border: `2px solid ${r.nilCargo === 'Yes' ? '#c8ccd6' : '#a7abb2'}`, background: r.nilCargo === 'Yes' ? '#c8ccd6' : '#fff' }}>
                                       {r.nilCargo === 'Yes' && (
                                         <svg viewBox="0 0 14 14" width="9" height="9" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7l3 3 5-6" /></svg>
                                       )}
