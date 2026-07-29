@@ -373,6 +373,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
   const [deletedRowKeys, setDeletedRowKeys]   = useState<Set<string>>(new Set());
   const [deleteRow, setDeleteRow]             = useState<ListingRow | null>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Set<string>>(new Set());
+  const [semSelectionMode, setSemSelectionMode] = useState<'page' | 'all' | null>(null);
   const [bulkDeleteOpen, setBulkDeleteOpen]   = useState(false);
   const [showColModal, setShowColModal]       = useState(false);
   const [visibleCols, setVisibleCols]         = useState<string[]>(config.columns.map(c => c.key));
@@ -444,6 +445,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
     setHmView('list');
     setDaView('list');
     setSelectedRowKeys(new Set());
+    setSemSelectionMode(null);
   };
 
   const orderedVisible = (colOrder.length === config.columns.length ? colOrder : config.columns.map(c => c.key))
@@ -468,15 +470,34 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
   });
   const paginated = filteredRows.slice((page - 1) * pageSize, page * pageSize);
 
-  /* Sea Export Manifest — checkbox multi-select + bulk delete. */
-  const semAllSelected = activeMenu === 'seaExportManifest' && filteredRows.length > 0 && filteredRows.every(r => selectedRowKeys.has(str(r[config.refKey])));
-  const semSomeSelected = activeMenu === 'seaExportManifest' && !semAllSelected && filteredRows.some(r => selectedRowKeys.has(str(r[config.refKey])));
-  const toggleSelectAll = () => setSelectedRowKeys(semAllSelected ? new Set() : new Set(filteredRows.map(r => str(r[config.refKey]))));
-  const toggleRowSelected = (key: string) => setSelectedRowKeys(prev => {
-    const next = new Set(prev);
-    next.has(key) ? next.delete(key) : next.add(key);
-    return next;
-  });
+  /* Sea Export Manifest — checkbox multi-select + bulk delete.
+     The header checkbox and the "per page" radio both select only the
+     current page; the "select all" radio spans every filtered row across
+     pages. Picking either radio is equivalent to using the header
+     checkbox — they drive the same selectedRowKeys state. */
+  const semPageKeys = activeMenu === 'seaExportManifest' ? paginated.map(r => str(r[config.refKey])) : [];
+  const semAllKeys = activeMenu === 'seaExportManifest' ? filteredRows.map(r => str(r[config.refKey])) : [];
+  const semAllOnPageSelected = semPageKeys.length > 0 && semPageKeys.every(k => selectedRowKeys.has(k));
+  const semSomeOnPageSelected = !semAllOnPageSelected && semPageKeys.some(k => selectedRowKeys.has(k));
+  const semAllAcrossSelected = semAllKeys.length > 0 && semAllKeys.every(k => selectedRowKeys.has(k));
+  const toggleSelectPage = () => {
+    setSemSelectionMode('page');
+    setSelectedRowKeys(prev => {
+      const next = new Set(prev);
+      if (semAllOnPageSelected) semPageKeys.forEach(k => next.delete(k));
+      else semPageKeys.forEach(k => next.add(k));
+      return next;
+    });
+  };
+  const selectAllAcrossPages = () => { setSemSelectionMode('all'); setSelectedRowKeys(new Set(semAllKeys)); };
+  const toggleRowSelected = (key: string) => {
+    setSemSelectionMode(null);
+    setSelectedRowKeys(prev => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+  };
 
   /* Sea Export Manifest — Track File Upload tab shows the dedicated upload-tracking table;
      a File Reference Number search (top search bar) further filters within it. */
@@ -958,19 +979,11 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                   {activeMenu !== 'flightManifest' && (
                     <div className="flex items-center gap-[8px]">
                       <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>Drafts</span>
-                      <button onClick={() => { setShowDrafts(d => !d); setPage(1); setSelectedRowKeys(new Set()); }}
+                      <button onClick={() => { setShowDrafts(d => !d); setPage(1); setSelectedRowKeys(new Set()); setSemSelectionMode(null); }}
                         className={`relative w-[48px] h-[28px] rounded-full transition-colors ${showDrafts ? 'bg-[#1360d2]' : 'bg-[#e2ebf9]'}`}>
                         <div className={`absolute top-[3px] size-[22px] rounded-full bg-white shadow transition-transform ${showDrafts ? 'translate-x-[22px]' : 'translate-x-[3px]'}`} />
                       </button>
                     </div>
-                  )}
-                  {activeMenu === 'seaExportManifest' && selectedRowKeys.size > 0 && (
-                    <button onClick={() => setBulkDeleteOpen(true)}
-                      className="flex items-center gap-[8px] h-[48px] px-[16px] rounded-[4px] text-[16px] text-white hover:opacity-90 transition-opacity"
-                      style={{ background: '#dc3545', fontFamily: font, fontWeight: 500 }}>
-                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" /></svg>
-                      Delete ({selectedRowKeys.size})
-                    </button>
                   )}
                   <button onClick={() => setShowColModal(true)}
                     className="flex items-center gap-[8px] h-[48px] px-[14px] rounded-[4px] border border-[#d5ddfb] bg-white text-[16px] text-[#0e1b3d] hover:bg-[#f0f4ff] transition-colors"
@@ -1167,6 +1180,43 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                 })()
               ) : (
               <div className="pb-[20px] flex-1" style={{ position: 'relative' }}>
+                {activeMenu === 'seaExportManifest' && (
+                  <div className="flex items-center justify-between flex-wrap gap-[12px] mb-[12px] pt-[12px]" style={{ borderTop: '1px solid #e1e7f4' }}>
+                    <div className="flex items-center gap-[10px] text-[15px] text-[#5a6282]" style={{ fontFamily: font }}>
+                      <span>{semAllKeys.length} BOL{semAllKeys.length !== 1 ? 's' : ''} available</span>
+                      {selectedRowKeys.size > 0 && (
+                        <>
+                          <span className="inline-block size-[4px] rounded-full" style={{ background: '#a7abb2' }} />
+                          <span style={{ color: '#1360d2', fontWeight: 500 }}>{selectedRowKeys.size} selected</span>
+                        </>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-[24px]">
+                      <label className="flex items-center gap-[8px] text-[15px] text-[#0e1b3d] cursor-pointer" style={{ fontFamily: font }}>
+                        <span className="size-[18px] rounded-full flex-shrink-0 inline-flex items-center justify-center" style={{ border: `2px solid ${semSelectionMode === 'page' ? '#1360d2' : '#a7abb2'}` }}>
+                          {semSelectionMode === 'page' && <span className="block size-[8px] rounded-full" style={{ background: '#1360d2' }} />}
+                        </span>
+                        <input type="radio" className="sr-only" checked={semSelectionMode === 'page'} onChange={toggleSelectPage} />
+                        Delete {semPageKeys.length} selected per page
+                      </label>
+                      <label className="flex items-center gap-[8px] text-[15px] text-[#0e1b3d] cursor-pointer" style={{ fontFamily: font }}>
+                        <span className="size-[18px] rounded-full flex-shrink-0 inline-flex items-center justify-center" style={{ border: `2px solid ${semSelectionMode === 'all' ? '#1360d2' : '#a7abb2'}` }}>
+                          {semSelectionMode === 'all' && <span className="block size-[8px] rounded-full" style={{ background: '#1360d2' }} />}
+                        </span>
+                        <input type="radio" className="sr-only" checked={semSelectionMode === 'all'} onChange={selectAllAcrossPages} />
+                        Delete all {semAllKeys.length} BOL's
+                      </label>
+                      {selectedRowKeys.size > 0 && (
+                        <button onClick={() => setBulkDeleteOpen(true)}
+                          className="flex items-center gap-[6px] h-[36px] px-[14px] rounded-[4px] text-[14px] text-white hover:opacity-90 transition-opacity flex-shrink-0"
+                          style={{ background: '#dc3545', fontFamily: font, fontWeight: 500 }}>
+                          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" /></svg>
+                          Delete
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
                 {!config.noScrollArrows && (
                   <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={effectiveLockedColumns.reduce((s, c) => s + lockedColW(c), 0)} />
                 )}
@@ -1185,12 +1235,12 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                     <tr>
                       {activeMenu === 'seaExportManifest' && (
                         <th style={{ width: 44, minWidth: 44, padding: '10px 12px 10px 16px', borderTopLeftRadius: 8, borderBottomLeftRadius: 8, background: '#a6c2e9' }}>
-                          <button type="button" role="checkbox" aria-checked={semAllSelected} aria-label="Select all rows" onClick={toggleSelectAll}
+                          <button type="button" role="checkbox" aria-checked={semAllOnPageSelected} aria-label="Select all rows" onClick={toggleSelectPage}
                             className="size-[20px] rounded-[4px] flex-shrink-0 inline-flex items-center justify-center"
-                            style={{ border: `2px solid ${semAllSelected || semSomeSelected ? '#1360d2' : '#a7abb2'}`, background: semAllSelected ? '#1360d2' : '#fff' }}>
-                            {semAllSelected ? (
+                            style={{ border: `2px solid ${semAllOnPageSelected || semSomeOnPageSelected ? '#1360d2' : '#a7abb2'}`, background: semAllOnPageSelected ? '#1360d2' : '#fff' }}>
+                            {semAllOnPageSelected ? (
                               <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8l3 3 7-7" /></svg>
-                            ) : semSomeSelected ? (
+                            ) : semSomeOnPageSelected ? (
                               <span className="block" style={{ width: 10, height: 2, background: '#1360d2', borderRadius: 1 }} />
                             ) : null}
                           </button>
@@ -1484,6 +1534,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
               <button type="button" onClick={() => {
                   setDeletedRowKeys(prev => { const next = new Set(prev); selectedRowKeys.forEach(k => next.add(k)); return next; });
                   setSelectedRowKeys(new Set());
+    setSemSelectionMode(null);
                   setBulkDeleteOpen(false);
                 }}
                 className="h-[42px] px-[22px] rounded-[3px] border-2 bg-white text-[15px] inline-flex items-center gap-[8px] hover:bg-[#fff7ee] transition-colors"
