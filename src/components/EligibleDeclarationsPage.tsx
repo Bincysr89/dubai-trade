@@ -516,6 +516,12 @@ const ROWS: Row[] = [
   { declarationNo: '404-09988123-24', declarationDate: '07/02/2024', depositType: 'Alternative Duty Deposit',          declarationCategory: 'Temporary Admission',           depositAmount: 'Dh 5,000', depositMethod: 'Standing Guarantee', claimExpiry: '07/01/2025', exportExpiry: '05/15/2025', remarks: '—', kind: 'requestExt', importerCode: 'A180', accountNumber: 'ACC-100567' },
   { declarationNo: '201-07612301-24', declarationDate: '08/14/2024', depositType: 'Alternative Duty Deposit',          declarationCategory: 'Transit (ROW to ROW)',          depositAmount: 'Dh 2,200', depositMethod: 'Cash',               claimExpiry: '06/15/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request', importerCode: 'A180' },
   { declarationNo: '209-03312099-24', declarationDate: '10/05/2024', depositType: 'Alternative Duty Deposit',          declarationCategory: 'FZ Export',                    depositAmount: 'Dh 3,800', depositMethod: 'Cash',               claimExpiry: '05/01/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request', importerCode: 'A220' },
+  // Anti Dumping Deposit
+  { declarationNo: '112-06617204-24', declarationDate: '09/29/2024', depositType: 'Anti Dumping Deposit',              declarationCategory: 'Import for Re Export',          depositAmount: 'Dh 2,600', depositMethod: 'Standing Guarantee', claimExpiry: '05/10/2025', exportExpiry: '04/12/2025', remarks: '—', kind: 'requestExt', importerCode: 'A180', accountNumber: 'ACC-101390' },
+  { declarationNo: '213-04412876-24', declarationDate: '10/18/2024', depositType: 'Anti Dumping Deposit',              declarationCategory: 'FZ Export',                    depositAmount: 'Dh 1,900', depositMethod: 'Cash',               claimExpiry: '06/02/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request', importerCode: 'A220' },
+  // Safeguard Deposit
+  { declarationNo: '116-07721390-24', declarationDate: '10/02/2024', depositType: 'Safeguard Deposit',                 declarationCategory: 'Import for Re Export',          depositAmount: 'Dh 3,400', depositMethod: 'Standing Guarantee', claimExpiry: '05/22/2025', exportExpiry: '04/25/2025', remarks: '—', kind: 'requestExt', importerCode: 'A350', accountNumber: 'ACC-101422' },
+  { declarationNo: '217-05589904-24', declarationDate: '11/09/2024', depositType: 'Safeguard Deposit',                 declarationCategory: 'Temporary Admission',           depositAmount: 'Dh 2,100', depositMethod: 'Cash',               claimExpiry: '06/20/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request', importerCode: 'A220' },
   // Cargo Transfer Deposit
   { declarationNo: '301-08821001-24', declarationDate: '10/21/2024', depositType: 'Cargo Transfer Deposit',            declarationCategory: 'Cargo Transfer from CTO to CH', depositAmount: 'Dh 1,500', depositMethod: 'Cash',               claimExpiry: '07/12/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request', importerCode: 'A220' },
   { declarationNo: '302-04490111-24', declarationDate: '11/02/2024', depositType: 'Cargo Transfer Deposit',            declarationCategory: 'Cargo Transfer from CH to CH',  depositAmount: 'Dh 2,000', depositMethod: 'Cash',               claimExpiry: '06/01/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request', importerCode: 'A220' },
@@ -616,6 +622,8 @@ const CLAIM_TYPE_LABEL: Record<ClaimType, string> = {
 const CLAIM_TYPE_DEPOSITS: Record<ClaimType, string[]> = {
   refundDeposit: [
     'Alternative Duty Deposit',
+    'Anti Dumping Deposit',
+    'Safeguard Deposit',
     'Cargo Transfer Deposit',
     'Duty Deposit',
     'Missing Document Deposit',
@@ -1175,6 +1183,8 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
                 {claimType === 'refundDeposit' && (() => {
                   const CT_OPTIONS = [
                     { label: 'Alternative Duty Deposit',          value: 'Alternative Duty Deposit' },
+                    { label: 'Anti Dumping Deposit',               value: 'Anti Dumping Deposit' },
+                    { label: 'Safeguard Deposit',                  value: 'Safeguard Deposit' },
                     { label: 'Cargo Transfer Deposit',            value: 'Cargo Transfer Deposit' },
                     { label: 'Duty Deposit',                      value: 'Duty Deposit' },
                     { label: 'Missing Document Deposit',          value: 'Missing Document Deposit' },

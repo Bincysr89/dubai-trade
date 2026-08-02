@@ -5,7 +5,6 @@ import type { Row } from './EligibleDeclarationsPage';
 import { type ChargeDetail, type OutboundState } from './RDChargeFlowPage';
 import { UploadedDocsByDeclaration, type UploadedDoc } from './NonRemittanceDocumentsPage';
 import { DeclarationDetailsSection } from './RefundDepositsClaimViewPage';
-import { DateInput } from './DatePicker';
 import FloatingField from './FloatingField';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
@@ -65,6 +64,90 @@ function AmendReasonSelect({ value, onChange }: { value: string; onChange: (v: s
   );
 }
 
+/* Floating-label dropdown matching FloatingField's visual language (e.g. Refund Mode). */
+function FloatingSelect({ label, required, value, onChange, options }: { label: string; required?: boolean; value: string; onChange: (v: string) => void; options: string[] }) {
+  const [open, setOpen] = useState(false);
+  const [pos,  setPos]  = useState<{ top: number; left: number; width: number } | null>(null);
+  const btnRef          = useRef<HTMLButtonElement>(null);
+  const toggle = () => {
+    if (btnRef.current) { const r = btnRef.current.getBoundingClientRect(); setPos({ top: r.bottom + 2, left: r.left, width: r.width }); }
+    setOpen(o => !o);
+  };
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: MouseEvent) => { if (btnRef.current && !btnRef.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [open]);
+  return (
+    <>
+      <button ref={btnRef} type="button" onClick={toggle} aria-haspopup="listbox" aria-expanded={open}
+        className="bg-white rounded-[4px] flex items-center px-[16px] gap-[8px] text-left transition-colors relative w-full"
+        style={{ height: 56, border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}`, fontFamily: font, cursor: 'pointer' }}>
+        <span className="absolute pointer-events-none transition-all"
+          style={{ left: (open || value) ? 10 : 16, top: (open || value) ? -9 : '50%', transform: (open || value) ? 'none' : 'translateY(-50%)',
+            background: (open || value) ? '#fff' : 'transparent', padding: (open || value) ? '0 4px' : 0,
+            fontSize: (open || value) ? 12 : 16, color: open ? '#1360d2' : '#697498', fontFamily: font, transitionDuration: '120ms', zIndex: 1 }}>
+          {required && <span style={{ color: '#ea2428' }}>* </span>}{label}
+        </span>
+        <span className="flex-1 text-[16px] whitespace-nowrap" style={{ color: '#0e1b3d' }}>{value}</span>
+        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"
+          className={`transition-transform flex-shrink-0 ${open ? 'rotate-180' : ''}`}>
+          <path d="M5 8l5 5 5-5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+      {open && pos && (
+        <div className="py-[4px]" role="listbox"
+          style={{ position: 'fixed', top: pos.top, left: pos.left, width: Math.max(pos.width, 160), zIndex: 9999,
+            background: '#fff', borderRadius: 8, border: '1px solid #f0f0f5', boxShadow: '0px 2px 16px 0px rgba(0,0,0,0.12)', overflow: 'hidden', fontFamily: font }}>
+          {options.map(o => {
+            const isSel = o === value;
+            return (
+              <button key={o} type="button" role="option" aria-selected={isSel}
+                onMouseDown={e => { e.preventDefault(); onChange(o); setOpen(false); }}
+                className="block w-full text-left px-[14px] py-[10px] text-[16px] transition-colors hover:bg-[#e2ebf9]"
+                style={{ background: isSel ? '#e2ebf9' : 'transparent', color: isSel ? '#1360d2' : '#0e1b3d', fontWeight: isSel ? 500 : 400, fontFamily: font }}>
+                {o}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </>
+  );
+}
+
+const REFUND_MODES = ['Bank Transfer', 'Cheque'];
+
+const BENEFICIARIES = [
+  { code: 'AE-9106286', name: 'SW Logistics LLC' },
+  { code: 'AE-1019056', name: 'Consolidated Shipping Services LLC' },
+];
+const BENEFICIARY_OPTIONS = BENEFICIARIES.map(b => `${b.code} - ${b.name}`);
+
+const BANK_ACCOUNTS = [
+  { no: '1002345678', bankName: 'Emirates NBD', iban: 'AE07 0331 2345 6789 0123 456' },
+  { no: '2003456789', bankName: 'Abu Dhabi Commercial Bank', iban: 'AE86 0030 0123 4567 8901 234' },
+];
+
+/* Read-only, non-interactive counterpart to FloatingField — for values auto-derived from another
+   selection (e.g. Bank Name / IBAN once a Bank Account No. is picked) rather than typed in. */
+function ReadOnlyField({ label, value }: { label: string; value: string }) {
+  const floated = value.length > 0;
+  return (
+    <div className="relative" style={{ height: 56 }}>
+      <div className="h-full flex items-center px-[16px] rounded-[4px]" style={{ border: '1px solid #e6eaf5', background: '#f8fafd' }}>
+        <span className="text-[16px] whitespace-nowrap overflow-hidden text-ellipsis" style={{ color: value ? '#0e1b3d' : '#b0b8d0', fontFamily: font }}>{value || '—'}</span>
+      </div>
+      <span className="absolute pointer-events-none"
+        style={{ left: 10, top: floated ? -9 : 18, background: floated ? '#f8fafd' : 'transparent', padding: floated ? '0 4px' : 0,
+          fontSize: floated ? 12 : 16, color: '#697498', fontFamily: font, transitionDuration: '120ms' }}>
+        {label}
+      </span>
+    </div>
+  );
+}
+
 type Props = {
   onBack: () => void;
   onSubmit: () => void;
@@ -85,21 +168,39 @@ type Props = {
   outbounds?: OutboundState;
   /** Documents uploaded on the Upload Documents step, shown read-only grouped by declaration. */
   uploadedDocs?: UploadedDoc[];
+  /** Validity Extension flow: the declaration being extended and the number of days requested —
+      renders a read-only Current vs New Expiry comparison card when both are set. */
+  extensionRow?: Row;
+  extensionDays?: string;
 };
 
-export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPreview, onViewClaim, selectedRows, paymentMode = 'Credit/Debit Account', accountNo = '1223193-SW LOGISTICS LLC', title, steps, activeIndex = 3, claimType = 'Non Remittance Claim', showAmendment = false, chargeDetails, outbounds, uploadedDocs }: Props) {
+/** "MM/DD/YYYY" + N days -> "MM/DD/YYYY", matching the date format used across this app's mock data. */
+function addDaysToDate(dateStr: string, days: number): string {
+  const [m, d, y] = dateStr.split('/').map(Number);
+  if (!m || !d || !y) return dateStr;
+  const dt = new Date(y, m - 1, d);
+  dt.setDate(dt.getDate() + days);
+  return `${String(dt.getMonth() + 1).padStart(2, '0')}/${String(dt.getDate()).padStart(2, '0')}/${dt.getFullYear()}`;
+}
+
+export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPreview, onViewClaim, selectedRows, paymentMode = 'Credit/Debit Account', accountNo = '1223193-SW LOGISTICS LLC', title, steps, activeIndex = 3, claimType = 'Non Remittance Claim', showAmendment = false, chargeDetails, outbounds, uploadedDocs, extensionRow, extensionDays }: Props) {
   const [declared, setDeclared] = useState(false);
   const [amendReason, setAmendReason] = useState('');
   const [amendReasonDesc, setAmendReasonDesc] = useState('');
-  const [cashReceiptNo, setCashReceiptNo] = useState('');
-  const [cashPaymentDate, setCashPaymentDate] = useState('');
+  const [beneficiaryCodeName, setBeneficiaryCodeName] = useState('');
+  const [refundMode, setRefundMode] = useState('');
+  const [bankAccountNo, setBankAccountNo] = useState('');
+  const selectedBankAccount = BANK_ACCOUNTS.find(a => a.no === bankAccountNo);
   const isCash = paymentMode === 'Cash';
   const parseAED = (s: string) => parseFloat((s || '').replace(/[^0-9.]/g, '')) || 0;
   const totalClaimAmount = chargeDetails && chargeDetails.length > 0
     ? chargeDetails.reduce((sum, d) => sum + parseAED(d.claimAmount), 0)
     : null;
   const depositMethods = chargeDetails ? Array.from(new Set(chargeDetails.map(d => d.depositMethod).filter(Boolean))) : [];
-  const depositMethodDisplay = depositMethods.length === 0 ? '—' : depositMethods.length === 1 ? depositMethods[0] : 'Multiple';
+  // Falls back to the payment mode actually selected on the Payment Details step (e.g. "Cash")
+  // whenever there's no per-declaration deposit method to read from (Validity Extension, etc.),
+  // so this field always reflects the user's selection instead of sticking at "—".
+  const depositMethodDisplay = depositMethods.length === 0 ? (paymentMode || '—') : depositMethods.length === 1 ? depositMethods[0] : 'Multiple';
 
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full" style={{ fontFamily: font }}>
@@ -194,16 +295,55 @@ export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPre
             </div>
           </div>
 
+          {/* Validity Extension — Current vs New Expiry comparison */}
+          {extensionRow && extensionDays && (
+            <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+              <div className="px-[24px] py-[16px] border-b border-[#eef1f6]">
+                <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Validity Extension Details</p>
+                <p className="text-[14px] text-[#697498] mt-[2px]">Extension of {extensionDays} day{extensionDays === '1' ? '' : 's'} for {extensionRow.declarationNo}</p>
+              </div>
+              <div className="px-[24px] py-[20px] overflow-x-auto">
+                <table style={{ width: '100%', minWidth: 640, borderCollapse: 'separate', borderSpacing: 0, fontFamily: font }}>
+                  <thead>
+                    <tr>
+                      {['Charge Type', 'Current Expiry', 'New Expiry'].map((h, i) => (
+                        <th key={h} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, fontSize: 16, color: '#051937', whiteSpace: 'nowrap', borderRadius: i === 0 ? '8px 0 0 0' : i === 2 ? '0 8px 0 0' : 0 }}>
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style={{ padding: '14px 12px', borderBottom: '1px solid #eef1f6' }}>
+                        <span className="text-[16px] text-[#051937]">{extensionRow.depositType}</span>
+                      </td>
+                      <td style={{ padding: '14px 12px', borderBottom: '1px solid #eef1f6' }}>
+                        <span className="text-[16px]" style={{ color: '#dc3545' }}>{extensionRow.claimExpiry}</span>
+                      </td>
+                      <td style={{ padding: '14px 12px', borderBottom: '1px solid #eef1f6' }}>
+                        <span className="text-[16px]" style={{ color: '#1aac72', fontWeight: 500 }}>{addDaysToDate(extensionRow.claimExpiry, parseInt(extensionDays, 10) || 0)}</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
           {/* Additional Details — Cash payment only */}
           {isCash && (
             <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
               <div className="px-[24px] py-[16px] border-b border-[#eef1f6]">
-                <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Additional Details</p>
+                <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Refund Mode Details</p>
                 <p className="text-[14px] text-[#697498] mt-[2px]">Cash payment requires the following details.</p>
               </div>
               <div className="px-[24px] py-[20px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-[24px] gap-y-[20px]">
-                <FloatingField label="Cash Receipt Number" required value={cashReceiptNo} onChange={setCashReceiptNo} placeholder="Enter cash receipt number" />
-                <DateInput label="Payment Date" required value={cashPaymentDate} onChange={setCashPaymentDate} />
+                <FloatingSelect label="Beneficiary Code And Name" required value={beneficiaryCodeName} onChange={setBeneficiaryCodeName} options={BENEFICIARY_OPTIONS} />
+                <FloatingSelect label="Refund Mode" required value={refundMode} onChange={setRefundMode} options={REFUND_MODES} />
+                <FloatingSelect label="Bank Account No." required value={bankAccountNo} onChange={setBankAccountNo} options={BANK_ACCOUNTS.map(a => a.no)} />
+                <ReadOnlyField label="Bank Name" value={selectedBankAccount?.bankName ?? ''} />
+                <ReadOnlyField label="IBAN Account" value={selectedBankAccount?.iban ?? ''} />
               </div>
             </div>
           )}

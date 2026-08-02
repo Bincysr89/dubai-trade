@@ -31,6 +31,13 @@ export const NR_CLAIM_STEPS: { id: string; label: string }[] = [
   { id: 'review',    label: 'Review & Submit' },
 ];
 
+export const VALIDITY_EXT_STEPS: { id: string; label: string }[] = [
+  { id: 'eligible', label: 'Eligible Declarations' },
+  { id: 'details',  label: 'Extension Details' },
+  { id: 'payment',  label: 'Payment Details' },
+  { id: 'review',   label: 'Review & Submit' },
+];
+
 export default function ClaimStepper({ activeIndex, steps }: { activeIndex: number; steps?: { id: string; label: string }[] }) {
   const list = steps ?? CLAIM_STEPS;
   const trailColor = (i: number) => {

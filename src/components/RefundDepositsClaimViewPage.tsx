@@ -412,7 +412,7 @@ function DocDeclarationCard({ declNo, docs, open, onToggle }: {
         </svg>
         <span className="text-[16px] text-[#1360d2]" style={{ fontWeight: 500, fontFamily: font }}>Declaration No. {declNo}</span>
         <span className="text-[14px] px-[10px] py-[3px] rounded-[12px]" style={{ background: open ? '#fff' : '#e2ebf9', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: font }}>
-          {docs.length} file{docs.length !== 1 ? 's' : ''}
+          {docs.length} document{docs.length !== 1 ? 's' : ''}
         </span>
         <span className="text-[14px] text-[#697498] ml-auto" style={{ fontFamily: font, flexShrink: 0 }}>{open ? 'Collapse' : 'Expand'}</span>
       </button>

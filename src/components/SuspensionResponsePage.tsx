@@ -55,6 +55,37 @@ const DOC_TYPES = [
   { docName: 'Other Documents', docNature: 'Any',  mandatory: false },
 ];
 
+const OTHER_DOC_TYPES = ['Certificate of Origin', 'Insurance Certificate', 'Bank Guarantee', 'Other'];
+
+/* Plain bordered dropdown — used for the Other Documents type detail (dropdown, not free text). */
+function PlainSelect({ value, onChange, options, placeholder = 'Select document type' }: { value: string; onChange: (v: string) => void; options: string[]; placeholder?: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative">
+      <button type="button" onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center px-[12px]"
+        style={{ height: 44, border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}`, borderRadius: 4, fontFamily: font, background: '#fff', cursor: 'pointer' }}>
+        <span className="flex-1 text-left text-[16px]" style={{ color: value ? '#0e1b3d' : '#697498' }}>{value || placeholder}</span>
+        <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#697498" strokeWidth="2" className={`flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}>
+          <path d="M5 8l5 5 5-5" />
+        </svg>
+      </button>
+      {open && (
+        <ul className="absolute z-[50] left-0 right-0 bg-white rounded-[6px] py-[4px]"
+          style={{ top: 48, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
+          {options.map(opt => (
+            <li key={opt} onClick={() => { onChange(opt); setOpen(false); }}
+              className="px-[12px] py-[10px] text-[16px] cursor-pointer hover:bg-[#e2ebf9] transition-colors"
+              style={{ color: opt === value ? '#1360d2' : '#0e1b3d', fontWeight: opt === value ? 500 : 400, fontFamily: font }}>
+              {opt}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 const REQUEST_DETAILS = [
   { label: 'Request Date',             value: '08/07/2026' },
   { label: 'Request Status',           value: 'Suspended' },
@@ -79,9 +110,14 @@ type Props = {
 
 export default function SuspensionResponsePage({ onBack, onBackToListing, onSubmit, breadcrumbParent = 'Cargo Transfer', title = 'Suspension Response - CT - 601232423898', successHeading, successMessage, requestNumber = '2588017' }: Props) {
   const [response, setResponse] = useState('');
-  const [selectedDoc, setSelectedDoc] = useState(0);
+  const [selectedDocTypes, setSelectedDocTypes] = useState<Set<string>>(new Set());
   const [otherDocType, setOtherDocType] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const toggleDocType = (name: string) => setSelectedDocTypes(prev => {
+    const next = new Set(prev);
+    if (next.has(name)) next.delete(name); else next.add(name);
+    return next;
+  });
 
   const handleSubmit = () => { if (successHeading) setSubmitted(true); else onSubmit(); };
 
@@ -205,20 +241,22 @@ export default function SuspensionResponsePage({ onBack, onBackToListing, onSubm
                 <p className="text-[16px] text-[#697498]">Choose the document type and upload the supporting file.</p>
               </div>
 
-              {/* Document types — bordered radio cards */}
+              {/* Document types — checkboxes, same pattern as the raise new claim flow */}
               <div className="flex flex-col gap-[10px]">
-                <p className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Select Document Type</p>
+                <p className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Select Document Type <span style={{ color: '#697498', fontWeight: 400 }}>(select all that apply)</span></p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-[12px] gap-y-[8px]">
-                  {DOC_TYPES.map((doc, i) => {
-                    const active = selectedDoc === i;
+                  {DOC_TYPES.map((doc) => {
+                    const active = selectedDocTypes.has(doc.docName);
                     return (
-                      <label key={doc.docName} onClick={() => setSelectedDoc(i)}
+                      <label key={doc.docName} onClick={() => toggleDocType(doc.docName)}
                         className="flex items-start gap-[10px] px-[12px] py-[10px] rounded-[6px] cursor-pointer transition-colors"
                         style={{ background: active ? '#f0f5ff' : '#f8fafd', border: `1.5px solid ${active ? '#1360d2' : '#e6eaf5'}` }}>
-                        <span className="size-[17px] rounded-full flex-shrink-0 inline-flex items-center justify-center mt-[2px]"
-                          style={{ border: `2px solid ${active ? '#1360d2' : '#a7abb2'}`, background: '#fff' }}>
-                          {active && <span className="size-[7px] rounded-full" style={{ background: '#1360d2' }} />}
+                        <span className="size-[17px] rounded-[4px] flex-shrink-0 inline-flex items-center justify-center mt-[2px]"
+                          style={{ border: `2px solid ${active ? '#1360d2' : '#a7abb2'}`, background: active ? '#1360d2' : '#fff' }}>
+                          {active && <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7l3 3 5-6" /></svg>}
                         </span>
+                        <input type="checkbox" className="sr-only" name="doc-type" value={doc.docName}
+                          checked={active} onChange={() => toggleDocType(doc.docName)} />
                         <div className="flex items-center flex-wrap gap-[5px]">
                           <span className="text-[16px] leading-snug" style={{ color: active ? '#0e1b3d' : '#455174', fontWeight: active ? 500 : 400 }}>
                             {doc.mandatory && <span style={{ color: '#dc3545', marginRight: 2 }}>*</span>}{doc.docName}
@@ -232,20 +270,13 @@ export default function SuspensionResponsePage({ onBack, onBackToListing, onSubm
                     );
                   })}
                 </div>
-                {/* Other Documents — enter custom type */}
-                {selectedDoc === DOC_TYPES.length - 1 && (
+                {/* Other Documents checked — document type detail is a dropdown, not free text */}
+                {selectedDocTypes.has('Other Documents') && (
                   <div className="flex flex-col gap-[6px] mt-[4px]" style={{ maxWidth: 420 }}>
                     <label className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>
                       <span className="text-[#ea2428]">* </span>Document Type
                     </label>
-                    <input
-                      type="text"
-                      value={otherDocType}
-                      onChange={(e) => setOtherDocType(e.target.value)}
-                      placeholder="Enter document type"
-                      className="h-[44px] w-full border rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none focus:border-[#1360d2] transition-colors"
-                      style={{ borderColor: '#d5ddfb', fontFamily: font }}
-                    />
+                    <PlainSelect value={otherDocType} onChange={setOtherDocType} options={OTHER_DOC_TYPES} />
                   </div>
                 )}
               </div>

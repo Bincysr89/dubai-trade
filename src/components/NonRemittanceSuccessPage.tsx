@@ -5,15 +5,20 @@ const font = "'Dubai', 'Segoe UI', sans-serif";
 type Props = {
   onBack: () => void;
   onViewAck: () => void;
-  onViewClaim: () => void;
+  onViewClaim?: () => void;
   onViewDocs?: () => void;
   /** Overrides for reuse outside the NR flow (e.g. missing-doc refund of deposits). */
   title?: string;
   heading?: string;
   message?: string;
+  /** Overrides for reuse outside claim flows (e.g. Validity Extension, which has no claim). */
+  requestNumberLabel?: string;
+  registrationNumberLabel?: string;
+  /** Hides the "View Claim" button — set when the request being confirmed isn't a claim. */
+  hideViewClaim?: boolean;
 };
 
-export default function NonRemittanceSuccessPage({ onBack, onViewAck, onViewClaim, onViewDocs, title, heading, message }: Props) {
+export default function NonRemittanceSuccessPage({ onBack, onViewAck, onViewClaim, onViewDocs, title, heading, message, requestNumberLabel = 'Claim Request Number:', registrationNumberLabel = 'Claim No.:', hideViewClaim = false }: Props) {
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full" style={{ fontFamily: font }}>
       {/* Breadcrumb */}
@@ -64,12 +69,12 @@ export default function NonRemittanceSuccessPage({ onBack, onViewAck, onViewClai
           {/* Reference chips */}
           <div className="flex flex-col sm:flex-row items-center gap-[12px]">
             <div className="border border-[#ebebeb] rounded-[6px] px-[16px] py-[10px] flex items-center gap-[8px]">
-              <span className="text-[16px] text-[#696f83]">Claim Request Number:</span>
+              <span className="text-[16px] text-[#696f83]">{requestNumberLabel}</span>
               <span className="text-[16px] text-[#1360d2]" style={{ fontWeight: 600 }}>2588017</span>
             </div>
             <div className="border border-[#ebebeb] rounded-[6px] px-[16px] py-[10px] flex items-center gap-[8px]">
-              <span className="text-[16px] text-[#696f83]">Claim No. &amp; Version:</span>
-              <span className="text-[16px] text-[#1360d2]" style={{ fontWeight: 600 }}>2420390-1 (Under Processing)</span>
+              <span className="text-[16px] text-[#696f83]">{registrationNumberLabel}</span>
+              <span className="text-[16px] text-[#1360d2]" style={{ fontWeight: 600 }}>2420390 (Under Processing)</span>
             </div>
           </div>
 
@@ -89,13 +94,15 @@ export default function NonRemittanceSuccessPage({ onBack, onViewAck, onViewClai
             >
               Print Claim Acknowledgement Receipt
             </button>
-            <button
-              onClick={onViewClaim}
-              className="h-[52px] px-[32px] rounded-[4px] text-[16px] text-white hover:bg-[#0f4fb5] transition-colors"
-              style={{ background: '#1360d2', fontFamily: font, fontWeight: 500 }}
-            >
-              View Claim
-            </button>
+            {!hideViewClaim && (
+              <button
+                onClick={onViewClaim}
+                className="h-[52px] px-[32px] rounded-[4px] text-[16px] text-white hover:bg-[#0f4fb5] transition-colors"
+                style={{ background: '#1360d2', fontFamily: font, fontWeight: 500 }}
+              >
+                View Claim
+              </button>
+            )}
           </div>
         </div>
       </div>

@@ -27,7 +27,7 @@ import EligibleDeclarationsPage from './EligibleDeclarationsPage';
 import RaiseClaimRequestPage from './RaiseClaimRequestPage';
 import type { ClaimType } from './ClaimTypeSelectionPage';
 import { RDChargeFlowPage, isMissingDocCharge, type OutboundState, type ChargeDetail } from './RDChargeFlowPage';
-import { REFUND_DEPOSIT_STEPS, REFUND_DEPOSIT_STEPS_NO_DOCS, REFUND_DEPOSIT_AMEND_STEPS } from './ClaimStepper';
+import { REFUND_DEPOSIT_STEPS, REFUND_DEPOSIT_STEPS_NO_DOCS, REFUND_DEPOSIT_AMEND_STEPS, VALIDITY_EXT_STEPS } from './ClaimStepper';
 import CargoTransferPrePage from './CargoTransferPrePage';
 import CargoTransferRequestPage from './CargoTransferRequestPage';
 import CargoTransferNewRequestPage from './CargoTransferNewRequestPage';
@@ -53,12 +53,15 @@ import CargoTransferHistoryPage from './CargoTransferHistoryPage';
 import SuspensionHistoryPage from './SuspensionHistoryPage';
 import SuspensionHistoryViewPage from './SuspensionHistoryViewPage';
 import SuspensionResponsePage from './SuspensionResponsePage';
+import SuspensionResponseListPage from './SuspensionResponseListPage';
 import SuspensionSuccessModal from './SuspensionSuccessModal';
 import NonRemittanceDocumentsPage, { type UploadedDoc as NRUploadedDoc } from './NonRemittanceDocumentsPage';
 import ClaimTypeEntryPage from './ClaimTypeEntryPage';
 import NonRemittanceChargesPage from './NonRemittanceChargesPage';
 import NonRemittanceReviewPage from './NonRemittanceReviewPage';
 import NonRemittanceSuccessPage from './NonRemittanceSuccessPage';
+import ValidityExtensionEligiblePage from './ValidityExtensionEligiblePage';
+import ValidityExtensionDetailsPage, { type ExtensionDetails } from './ValidityExtensionDetailsPage';
 import NonRemittanceAckPage from './NonRemittanceAckPage';
 import NonRemittanceClaimViewPage from './NonRemittanceClaimViewPage';
 import RefundDepositsClaimViewPage from './RefundDepositsClaimViewPage';
@@ -250,7 +253,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
   const [stepperReturnStep, setStepperReturnStep] = useState(0);
   const [cargoPreValues, setCargoPreValues] = useState<{ cargoChannel: string; clientRef: string; carrierReg: string; transferType: string }>({ cargoChannel: 'Sea', clientRef: '', carrierReg: '', transferType: '' });
   const [cargoFormValues, setCargoFormValues] = useState<{ clientRef: string; carrierReg: string; mawb: string; transferorBizCode: string; transferorPremCode: string; transfereeBizCode: string; transfereePremCode: string }>({ clientRef: '', carrierReg: '', mawb: '', transferorBizCode: '', transferorPremCode: '', transfereeBizCode: '', transfereePremCode: '' });
-  type ClaimSubStep = 'list' | 'claimTypeEntry' | 'eligible' | 'eligibleDeclView' | 'amendDeclDetails' | 'chargeDetails' | 'rdDocuments' | 'rdPayment' | 'rdReview' | 'nonRemittanceDocs' | 'nonRemittanceCharges' | 'nonRemittanceReview' | 'nonRemittanceSuccess' | 'nonRemittanceAck' | 'nonRemittanceClaimView' | 'rdClaimView' | 'claimListView' | 'claimHistory' | 'cancelClaim' | 'amendClaim' | 'claimDocs' | 'claimSuspension' | 'rdNrSuccess' | 'nrPaymentPending' | 'nrPaymentProcessing' | 'nrPaymentSuccess' | 'nrPaymentRejected' | 'rdPaymentPending' | 'rdPaymentProcessing' | 'rdPaymentSuccess' | 'rdPaymentRejected';
+  type ClaimSubStep = 'list' | 'claimTypeEntry' | 'eligible' | 'eligibleDeclView' | 'amendDeclDetails' | 'chargeDetails' | 'rdDocuments' | 'rdPayment' | 'rdReview' | 'nonRemittanceDocs' | 'nonRemittanceCharges' | 'nonRemittanceReview' | 'nonRemittanceSuccess' | 'nonRemittanceAck' | 'nonRemittanceClaimView' | 'rdClaimView' | 'claimListView' | 'claimHistory' | 'cancelClaim' | 'amendClaim' | 'claimDocs' | 'claimSuspensionList' | 'claimSuspension' | 'rdNrSuccess' | 'nrPaymentPending' | 'nrPaymentProcessing' | 'nrPaymentSuccess' | 'nrPaymentRejected' | 'rdPaymentPending' | 'rdPaymentProcessing' | 'rdPaymentSuccess' | 'rdPaymentRejected' | 'validityExtEligible' | 'validityExtDetails' | 'validityExtPayment' | 'validityExtReview' | 'validityExtSuccess';
   const [claimListDeclNo, setClaimListDeclNo] = useState<string>('');
   const [claimListDeclViewOpen, setClaimListDeclViewOpen] = useState(false);
   const [claimSelectedRows, setClaimSelectedRows] = useState<import('./EligibleDeclarationsPage').Row[]>([]);
@@ -272,6 +275,16 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
   // Full row of the claim the user clicked "View Claim" on — carries the actual charge type
   // and declaration list so the view page shows the right data and section layout for that claim.
   const [viewClaimRow, setViewClaimRow] = useState<ClaimRow | null>(null);
+  // The claim row a Suspension Response action was triggered from, and (once chosen, either
+  // directly via a Declaration Number search or via the multi-declaration list) which
+  // declaration the response applies to.
+  const [suspensionRow, setSuspensionRow] = useState<ClaimRow | null>(null);
+  const [suspensionDeclNo, setSuspensionDeclNo] = useState<string>('');
+  // Validity Extension flow state — the single declaration picked, its extension details, and payment.
+  const [validityExtRow, setValidityExtRow] = useState<Row | null>(null);
+  const [validityExtDetails, setValidityExtDetails] = useState<ExtensionDetails | null>(null);
+  const [validityExtPaymentMode, setValidityExtPaymentMode] = useState('');
+  const [validityExtAccountNo, setValidityExtAccountNo] = useState('');
   const [claimViewReturnStep, setClaimViewReturnStep] = useState<ClaimSubStep>('nonRemittanceSuccess');
   const [ackReturnStep, setAckReturnStep] = useState<ClaimSubStep>('nonRemittanceSuccess');
   const [ackStep, setAckStep] = useState<'list' | 'acceptSuccess' | 'declineSuccess'>('list');
@@ -690,16 +703,80 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
           {claimStep === 'claimDocs' && (
             <ClaimDocumentsPage onBack={() => setClaimStep('list')} />
           )}
+          {claimStep === 'claimSuspensionList' && suspensionRow && (
+            <SuspensionResponseListPage
+              requestNo={suspensionRow.reqNo}
+              claimType={suspensionRow.claimType}
+              chargeType={suspensionRow.depositType}
+              declarations={suspensionRow.declarations}
+              onBack={() => setClaimStep('list')}
+              onBackToListing={() => setClaimStep('list')}
+              onProvideResponse={(declNo) => { setSuspensionDeclNo(declNo); setClaimStep('claimSuspension'); }}
+            />
+          )}
           {claimStep === 'claimSuspension' && (
             <SuspensionResponsePage
               breadcrumbParent="Refund & Claims"
-              title="Suspension Response - Refund of Deposits - 2420390"
+              title={`Suspension Response - ${suspensionRow?.claimType ?? 'Refund of Deposits'} - ${suspensionRow?.claimNo ?? '2420390'}${suspensionDeclNo ? ` - ${suspensionDeclNo}` : ''}`}
               successHeading="Suspension Response Submitted Successfully"
-              successMessage="Your suspension response for the Refund of Deposits claim has been submitted successfully and is currently under processing."
-              requestNumber="2588017"
-              onBack={() => setClaimStep('list')}
+              successMessage={`Your suspension response for the ${suspensionRow?.claimType ?? 'Refund of Deposits'} claim has been submitted successfully and is currently under processing.`}
+              requestNumber={suspensionRow?.reqNo ?? '2588017'}
+              onBack={() => setClaimStep(suspensionRow && suspensionRow.declarations.length > 1 && !suspensionDeclNo ? 'claimSuspensionList' : 'list')}
               onBackToListing={() => setClaimStep('list')}
               onSubmit={() => setClaimStep('list')}
+            />
+          )}
+          {claimStep === 'validityExtEligible' && (
+            <ValidityExtensionEligiblePage
+              onBack={() => setClaimStep('list')}
+              onBackToListing={() => setClaimStep('list')}
+              onProceed={(row) => { setValidityExtRow(row); setClaimStep('validityExtDetails'); }}
+            />
+          )}
+          {claimStep === 'validityExtDetails' && validityExtRow && (
+            <ValidityExtensionDetailsPage
+              row={validityExtRow}
+              onBack={() => setClaimStep('validityExtEligible')}
+              onBackToListing={() => setClaimStep('list')}
+              onProceed={(details) => { setValidityExtDetails(details); setClaimStep('validityExtPayment'); }}
+            />
+          )}
+          {claimStep === 'validityExtPayment' && validityExtRow && (
+            <NonRemittanceChargesPage
+              title="Raise New Claim - Validity Extension"
+              steps={VALIDITY_EXT_STEPS}
+              activeIndex={2}
+              selectedRows={[validityExtRow]}
+              onBack={() => setClaimStep('validityExtDetails')}
+              onBackToListing={() => setClaimStep('list')}
+              onContinue={(mode, acc) => { setValidityExtPaymentMode(mode); setValidityExtAccountNo(acc); setClaimStep('validityExtReview'); }}
+            />
+          )}
+          {claimStep === 'validityExtReview' && validityExtRow && validityExtDetails && (
+            <NonRemittanceReviewPage
+              title="Raise New Claim - Validity Extension"
+              steps={VALIDITY_EXT_STEPS}
+              activeIndex={3}
+              claimType="Validity Extension"
+              selectedRows={[validityExtRow]}
+              paymentMode={validityExtPaymentMode}
+              accountNo={validityExtAccountNo}
+              extensionRow={validityExtRow}
+              extensionDays={validityExtDetails.days}
+              onBack={() => setClaimStep('validityExtPayment')}
+              onSubmit={() => setClaimStep('validityExtSuccess')}
+            />
+          )}
+          {claimStep === 'validityExtSuccess' && (
+            <NonRemittanceSuccessPage
+              title="Raise New Claim - Validity Extension"
+              heading="Time Validity Extension - Confirmation"
+              message="Your Validity Extension request has been submitted successfully and is currently under processing."
+              requestNumberLabel="Validity Extension Request Number:"
+              registrationNumberLabel="Registration Number:"
+              hideViewClaim
+              onBack={() => { setValidityExtRow(null); setValidityExtDetails(null); setClaimStep('list'); }}
+              onViewAck={() => setClaimStep('list')}
             />
           )}
           {claimStep === 'claimHistory' && (
@@ -1453,6 +1530,17 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                 style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}
               >
                 Cargo Release/Receipt
+              </button>
+            )}
+
+            {/* Validity Extension — secondary button, Refund & Claims only, before the primary Raise New Claim button */}
+            {activeMenu === 'Refund & Claims' && (
+              <button
+                onClick={() => setClaimStep('validityExtEligible')}
+                className="h-[48px] px-[22px] rounded-[4px] text-[16px] flex-shrink-0 border border-[#1360d2] text-[#1360d2] bg-white hover:bg-[#f0f4ff] transition-colors"
+                style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}
+              >
+                Validity Extension
               </button>
             )}
 
@@ -2326,12 +2414,25 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
             }}
             onCancel={(ct) => { setListClaimType(ct); setClaimStep('cancelClaim'); }}
             onViewDocs={() => setClaimStep('claimDocs')}
-            onSuspensionResponse={() => setClaimStep('claimSuspension')}
+            onSuspensionResponse={(row) => {
+              setSuspensionRow(row);
+              // A Declaration Number search already narrows the row to one specific declaration —
+              // skip the multi-declaration list and go straight to the response form for it.
+              const declSearchActive = searchType === 'Declaration Number' && searchQuery.trim() !== '';
+              if (declSearchActive) {
+                setSuspensionDeclNo(searchQuery.trim());
+                setClaimStep('claimSuspension');
+              } else {
+                setSuspensionDeclNo('');
+                setClaimStep(row.declarations.length > 1 ? 'claimSuspensionList' : 'claimSuspension');
+              }
+            }}
             onPrint={() => { setAckReturnStep('list'); setClaimStep('nonRemittanceAck'); }}
             onHistory={() => setClaimStep('claimHistory')}
             onDeclarationOpen={(declNo) => { setClaimListDeclNo(declNo); setClaimListDeclViewOpen(true); }}
             showColModal={showColModal}
             onCloseColModal={() => setShowColModal(false)}
+            searchDeclNo={searchType === 'Declaration Number' ? searchQuery : undefined}
           />
         ) : activeMenu === 'Acknowledgement' ? (
           <AcknowledgementTable

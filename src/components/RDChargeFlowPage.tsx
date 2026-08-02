@@ -21,10 +21,12 @@ type RefundType = 'full' | 'fullImport' | 'partial' | 'partialImport' | 'no' | '
 export const MISSING_DOC_CHARGE_TYPES = ['Missing Document Deposit', 'Document Deposit'];
 export const isMissingDocCharge = (ct: string) => MISSING_DOC_CHARGE_TYPES.includes(ct);
 
-/* Only Alternative Duty Deposit supports the full Export/Import refund options
-   (and the outbound-declaration linkage that comes with them). Every other
-   charge type — including Missing/Document Deposit — is a simple Refund / No Refund. */
-export const hasFullRefundOptions = (ct: string) => ct === 'Alternative Duty Deposit';
+/* Alternative Duty Deposit, Anti Dumping Deposit and Safeguard Deposit all support
+   the full Export/Import refund options (and the outbound-declaration linkage that
+   comes with them). Every other charge type — including Missing/Document Deposit —
+   is a simple Refund / No Refund. */
+const FULL_REFUND_CHARGE_TYPES = ['Alternative Duty Deposit', 'Anti Dumping Deposit', 'Safeguard Deposit'];
+export const hasFullRefundOptions = (ct: string) => FULL_REFUND_CHARGE_TYPES.includes(ct);
 
 /* Refund of Duty — the "Duty" charge type gets Full/Partial/No Export (and the
    outbound-declaration linkage that comes with them); the other two Refund of
@@ -172,7 +174,6 @@ const DUBAI_DECLARATIONS: Omit<OutboundDetail, 'id' | 'customsAuthority'>[] = [
 ];
 
 export function needsOutbound(rt: RefundType, chargeType?: string) {
-  if (chargeType === 'Duty') return false;
   return rt === 'full' || rt === 'fullImport' || rt === 'partial' || rt === 'partialImport';
 }
 function parseAED(s: string)           { return parseFloat(s.replace(/[^0-9.]/g, '')) || 0; }
@@ -973,8 +974,8 @@ function HSRow({ hs, inv, declNo, rt, obs, edit, onPatchHs, onAdd, onEdit, onVie
 }
 
 /* ─── Declaration row card ──────────────────────────────────────── */
-function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount, onRefField, onAddRefEntry, onEditRefEntry, onDeleteRefEntry, onToggleInv, onAdd, onEdit, onViewOb, onDelete, onOpenUnitPriceModal }: {
-  d: ChargeDetail; idx: number; obs: OutboundState; invOpen: boolean;
+function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount, onRefField, onAddRefEntry, onEditRefEntry, onDeleteRefEntry, onToggleInv, onAdd, onEdit, onViewOb, onDelete, onOpenUnitPriceModal, errors }: {
+  d: ChargeDetail; idx: number; obs: OutboundState; invOpen: boolean; errors?: string[];
   hsEdits: Record<string, { allocationMethod?: string; currency?: string; unitPrice?: string; unitPriceDetails?: UnitPriceDetail[] }>;
   onPatchHs: (hsId: string, patch: { allocationMethod?: string; currency?: string; unitPrice?: string; unitPriceDetails?: UnitPriceDetail[] }) => void;
   onRefund: (i: number, rt: RefundType) => void;
@@ -1017,8 +1018,8 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
 
   return (
     <div className="bg-white rounded-[8px] transition-colors"
-      style={{ boxShadow: invOpen ? '0px 5px 32px rgba(19,96,210,0.18)' : '0px 5px 32px rgba(143,155,186,0.16)',
-        border: `1.5px solid ${invOpen ? '#1360d2' : 'transparent'}`, minWidth: 0 }}>
+      style={{ boxShadow: errors?.length ? '0px 5px 32px rgba(220,53,69,0.18)' : invOpen ? '0px 5px 32px rgba(19,96,210,0.18)' : '0px 5px 32px rgba(143,155,186,0.16)',
+        border: `1.5px solid ${errors?.length ? '#dc3545' : invOpen ? '#1360d2' : 'transparent'}`, minWidth: 0 }}>
       {/* Main data row */}
       <div style={{ display: 'grid', gridTemplateColumns: COLS, minWidth: TBL_MIN,
         padding: '14px 16px', alignItems: 'center', gap: 0 }}>
@@ -1100,6 +1101,21 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
           )}
         </div>
       </div>
+
+      {/* Line-item validation errors — surfaced here on Proceed so the user can fix them without leaving this row. */}
+      {!!errors?.length && (
+        <div style={{ borderTop: '1px solid #eef1f6', padding: '12px 20px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {errors.map((msg, i) => (
+            <div key={i} className="flex items-start gap-[10px] rounded-[6px]"
+              style={{ background: '#fff8f8', border: '1px solid #f3c6c6', padding: '10px 14px' }}>
+              <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#dc3545" strokeWidth="2" style={{ flexShrink: 0, marginTop: 2 }}>
+                <circle cx="10" cy="10" r="8" /><path d="M10 6v5M10 14h.01" strokeLinecap="round" />
+              </svg>
+              <span className="text-[15px]" style={{ color: '#8a2c2c', fontFamily: font, lineHeight: 1.4 }}>{msg}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Invoices / Additional Reference Details toggle bar + content */}
       {(needsOb || isCdm) && d.refundType && (
@@ -1350,9 +1366,38 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
   const [deleteOb,  setDeleteOb]  = useState<{ ctx: DrawerCtx; ob: OutboundDetail } | null>(null);
   const [unitPriceModal, setUnitPriceModal] = useState<(UnitPriceModalCtx & { currency: string }) | null>(null);
   const [saveModal, setSaveModal] = useState(false);
-  const [noRefundAlertOpen, setNoRefundAlertOpen] = useState(false);
-  const hasNoRefundSelection = details.some(d => d.refundType === 'no' || d.refundType === 'noRefund');
-  const handleProceed = () => { if (hasNoRefundSelection) setNoRefundAlertOpen(true); else onContinue({ details, outbounds: obs }); };
+  /* No Export / No Refund now confirms immediately on selection (not on Proceed) — this
+     tracks which row's selection is awaiting confirmation. */
+  const [noRefundAlertIdx, setNoRefundAlertIdx] = useState<number | null>(null);
+  const [errors, setErrors] = useState<Record<number, string[]>>({});
+  const [errorSummaryOpen, setErrorSummaryOpen] = useState(false);
+
+  /* Per-line-item validation, run on Proceed: for every declaration with outbound entries,
+     the statistical quantity actually allocated across outbound declarations must not exceed
+     the original invoice line item's statistical quantity. */
+  const validateAll = (): Record<number, string[]> => {
+    const next: Record<number, string[]> = {};
+    details.forEach((d, i) => {
+      if (!needsOutbound(d.refundType, d.chargeType)) return;
+      const rowErrors: string[] = [];
+      getInvoices(d.declarationNo).forEach(inv => inv.hsCodes.forEach(hs => {
+        const entries = obs[obKey(d.declarationNo, hs.id)] ?? [];
+        const entered = entries.reduce((s, ob) => s + (parseFloat(ob.statQty) || 0), 0);
+        if (entered > hs.statQty) {
+          rowErrors.push(`Calculated Statistical Quantity of Exported Item exceeds the Original Statistical Quantity of the line item. For Invoice Number - ${inv.invoiceNo}, Line Item No - ${hs.lineItemNo}, HS Code - ${hs.hsCode}`);
+        }
+      }));
+      if (rowErrors.length) next[i] = rowErrors;
+    });
+    return next;
+  };
+
+  const handleProceed = () => {
+    const validation = validateAll();
+    if (Object.keys(validation).length) { setErrors(validation); setErrorSummaryOpen(true); return; }
+    setErrors({});
+    onContinue({ details, outbounds: obs });
+  };
 
   const patchHs = (hsId: string, patch: { allocationMethod?: string; currency?: string; unitPrice?: string; unitPriceDetails?: UnitPriceDetail[] }) =>
     setHsEdits(p => ({ ...p, [hsId]: { ...p[hsId], ...patch } }));
@@ -1360,6 +1405,15 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
   const patchRefund = (i: number, rt: RefundType) => {
     setDetails(p => p.map((d, j) => j !== i ? d : { ...d, refundType: rt, claimAmount: autoAmount(rt, d.depositAmount) }));
     if (needsOutbound(rt, details[i]?.chargeType)) setInvOpen(p => ({ ...p, [i]: p[i] !== false }));
+    /* No Export / No Refund — confirm right away, at the point of selection. */
+    if (rt === 'no' || rt === 'noRefund') setNoRefundAlertIdx(i);
+    setErrors(e => { if (!e[i]) return e; const next = { ...e }; delete next[i]; return next; });
+  };
+  /* User declined the No Export/No Refund confirmation — revert that row's selection. */
+  const cancelNoRefund = () => {
+    if (noRefundAlertIdx === null) return;
+    setDetails(p => p.map((d, j) => j !== noRefundAlertIdx ? d : { ...d, refundType: '', claimAmount: '' }));
+    setNoRefundAlertIdx(null);
   };
   const patchAmount  = (i: number, v: string) => setDetails(p => p.map((d, j) => j !== i ? d : { ...d, claimAmount: v }));
   const patchRefField = (i: number, patch: { refType?: string; refCode?: string; refNo?: string }) =>
@@ -1461,6 +1515,64 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
 
       {/* Scrollable body */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 pb-[24px]">
+        {/* Error summary — count across all declarations, expandable to the full grouped list.
+            Each error also still surfaces inline inside its own declaration's card below. */}
+        {(() => {
+          const errorEntries = Object.entries(errors).filter(([, v]) => v && v.length > 0) as [string, string[]][];
+          if (errorEntries.length === 0) return null;
+          const totalErrorCount = errorEntries.reduce((s, [, v]) => s + v.length, 0);
+          const declCount = errorEntries.length;
+          return (
+            <div className="mb-[16px] rounded-[8px] overflow-hidden" style={{ border: '1px solid #f3c6c6' }}>
+              <button
+                type="button"
+                onClick={() => setErrorSummaryOpen(o => !o)}
+                className="w-full flex items-center justify-between gap-[12px] transition-colors"
+                style={{ background: '#fff8f8', padding: '14px 20px' }}
+              >
+                <div className="flex items-center gap-[10px]">
+                  <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#dc3545" strokeWidth="2" style={{ flexShrink: 0 }}>
+                    <circle cx="10" cy="10" r="8" /><path d="M10 6v5M10 14h.01" strokeLinecap="round" />
+                  </svg>
+                  <span className="text-[16px]" style={{ color: '#8a2c2c', fontFamily: font, fontWeight: 500 }}>
+                    {totalErrorCount} error{totalErrorCount !== 1 ? 's' : ''} found on {declCount} declaration{declCount !== 1 ? 's' : ''}
+                  </span>
+                </div>
+                <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#8a2c2c" strokeWidth="2"
+                  className={`transition-transform flex-shrink-0 ${errorSummaryOpen ? 'rotate-180' : ''}`}>
+                  <path d="M5 8l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+              {errorSummaryOpen && (
+                <div style={{ background: '#fff', borderTop: '1px solid #f3c6c6' }}>
+                  {(() => {
+                    let serial = 0;
+                    return errorEntries.map(([idxStr, msgs]) => {
+                      const i = parseInt(idxStr, 10);
+                      const declNo = details[i]?.declarationNo ?? '';
+                      return (
+                        <div key={idxStr} style={{ padding: '12px 20px', borderBottom: '1px solid #f8eaea' }}>
+                          <p className="text-[15px]" style={{ color: '#1360d2', fontWeight: 500, fontFamily: font, marginBottom: 6 }}>{declNo}</p>
+                          <div className="flex flex-col gap-[6px]">
+                            {msgs.map((msg, mi) => {
+                              serial += 1;
+                              return (
+                                <div key={mi} className="flex items-start gap-[8px]">
+                                  <span className="text-[14px]" style={{ color: '#8a2c2c', fontFamily: font, fontWeight: 600, flexShrink: 0 }}>{serial}.</span>
+                                  <span className="text-[14px]" style={{ color: '#8a2c2c', fontFamily: font, lineHeight: 1.4 }}>{msg}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              )}
+            </div>
+          );
+        })()}
         <div style={{ overflowX: 'auto' }}>
           <div style={{ minWidth: TBL_MIN, display: 'flex', flexDirection: 'column', gap: 8 }}>
 
@@ -1485,7 +1597,8 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
                 onEdit={(ctx, ob) => setModal({ ctx: { ...ctx, editId: ob.id }, hsIds: [ctx.hsId], existing: ob })}
                 onViewOb={(ctx, obsList) => setViewOb({ ctx, obs: obsList })}
                 onOpenUnitPriceModal={setUnitPriceModal}
-                onDelete={setDeleteIdx} />
+                onDelete={setDeleteIdx}
+                errors={errors[i]} />
             ))}
           </div>
         </div>
@@ -1573,9 +1686,9 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
         </div>
       )}
 
-      {/* No Export / No Refund on a Duty Deposit sub claim — confirm before proceeding */}
-      {noRefundAlertOpen && (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/50" onClick={() => setNoRefundAlertOpen(false)}>
+      {/* No Export / No Refund — confirm right at the point of selection */}
+      {noRefundAlertIdx !== null && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/50" onClick={cancelNoRefund}>
           <div onClick={e => e.stopPropagation()} className="bg-white rounded-[10px] flex flex-col items-center gap-[20px] px-[40px] py-[36px] max-w-[460px] mx-[16px]"
             style={{ boxShadow: '0 8px 40px rgba(0,0,0,0.18)', fontFamily: font }}>
             <div className="size-[64px] rounded-full flex items-center justify-center" style={{ background: '#fff8e6' }}>
@@ -1588,16 +1701,16 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
             <div className="text-center flex flex-col gap-[8px]">
               <p className="text-[20px] text-[#0e1b3d]" style={{ fontWeight: 700 }}>No Export / No Refund Selected</p>
               <p className="text-[16px] text-[#697498]" style={{ lineHeight: 1.4 }}>
-                You have opted No Export / No Refund on sub claims. This will result in collection of charges instead of refund. Do you want to continue?
+                You have opted No Export / No Refund on this sub claim. This will result in collection of charges instead of refund. Do you want to continue?
               </p>
             </div>
             <div className="flex gap-[12px]">
-              <button onClick={() => setNoRefundAlertOpen(false)}
+              <button onClick={cancelNoRefund}
                 className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors"
                 style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>
                 No
               </button>
-              <button onClick={() => { setNoRefundAlertOpen(false); onContinue({ details, outbounds: obs }); }}
+              <button onClick={() => setNoRefundAlertIdx(null)}
                 className="h-[48px] px-[36px] rounded-[4px] text-[16px] text-white transition-colors"
                 style={{ background: '#1360d2', fontWeight: 500 }}>
                 Yes

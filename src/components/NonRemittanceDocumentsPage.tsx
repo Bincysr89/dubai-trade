@@ -120,7 +120,7 @@ export function UploadedDocsByDeclaration({ docs, declOrder, onRemove }: {
                   </div>
                   <div className="flex flex-col gap-[1px] min-w-0 flex-1">
                     <span className="text-[14px] text-[#051937] truncate" style={{ fontWeight: 500, fontFamily: FONT }}>Declaration No. {declNo}</span>
-                    <span className="text-[14px]" style={{ color: '#219653', fontFamily: FONT }}>{declDocs.length} file{declDocs.length !== 1 ? 's' : ''}</span>
+                    <span className="text-[14px]" style={{ color: '#219653', fontFamily: FONT }}>{declDocs.length} document{declDocs.length !== 1 ? 's' : ''}</span>
                   </div>
                 </div>
               );
@@ -133,7 +133,7 @@ export function UploadedDocsByDeclaration({ docs, declOrder, onRemove }: {
           {selectedDoc && (
             <>
               <div className="px-[20px] py-[14px]" style={{ background: '#f8fafd', borderBottom: '1px solid #eef1f6' }}>
-                <p className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500, fontFamily: FONT }}>Files — Declaration No. {selectedDoc}</p>
+                <p className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500, fontFamily: FONT }}>Uploaded Documents — Declaration No. {selectedDoc}</p>
               </div>
               <div className="flex-1 overflow-auto">
                 {selectedDocs.length === 0 ? (

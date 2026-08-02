@@ -47,6 +47,7 @@ const LABELS: Record<FlyoutId, string> = {
 function getFlyoutItems(status: Status, isDraft: boolean, isNonRemittance = false): FlyoutId[] {
   if (isDraft) return ['continue'];
   if (status === 'Completed') return ['viewDocs', 'history'];
+  if (status === 'Suspended') return ['view', 'amend', 'cancel', 'suspensionResponse', 'history'];
   if (status === 'Submitted') {
     // Non Remittance claims get the full action set from the listing.
     return isNonRemittance
@@ -146,7 +147,11 @@ const DRAFT_ROWS: ClaimRow[] = [
   },
 ];
 
-function DeclarationsModal({ declarations, onClose, onDeclarationOpen }: { declarations: DeclDetail[]; onClose: () => void; onDeclarationOpen?: (declNo: string) => void }) {
+function DeclarationsModal({ declarations, chargeType, subClaimStatus, onClose, onDeclarationOpen }: { declarations: DeclDetail[]; chargeType: string; subClaimStatus: Status; onClose: () => void; onDeclarationOpen?: (declNo: string) => void }) {
+  const st = STATUS_STYLE[subClaimStatus];
+  const ACTION_W = 60;
+  const STATUS_W = 128;
+  const { scrollRef, atScrollStart, atScrollEnd, handleScroll, scrollToStart, scrollToEnd } = useTableBehaviors();
   return (
     <div
       className="fixed inset-0 z-[1000] flex items-center justify-center p-[24px]"
@@ -155,7 +160,7 @@ function DeclarationsModal({ declarations, onClose, onDeclarationOpen }: { decla
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-[10px] w-full max-w-[1000px] max-h-[88vh] flex flex-col overflow-hidden"
+        className="bg-white rounded-[10px] w-full max-w-[1100px] max-h-[88vh] flex flex-col overflow-hidden"
         style={{ boxShadow: '0px 12px 40px rgba(0,0,0,0.18)', fontFamily: font }}
       >
         {/* Dark navy header — same as VccListPopup */}
@@ -169,41 +174,67 @@ function DeclarationsModal({ declarations, onClose, onDeclarationOpen }: { decla
           </button>
         </div>
 
-        {/* Bordered inner table — same as VccListPopup */}
+        {/* Bordered inner table — Sub Claim Status + Action are sticky trailing columns, everything
+            else scrolls left/right, matching the master listing table pattern used elsewhere. */}
         <div className="flex-1 overflow-auto px-[24px] py-[20px]">
-          <div className="border border-[#eef1f6] rounded-[8px] overflow-x-auto">
-            <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 860, fontFamily: font }}>
-              <thead>
-                <tr style={{ background: '#a6c2e9' }}>
-                  {['#', 'Declaration No.', 'Date', 'Declaration Type', 'Owner Code', 'Claim Expiry', 'Export Expiry'].map((h, i) => (
-                    <th key={h} className="text-left text-[16px] text-[#000]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap', width: i === 0 ? 44 : undefined }}>
-                      {h}
+          <div className="border border-[#eef1f6] rounded-[8px]" style={{ position: 'relative' }}>
+            <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={STATUS_W + ACTION_W} />
+            <div ref={scrollRef} onScroll={handleScroll} className="overflow-x-auto">
+              <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 1000, fontFamily: font }}>
+                <thead>
+                  <tr style={{ background: '#a6c2e9' }}>
+                    {['#', 'Declaration No.', 'Date', 'Declaration Type', 'Charge Type', 'Owner Code', 'Claim Expiry', 'Export Expiry'].map((h, i) => (
+                      <th key={h} className="text-left text-[16px] text-[#000]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap', width: i === 0 ? 44 : undefined }}>
+                        {h}
+                      </th>
+                    ))}
+                    <th className="text-left text-[16px] text-[#000]" style={{ position: 'sticky', right: ACTION_W, width: STATUS_W, minWidth: STATUS_W, background: '#a6c2e9', padding: '12px 8px', fontWeight: 500, whiteSpace: 'nowrap', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>
+                      Sub Claim Status
                     </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {declarations.map((d, i) => (
-                  <tr key={d.declNo} style={{ borderTop: '1px solid #eef1f6' }}>
-                    <td className="text-[14px] text-[#697498]" style={{ padding: '12px' }}>{i + 1}</td>
-                    <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>
-                      <button
-                        className="text-[16px] text-[#1360d2] hover:underline"
-                        style={{ fontWeight: 500 }}
-                        onClick={() => { onDeclarationOpen?.(d.declNo); onClose(); }}
-                      >
-                        {d.declNo}
-                      </button>
-                    </td>
-                    <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{d.date}</td>
-                    <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'normal', lineHeight: 1.3 }}>{d.category}</td>
-                    <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{d.ownerCode}</td>
-                    <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{d.claimExpiry}</td>
-                    <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{d.exportExpiry}</td>
+                    <th className="text-left text-[16px] text-[#000]" style={{ position: 'sticky', right: 0, width: ACTION_W, minWidth: ACTION_W, background: '#a6c2e9', padding: '12px 8px', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                      Action
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {declarations.map((d, i) => (
+                    <tr key={d.declNo} style={{ borderTop: '1px solid #eef1f6' }}>
+                      <td className="text-[14px] text-[#697498]" style={{ padding: '12px' }}>{i + 1}</td>
+                      <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>
+                        <button
+                          className="text-[16px] text-[#1360d2] hover:underline"
+                          style={{ fontWeight: 500 }}
+                          onClick={() => { onDeclarationOpen?.(d.declNo); onClose(); }}
+                        >
+                          {d.declNo}
+                        </button>
+                      </td>
+                      <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{d.date}</td>
+                      <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'normal', lineHeight: 1.3 }}>{d.category}</td>
+                      <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{chargeType}</td>
+                      <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'normal', lineHeight: 1.3, maxWidth: 200 }}>{d.ownerCode}</td>
+                      <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{d.claimExpiry}</td>
+                      <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{d.exportExpiry}</td>
+                      <td style={{ position: 'sticky', right: ACTION_W, width: STATUS_W, minWidth: STATUS_W, background: '#fff', padding: '12px 8px', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>
+                        <span className="text-[14px] whitespace-nowrap inline-flex items-center justify-center" style={{ background: st.bg, color: st.color, padding: '4px 10px', borderRadius: 4, fontWeight: 500, fontFamily: font }}>
+                          {subClaimStatus}
+                        </span>
+                      </td>
+                      <td style={{ position: 'sticky', right: 0, width: ACTION_W, minWidth: ACTION_W, background: '#fff', padding: '12px 8px', textAlign: 'center' }}>
+                        <button
+                          onClick={() => { onDeclarationOpen?.(d.declNo); onClose(); }}
+                          aria-label="View declaration"
+                          className="inline-flex items-center justify-center hover:opacity-70 transition-opacity"
+                          style={{ color: '#1360d2' }}
+                        >
+                          <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z" /><circle cx="10" cy="10" r="2.5" /></svg>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -229,20 +260,25 @@ type Props = {
   onPrint?: () => void;
   onViewDocs?: () => void;
   onHistory?: () => void;
-  onSuspensionResponse?: () => void;
+  onSuspensionResponse?: (row: ClaimRow) => void;
   onDeclarationOpen?: (declNo: string) => void;
   showDrafts?: boolean;
   showColModal?: boolean;
   onCloseColModal?: () => void;
+  /** Set when the user searched using "Declaration Number" as the basic-search parameter —
+      filters rows to that declaration and switches the table to the dynamic column set. */
+  searchDeclNo?: string;
 };
 
-export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onViewDocs, onHistory, onSuspensionResponse, onDeclarationOpen, showDrafts = false, showColModal, onCloseColModal }: Props = {}) {
+const DECL_SEARCH_COLS = ['declNo', 'depositType', 'claimNo', 'reqNo', 'claimType', 'claimant', 'submissionDate', 'remark'];
+
+export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onViewDocs, onHistory, onSuspensionResponse, onDeclarationOpen, showDrafts = false, showColModal, onCloseColModal, searchDeclNo }: Props = {}) {
   const [openFlyout, setOpenFlyout] = useState<number | null>(null);
   const flyoutRef = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
   const [statusFilter, setStatusFilter] = useState<Status | null>(null);
-  const [declModal, setDeclModal] = useState<DeclDetail[] | null>(null);
+  const [declModal, setDeclModal] = useState<ClaimRow | null>(null);
 
   const STATUS_COLOR: Record<Status, string> = {
     'Under Processing': '#b45309', 'Completed': '#28a745', 'Suspended': '#dc3545', 'Draft': '#697498', 'Submitted': '#1360d2',
@@ -263,26 +299,41 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
     return () => document.removeEventListener('mousedown', onDoc);
   }, [openFlyout]);
 
+  const declSearchActive = !!searchDeclNo && searchDeclNo.trim() !== '';
+
   const rows = useMemo(() => {
     const base = showDrafts ? DRAFT_ROWS : CLAIM_ROWS;
-    return statusFilter ? base.filter((r) => r.status === statusFilter) : base;
-  }, [showDrafts, statusFilter]);
+    const statusFiltered = statusFilter ? base.filter((r) => r.status === statusFilter) : base;
+    if (!declSearchActive) return statusFiltered;
+    const q = searchDeclNo!.trim().toLowerCase();
+    return statusFiltered.filter((r) => r.declarations.some((d) => d.declNo.toLowerCase().includes(q)));
+  }, [showDrafts, statusFilter, declSearchActive, searchDeclNo]);
+
+  const matchedDeclNo = (row: ClaimRow) => {
+    if (!declSearchActive) return row.declarations[0]?.declNo ?? '—';
+    const q = searchDeclNo!.trim().toLowerCase();
+    return row.declarations.find((d) => d.declNo.toLowerCase().includes(q))?.declNo ?? row.declarations[0]?.declNo ?? '—';
+  };
 
   const CLAIMS_COL_DEFS: (ColDef & { w: number; draftsOnly?: boolean; claimsOnly?: boolean })[] = [
     { key: 'reqNo',           label: 'Claim Request No.',     w: 150 },
     { key: 'claimNo',         label: 'Claim No.',             w: 120, claimsOnly: true },
     { key: 'claimType',       label: 'Claim Type',            w: 160 },
     { key: 'declarations',    label: 'No. of Declarations',   w: 150 },
+    { key: 'declNo',          label: 'Declaration Number',    w: 180 },
     { key: 'depositType',     label: 'Charge Type',           w: 220 },
-    { key: 'claimant',        label: 'Claimant',              w: 280 },
+    { key: 'claimant',        label: 'Claimant Details',      w: 280 },
     { key: 'submissionDate',  label: 'Claim Submission Date', w: 170 },
-    { key: 'remark',          label: 'Remark',                w: 200 },
+    { key: 'remark',          label: 'Remarks',               w: 200 },
   ];
 
   const applicableDefs = CLAIMS_COL_DEFS.filter((c) => showDrafts ? !c.claimsOnly : !c.draftsOnly);
-  const [visibleCols, setVisibleCols] = useState<string[]>(CLAIMS_COL_DEFS.map((c) => c.key));
-  const vis = (key: string) => visibleCols.includes(key);
-  const visibleHeaders = visibleCols
+  /* Default listing hides both Charge Type and the single-declaration-number column — those only
+     surface once the user searches by a specific Declaration Number (see DECL_SEARCH_COLS below). */
+  const [visibleCols, setVisibleCols] = useState<string[]>(
+    CLAIMS_COL_DEFS.map((c) => c.key).filter((k) => k !== 'depositType' && k !== 'declNo'),
+  );
+  const visibleHeaders = (declSearchActive ? DECL_SEARCH_COLS : visibleCols)
     .map((k) => applicableDefs.find((c) => c.key === k)!)
     .filter(Boolean);
 
@@ -303,14 +354,14 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
     <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: font }}>{v}</span>
   );
 
-  const declLink = (declarations: DeclDetail[]) => (
+  const declLink = (row: ClaimRow) => (
     <button
-      onClick={() => setDeclModal(declarations)}
+      onClick={() => setDeclModal(row)}
       className="text-[16px] font-medium inline-flex items-center justify-center hover:opacity-80 transition-opacity"
       style={{ background: 'rgba(19,96,210,0.08)', color: '#1360d2', minWidth: 32, height: 24, padding: '0 8px', borderRadius: 12, textDecoration: 'underline', fontFamily: font }}
       aria-label="View declarations"
     >
-      {declarations.length}
+      {row.declarations.length}
     </button>
   );
 
@@ -340,7 +391,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
                 if (id === 'printReceipt') onPrint?.();
                 if (id === 'viewDocs') onViewDocs?.();
                 if (id === 'history')  onHistory?.();
-                if (id === 'suspensionResponse') onSuspensionResponse?.();
+                if (id === 'suspensionResponse') onSuspensionResponse?.(row);
               }}
             >
               <span className="text-[#1360d2] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">{ICONS[id]}</span>
@@ -437,27 +488,36 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, i) => (
-              <tr key={i}>
-                {vis('reqNo') && cell(txt(row.reqNo), 'reqNo', 150, { paddingLeft: 16 })}
-                {!showDrafts && vis('claimNo') && cell(txt(row.claimNo), 'claimNo', 120)}
-                {vis('claimType') && cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3, fontFamily: font }}>{row.claimType}</span>, 'claimType', 160)}
-                {vis('declarations') && cell(declLink(row.declarations), 'declarations', 150)}
-                {vis('depositType') && cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3, fontFamily: font }}>{row.depositType}</span>, 'depositType', 220)}
-                {vis('claimant') && cell(
-                  <div className="flex flex-col" style={{ lineHeight: 1.3 }}>
-                    <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500, fontFamily: font }}>{row.claimantName}</span>
-                    <span className="text-[12px] text-[#697498]" style={{ fontFamily: font }}>{row.claimantCode}</span>
-                  </div>,
-                  'claimant',
-                  280,
-                )}
-                {vis('submissionDate') && cell(txt(row.submissionDate), 'submissionDate', 170)}
-                {vis('remark') && cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3, fontFamily: font }}>{row.remark}</span>, 'remark', 200)}
-                {renderStatusCell(row.status, i)}
-                {renderActionCell(i, row)}
-              </tr>
-            ))}
+            {rows.map((row, i) => {
+              const renderCellByKey = (key: string) => {
+                switch (key) {
+                  case 'reqNo':          return cell(txt(row.reqNo), 'reqNo', 150, { paddingLeft: 16 });
+                  case 'claimNo':        return !showDrafts ? cell(txt(row.claimNo), 'claimNo', 120) : null;
+                  case 'claimType':      return cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3, fontFamily: font }}>{row.claimType}</span>, 'claimType', 160);
+                  case 'declarations':   return cell(declLink(row), 'declarations', 150);
+                  case 'declNo':         return cell(txt(matchedDeclNo(row)), 'declNo', 180);
+                  case 'depositType':    return cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3, fontFamily: font }}>{row.depositType}</span>, 'depositType', 220);
+                  case 'claimant':       return cell(
+                    <div className="flex flex-col" style={{ lineHeight: 1.3 }}>
+                      <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500, fontFamily: font }}>{row.claimantName}</span>
+                      <span className="text-[12px] text-[#697498]" style={{ fontFamily: font }}>{row.claimantCode}</span>
+                    </div>,
+                    'claimant',
+                    280,
+                  );
+                  case 'submissionDate': return cell(txt(row.submissionDate), 'submissionDate', 170);
+                  case 'remark':         return cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3, fontFamily: font }}>{row.remark}</span>, 'remark', 200);
+                  default:               return null;
+                }
+              };
+              return (
+                <tr key={i}>
+                  {visibleHeaders.map((col) => <React.Fragment key={col.key}>{renderCellByKey(col.key)}</React.Fragment>)}
+                  {renderStatusCell(row.status, i)}
+                  {renderActionCell(i, row)}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
         <div className="pt-[16px]">
@@ -465,7 +525,15 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
         </div>
       </div>
     </div>
-    {declModal && <DeclarationsModal declarations={declModal} onClose={() => setDeclModal(null)} onDeclarationOpen={onDeclarationOpen} />}
+    {declModal && (
+      <DeclarationsModal
+        declarations={declModal.declarations}
+        chargeType={declModal.depositType}
+        subClaimStatus={declModal.status}
+        onClose={() => setDeclModal(null)}
+        onDeclarationOpen={onDeclarationOpen}
+      />
+    )}
     </>
   );
 }
