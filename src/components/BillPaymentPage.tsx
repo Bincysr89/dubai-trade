@@ -98,21 +98,13 @@ const recentPayments = PAYMENT_ROWS.slice(0, 5);
 const fmtBalance = (n: number) =>
   'AED ' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-/* All accounts combined — debit accounts interspersed so they appear on page 1 */
+/* Transaction date timestamps carry seconds (DD-MM-YYYY HH:MM:SS) — display without them. */
+const stripSeconds = (ts: string) => ts.replace(/(\d{2}:\d{2}):\d{2}\b/, '$1');
+
+/* All accounts combined — debit accounts appear first, followed by credit accounts */
 const ALL_ACCOUNTS = [
-  ACCOUNTS[0],
-  ACCOUNTS[1],
-  ACCOUNTS[2],
-  DEBIT_ACCOUNTS[0],
-  ACCOUNTS[3],
-  ACCOUNTS[4],
-  DEBIT_ACCOUNTS[1],
-  ACCOUNTS[5],
-  ACCOUNTS[6],
-  DEBIT_ACCOUNTS[2],
-  ACCOUNTS[7],
-  ACCOUNTS[8],
-  ACCOUNTS[9],
+  ...DEBIT_ACCOUNTS,
+  ...ACCOUNTS,
 ];
 
 const ACC_PAGE_SIZE = 8;
@@ -228,6 +220,7 @@ function ReceiptModal({ onClose, rows }: { onClose: () => void; rows: typeof PAY
           <div className="bg-[#f5f8ff] rounded-[8px] border border-[#e0e8f5] p-4 grid grid-cols-4 gap-4">
             {[
               ['Business Name', 'crnuser01'],
+              ['Username', 'crnuser01'],
               ['Business Code', 'AE-1051144'],
               ['Date', '10-06-2026'],
               ['Receipt No.', 'Z-12645'],
@@ -1055,6 +1048,9 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                     <th style={{ background: '#a6c2e9', padding: '12px 16px', textAlign: 'right', fontWeight: 500 }}>
                       <span className="text-[16px] font-medium text-[#051937]">Amount</span>
                     </th>
+                    <th style={{ background: '#a6c2e9', padding: '12px 16px', textAlign: 'center', fontWeight: 500, width: 80 }}>
+                      <span className="text-[16px] font-medium text-[#051937]">Action</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1081,6 +1077,18 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                             style={{ fontFamily: font }}
                           />
                         </div>
+                      </td>
+                      <td style={{ background: '#fff', padding: '14px 16px', verticalAlign: 'middle', textAlign: 'center' }}>
+                        <button
+                          type="button"
+                          title="Remove invoice"
+                          onClick={() => toggleRow(INVOICE_ROWS.indexOf(row))}
+                          className="size-[32px] inline-flex items-center justify-center rounded-[4px] border border-[#d5ddfb] text-[#dc3545] hover:bg-[#fdecea] transition-colors"
+                        >
+                          <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8">
+                            <path d="M4 6h12M8 6V4.5A1.5 1.5 0 019.5 3h1A1.5 1.5 0 0112 4.5V6m-6.5 0v9a1.5 1.5 0 001.5 1.5h4a1.5 1.5 0 001.5-1.5V6" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -1324,9 +1332,13 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                         <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>{acc.account}</span>
                       </td>
                       <td style={{ background: '#fff', padding: '14px 12px', verticalAlign: 'middle', textAlign: 'right' }}>
-                        <span className="text-[16px] text-[#0e1b3d] flex items-center justify-end gap-[4px]" style={{ fontFamily: font }}>
-                          <DirhamIcon size={13} color="#0e1b3d" />{acc.amountDue}
-                        </span>
+                        {acc.type === 'Debit Account' ? (
+                          <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>-</span>
+                        ) : (
+                          <span className="text-[16px] text-[#0e1b3d] flex items-center justify-end gap-[4px]" style={{ fontFamily: font }}>
+                            <DirhamIcon size={13} color="#0e1b3d" />{acc.amountDue}
+                          </span>
+                        )}
                       </td>
                       <td style={{ background: '#fff', padding: '14px 16px', verticalAlign: 'middle' }}>
                         <div className="flex items-center justify-end gap-2">
@@ -1631,7 +1643,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 {/* Business Details — 4-column grid */}
                 <div className="bg-[#f5f8ff] rounded-[8px] border border-[#e0e8f5] p-4 grid grid-cols-4 gap-4">
                   {[
-                    ['Name',          'crnuser01'],
+                    ['Business Name', 'crnuser01'],
+                    ['Username',      'crnuser01'],
                     ['Business Code', 'AE-1051144'],
                     ['Date',          '10-06-2026'],
                     ['Receipt No.',   'Z-12648'],
@@ -1857,7 +1870,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             <path d="M12 3v12M8 11l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
             <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" strokeLinecap="round" />
           </svg>
-          Download
+          Invoice Download
         </button>
         {/* Proceed to Pay */}
         <button
@@ -2093,13 +2106,13 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
           </button>
           {paySearchTypeOpen && (
             <div className="absolute z-[200] top-[50px] left-0 bg-white shadow-lg rounded border border-[#e0e8f5] w-[180px] py-1">
-              {['Transaction No.', 'Payment Type'].map(opt => (
+              {['Transaction No.', 'Transaction Type'].map(opt => (
                 <button key={opt} className="w-full px-4 py-2 text-left text-[16px] text-[#0e1b3d] hover:bg-[#e2ebf9]" style={{ fontFamily: font }}
                   onClick={() => { setPaySearchType(opt); setPaySearchValue(''); setPaySearchTypeOpen(false); }}>{opt}</button>
               ))}
             </div>
           )}
-          {paySearchType === 'Payment Type' ? (
+          {paySearchType === 'Transaction Type' ? (
             <div className="flex items-center px-[12px] gap-[8px] flex-1">
               <select
                 value={paySearchValue}
@@ -2178,10 +2191,10 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
           {/* Row 1: 4 fields */}
           <div className="grid grid-cols-4 gap-4 mb-4">
             <FloatDropdown
-              label="Payment Type"
-              value={paySearchType === 'Payment Type' ? paySearchValue : ''}
+              label="Transaction Type"
+              value={paySearchType === 'Transaction Type' ? paySearchValue : ''}
               options={['Case Management Demand Notice', 'Multiple Bill Settlement']}
-              onChange={v => { setPaySearchType('Payment Type'); setPaySearchValue(v); }}
+              onChange={v => { setPaySearchType('Transaction Type'); setPaySearchValue(v); }}
             />
             <FloatInput
               label="Invoice / Account No."
@@ -2239,7 +2252,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
         <table style={{ width: '100%', minWidth: 1100, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }}>
           <thead>
             <tr>
-              {renderFilterHeader('pay', 'Payment Type', { style: { borderTopLeftRadius: 8, borderBottomLeftRadius: 8, paddingLeft: 16 } })}
+              {renderFilterHeader('pay', 'Transaction Type', { style: { borderTopLeftRadius: 8, borderBottomLeftRadius: 8, paddingLeft: 16 } })}
               {renderFilterHeader('pay', 'Transaction No.')}
               {renderFilterHeader('pay', 'Transaction Date')}
               {renderFilterHeader('pay', 'Invoice / Account No.')}
@@ -2271,7 +2284,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                       <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.txNo}</span>
                     </td>
                     <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: isExpanded ? 'none' : '1px solid #f0f4ff' }}>
-                      <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.txDate}</span>
+                      <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{stripSeconds(row.txDate)}</span>
                     </td>
                     <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: isExpanded ? 'none' : '1px solid #f0f4ff' }}>
                       <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.invoiceNo || '—'}</span>
@@ -2358,7 +2371,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                         </td>
                         {/* Col 3: Transaction Date */}
                         <td style={{ padding: '0 12px', height: 50, verticalAlign: 'middle', borderBottom: isLastDetail ? '1px solid #f0f4ff' : '1px solid #dce8f8' }}>
-                          <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.txDate}</span>
+                          <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{stripSeconds(row.txDate)}</span>
                         </td>
                         {/* Col 4: Invoice No. */}
                         <td style={{ padding: '0 12px', height: 50, verticalAlign: 'middle', borderBottom: isLastDetail ? '1px solid #f0f4ff' : '1px solid #dce8f8' }}>
@@ -2500,7 +2513,15 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
         {/* Proceed to Pay */}
         <button
           disabled={selectedAccs.size === 0}
-          onClick={() => { setAccPayAmounts({}); setAccView('pay'); }}
+          onClick={() => {
+            const initial: Record<number, string> = {};
+            selectedAccs.forEach(idx => {
+              const acc = ALL_ACCOUNTS[idx];
+              if (acc && acc.type !== 'Debit Account') initial[idx] = acc.amountDue;
+            });
+            setAccPayAmounts(initial);
+            setAccView('pay');
+          }}
           className="h-[48px] px-[20px] rounded-[4px] text-[16px] text-white flex items-center gap-2 flex-shrink-0"
           style={{ background: selectedAccs.size > 0 ? '#1360d2' : '#a6c2e9', fontFamily: font, cursor: selectedAccs.size > 0 ? 'pointer' : 'not-allowed' }}
         >
@@ -2525,22 +2546,24 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               {renderFilterHeader('acc', 'Account Type')}
               {renderFilterHeader('acc', 'Account Number')}
               {([
-                { label: 'Total Limit',         tip: 'Maximum credit/debit ceiling assigned to the account' },
-                { label: 'Amount Due to Pay',   tip: 'Sum of all outstanding invoices pending settlement' },
-                { label: 'Current Month Usage', tip: 'Total Limit − Amount Due to Pay' },
-                { label: 'Available Balance',   tip: 'Funds available for new transactions' },
+                { label: 'Total Limit',         tip: 'Total Guarantee / Limit available for the account' },
+                { label: 'Amount Due to Pay',   tip: 'Outstanding balance from last statement' },
+                { label: 'Current Month Usage', tip: undefined },
+                { label: 'Available Balance',   tip: 'Limits available for new transactions' },
               ]).map(({ label, tip }) => (
                 <th key={label} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'right', fontWeight: 500 }}>
                   <div className="inline-flex items-center gap-[5px]">
                     <span className="text-[16px] font-medium text-[#051937] whitespace-nowrap">{label}</span>
-                    <div className="group/tip relative cursor-help flex-shrink-0">
-                      <img src={infoIconSrc} alt="info" width="14" height="14" />
-                      <div className="absolute top-[calc(100%+6px)] z-[300] hidden group-hover/tip:block bg-[#0e1b3d] text-white rounded-[6px] px-[10px] py-[8px] shadow-lg pointer-events-none whitespace-nowrap"
-                        style={{ fontSize: 12, fontFamily: font, right: 0 }}>
-                        {tip}
-                        <div className="absolute -top-[5px] w-[10px] h-[10px] bg-[#0e1b3d] rotate-45" style={{ right: 4 }} />
+                    {tip && (
+                      <div className="group/tip relative cursor-help flex-shrink-0">
+                        <img src={infoIconSrc} alt="info" width="14" height="14" />
+                        <div className="absolute top-[calc(100%+6px)] z-[300] hidden group-hover/tip:block bg-[#0e1b3d] text-white rounded-[6px] px-[10px] py-[8px] shadow-lg pointer-events-none whitespace-nowrap"
+                          style={{ fontSize: 12, fontFamily: font, right: 0 }}>
+                          {tip}
+                          <div className="absolute -top-[5px] w-[10px] h-[10px] bg-[#0e1b3d] rotate-45" style={{ right: 4 }} />
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </th>
               ))}
@@ -2566,7 +2589,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                   </td>
                   <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff' }}>
                     <div className="flex items-center gap-[8px]">
-                      <span className="text-[16px] text-[#0e1b3d]">{acc.type === 'Credit Account' ? 'Credit-CDR' : acc.type}</span>
+                      <span className="text-[16px] text-[#0e1b3d]">{acc.type === 'Credit Account' ? 'Credit Account – CDR' : acc.type}</span>
                       {isDebit && (
                         <span className="inline-flex items-center gap-[3px] px-[7px] py-[2px] rounded-[4px] text-[13px] font-semibold"
                           style={{ background: 'rgba(19,96,210,0.10)', color: '#1360d2' }}>
