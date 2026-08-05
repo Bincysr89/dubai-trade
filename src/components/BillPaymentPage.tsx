@@ -2955,119 +2955,87 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 color: '#c0392b', icon: <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#c0392b" strokeWidth="1.8"><path d="M18 6L6 18M6 6l12 12" strokeLinecap="round"/></svg> },
             ];
 
-            const pendingTotal = pendingInvAmt || 1; // guard divide-by-zero for the composition bar
-            const overduePct = Math.round((overdueInvAmt / pendingTotal) * 100);
-            const dueSoonPct = 100 - overduePct;
+            const SUMMARY_CARDS = [
+              { key: 'pending', label: 'Pending Invoices', count: pendingInvCount, amt: pendingInvAmt, color: '#1360d2', bg: 'linear-gradient(135deg,#eef4ff,#f5f8ff)', border: '#b3caff', onClick: openPending,
+                icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1360d2" strokeWidth="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5" strokeLinecap="round"/></svg>,
+                tip: 'Whether this includes every unpaid invoice or only invoices eligible for online payment is pending confirmation from IT.' },
+              { key: 'overdue', label: 'Overdue Invoices', count: overdueInvCount, amt: overdueInvAmt, color: '#dc3545', bg: 'linear-gradient(135deg,#fff0f0,#fff8f8)', border: '#f5b8b8', onClick: openOverdue,
+                icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#dc3545" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v6" strokeLinecap="round"/><circle cx="12" cy="16.5" r="0.9" fill="#dc3545"/></svg>,
+                tip: undefined as string | undefined },
+              { key: 'dueSoon', label: 'Current / Due Soon', count: dueSoonInvCount, amt: dueSoonInvAmt, color: '#b45309', bg: 'linear-gradient(135deg,#fff7ec,#fffaf4)', border: '#fcd7a0', onClick: openDueSoon,
+                icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#b45309" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+                tip: undefined as string | undefined },
+              { key: 'failed', label: 'Failed Payments', count: failedPayCount, amt: failedPayAmt, color: failedPayCount > 0 ? '#c0392b' : '#28a745',
+                bg: failedPayCount > 0 ? 'linear-gradient(135deg,#fff0f0,#fff8f8)' : 'linear-gradient(135deg,#eafaf0,#f4fdf7)', border: failedPayCount > 0 ? '#f5b8b8' : '#b7ecc8', onClick: openFailed,
+                icon: failedPayCount > 0
+                  ? <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#c0392b" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v6" strokeLinecap="round"/><circle cx="12" cy="16.5" r="0.9" fill="#c0392b"/></svg>
+                  : <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#28a745" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+                tip: undefined as string | undefined },
+            ];
 
             return (
             <div className="flex flex-col gap-[18px] w-full">
 
-              {/* ── Hero: Total Amount Due + composition bar + primary CTA ─── */}
-              <div className="grid gap-[16px]" style={{ gridTemplateColumns: 'minmax(0,2fr) minmax(240px,1fr)' }}>
-
-                <div className="rounded-[20px] p-[26px] relative overflow-hidden flex flex-col gap-[20px]"
-                  style={{ background: 'linear-gradient(135deg,#0b1530,#1360d2)', boxShadow: '0 10px 32px rgba(19,96,210,0.28)' }}>
-                  <div className="absolute rounded-full opacity-10 pointer-events-none" style={{ background: '#fff', width: 220, height: 220, right: -70, top: -80 }} />
-                  <div className="absolute rounded-full opacity-10 pointer-events-none" style={{ background: '#fff', width: 160, height: 160, right: 40, bottom: -90 }} />
-
-                  <div className="flex items-start justify-between relative z-10">
+              {/* ── 1. Payment Summary Cards — equal weight, four peers ────── */}
+              <div className="grid grid-cols-4 gap-[16px]">
+                {SUMMARY_CARDS.map(({ key, label, count, amt, color, bg, border, icon, onClick, tip }) => (
+                  <button key={key} onClick={onClick}
+                    className="rounded-[16px] p-[18px] text-left flex flex-col gap-[14px] relative overflow-hidden hover:shadow-lg hover:-translate-y-[1px] transition-all"
+                    style={{ background: bg, border: `1.5px solid ${border}` }}>
+                    <div className="absolute left-0 top-0 bottom-0 w-[4px]" style={{ background: color }} />
+                    <div className="flex items-center justify-between">
+                      <div className="size-[42px] rounded-[11px] flex items-center justify-center flex-shrink-0" style={{ background: `${color}1a` }}>{icon}</div>
+                      {tip ? (
+                        <div className="group/tip relative cursor-help flex-shrink-0" onClick={e => e.stopPropagation()}>
+                          <img src={infoIconSrc} alt="info" width="14" height="14" />
+                          <div className="absolute top-[calc(100%+6px)] right-0 z-[300] hidden group-hover/tip:block bg-[#0e1b3d] text-white rounded-[6px] px-[10px] py-[8px] shadow-lg pointer-events-none"
+                            style={{ fontSize: 12, fontFamily: font, width: 220 }}>
+                            {tip}
+                          </div>
+                        </div>
+                      ) : (
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke={color} strokeWidth="2" className="flex-shrink-0 opacity-60"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      )}
+                    </div>
                     <div>
-                      <p className="text-[14px] font-semibold tracking-wide uppercase text-[#a9c6ff]" style={{ fontFamily: font }}>Total Amount Due</p>
-                      <p className="text-[44px] font-extrabold text-white leading-none mt-[8px] flex items-center gap-[10px]" style={{ fontFamily: font, letterSpacing: '-1.5px' }}>
-                        <DirhamIcon size={30} color="#fff" />{pendingInvAmt.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                      </p>
-                      <button onClick={openPending} className="text-[15px] text-[#cfe0ff] mt-[6px] hover:underline" style={{ fontFamily: font }}>
-                        {pendingInvCount} invoice{pendingInvCount !== 1 ? 's' : ''} pending payment →
-                      </button>
-                    </div>
-                    <div className="group/tip relative cursor-help flex-shrink-0" onClick={e => e.stopPropagation()}>
-                      <img src={infoIconSrc} alt="info" width="16" height="16" style={{ filter: 'brightness(0) invert(1)', opacity: 0.85 }} />
-                      <div className="absolute top-[calc(100%+6px)] right-0 z-[300] hidden group-hover/tip:block bg-[#0e1b3d] text-white rounded-[6px] px-[10px] py-[8px] shadow-lg pointer-events-none"
-                        style={{ fontSize: 12, fontFamily: font, width: 230 }}>
-                        Whether this includes every unpaid invoice or only invoices eligible for online payment is pending confirmation from IT.
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Composition bar — Overdue vs Current/Due Soon share of the total due */}
-                  <div className="relative z-10">
-                    <div className="h-[12px] rounded-full overflow-hidden flex" style={{ background: 'rgba(255,255,255,0.16)' }}>
-                      {overdueInvAmt > 0 && (
-                        <button onClick={openOverdue} title="Overdue" style={{ width: `${overduePct}%`, background: '#ff6b6b' }} className="h-full hover:brightness-110 transition-all" />
-                      )}
-                      {dueSoonInvAmt > 0 && (
-                        <button onClick={openDueSoon} title="Current / Due Soon" style={{ width: `${dueSoonPct}%`, background: '#5eb1ff' }} className="h-full hover:brightness-110 transition-all" />
-                      )}
-                    </div>
-                    <div className="flex items-center flex-wrap gap-x-[24px] gap-y-[6px] mt-[12px]">
-                      <button onClick={openOverdue} className="flex items-center gap-[8px] hover:opacity-80 transition-opacity">
-                        <span className="size-[9px] rounded-full flex-shrink-0" style={{ background: '#ff6b6b' }} />
-                        <span className="text-[15px] text-white" style={{ fontFamily: font }}>
-                          Overdue · <span className="font-semibold">{overdueInvCount}</span> · <DirhamIcon size={11} color="#fff" />{overdueInvAmt.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                        </span>
-                      </button>
-                      <button onClick={openDueSoon} className="flex items-center gap-[8px] hover:opacity-80 transition-opacity">
-                        <span className="size-[9px] rounded-full flex-shrink-0" style={{ background: '#5eb1ff' }} />
-                        <span className="text-[15px] text-white" style={{ fontFamily: font }}>
-                          Due Soon · <span className="font-semibold">{dueSoonInvCount}</span> · <DirhamIcon size={11} color="#fff" />{dueSoonInvAmt.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                        </span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <button onClick={() => setActiveMenu('Invoices')}
-                    className="relative z-10 self-start h-[48px] px-[22px] rounded-[10px] bg-white text-[#1360d2] font-semibold text-[16px] flex items-center gap-[8px] hover:bg-[#eef4ff] transition-colors"
-                    style={{ fontFamily: font }}>
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="6" width="20" height="13" rx="2" /><path d="M2 10h20" strokeLinecap="round" /></svg>
-                    View &amp; Pay Invoices
-                  </button>
-                </div>
-
-                {/* Sidebar: Failed Payments alert + Wallet + payment history link */}
-                <div className="flex flex-col gap-[14px]">
-                  <button onClick={openFailed}
-                    className="rounded-[16px] p-[18px] text-left flex items-center gap-[14px] relative overflow-hidden hover:shadow-lg transition-shadow"
-                    style={{
-                      background: failedPayCount > 0 ? 'linear-gradient(135deg,#fff0f0,#fff8f8)' : 'linear-gradient(135deg,#eafaf0,#f4fdf7)',
-                      border: `1.5px solid ${failedPayCount > 0 ? '#f5b8b8' : '#b7ecc8'}`,
-                    }}>
-                    <div className="size-[44px] rounded-[10px] flex items-center justify-center flex-shrink-0" style={{ background: failedPayCount > 0 ? 'rgba(192,57,43,0.12)' : 'rgba(40,167,69,0.12)' }}>
-                      {failedPayCount > 0
-                        ? <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#c0392b" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v6" strokeLinecap="round"/><circle cx="12" cy="16.5" r="0.9" fill="#c0392b"/></svg>
-                        : <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#28a745" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[24px] font-extrabold leading-none" style={{ color: failedPayCount > 0 ? '#c0392b' : '#28a745', fontFamily: font }}>{failedPayCount}</p>
-                      <p className="text-[15px] font-semibold text-[#0e1b3d] mt-[3px]" style={{ fontFamily: font }}>Failed Payments</p>
-                      <p className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>
-                        {failedPayCount > 0 ? <>Dh {failedPayAmt.toLocaleString('en-US', { minimumFractionDigits: 2 })} needs attention</> : 'All payments successful'}
-                      </p>
+                      <p className="text-[32px] font-extrabold leading-none mb-[6px]" style={{ color, fontFamily: font, letterSpacing: '-1px' }}>{count}</p>
+                      <p className="text-[16px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>{label}</p>
+                      <p className="text-[15px] text-[#697498] mt-[2px] flex items-center gap-[3px]" style={{ fontFamily: font }}><DirhamIcon size={12} color="#697498" />{amt.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
                     </div>
                   </button>
-
-                  <button onClick={() => setActiveMenu('Accounts')}
-                    className="rounded-[16px] p-[18px] flex items-center gap-[12px] text-left relative overflow-hidden hover:shadow-lg transition-shadow"
-                    style={{ background: 'linear-gradient(135deg,#e8f0fe,#f0f5ff)', border: '1.5px solid #93b4f7' }}>
-                    <div className="size-[44px] rounded-[10px] flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(30,64,175,0.12)' }}>
-                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1e40af" strokeWidth="1.8"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 14h4" strokeLinecap="round"/></svg>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[15px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>Debit Account (Wallet)</p>
-                      <p className="text-[20px] font-extrabold text-[#1e40af] leading-tight mt-[2px]" style={{ fontFamily: font, letterSpacing: '-0.5px' }}>{fmtBalance(debitTotal)}</p>
-                    </div>
-                    <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#1e40af" strokeWidth="2" className="flex-shrink-0"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  </button>
-
-                  <button onClick={() => setActiveMenu('Payments')}
-                    className="h-[48px] rounded-[12px] text-[15px] font-semibold text-[#1360d2] bg-white flex items-center justify-center gap-[8px] hover:bg-[#f0f4ff] transition-colors"
-                    style={{ border: '1.5px solid #d5ddfb', fontFamily: font }}>
-                    <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 3" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                    View Payment History
-                  </button>
-                </div>
+                ))}
               </div>
 
-              {/* ── Recent Activity ──────────────────────────────────────── */}
+              {/* ── 2. Main Payment Action + Wallet ──────────────────────── */}
+              <div className="flex items-center gap-[14px] flex-wrap">
+                <button onClick={() => setActiveMenu('Invoices')}
+                  className="h-[52px] px-[24px] rounded-[10px] text-[16px] font-semibold text-white flex items-center gap-[10px] hover:opacity-90 transition-opacity"
+                  style={{ background: '#1360d2', fontFamily: font }}>
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="6" width="20" height="13" rx="2" /><path d="M2 10h20" strokeLinecap="round" /></svg>
+                  View &amp; Pay Invoices
+                </button>
+                <button onClick={() => setActiveMenu('Payments')}
+                  className="h-[52px] px-[24px] rounded-[10px] text-[16px] font-semibold text-[#1360d2] bg-white flex items-center gap-[10px] hover:bg-[#f0f4ff] transition-colors"
+                  style={{ border: '1.5px solid #1360d2', fontFamily: font }}>
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 3" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  View Payment History
+                </button>
+
+                <button onClick={() => setActiveMenu('Accounts')}
+                  className="h-[52px] px-[18px] rounded-[10px] flex items-center gap-[10px] text-left ml-auto hover:shadow-md transition-shadow"
+                  style={{ background: 'linear-gradient(135deg,#e8f0fe,#f0f5ff)', border: '1.5px solid #93b4f7', fontFamily: font }}>
+                  <div className="size-[30px] rounded-[8px] flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(30,64,175,0.14)' }}>
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#1e40af" strokeWidth="1.8"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 14h4" strokeLinecap="round"/></svg>
+                  </div>
+                  <div className="leading-tight">
+                    <p className="text-[12px] text-[#697498]">Debit Account (Wallet)</p>
+                    <p className="text-[16px] font-extrabold text-[#1e40af]">{fmtBalance(debitTotal)}</p>
+                  </div>
+                  <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#1e40af" strokeWidth="2" className="flex-shrink-0 ml-[2px]"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </button>
+              </div>
+
+              {/* ── 3. Recent Activity ───────────────────────────────────── */}
               <div className="rounded-[16px] overflow-hidden" style={{ border: '1.5px solid #e0e8f5', boxShadow: '0 2px 12px rgba(19,96,210,0.06)' }}>
                 <div className="flex items-center justify-between px-[20px] py-[16px]" style={{ borderBottom: '1px solid #eef1f6' }}>
                   <div>
