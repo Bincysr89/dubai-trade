@@ -33,17 +33,42 @@ const PAY_STATUS: Record<string, { bg: string; color: string }> = {
   'Success':   { bg: '#e6f4ec',               color: '#1b6c3a' },
   'Initiated': { bg: '#e8f0ff',               color: '#1360d2' },
   'Unpaid':    { bg: 'rgba(255,169,26,0.16)', color: '#b45309' },
+  'Failed':    { bg: 'rgba(192,57,43,0.10)',  color: '#c0392b' },
 };
+
+/* ── Date helpers (mock-data dates only — never tied to real wall-clock time) ── */
+const MONTH_ABBR: Record<string, number> = { Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11 };
+/** 'DD-MMM-YY' e.g. '05-Jun-26' → sortable ordinal */
+const parseInvDate = (s: string) => {
+  const [d, mon, y] = s.split('-');
+  return (2000 + parseInt(y, 10)) * 372 + MONTH_ABBR[mon] * 31 + parseInt(d, 10);
+};
+/** 'YYYY-MM-DD' (DateInput's internal ISO value) → sortable ordinal */
+const parseIsoDate = (s: string) => {
+  const [y, m, d] = s.split('-').map(Number);
+  return y * 372 + (m - 1) * 31 + d;
+};
+/** 'DD-MM-YYYY[ HH:MM:SS]' e.g. '10-06-2026 11:57:00' → sortable ordinal */
+const parseTxDate = (s: string) => {
+  const [d, m, y] = s.split(' ')[0].split('-').map(Number);
+  return y * 372 + (m - 1) * 31 + d;
+};
+/** "Today" inside this module's mock timeline — matches the Payments tab's latest activity. */
+const DASHBOARD_TODAY_ORD = parseInvDate('10-Jun-26');
 
 /* ── Dummy data ─────────────────────────────────────────────────────────────── */
 const INVOICE_ROWS = [
-  { type: 'Case Management Demand Notice',                    number: '70003764',   date: '05-Jun-26', amount: '5,520.00', settled: '0.00',     balance: '5520.00',  status: 'Unpaid',    txNo: '—',     txDate: '—',          source: 'CDR',   payMode: '—'         },
-  { type: 'Case Management Demand Notice',                    number: '70003765',   date: '06-Jun-26', amount: '1,000.00', settled: '1,000.00', balance: '0.00',     status: 'Paid',      txNo: '13134', txDate: '06-06-2026', source: 'SGRCS', payMode: 'E-Payment' },
-  { type: 'CRN SEA Discrepancy Export Manifest Fine Invoice', number: '1000004567', date: '07-Jun-26', amount: '520.00',   settled: '0.00',     balance: '520.00',   status: 'Unpaid',    txNo: '—',     txDate: '—',          source: 'SAS',   payMode: '—'         },
-  { type: 'Case Management Demand Notice',                    number: '70003820',   date: '08-Jun-26', amount: '5,490.00', settled: '2,000.00', balance: '3490.00',  status: 'Partially Paid', txNo: '13132', txDate: '10-06-2026', source: 'CDR', payMode: 'Debit A/C' },
-  { type: 'Case Management Demand Notice',                    number: '70003819',   date: '08-Jun-26', amount: '1,000.00', settled: '0.00',     balance: '1000.00',  status: 'Initiated', txNo: '13131', txDate: '10-06-2026', source: 'CRNS',  payMode: 'E-Payment' },
-  { type: 'Case Management Demand Notice',                    number: '70003816',   date: '09-Jun-26', amount: '220.00',   settled: '0.00',     balance: '220.00',   status: 'Unpaid',    txNo: '—',     txDate: '—',          source: 'CDR',   payMode: '—'         },
-  { type: 'Case Management Demand Notice',                    number: '70003817',   date: '09-Jun-26', amount: '220.00',   settled: '0.00',     balance: '220.00',   status: 'Unpaid',    txNo: '—',     txDate: '—',          source: 'SGRCS', payMode: '—'         },
+  { type: 'Case Management Demand Notice',                    number: '70003764',   date: '05-Jun-26', dueDate: '09-Jun-26', amount: '5,520.00', settled: '0.00',     balance: '5520.00',  status: 'Unpaid',    txNo: '—',     txDate: '—',          source: 'CDR',   payMode: '—'         },
+  { type: 'Case Management Demand Notice',                    number: '70003765',   date: '06-Jun-26', dueDate: '16-Jun-26', amount: '1,000.00', settled: '1,000.00', balance: '0.00',     status: 'Paid',      txNo: '13134', txDate: '06-06-2026', source: 'SGRCS', payMode: 'E-Payment' },
+  { type: 'CRN SEA Discrepancy Export Manifest Fine Invoice', number: '1000004567', date: '07-Jun-26', dueDate: '25-Jun-26', amount: '520.00',   settled: '0.00',     balance: '520.00',   status: 'Unpaid',    txNo: '—',     txDate: '—',          source: 'SAS',   payMode: '—'         },
+  { type: 'Case Management Demand Notice',                    number: '70003820',   date: '08-Jun-26', dueDate: '08-Jun-26', amount: '5,490.00', settled: '2,000.00', balance: '3490.00',  status: 'Partially Paid', txNo: '13132', txDate: '10-06-2026', source: 'CDR', payMode: 'Debit A/C' },
+  { type: 'Case Management Demand Notice',                    number: '70003819',   date: '08-Jun-26', dueDate: '18-Jun-26', amount: '1,000.00', settled: '0.00',     balance: '1000.00',  status: 'Initiated', txNo: '13131', txDate: '10-06-2026', source: 'CRNS',  payMode: 'E-Payment' },
+  { type: 'Case Management Demand Notice',                    number: '70003816',   date: '09-Jun-26', dueDate: '19-Jun-26', amount: '220.00',   settled: '0.00',     balance: '220.00',   status: 'Unpaid',    txNo: '—',     txDate: '—',          source: 'CDR',   payMode: '—'         },
+  { type: 'Case Management Demand Notice',                    number: '70003817',   date: '09-Jun-26', dueDate: '24-Jun-26', amount: '220.00',   settled: '0.00',     balance: '220.00',   status: 'Unpaid',    txNo: '—',     txDate: '—',          source: 'SGRCS', payMode: '—'         },
+  // Low-value invoices generated today — the kind that shouldn't clutter a transaction list,
+  // but should still roll up into the Recent Activity Summary counts/totals.
+  { type: 'General Charge Invoice',                            number: '70003825',   date: '10-Jun-26', dueDate: '20-Jun-26', amount: '5.00',     settled: '0.00',     balance: '5.00',     status: 'Unpaid',    txNo: '—',     txDate: '—',          source: 'CDR',   payMode: '—'         },
+  { type: 'General Charge Invoice',                            number: '70003826',   date: '10-Jun-26', dueDate: '20-Jun-26', amount: '10.00',    settled: '0.00',     balance: '10.00',    status: 'Unpaid',    txNo: '—',     txDate: '—',          source: 'CDR',   payMode: '—'         },
 ];
 
 const PAYMENT_ROWS = [
@@ -54,7 +79,7 @@ const PAYMENT_ROWS = [
   { type: 'Case Management Demand Notice', txNo: '13130', txDate: '05-06-2026 09:30:00', invoiceNo: '70003820', status: 'Success',   amount: '800.00',   txDateFull: '05-06-2026', degTx: '590000237132365', ePayTx: '20021568', initiatedDate: '05-06-2026 09:29:00', initiatedBy: 'crnuser01', mode: 'Credit Card', payMsg: 'Payment Status Remarks: SUCCESS', colMsg: 'Collection Status Remarks: Transaction has been processed successfully.', details: [{ type: 'Case Management Demand Notice', invoiceNo: '70003820', amount: '800.00', receiptNo: 'Z-12646', remarks: 'M1CS 1927055; BPS Transaction for ECM-70003820', status: 'Success' }] },
   { type: 'Case Management Demand Notice', txNo: '13132', txDate: '10-06-2026 10:18:00', invoiceNo: '70003820', status: 'Success',   amount: '1,200.00', txDateFull: '10-06-2026', degTx: '590000237262584', ePayTx: '20021739', initiatedDate: '10-06-2026 10:18:00', initiatedBy: 'crnuser01', mode: 'Credit Card', payMsg: 'Payment Status Remarks: SUCCESS', colMsg: 'Collection Status Remarks: Transaction has been processed successfully.', details: [{ type: 'Case Management Demand Notice', invoiceNo: '70003820', amount: '1,200.00', receiptNo: 'Z-12647', remarks: 'M1CS 1927055; BPS Transaction for ECM-70003820', status: 'Success' }] },
   { type: 'Case Management Demand Notice', txNo: '13131', txDate: '10-06-2026 10:11:00', invoiceNo: '70003819', status: 'Success',   amount: '1,000.00', txDateFull: '10-06-2026', degTx: '590000237262585', ePayTx: '20021740', initiatedDate: '10-06-2026 10:11:00', initiatedBy: 'crnuser01', mode: 'Credit Card', payMsg: 'Payment Status Remarks: SUCCESS', colMsg: 'Collection Status Remarks: Transaction has been processed successfully.', details: [{ type: 'Case Management Demand Notice', invoiceNo: '70003819', amount: '1,000.00', receiptNo: 'Z-12648', remarks: 'M1CS 1927055; BPS Transaction for ECM-70003819', status: 'Success' }] },
-  { type: 'Case Management Demand Notice', txNo: '13129', txDate: '10-06-2026 10:08:00', invoiceNo: '70003819', status: 'Initiated', amount: '220.00',   txDateFull: '14-05-2026', degTx: '590000237132364', ePayTx: '20021566', initiatedDate: '14-05-2026 09:11:00', initiatedBy: 'crnuser01', mode: 'Credit Card', payMsg: 'Payment Status Remarks: Transaction cancelled due to user did not complete the payment process', colMsg: 'Collection Status Remarks: DEG - Transaction cancelled due to user did not complete the payment process', details: [{ type: 'CRN SEA Discrepancy Export Manifest Fine Invoice', invoiceNo: '1000004567', amount: '520.00', receiptNo: '', remarks: '', status: 'Unpaid' }] },
+  { type: 'Case Management Demand Notice', txNo: '13129', txDate: '10-06-2026 10:08:00', invoiceNo: '70003819', status: 'Failed', amount: '220.00',   txDateFull: '14-05-2026', degTx: '590000237132364', ePayTx: '20021566', initiatedDate: '14-05-2026 09:11:00', initiatedBy: 'crnuser01', mode: 'Credit Card', payMsg: 'Payment Status Remarks: Transaction cancelled due to user did not complete the payment process', colMsg: 'Collection Status Remarks: DEG - Transaction cancelled due to user did not complete the payment process', details: [{ type: 'CRN SEA Discrepancy Export Manifest Fine Invoice', invoiceNo: '1000004567', amount: '520.00', receiptNo: '', remarks: '', status: 'Unpaid' }] },
   { type: 'Case Management Demand Notice', txNo: '13128', txDate: '10-06-2026 10:00:00', invoiceNo: '70003816', status: 'Success',   amount: '1,000.00', txDateFull: '10-06-2026', degTx: '590000237262586', ePayTx: '20021741', initiatedDate: '10-06-2026 10:00:00', initiatedBy: 'crnuser01', mode: 'Credit Card', payMsg: 'Payment Status Remarks: SUCCESS', colMsg: 'Collection Status Remarks: Transaction has been processed successfully.', details: [{ type: 'Case Management Demand Notice', invoiceNo: '70003816', amount: '1,000.00', receiptNo: 'Z-12649', remarks: 'M1CS 1927055; BPS Transaction for ECM-70003816', status: 'Success' }] },
   { type: 'Case Management Demand Notice', txNo: '13127', txDate: '10-06-2026 09:55:00', invoiceNo: '70003817', status: 'Initiated', amount: '220.00',   txDateFull: '10-06-2026', degTx: '590000237262587', ePayTx: '20021742', initiatedDate: '10-06-2026 09:55:00', initiatedBy: 'crnuser01', mode: 'Credit Card', payMsg: 'Payment Status Remarks: INITIATED', colMsg: '', details: [{ type: 'Case Management Demand Notice', invoiceNo: '70003817', amount: '220.00', receiptNo: '', remarks: '', status: 'Initiated' }] },
 ];
@@ -85,15 +110,61 @@ const DEBIT_PAY_OPTIONS = [
 ];
 
 /* ── Pre-computed dashboard stats ──────────────────────────────────────────── */
-const creditTotal    = ACCOUNTS.reduce((s, a) => s + parseFloat(a.availableLimit.replace(/,/g, '')), 0);
 const debitTotal     = DEBIT_ACCOUNTS.reduce((s, a) => s + parseFloat(a.availableLimit.replace(/,/g, '')), 0);
-const pendingInv     = INVOICE_ROWS.filter(r => r.status === 'Unpaid').length;
-const pendingInvAmt  = INVOICE_ROWS.filter(r => r.status === 'Unpaid').reduce((s, r) => s + parseFloat(r.balance.replace(/,/g, '')), 0);
-const initiatedPay   = PAYMENT_ROWS.filter(r => r.status === 'Initiated').length;
-const recheckPay     = PAYMENT_ROWS.filter(r => r.details.some(d => d.status === 'Unpaid')).length;
-const pendingPay     = PAYMENT_ROWS.filter(r => r.status !== 'Success').length;
-const paidPayAmt     = PAYMENT_ROWS.filter(r => r.status === 'Success').reduce((s, r) => s + parseFloat(r.amount.replace(/,/g, '')), 0);
-const recentPayments = PAYMENT_ROWS.slice(0, 5);
+
+/* Overview tab — Payment Summary Cards.
+   "Pending Invoices" = invoices still owed (Unpaid / Partially Paid). Whether this should
+   include every unpaid invoice or only invoices eligible for online payment is a scope
+   question for IT to confirm — currently modeled as "all unpaid / partially paid". */
+const sumBalance = (rows: typeof INVOICE_ROWS) => rows.reduce((s, r) => s + parseFloat(r.balance.replace(/,/g, '')), 0);
+const sumAmount  = (rows: typeof INVOICE_ROWS) => rows.reduce((s, r) => s + parseFloat(r.amount.replace(/,/g, '')), 0);
+const sumPayAmount = (rows: typeof PAYMENT_ROWS) => rows.reduce((s, r) => s + parseFloat(r.amount.replace(/,/g, '')), 0);
+
+const payableInvoiceRows = INVOICE_ROWS.filter(r => r.status === 'Unpaid' || r.status === 'Partially Paid');
+const overdueInvoiceRows = payableInvoiceRows.filter(r => parseInvDate(r.dueDate) < DASHBOARD_TODAY_ORD);
+const dueSoonInvoiceRows = payableInvoiceRows.filter(r => parseInvDate(r.dueDate) >= DASHBOARD_TODAY_ORD);
+
+const pendingInvCount = payableInvoiceRows.length;
+const pendingInvAmt   = sumBalance(payableInvoiceRows);
+const overdueInvCount = overdueInvoiceRows.length;
+const overdueInvAmt   = sumBalance(overdueInvoiceRows);
+const dueSoonInvCount = dueSoonInvoiceRows.length;
+const dueSoonInvAmt   = sumBalance(dueSoonInvoiceRows);
+
+const failedPaymentRows = PAYMENT_ROWS.filter(r => r.status === 'Failed');
+const failedPayCount    = failedPaymentRows.length;
+const failedPayAmt      = sumPayAmount(failedPaymentRows);
+
+/* Recent Activity Summary — Today / Last 7 Days / Last 30 Days, precomputed for both
+   windows so the component can toggle between them without re-deriving on every render. */
+const invGenToday  = INVOICE_ROWS.filter(r => parseInvDate(r.date) === DASHBOARD_TODAY_ORD);
+const invGenLast7  = INVOICE_ROWS.filter(r => DASHBOARD_TODAY_ORD - parseInvDate(r.date) < 7);
+const invGenLast30 = INVOICE_ROWS.filter(r => DASHBOARD_TODAY_ORD - parseInvDate(r.date) < 30);
+
+const paySuccessRows   = PAYMENT_ROWS.filter(r => r.status === 'Success');
+const paySuccessToday  = paySuccessRows.filter(r => parseTxDate(r.txDate) === DASHBOARD_TODAY_ORD);
+const paySuccessLast7  = paySuccessRows.filter(r => DASHBOARD_TODAY_ORD - parseTxDate(r.txDate) < 7);
+const paySuccessLast30 = paySuccessRows.filter(r => DASHBOARD_TODAY_ORD - parseTxDate(r.txDate) < 30);
+
+const failedPayToday = failedPaymentRows.filter(r => parseTxDate(r.txDate) === DASHBOARD_TODAY_ORD);
+
+const RECENT_ACTIVITY = {
+  invoicesGenerated: {
+    today:  { count: invGenToday.length,  amt: sumAmount(invGenToday) },
+    last7:  { count: invGenLast7.length,  amt: sumAmount(invGenLast7) },
+    last30: { count: invGenLast30.length, amt: sumAmount(invGenLast30) },
+  },
+  paymentsMade: {
+    today:  { count: paySuccessToday.length,  amt: sumPayAmount(paySuccessToday) },
+    last7:  { count: paySuccessLast7.length,  amt: sumPayAmount(paySuccessLast7) },
+    last30: { count: paySuccessLast30.length, amt: sumPayAmount(paySuccessLast30) },
+  },
+  failedPayments: {
+    today:  { count: failedPayToday.length, amt: sumPayAmount(failedPayToday) },
+    last7:  { count: failedPayCount,        amt: failedPayAmt },
+    last30: { count: failedPayCount,        amt: failedPayAmt },
+  },
+};
 
 const fmtBalance = (n: number) =>
   'AED ' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -731,6 +802,11 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const [fStatuses,  setFStatuses]  = useState<Set<string>>(() => new Set(['Unpaid']));
   const [statusOpen, setStatusOpen] = useState(false);
   const [payStatusFilter, setPayStatusFilter] = useState('');
+  /** Set from the Overview tab's Overdue / Current & Due Soon cards — narrows the Invoices
+      tab by due-date bucket. Shown as a dismissible chip so it can be cleared like any other filter. */
+  const [fDueFilter, setFDueFilter] = useState<'' | 'overdue' | 'dueSoon'>('');
+  /** Recent Activity Summary window toggle (Overview tab). */
+  const [recentPeriodDays, setRecentPeriodDays] = useState<7 | 30>(7);
 
   /* Account & Payment bottom-bar search */
   const [accSearchType, setAccSearchType]         = useState('Account Number');
@@ -987,13 +1063,18 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const selectedList = Array.from(selectedRows).map(i => INVOICE_ROWS[i]).filter(Boolean);
   const totalAmt     = selectedList.reduce((s, r) => s + parseFloat(r.balance.replace(',', '')), 0);
 
-  /* Invoices filtering — Invoice Type/Number (toolbar), Advance Filters fields, and
-     multi-select Status (defaults to Unpaid on first load of the Invoices tab). */
+  /* Invoices filtering — Invoice Type/Number (toolbar), Advance Filters fields (incl. date
+     range on the invoice's generation date), multi-select Status (defaults to Unpaid on
+     first load), and the due-date bucket set from the Overview tab's summary cards. */
   const filteredInv = INVOICE_ROWS.filter(row => {
     if (fInvType && row.type !== fInvType) return false;
     if (fInvNumber && !row.number.toLowerCase().includes(fInvNumber.toLowerCase())) return false;
     if (fSource && row.source !== fSource) return false;
     if (fStatuses.size > 0 && !fStatuses.has(row.status)) return false;
+    if (fFromDate && parseInvDate(row.date) < parseIsoDate(fFromDate)) return false;
+    if (fToDate && parseInvDate(row.date) > parseIsoDate(fToDate)) return false;
+    if (fDueFilter === 'overdue' && parseInvDate(row.dueDate) >= DASHBOARD_TODAY_ORD) return false;
+    if (fDueFilter === 'dueSoon' && parseInvDate(row.dueDate) < DASHBOARD_TODAY_ORD) return false;
     return true;
   });
   const filteredInvIdxs = filteredInv.map(row => INVOICE_ROWS.indexOf(row));
@@ -1917,7 +1998,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               />
             </div>
             <button className="h-[56px] px-6 rounded-[4px] text-[16px] text-white flex-shrink-0" style={{ background: '#1360d2', fontFamily: font }}>Search</button>
-            <button onClick={() => { setFFromDate(''); setFToDate(''); setFSource(''); setFInvType(''); setFInvNumber(''); setFStatuses(new Set()); }}
+            <button onClick={() => { setFFromDate(''); setFToDate(''); setFSource(''); setFInvType(''); setFInvNumber(''); setFStatuses(new Set()); setFDueFilter(''); }}
               className="h-[56px] px-6 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] flex-shrink-0" style={{ fontFamily: font }}>Reset</button>
           </div>
         </div>
@@ -1933,6 +2014,14 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             <span className="text-[#d5ddfb]">|</span>
             <span className="text-[#697498]">Total Amount Selected: <span className="font-semibold text-[#0e1b3d] inline-flex items-center gap-[3px]"><DirhamIcon size={13} color="#0e1b3d" />{[...selectedRows].reduce((s, i) => s + parseFloat(INVOICE_ROWS[i]?.balance ?? '0'), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></span>
           </>
+        )}
+        {fDueFilter && (
+          <span className="inline-flex items-center gap-[6px] px-[10px] py-[3px] rounded-[14px] ml-[6px]" style={{ background: fDueFilter === 'overdue' ? 'rgba(220,53,69,0.10)' : 'rgba(19,96,210,0.10)', color: fDueFilter === 'overdue' ? '#dc3545' : '#1360d2' }}>
+            {fDueFilter === 'overdue' ? 'Overdue only' : 'Current / due soon only'}
+            <button onClick={() => setFDueFilter('')} className="hover:opacity-70 transition-opacity" title="Clear due-date filter">
+              <svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M5 5l10 10M15 5L5 15" strokeLinecap="round" /></svg>
+            </button>
+          </span>
         )}
       </div>
 
@@ -2154,7 +2243,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
           </button>
           {payStatusOpen && (
             <div className="absolute z-20 top-[52px] left-0 bg-white shadow-lg rounded border border-[#e0e8f5] w-[160px] py-1">
-              {['All', 'Success', 'Initiated'].map(opt => (
+              {['All', 'Success', 'Initiated', 'Failed'].map(opt => (
                 <button key={opt} className="w-full px-4 py-2 text-left text-[16px] text-[#0e1b3d] hover:bg-[#e2ebf9]" style={{ fontFamily: font }}
                   onClick={() => { setPayStatusFilter(opt === 'All' ? '' : opt); setPayStatusOpen(false); }}>{opt}</button>
               ))}
@@ -2210,7 +2299,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               <FloatDropdown
                 label="Status"
                 value={payStatusFilter}
-                options={['Success', 'Initiated']}
+                options={['Success', 'Initiated', 'Failed']}
                 onChange={setPayStatusFilter}
               />
             </div>
@@ -2844,127 +2933,157 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
           {/* Right content */}
           <div className="flex-1 flex flex-col overflow-hidden min-w-0">
             <div className="flex-1 overflow-y-auto pb-4">
-          {activeMenu === 'Overview' && (
-            <div className="flex flex-col gap-[16px] w-full">
+          {activeMenu === 'Overview' && (() => {
+            const openPending = () => { setActiveMenu('Invoices'); setFStatuses(new Set(['Unpaid', 'Partially Paid'])); setFDueFilter(''); };
+            const openOverdue = () => { setActiveMenu('Invoices'); setFStatuses(new Set(['Unpaid', 'Partially Paid'])); setFDueFilter('overdue'); };
+            const openDueSoon = () => { setActiveMenu('Invoices'); setFStatuses(new Set(['Unpaid', 'Partially Paid'])); setFDueFilter('dueSoon'); };
+            const openFailed  = () => { setActiveMenu('Payments'); setPayStatusFilter('Failed'); };
+            const openInvoicesInPeriod = (period: 'today' | 'period') => {
+              setActiveMenu('Invoices'); setFStatuses(new Set()); setFDueFilter('');
+              setFFromDate(period === 'today' ? '2026-06-10' : recentPeriodDays === 7 ? '2026-06-04' : '2026-05-11');
+              setFToDate('2026-06-10');
+            };
+            const openPaymentsMade = () => { setActiveMenu('Payments'); setPayStatusFilter('Success'); };
 
-              {/* ── ROW 1: KPI stat cards ─────────────────────────────────── */}
-              <div className="grid grid-cols-2 gap-[14px]">
-                {[
-                  { label: 'Invoices Due', value: pendingInv, sub: `AED ${pendingInvAmt.toLocaleString('en-US', {minimumFractionDigits:2})} total`, color: '#e8690d', bg: 'linear-gradient(135deg,#fff7ec,#fffaf4)', border: '#fcd7a0', icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#e8690d" strokeWidth="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5" strokeLinecap="round"/></svg>, onClick: () => setActiveMenu('Invoices') },
-                  { label: 'Payment Failed', value: recheckPay, sub: 'Requires attention', color: '#c0392b', bg: 'linear-gradient(135deg,#fff0f0,#fff8f8)', border: '#f5b8b8', icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#c0392b" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v5" strokeLinecap="round"/><circle cx="12" cy="16.5" r="0.9" fill="#c0392b"/></svg>, onClick: () => setActiveMenu('Payments') },
-                ].map(({ label, value, sub, color, bg, border, icon, onClick }) => (
-                  <button key={label} onClick={onClick}
-                    className="rounded-[14px] p-[16px] text-left flex items-center gap-[14px] relative overflow-hidden hover:shadow-lg transition-shadow"
+            const SUMMARY_CARDS = [
+              { key: 'pending', label: 'Pending Invoices', count: pendingInvCount, amt: pendingInvAmt, color: '#1360d2', bg: 'linear-gradient(135deg,#eef4ff,#f5f8ff)', border: '#b3caff', onClick: openPending,
+                icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1360d2" strokeWidth="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5" strokeLinecap="round"/></svg>,
+                tip: 'Whether this includes every unpaid invoice or only invoices eligible for online payment is pending confirmation from IT.' },
+              { key: 'overdue', label: 'Overdue Invoices', count: overdueInvCount, amt: overdueInvAmt, color: '#dc3545', bg: 'linear-gradient(135deg,#fff0f0,#fff8f8)', border: '#f5b8b8', onClick: openOverdue,
+                icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#dc3545" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v6" strokeLinecap="round"/><circle cx="12" cy="16.5" r="0.9" fill="#dc3545"/></svg>,
+                tip: undefined as string | undefined },
+              { key: 'dueSoon', label: 'Current / Due Soon', count: dueSoonInvCount, amt: dueSoonInvAmt, color: '#b45309', bg: 'linear-gradient(135deg,#fff7ec,#fffaf4)', border: '#fcd7a0', onClick: openDueSoon,
+                icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#b45309" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+                tip: undefined as string | undefined },
+              { key: 'failed', label: 'Failed Payments', count: failedPayCount, amt: failedPayAmt, color: '#c0392b', bg: 'linear-gradient(135deg,#fff0f0,#fff8f8)', border: '#f5b8b8', onClick: openFailed,
+                icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#c0392b" strokeWidth="1.8"><path d="M12 3v12M8 11l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" transform="rotate(180 12 12)"/></svg>,
+                tip: undefined as string | undefined },
+            ];
+
+            const period = recentPeriodDays === 7 ? 'last7' : 'last30';
+            const ACTIVITY_ROWS = [
+              { key: 'invGen', label: 'Invoices Generated', data: RECENT_ACTIVITY.invoicesGenerated, onClick: openInvoicesInPeriod },
+              { key: 'payMade', label: 'Payments Made', data: RECENT_ACTIVITY.paymentsMade, onClick: (_period: 'today' | 'period') => openPaymentsMade() },
+              { key: 'payFailed', label: 'Failed Payments', data: RECENT_ACTIVITY.failedPayments, onClick: (_period: 'today' | 'period') => openFailed() },
+            ];
+
+            return (
+            <div className="flex flex-col gap-[20px] w-full">
+
+              {/* ── 1. Payment Summary Cards ─────────────────────────────── */}
+              <div className="grid grid-cols-4 gap-[14px]">
+                {SUMMARY_CARDS.map(({ key, label, count, amt, color, bg, border, icon, onClick, tip }) => (
+                  <button key={key} onClick={onClick}
+                    className="rounded-[14px] p-[16px] text-left flex flex-col gap-[10px] relative overflow-hidden hover:shadow-lg transition-shadow"
                     style={{ background: bg, border: `1.5px solid ${border}` }}>
-                    <div className="absolute left-0 top-0 bottom-0 w-[4px] rounded-l-[14px]" style={{ background: color }} />
-                    <div className="size-[44px] rounded-[10px] flex items-center justify-center flex-shrink-0 ml-[4px]" style={{ background: `${color}1a` }}>{icon}</div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[30px] font-extrabold leading-none mb-[2px]" style={{ color, fontFamily: font, letterSpacing: '-1px' }}>{value}</p>
+                    <div className="absolute left-0 top-0 bottom-0 w-[4px]" style={{ background: color }} />
+                    <div className="flex items-center justify-between">
+                      <div className="size-[40px] rounded-[10px] flex items-center justify-center flex-shrink-0" style={{ background: `${color}1a` }}>{icon}</div>
+                      {tip && (
+                        <div className="group/tip relative cursor-help flex-shrink-0" onClick={e => e.stopPropagation()}>
+                          <img src={infoIconSrc} alt="info" width="14" height="14" />
+                          <div className="absolute top-[calc(100%+6px)] right-0 z-[300] hidden group-hover/tip:block bg-[#0e1b3d] text-white rounded-[6px] px-[10px] py-[8px] shadow-lg pointer-events-none"
+                            style={{ fontSize: 12, fontFamily: font, width: 220 }}>
+                            {tip}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-[28px] font-extrabold leading-none mb-[4px]" style={{ color, fontFamily: font, letterSpacing: '-1px' }}>{count}</p>
                       <p className="text-[16px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>{label}</p>
-                      <p className="text-[16px] text-[#697498] mt-[1px]" style={{ fontFamily: font }}>{sub}</p>
+                      <p className="text-[16px] text-[#697498] mt-[1px] flex items-center gap-[3px]" style={{ fontFamily: font }}><DirhamIcon size={12} color="#697498" />{amt.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
                     </div>
                   </button>
                 ))}
               </div>
 
-              {/* ── ROW 2: Accounts + Recent Transactions ─────────────────── */}
-              <div className="flex gap-[16px] items-start">
+              {/* ── 2. Main Payment Action ───────────────────────────────── */}
+              <div className="flex items-center gap-[12px]">
+                <button onClick={() => setActiveMenu('Invoices')}
+                  className="h-[52px] px-[24px] rounded-[8px] text-[16px] font-semibold text-white flex items-center gap-[10px] hover:opacity-90 transition-opacity"
+                  style={{ background: '#1360d2', fontFamily: font }}>
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="6" width="20" height="13" rx="2" /><path d="M2 10h20" strokeLinecap="round" /></svg>
+                  View &amp; Pay Invoices
+                </button>
+                <button onClick={() => setActiveMenu('Payments')}
+                  className="h-[52px] px-[24px] rounded-[8px] text-[16px] font-semibold text-[#1360d2] bg-white flex items-center gap-[10px] hover:bg-[#f0f4ff] transition-colors"
+                  style={{ border: '1.5px solid #1360d2', fontFamily: font }}>
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 3" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  View Payment History
+                </button>
+              </div>
 
-                {/* Account Balances */}
-                <div className="flex flex-col gap-[12px]" style={{ width: '38%', flexShrink: 0 }}>
-                  <p className="text-[15px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>Account Balances</p>
-
-                  {/* Credit card */}
-                  <div className="rounded-[14px] p-[18px] flex flex-col gap-[12px] relative overflow-hidden"
-                    style={{ background: 'linear-gradient(135deg,#dce9ff,#edf4ff)', border: '1.5px solid #b3caff', boxShadow: '0 4px 18px rgba(19,96,210,0.10)' }}>
-                    <div className="absolute -right-4 -top-4 size-[70px] rounded-full opacity-10" style={{ background: '#1360d2' }} />
-                    <div className="flex items-center justify-between relative z-10">
-                      <div className="flex items-center gap-[10px]">
-                        <div className="size-[38px] rounded-[9px] flex items-center justify-center" style={{ background: 'rgba(19,96,210,0.14)' }}>
-                          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1360d2" strokeWidth="1.8"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 14h4" strokeLinecap="round"/></svg>
-                        </div>
-                        <div>
-                          <p className="text-[16px] font-bold text-[#0e1b3d]" style={{ fontFamily: font }}>Credit Accounts</p>
-                          <span className="inline-flex items-center px-[8px] py-[2px] rounded-full text-[13px] font-semibold mt-[2px]" style={{ background: 'rgba(19,96,210,0.12)', color: '#1360d2', fontFamily: font }}>{ACCOUNTS.length} accounts</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="relative z-10">
-                      <p className="text-[16px] text-[#697498] mb-[1px]" style={{ fontFamily: font }}>Total Available Balance</p>
-                      <p className="text-[22px] font-extrabold text-[#1360d2] leading-tight" style={{ fontFamily: font, letterSpacing: '-0.5px' }}>{fmtBalance(creditTotal)}</p>
-                    </div>
-                    <div className="flex items-center justify-between relative z-10 pt-[8px] border-t border-[rgba(19,96,210,0.15)]">
-                      <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>Updated today</span>
-                      <button onClick={() => setActiveMenu('Accounts')} className="text-[16px] text-[#1360d2] font-semibold hover:underline flex items-center gap-1" style={{ fontFamily: font }}>
-                        View all <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#1360d2" strokeWidth="2"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              {/* ── 3. Recent Activity Summary ───────────────────────────── */}
+              <div className="flex flex-col gap-[10px]">
+                <div className="flex items-center justify-between">
+                  <p className="text-[15px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>Recent Activity Summary</p>
+                  <div className="inline-flex rounded-[6px] overflow-hidden border border-[#d5ddfb]">
+                    {([7, 30] as const).map(d => (
+                      <button key={d} onClick={() => setRecentPeriodDays(d)}
+                        className="px-[14px] h-[30px] text-[13px] font-semibold transition-colors"
+                        style={{ fontFamily: font, background: recentPeriodDays === d ? '#1360d2' : 'white', color: recentPeriodDays === d ? 'white' : '#697498' }}>
+                        {d} Days
                       </button>
-                    </div>
+                    ))}
                   </div>
-
-                  {/* Debit card */}
-                  <div className="rounded-[14px] p-[18px] flex flex-col gap-[12px] relative overflow-hidden"
-                    style={{ background: 'linear-gradient(135deg,#e8f0fe,#f0f5ff)', border: '1.5px solid #93b4f7', boxShadow: '0 4px 18px rgba(30,64,175,0.09)' }}>
-                    <div className="absolute -right-4 -top-4 size-[70px] rounded-full opacity-10" style={{ background: '#1e40af' }} />
-                    <div className="flex items-center justify-between relative z-10">
-                      <div className="flex items-center gap-[10px]">
-                        <div className="size-[38px] rounded-[9px] flex items-center justify-center" style={{ background: 'rgba(30,64,175,0.12)' }}>
-                          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1e40af" strokeWidth="1.8"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 14h4" strokeLinecap="round"/></svg>
-                        </div>
-                        <div>
-                          <p className="text-[16px] font-bold text-[#0e1b3d]" style={{ fontFamily: font }}>Debit Accounts</p>
-                          <span className="inline-flex items-center px-[8px] py-[2px] rounded-full text-[13px] font-semibold mt-[2px]" style={{ background: 'rgba(30,64,175,0.12)', color: '#1e40af', fontFamily: font }}>{DEBIT_ACCOUNTS.length} accounts</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="relative z-10">
-                      <p className="text-[16px] text-[#697498] mb-[1px]" style={{ fontFamily: font }}>Total Available Balance</p>
-                      <p className="text-[22px] font-extrabold text-[#1e40af] leading-tight" style={{ fontFamily: font, letterSpacing: '-0.5px' }}>{fmtBalance(debitTotal)}</p>
-                    </div>
-                    <div className="flex items-center justify-between relative z-10 pt-[8px] border-t border-[rgba(30,64,175,0.15)]">
-                      <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>Updated today</span>
-                      <button onClick={() => setActiveMenu('Accounts')} className="text-[16px] text-[#1360d2] font-semibold hover:underline flex items-center gap-1" style={{ fontFamily: font }}>
-                        View all <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#1360d2" strokeWidth="2"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                      </button>
-                    </div>
-                  </div>
-
                 </div>
-
-                {/* Recent Transactions */}
-                <div className="flex-1 flex flex-col gap-[12px] min-w-0">
-                  <div className="flex items-center justify-between">
-                    <p className="text-[15px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>Recent Transactions</p>
-                    <button onClick={() => setActiveMenu('Payments')} className="text-[16px] text-[#1360d2] font-semibold hover:underline flex items-center gap-1" style={{ fontFamily: font }}>
-                      View all <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#1360d2" strokeWidth="2"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                    </button>
-                  </div>
-                  <div className="rounded-[14px] overflow-hidden" style={{ border: '1.5px solid #e0e8f5', boxShadow: '0 2px 12px rgba(19,96,210,0.06)' }}>
-                    {recentPayments.map((tx, i) => {
-                      const st = PAY_STATUS[tx.status] ?? { bg: 'rgba(105,116,152,0.10)', color: '#697498' };
-                      return (
-                        <div key={i} className="flex items-center gap-[12px] px-[16px] py-[13px]" style={{ borderBottom: i < recentPayments.length - 1 ? '1px solid #f0f4ff' : 'none', background: i % 2 === 0 ? 'white' : '#fafbff' }}>
-                          <div className="size-[36px] rounded-[9px] flex items-center justify-center flex-shrink-0" style={{ background: tx.status === 'Success' ? 'rgba(34,197,94,0.10)' : 'rgba(19,96,210,0.10)' }}>
-                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke={tx.status === 'Success' ? '#16a34a' : '#1360d2'} strokeWidth="1.8">
-                              <rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20" strokeLinecap="round"/>
-                            </svg>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[16px] font-semibold text-[#0e1b3d] truncate" style={{ fontFamily: font }}>{tx.type}</p>
-                            <p className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>Tx #{tx.txNo} · {tx.txDate}</p>
-                          </div>
-                          <div className="flex flex-col items-end gap-[3px] flex-shrink-0">
-                            <p className="text-[16px] font-bold text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: font }}><DirhamIcon size={12} color="#0e1b3d" /> {tx.amount}</p>
-                            <span className="inline-flex items-center px-[7px] py-[1px] rounded-[4px] text-[16px] font-medium" style={{ background: st.bg, color: st.color }}>{tx.status}</span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
+                <div className="rounded-[14px] overflow-hidden" style={{ border: '1.5px solid #e0e8f5', boxShadow: '0 2px 12px rgba(19,96,210,0.06)' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: font }}>
+                    <thead>
+                      <tr style={{ background: '#a6c2e9' }}>
+                        <th style={{ padding: '10px 16px', textAlign: 'left' }}><span className="text-[16px] font-medium text-[#051937]">Activity</span></th>
+                        <th style={{ padding: '10px 16px', textAlign: 'right' }}><span className="text-[16px] font-medium text-[#051937]">Today</span></th>
+                        <th style={{ padding: '10px 16px', textAlign: 'right' }}><span className="text-[16px] font-medium text-[#051937]">Last {recentPeriodDays} Days</span></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {ACTIVITY_ROWS.map(({ key, label, data, onClick }, i) => (
+                        <tr key={key} style={{ borderBottom: i < ACTIVITY_ROWS.length - 1 ? '1px solid #f0f4ff' : 'none', background: i % 2 === 0 ? 'white' : '#fafbff' }}>
+                          <td style={{ padding: '14px 16px' }}><span className="text-[16px] font-semibold text-[#0e1b3d]">{label}</span></td>
+                          <td style={{ padding: '14px 16px', textAlign: 'right' }}>
+                            <button onClick={() => onClick('today')} disabled={data.today.count === 0}
+                              className="inline-flex flex-col items-end hover:underline disabled:no-underline disabled:cursor-default"
+                              style={{ fontFamily: font }}>
+                              <span className="text-[16px] font-bold" style={{ color: data.today.count > 0 ? '#1360d2' : '#697498' }}>{data.today.count}</span>
+                              <span className="text-[16px] text-[#697498] flex items-center gap-[3px]"><DirhamIcon size={11} color="#697498" />{data.today.amt.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                            </button>
+                          </td>
+                          <td style={{ padding: '14px 16px', textAlign: 'right' }}>
+                            <button onClick={() => onClick('period')} disabled={data[period].count === 0}
+                              className="inline-flex flex-col items-end hover:underline disabled:no-underline disabled:cursor-default"
+                              style={{ fontFamily: font }}>
+                              <span className="text-[16px] font-bold" style={{ color: data[period].count > 0 ? '#1360d2' : '#697498' }}>{data[period].count}</span>
+                              <span className="text-[16px] text-[#697498] flex items-center gap-[3px]"><DirhamIcon size={11} color="#697498" />{data[period].amt.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
+
+              {/* ── 4. Debit Account / Wallet Summary ────────────────────── */}
+              <div className="rounded-[14px] p-[18px] flex items-center justify-between relative overflow-hidden"
+                style={{ background: 'linear-gradient(135deg,#e8f0fe,#f0f5ff)', border: '1.5px solid #93b4f7', boxShadow: '0 4px 18px rgba(30,64,175,0.09)', maxWidth: 480 }}>
+                <div className="absolute -right-4 -top-4 size-[70px] rounded-full opacity-10" style={{ background: '#1e40af' }} />
+                <div className="flex items-center gap-[12px] relative z-10">
+                  <div className="size-[38px] rounded-[9px] flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(30,64,175,0.12)' }}>
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1e40af" strokeWidth="1.8"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 14h4" strokeLinecap="round"/></svg>
+                  </div>
+                  <div>
+                    <p className="text-[16px] font-bold text-[#0e1b3d]" style={{ fontFamily: font }}>Debit Account (Wallet)</p>
+                    <p className="text-[22px] font-extrabold text-[#1e40af] leading-tight" style={{ fontFamily: font, letterSpacing: '-0.5px' }}>{fmtBalance(debitTotal)}</p>
+                  </div>
+                </div>
+                <button onClick={() => setActiveMenu('Accounts')} className="text-[16px] text-[#1360d2] font-semibold hover:underline flex items-center gap-1 relative z-10 flex-shrink-0" style={{ fontFamily: font }}>
+                  View all <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#1360d2" strokeWidth="2"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </button>
+              </div>
             </div>
-          )}
+            );
+          })()}
             {activeMenu === 'Invoices' && <InvoicesContent />}
             {activeMenu === 'Payments' && <PaymentsContent />}
             {activeMenu === 'Accounts' && <AccountsContent />}
