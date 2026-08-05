@@ -40,7 +40,7 @@ export default function ValidityExtensionViewRequestPage({ row, onBack }: Props)
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-[32px] gap-y-[20px]">
                 <Field label="Request No." value={row.reqNo} />
                 <Field label="Status" value={row.status} />
-                <Field label="Time Validity Extension Registration No." value={row.registrationNo} />
+                <Field label="Claim Time Validity Extension Registration No." value={row.registrationNo} />
                 <Field label="Registration Date" value={row.submissionDate} />
                 <Field label="Declaration No." value={decl?.declNo} />
                 <Field label="Declaration Owner" value={row.declarationOwnerName} />
@@ -89,9 +89,9 @@ export default function ValidityExtensionViewRequestPage({ row, onBack }: Props)
             </div>
           </div>
 
-          {/* Time Validity Extension Details */}
+          {/* Claim Time Validity Extension Details */}
           <div className="flex flex-col gap-[14px]">
-            <h2 className="text-[24px] font-medium text-[#051937]" style={{ fontFamily: font }}>Time Validity Extension Details</h2>
+            <h2 className="text-[24px] font-medium text-[#051937]" style={{ fontFamily: font }}>Claim Time Validity Extension Details</h2>
             <div className="bg-white rounded-[8px] px-[14px] pt-[16px] pb-[16px]" style={{ boxShadow: '1px 2px 12px rgba(0,0,0,0.06)' }}>
               <div className="overflow-x-auto">
                 <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, minWidth: 700, fontFamily: font }}>

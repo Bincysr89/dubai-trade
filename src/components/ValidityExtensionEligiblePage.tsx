@@ -157,7 +157,7 @@ export default function ValidityExtensionEligiblePage({ onBack, onBackToListing,
 
       <div className="flex-1 overflow-y-auto">
         <div className="px-4 sm:px-10 mb-[8px]">
-          <h1 className="text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>Raise New Claim — Time Validity Extension</h1>
+          <h1 className="text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>Raise New Claim — Claim Time Validity Extension</h1>
         </div>
         <div className="px-4 sm:px-10 mb-[24px]">
           <ClaimStepper activeIndex={0} steps={VALIDITY_EXT_STEPS} />

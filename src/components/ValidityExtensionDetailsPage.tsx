@@ -104,7 +104,7 @@ export default function ValidityExtensionDetailsPage({ rows, onBack, onBackToLis
       </div>
 
       <div className="flex-1 overflow-auto px-4 sm:px-10 pb-[32px]">
-        <h1 className="text-[32px] text-[#111838] mb-[8px]" style={{ fontWeight: 500 }}>Raise New Claim — Time Validity Extension</h1>
+        <h1 className="text-[32px] text-[#111838] mb-[8px]" style={{ fontWeight: 500 }}>Raise New Claim — Claim Time Validity Extension</h1>
         <div className="mb-[24px]">
           <ClaimStepper activeIndex={1} steps={VALIDITY_EXT_STEPS} />
         </div>

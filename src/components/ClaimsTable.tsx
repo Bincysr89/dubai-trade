@@ -90,7 +90,7 @@ export type ClaimRow = {
   submissionDate: string;
   status: Status;
   remark: string;
-  // Generic "request" fields — only populated for non-claim requests (e.g. Time Validity Extension)
+  // Generic "request" fields — only populated for non-claim requests (e.g. Claim Time Validity Extension)
   // surfaced via a Request Number search on the main listing.
   transactionType?: string;
   requestedFor?: string;
@@ -161,12 +161,12 @@ const CLAIM_ROWS: ClaimRow[] = [
     depositType: 'Declaration Cancellation - Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/10/2024', status: 'Submitted', remark: '—',
   },
   {
-    reqNo: '231626', claimNo: '—', ver: '1', claimType: 'Time Validity Extension',
+    reqNo: '231626', claimNo: '—', ver: '1', claimType: 'Claim Time Validity Extension',
     declarations: [
       { declNo: '4010001887026', date: '03/08/2026', category: 'Temporary Admission from ROW to Local', ownerCode: "AE-8122451 - M&M's special holding private company", claimExpiry: '29/04/2027', exportExpiry: '29/01/2027' },
     ],
     depositType: 'Deposit Alternative duty rate', claimantName: "M&M's special holding private company associated with 1900 Waverly Co United arab emirates L.L.C", claimantCode: 'AE-8122451', submissionDate: '03/08/2026', status: 'Under Processing', remark: '—',
-    transactionType: 'Time Validity Extension', requestedFor: 'AE-8122451',
+    transactionType: 'Claim Time Validity Extension', requestedFor: 'AE-8122451',
     registrationNo: '547', declarationOwnerName: "M&M's special holding private company associated with 1900 Waverly Co United arab emirates L.L.C ( Business )", declarationType: 'Temporary Admission from ROW to Local', customsBroker: 'AE-8122451', extReason: 'extension request',
     extDaysRequested: '100', extDaysApproved: '0', extChargeType: 'Deposit Alternative duty rate', extAmount: '2,000.00',
     attachments: [{ file: '33 Invoice Line item.txt', fileType: 'text/plain', size: '4150' }],
@@ -329,7 +329,7 @@ type Props = {
   /** Set when the user searched using "Request Number" — filters to that request and switches
       the table to the request-specific dynamic column set (see REQ_SEARCH_COLS below). */
   searchReqNo?: string;
-  /** Dedicated "Time Validity Extension" sidebar listing — shows all non-claim requests
+  /** Dedicated "Claim Time Validity Extension" sidebar listing — shows all non-claim requests
       (rows with a transactionType) by default, using the same column set as a Request Number
       search, instead of requiring the user to search first. searchReqNo still narrows it. */
   requestsOnly?: boolean;
@@ -390,7 +390,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
       const statusFiltered = statusFilter ? base.filter((r) => r.status === statusFilter) : base;
       return statusFiltered.filter((r) => r.reqNo.toLowerCase().includes(q));
     }
-    // Non-claim requests (e.g. Time Validity Extension) only surface via Request Number search.
+    // Non-claim requests (e.g. Claim Time Validity Extension) only surface via Request Number search.
     const claimsOnly = base.filter((r) => !r.transactionType);
     const statusFiltered = statusFilter ? claimsOnly.filter((r) => r.status === statusFilter) : claimsOnly;
     if (!declSearchActive) return statusFiltered;
