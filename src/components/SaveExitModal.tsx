@@ -4,7 +4,7 @@ const font = "'Dubai', 'Segoe UI', sans-serif";
 
 type Props = {
   onCancel: () => void;
-  onBackToListing: () => void;
+  onBackToListing?: () => void;
   requestNumber?: string;
 };
 

@@ -72,9 +72,13 @@ type Props = {
   hideSaveExit?: boolean;
   /** Amend flow: show an info bar and make the payment mode/reference read-only. */
   chargesNote?: string;
+  /** Validity Extension flow: there's no separate claimant/broker to show. */
+  hideClaimantBroker?: boolean;
+  /** Validity Extension flow: declaration count is redundant with the table above. */
+  hideDeclarationCount?: boolean;
 };
 
-export default function NonRemittanceChargesPage({ onBack, onBackToListing, onContinue, selectedRows, onDeclarationOpen, title, steps, activeIndex = 2, typeColumnLabel = 'Declaration Type', showChargeType = false, hideSaveExit = false, chargesNote }: Props) {
+export default function NonRemittanceChargesPage({ onBack, onBackToListing, onContinue, selectedRows, onDeclarationOpen, title, steps, activeIndex = 2, typeColumnLabel = 'Declaration Type', showChargeType = false, hideSaveExit = false, chargesNote, hideClaimantBroker = false, hideDeclarationCount = false }: Props) {
   const [paymentMode, setPaymentMode] = useState('Credit/Debit Account');
   const [paymentRef,  setPaymentRef]  = useState('');
   const [showSaveModal, setShowSaveModal] = useState(false);
@@ -88,7 +92,7 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
     if (acc && acc.balance < TOTAL_AED * displayRows.length) setInsufficientOpen(true);
   };
 
-  const displayRows = selectedRows.length > 0 ? selectedRows : [];
+  const displayRows = Array.from(new Map(selectedRows.map(r => [r.declarationNo, r])).values());
 
   return (
     <div className="flex flex-col bg-[#f8fafd] h-full" style={{ fontFamily: font }}>
@@ -143,7 +147,7 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
                           { label: 'Declaration Clearance Date',     w: 180 },
                           { label: typeColumnLabel,                  w: 180 },
                           { label: 'Owner Code',                     w: 240 },
-                          { label: 'Claim Registration Charge',      w: 200 },
+                          { label: 'Registration Charge',            w: 200 },
                           { label: 'Knowledge & Innovation Dirham',  w: 240 },
                         ]
                       : [
@@ -151,7 +155,7 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
                           { label: 'Declaration No.',                w: 170 },
                           { label: typeColumnLabel,                  w: 180 },
                           { label: 'Owner Code',                     w: 240 },
-                          { label: 'Claim Registration Charge',      w: 200 },
+                          { label: 'Registration Charge',            w: 200 },
                           { label: 'Knowledge & Innovation Dirham',  w: 240 },
                         ]
                     ).map((h, i) => (
@@ -213,10 +217,12 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
             </div>
             <div className="px-[20px] py-[16px] flex flex-col gap-[12px]">
               {/* Line items — label left-aligned (60%), fee right-aligned (40%) */}
-              <div className="flex items-start">
-                <span className="text-[15px] text-[#697498] w-[60%] pr-[12px] text-left" style={{ fontFamily: font, lineHeight: 1.4 }}>No. of Declarations applicable for registration fee</span>
-                <span className="text-[15px] text-[#051937] w-[40%] text-right" style={{ fontFamily: font, fontWeight: 500 }}>{displayRows.length}</span>
-              </div>
+              {!hideDeclarationCount && (
+                <div className="flex items-start">
+                  <span className="text-[15px] text-[#697498] w-[60%] pr-[12px] text-left" style={{ fontFamily: font, lineHeight: 1.4 }}>No. of Declarations applicable for registration fee</span>
+                  <span className="text-[15px] text-[#051937] w-[40%] text-right" style={{ fontFamily: font, fontWeight: 500 }}>{displayRows.length}</span>
+                </div>
+              )}
               <div className="flex items-start">
                 <span className="text-[15px] text-[#697498] w-[60%] pr-[12px] text-left" style={{ fontFamily: font, lineHeight: 1.4 }}>Sub Total of Registration Fee</span>
                 <span className="flex items-center justify-end gap-[4px] text-[15px] text-[#051937] w-[40%]" style={{ fontFamily: font }}>
@@ -256,9 +262,11 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
 
         </div>
 
-        <div className="px-4 sm:px-10 pb-[32px]">
-          <ClaimantBrokerDetail />
-        </div>
+        {!hideClaimantBroker && (
+          <div className="px-4 sm:px-10 pb-[32px]">
+            <ClaimantBrokerDetail />
+          </div>
+        )}
       </div>
 
       {/* Bottom bar */}

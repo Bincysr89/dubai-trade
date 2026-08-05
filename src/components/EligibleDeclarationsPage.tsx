@@ -507,13 +507,32 @@ export type Row = {
   kind: RowKind;
   importerCode?: string;     // for Non Remittance / Refund of Deposits owner filtering
   accountNumber?: string;    // only set when depositMethod === 'Standing Guarantee'
+  brokerCode?: string;       // Validity Extension — declaration's customs broker
+  brokerName?: string;
 };
 
 const ROWS: Row[] = [
   // ── Refund of Deposits ─────────────────────────────────────────────────────
   // Alternative Duty Deposit
   { declarationNo: '105-01426431-24', declarationDate: '09/10/2024', depositType: 'Alternative Duty Deposit',          declarationCategory: 'Import for Re Export',          depositAmount: 'Dh 1,000', depositMethod: 'Standing Guarantee', claimExpiry: '04/03/2025', exportExpiry: '03/08/2025', remarks: '—', kind: 'requestExt', importerCode: 'A180', accountNumber: 'ACC-100234' },
+  // Same declaration as above, sharing the same invoice/HS-code data — demonstrates the
+  // Alternative Duty / Anti Dumping / Safeguard Deposit outbound auto-copy: outbound entries
+  // added against one charge type of a declaration are visible under the others too, since
+  // they're all keyed by declaration + HS code, not by charge type.
+  { declarationNo: '105-01426431-24', declarationDate: '09/10/2024', depositType: 'Anti Dumping Deposit',              declarationCategory: 'Import for Re Export',          depositAmount: 'Dh 600',   depositMethod: 'Standing Guarantee', claimExpiry: '04/03/2025', exportExpiry: '03/08/2025', remarks: '—', kind: 'requestExt', importerCode: 'A180', accountNumber: 'ACC-100234' },
+  { declarationNo: '105-01426431-24', declarationDate: '09/10/2024', depositType: 'Safeguard Deposit',                 declarationCategory: 'Import for Re Export',          depositAmount: 'Dh 450',   depositMethod: 'Standing Guarantee', claimExpiry: '04/03/2025', exportExpiry: '03/08/2025', remarks: '—', kind: 'requestExt', importerCode: 'A180', accountNumber: 'ACC-100234' },
   { declarationNo: '404-09988123-24', declarationDate: '07/02/2024', depositType: 'Alternative Duty Deposit',          declarationCategory: 'Temporary Admission',           depositAmount: 'Dh 5,000', depositMethod: 'Standing Guarantee', claimExpiry: '07/01/2025', exportExpiry: '05/15/2025', remarks: '—', kind: 'requestExt', importerCode: 'A180', accountNumber: 'ACC-100567' },
+  // Declarations 105-01426501/502/503-24 — match the "Create New Claim Request from rejected
+  // sub claim" mock request (ClaimsTable.tsx reqNo 4701820) so the declaration numbers a user
+  // carries over from that flow actually resolve to real eligible-declaration rows here.
+  { declarationNo: '105-01426501-24', declarationDate: '14/10/2024', depositType: 'Alternative Duty Deposit', declarationCategory: 'Import for Re Export', depositAmount: 'Dh 800', depositMethod: 'Standing Guarantee', claimExpiry: '10/03/2025', exportExpiry: '09/08/2025', remarks: '—', kind: 'request', importerCode: 'AE-1019056', accountNumber: 'ACC-100234' },
+  { declarationNo: '105-01426502-24', declarationDate: '16/10/2024', depositType: 'Alternative Duty Deposit', declarationCategory: 'Import for Re Export', depositAmount: 'Dh 500', depositMethod: 'Standing Guarantee', claimExpiry: '12/03/2025', exportExpiry: '11/08/2025', remarks: '—', kind: 'request', importerCode: 'AE-1019056', accountNumber: 'ACC-100234' },
+  { declarationNo: '105-01426503-24', declarationDate: '18/10/2024', depositType: 'Alternative Duty Deposit', declarationCategory: 'Import for Re Export', depositAmount: 'Dh 300', depositMethod: 'Standing Guarantee', claimExpiry: '14/03/2025', exportExpiry: '13/08/2025', remarks: '—', kind: 'request', importerCode: 'AE-1019056', accountNumber: 'ACC-100234' },
+  // Declarations 105-01426601/602/603-24 — match the "Create New Claim Request from rejected
+  // sub claim" mock request (ClaimsTable.tsx reqNo 4701835) for the same reason as above.
+  { declarationNo: '105-01426601-24', declarationDate: '20/10/2024', depositType: 'Alternative Duty Deposit', declarationCategory: 'Import for Re Export', depositAmount: 'Dh 700', depositMethod: 'Standing Guarantee', claimExpiry: '16/03/2025', exportExpiry: '15/08/2025', remarks: '—', kind: 'request', importerCode: 'AE-1019056', accountNumber: 'ACC-100234' },
+  { declarationNo: '105-01426602-24', declarationDate: '22/10/2024', depositType: 'Alternative Duty Deposit', declarationCategory: 'Import for Re Export', depositAmount: 'Dh 450', depositMethod: 'Standing Guarantee', claimExpiry: '18/03/2025', exportExpiry: '17/08/2025', remarks: '—', kind: 'request', importerCode: 'AE-1019056', accountNumber: 'ACC-100234' },
+  { declarationNo: '105-01426603-24', declarationDate: '24/10/2024', depositType: 'Alternative Duty Deposit', declarationCategory: 'Import for Re Export', depositAmount: 'Dh 350', depositMethod: 'Standing Guarantee', claimExpiry: '20/03/2025', exportExpiry: '19/08/2025', remarks: '—', kind: 'request', importerCode: 'AE-1019056', accountNumber: 'ACC-100234' },
   { declarationNo: '201-07612301-24', declarationDate: '08/14/2024', depositType: 'Alternative Duty Deposit',          declarationCategory: 'Transit (ROW to ROW)',          depositAmount: 'Dh 2,200', depositMethod: 'Cash',               claimExpiry: '06/15/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request', importerCode: 'A180' },
   { declarationNo: '209-03312099-24', declarationDate: '10/05/2024', depositType: 'Alternative Duty Deposit',          declarationCategory: 'FZ Export',                    depositAmount: 'Dh 3,800', depositMethod: 'Cash',               claimExpiry: '05/01/2025', exportExpiry: 'N/A',        remarks: '—', kind: 'request', importerCode: 'A220' },
   // Anti Dumping Deposit
@@ -561,6 +580,9 @@ type Props = {
   onBack: () => void;
   onBackToListing?: () => void;
   initialClaimType?: ClaimType | null;
+  /** Declaration numbers to pre-check on mount — e.g. declarations carried over from a
+      "Create New Claim Request from rejected sub claim" selection. */
+  initialSelected?: string[];
   onProceed?: (rows: Row[], claimType: ClaimType) => void;
   onDeclarationOpen?: (declNo: string) => void;
 };
@@ -649,7 +671,7 @@ const IMPORTER_CODE_NAMES: Record<string, string> = {
 const codeWithName = (code: string) =>
   IMPORTER_CODE_NAMES[code] ? `${code} - ${IMPORTER_CODE_NAMES[code]}` : code;
 
-export default function EligibleDeclarationsPage({ onBack, onBackToListing, initialClaimType, onProceed, onDeclarationOpen }: Props) {
+export default function EligibleDeclarationsPage({ onBack, onBackToListing, initialClaimType, initialSelected, onProceed, onDeclarationOpen }: Props) {
   const [claimType, setClaimType] = useState<ClaimType | null>(initialClaimType ?? null);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [declNoQuery, setDeclNoQuery] = useState('');
@@ -683,7 +705,7 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
   const [uploadDragging, setUploadDragging] = useState(false);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
-  const [selectedDecls, setSelectedDecls] = useState<Set<string>>(new Set());
+  const [selectedDecls, setSelectedDecls] = useState<Set<string>>(() => new Set(initialSelected ?? []));
   const [overLimitError, setOverLimitError] = useState(false);
   const [confirmRemoveDecl, setConfirmRemoveDecl] = useState<string | null>(null);
   const claimTypePreset = initialClaimType != null;

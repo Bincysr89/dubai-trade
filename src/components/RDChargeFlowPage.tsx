@@ -182,6 +182,10 @@ function autoAmount(rt: RefundType, dep: string) {
   if (rt === 'full' || rt === 'fullImport' || rt === 'refund' || rt === 'na') return String(parseAED(dep));
   return '';
 }
+// Keyed by declaration + HS code only (not charge type). This is intentional: when a
+// declaration has multiple charge-type rows selected together (e.g. Alternative Duty /
+// Anti Dumping / Safeguard Deposit on the same declaration), outbound entries added under
+// one charge type's invoice line item are automatically visible under the others too.
 export function obKey(d: string, h: string) { return `${d}::${h}`; }
 
 /* ─── Shared flyout menu — DTSelect look (white card, soft shadow,
@@ -1312,7 +1316,7 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
 }
 
 /* ─── Main page ─────────────────────────────────────────────────── */
-export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, title = 'Raise New Claim — Refund of Deposits', breadcrumbLast = 'Raise New Claim', prefill = false, hideSaveExit = false, steps }: {
+export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, title = 'Raise New Claim — Refund of Deposits', breadcrumbLast = 'Raise New Claim', prefill = false, hideSaveExit = false, steps, prefillDeclNos }: {
   rows: Row[]; onBack: () => void; onBackToListing?: () => void;
   onContinue: (r: RDFlowResult) => void;
   /** Overrides for reuse in the amend flow. */
@@ -1323,6 +1327,11 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
   hideSaveExit?: boolean;
   /** Override the stepper steps (e.g. amend flow without payment). */
   steps?: { id: string; label: string }[];
+  /** Raise New Claim flow: seed outbound declaration details (only) for this subset of rows —
+      e.g. declarations carried over from a rejected sub claim, reusing their prior outbound
+      submission. Unlike `prefill`, this does not touch refund type / claim amount, since the
+      user still needs to pick a refund type for the new claim. */
+  prefillDeclNos?: string[];
 }) {
   const [details, setDetails] = useState<ChargeDetail[]>(() =>
     rows.map(r => {
@@ -1343,11 +1352,12 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
       };
     })
   );
-  // Pre-fill outbound declarations + allocation for every HS line item when amending.
-  const buildPrefill = () => {
+  // Pre-fill outbound declarations + allocation for every HS line item when amending, or (via
+  // `prefillDeclNos`) for a specific subset of declarations carried over from a rejected sub claim.
+  const buildPrefill = (targetRows: Row[]) => {
     const obs0: OutboundState = {};
     const hs0: Record<string, { allocationMethod?: string }> = {};
-    rows.forEach(r => {
+    targetRows.forEach(r => {
       if (isMissingDocCharge(r.depositType ?? '')) return;
       const sample = DUBAI_DECLARATIONS[0];
       getInvoices(r.declarationNo).forEach(inv => inv.hsCodes.forEach(hs => {
@@ -1357,7 +1367,11 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
     });
     return { obs0, hs0 };
   };
-  const prefilled = prefill ? buildPrefill() : { obs0: {}, hs0: {} };
+  const prefilled = prefill
+    ? buildPrefill(rows)
+    : prefillDeclNos && prefillDeclNos.length > 0
+    ? buildPrefill(rows.filter(r => prefillDeclNos.includes(r.declarationNo)))
+    : { obs0: {}, hs0: {} };
   const [obs,       setObs]       = useState<OutboundState>(prefilled.obs0);
   const [invOpen,   setInvOpen]   = useState<Record<number, boolean>>({});
   const [hsEdits,   setHsEdits]   = useState<Record<string, { allocationMethod?: string; currency?: string; unitPrice?: string; unitPriceDetails?: UnitPriceDetail[] }>>(prefilled.hs0);

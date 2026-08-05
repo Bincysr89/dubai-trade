@@ -5,7 +5,9 @@ import type { Row } from './EligibleDeclarationsPage';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
 
-export type ExtensionDetails = { days: string; reason: string };
+export type ExtensionDetails = { rows: { declarationNo: string; depositType: string; days: string }[]; reason: string; documents: { name: string; sizeKb: string }[] };
+type UploadedFile = { id: string; name: string; sizeKb: string };
+const formatSizeKb = (bytes: number) => `${Math.max(0.1, bytes / 1024).toFixed(1)}`;
 
 const DOC_TYPES = [
   { docName: 'Supporting Letter', docNature: 'Copy', mandatory: true  },
@@ -59,24 +61,35 @@ function PlainSelect({ value, onChange, options, placeholder = 'Select document 
 }
 
 type Props = {
-  row: Row;
+  rows: Row[];
   onBack: () => void;
   onBackToListing: () => void;
   onProceed: (details: ExtensionDetails) => void;
+  onDeclarationOpen?: (declNo: string) => void;
 };
 
-export default function ValidityExtensionDetailsPage({ row, onBack, onBackToListing, onProceed }: Props) {
-  const [days, setDays] = useState('');
+export default function ValidityExtensionDetailsPage({ rows, onBack, onBackToListing, onProceed, onDeclarationOpen }: Props) {
+  const [daysByDecl, setDaysByDecl] = useState<Record<string, string>>({});
   const [reason, setReason] = useState('');
   const [selectedDocTypes, setSelectedDocTypes] = useState<Set<string>>(new Set());
   const [otherDocType, setOtherDocType] = useState('');
+  const [uploadFiles, setUploadFiles] = useState<UploadedFile[]>([]);
   const toggleDocType = (name: string) => setSelectedDocTypes(prev => {
     const next = new Set(prev);
     if (next.has(name)) next.delete(name); else next.add(name);
     return next;
   });
-  const canProceed = days.trim() !== '' && reason.trim() !== '';
-  const ownerName = row.importerCode ? IMPORTER_CODE_NAMES[row.importerCode] : undefined;
+  const addUploadFiles = (list: FileList | null) => {
+    if (!list) return;
+    const next = Array.from(list).slice(0, 10 - uploadFiles.length).map((f, i) => ({ id: `f-${Date.now()}-${i}`, name: f.name, sizeKb: formatSizeKb(f.size) }));
+    setUploadFiles(p => [...p, ...next]);
+  };
+  const removeUploadFile = (id: string) => setUploadFiles(p => p.filter(f => f.id !== id));
+  const canProceed = rows.length > 0 && rows.every(r => (daysByDecl[`${r.declarationNo}__${r.depositType}`] ?? '').trim() !== '') && reason.trim() !== '';
+  const ownerName = (row: Row) => row.importerCode ? IMPORTER_CODE_NAMES[row.importerCode] : undefined;
+  // A declaration can appear more than once in `rows` (one entry per selected charge type) —
+  // the Declaration Details card is shown once per unique Declaration Number.
+  const uniqueDeclarations = Array.from(new Map(rows.map(r => [r.declarationNo, r])).values());
 
   return (
     <div className="flex flex-col h-full bg-[#f8fafd]" style={{ fontFamily: font }}>
@@ -91,77 +104,96 @@ export default function ValidityExtensionDetailsPage({ row, onBack, onBackToList
       </div>
 
       <div className="flex-1 overflow-auto px-4 sm:px-10 pb-[32px]">
-        <h1 className="text-[32px] text-[#111838] mb-[8px]" style={{ fontWeight: 500 }}>Raise New Claim — Validity Extension</h1>
+        <h1 className="text-[32px] text-[#111838] mb-[8px]" style={{ fontWeight: 500 }}>Raise New Claim — Time Validity Extension</h1>
         <div className="mb-[24px]">
           <ClaimStepper activeIndex={1} steps={VALIDITY_EXT_STEPS} />
         </div>
 
         <div className="flex flex-col gap-[24px]">
 
-          {/* Declaration Details */}
-          <div className="flex flex-col gap-[14px]">
-            <h2 className="text-[24px] font-medium text-[#051937]" style={{ fontFamily: font }}>Declaration Details</h2>
-            <div className="bg-white rounded-[8px] px-[24px] py-[24px]" style={{ boxShadow: '1px 2px 12px rgba(0,0,0,0.06)' }}>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-[32px] gap-y-[20px]">
-                {[
-                  { label: 'Declaration Number', value: row.declarationNo },
-                  { label: 'Declaration Type',   value: row.declarationCategory ?? '—' },
-                  { label: 'Declaration Date',   value: row.declarationDate },
-                  { label: 'Declaration Owner',  value: row.importerCode ? `${row.importerCode}${ownerName ? ` - ${ownerName}` : ''}` : '—' },
-                  { label: 'Deposit Method',     value: row.depositMethod },
-                ].map(f => (
-                  <div key={f.label} className="flex flex-col gap-[4px]">
-                    <span className="text-[16px] text-[#697498]">{f.label}</span>
-                    <span className="text-[16px] text-[#051937]" style={{ fontWeight: 500 }}>{f.value}</span>
-                  </div>
-                ))}
+          {/* Declaration Details — one card per unique selected declaration */}
+          {uniqueDeclarations.map(row => (
+            <div key={row.declarationNo} className="flex flex-col gap-[14px]">
+              <div className="flex items-center justify-between flex-wrap gap-[10px]">
+                <h2 className="text-[24px] font-medium text-[#051937]" style={{ fontFamily: font }}>Declaration Details — {row.declarationNo}</h2>
+                {onDeclarationOpen && (
+                  <button
+                    type="button"
+                    onClick={() => onDeclarationOpen(row.declarationNo)}
+                    className="h-[38px] px-[16px] rounded-[4px] border text-[15px] hover:bg-[#f0f4ff] transition-colors"
+                    style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
+                  >
+                    View Declaration
+                  </button>
+                )}
+              </div>
+              <div className="bg-white rounded-[8px] px-[24px] py-[24px]" style={{ boxShadow: '1px 2px 12px rgba(0,0,0,0.06)' }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-[32px] gap-y-[20px]">
+                  {[
+                    { label: 'Declaration Number', value: row.declarationNo },
+                    { label: 'Declaration Type',   value: row.declarationCategory ?? '—' },
+                    { label: 'Declaration Date',   value: row.declarationDate },
+                    { label: 'Declaration Owner',  value: row.importerCode ? `${row.importerCode}${ownerName(row) ? ` - ${ownerName(row)}` : ''}` : '—' },
+                    { label: 'Broker',             value: row.brokerCode ? `${row.brokerCode} - ${row.brokerName}` : '—' },
+                  ].map(f => (
+                    <div key={f.label} className="flex flex-col gap-[4px]">
+                      <span className="text-[16px] text-[#697498]">{f.label}</span>
+                      <span className="text-[16px] text-[#051937]" style={{ fontWeight: 500 }}>{f.value}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
+          ))}
 
           {/* Request Details */}
           <div className="flex flex-col gap-[14px]">
             <h2 className="text-[24px] font-medium text-[#051937]" style={{ fontFamily: font }}>Request Details</h2>
             <div className="bg-white rounded-[8px] px-[14px] pt-[24px] pb-[20px]" style={{ boxShadow: '1px 2px 12px rgba(0,0,0,0.06)' }}>
               <div className="overflow-x-auto">
-                <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, minWidth: 700, fontFamily: font }}>
+                <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, minWidth: 780, fontFamily: font }}>
                   <thead>
                     <tr>
-                      {['Charge Type', 'Amount', 'Claim Expiry', 'Export Expiry', 'Extension Required (in days)'].map((h, i) => (
-                        <th key={h} style={{ background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, fontSize: 16, color: '#051937', whiteSpace: 'nowrap', borderRadius: i === 0 ? '8px 0 0 0' : i === 4 ? '0 8px 0 0' : 0, paddingLeft: i === 0 ? 16 : 8 }}>
+                      {['Declaration Number', 'Charge Type', 'Amount', 'Claim Expiry', 'Export Expiry', 'Extension Required (in days)'].map((h, i) => (
+                        <th key={h} style={{ background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, fontSize: 16, color: '#051937', whiteSpace: 'nowrap', borderRadius: i === 0 ? '8px 0 0 0' : i === 5 ? '0 8px 0 0' : 0, paddingLeft: i === 0 ? 16 : 8 }}>
                           {h}
                         </th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td style={{ padding: '16px 8px 16px 16px', verticalAlign: 'middle' }}>
-                        <span className="text-[16px] text-[#051937]">{row.depositType}</span>
-                      </td>
-                      <td style={{ padding: '16px 8px', verticalAlign: 'middle' }}>
-                        <span className="inline-flex items-center gap-[4px] text-[16px] text-[#051937]" style={{ fontWeight: 500 }}>
-                          <Dh style={{ fontSize: 14 }} />{row.depositAmount.replace('Dh ', '')}
-                        </span>
-                      </td>
-                      <td style={{ padding: '16px 8px', verticalAlign: 'middle' }}>
-                        <span className="text-[16px]" style={{ color: '#dc3545' }}>{row.claimExpiry}</span>
-                      </td>
-                      <td style={{ padding: '16px 8px', verticalAlign: 'middle' }}>
-                        <span className="text-[16px]" style={{ color: '#dc3545' }}>{row.exportExpiry}</span>
-                      </td>
-                      <td style={{ padding: '16px 8px', verticalAlign: 'middle', width: 200 }}>
-                        <input
-                          type="number"
-                          min={1}
-                          value={days}
-                          onChange={(e) => setDays(e.target.value)}
-                          placeholder="e.g. 30"
-                          className="h-[44px] w-full border rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none focus:border-[#1360d2] transition-colors"
-                          style={{ borderColor: '#d5ddfb', fontFamily: font }}
-                        />
-                      </td>
-                    </tr>
+                    {rows.map(row => (
+                      <tr key={`${row.declarationNo}__${row.depositType}`} style={{ borderTop: '1px solid #eef1f6' }}>
+                        <td style={{ padding: '16px 8px 16px 16px', verticalAlign: 'middle' }}>
+                          <span className="text-[16px] text-[#051937]" style={{ fontWeight: 500 }}>{row.declarationNo}</span>
+                        </td>
+                        <td style={{ padding: '16px 8px', verticalAlign: 'middle' }}>
+                          <span className="text-[16px] text-[#051937]">{row.depositType}</span>
+                        </td>
+                        <td style={{ padding: '16px 8px', verticalAlign: 'middle' }}>
+                          <span className="inline-flex items-center gap-[4px] text-[16px] text-[#051937]" style={{ fontWeight: 500 }}>
+                            <Dh style={{ fontSize: 14 }} />{row.depositAmount.replace('Dh ', '')}
+                          </span>
+                        </td>
+                        <td style={{ padding: '16px 8px', verticalAlign: 'middle' }}>
+                          <span className="text-[16px]" style={{ color: '#dc3545' }}>{row.claimExpiry}</span>
+                        </td>
+                        <td style={{ padding: '16px 8px', verticalAlign: 'middle' }}>
+                          <span className="text-[16px]" style={{ color: '#dc3545' }}>{row.exportExpiry}</span>
+                        </td>
+                        <td style={{ padding: '16px 8px', verticalAlign: 'middle', width: 200 }}>
+                          <input
+                            type="number"
+                            min={1}
+                            value={daysByDecl[`${row.declarationNo}__${row.depositType}`] ?? ''}
+                            onChange={(e) => setDaysByDecl(prev => ({ ...prev, [`${row.declarationNo}__${row.depositType}`]: e.target.value }))}
+                            placeholder="e.g. 30"
+                            className="h-[44px] w-full border rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none focus:border-[#1360d2] transition-colors"
+                            style={{ borderColor: '#d5ddfb', fontFamily: font }}
+                          />
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -243,18 +275,35 @@ export default function ValidityExtensionDetailsPage({ row, onBack, onBackToList
                   <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Upload File</p>
                   <p className="text-[16px] text-[#697498]">* Supported file types: .pdf, .jpg, .png, .xlsx — max file size up to 50 MB</p>
                 </div>
-                <div className="flex flex-col items-center justify-center gap-[12px] rounded-[8px] py-[32px] px-[16px] flex-1"
+                <label className="flex flex-col items-center justify-center gap-[12px] rounded-[8px] py-[32px] px-[16px] flex-1 cursor-pointer"
                   style={{ border: '1.5px dashed #b5c8e8', background: '#f8fafd' }}>
+                  <input type="file" multiple className="hidden" onChange={(e) => { addUploadFiles(e.target.files); e.target.value = ''; }} />
                   <div className="size-[56px] rounded-full inline-flex items-center justify-center" style={{ background: '#e2ebf9' }}>
                     <CloudUploadIcon />
                   </div>
                   <p className="text-[16px] text-[#697498] text-center">Drag and drop or</p>
-                  <button type="button"
-                    className="h-[40px] px-[20px] rounded-[4px] text-[16px]"
+                  <span
+                    className="h-[40px] px-[20px] rounded-[4px] text-[16px] inline-flex items-center"
                     style={{ border: '1.5px solid #1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500, background: '#fff' }}>
                     Choose File
-                  </button>
-                </div>
+                  </span>
+                </label>
+                {uploadFiles.length > 0 && (
+                  <div className="flex flex-col gap-[8px]">
+                    {uploadFiles.map(f => (
+                      <div key={f.id} className="flex items-center justify-between gap-[10px] rounded-[6px] px-[12px] py-[8px]" style={{ background: '#f8fafd', border: '1px solid #eef1f6' }}>
+                        <div className="flex items-center gap-[8px] min-w-0">
+                          <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#1360d2" strokeWidth="1.8" className="flex-shrink-0"><path d="M5 3h7l3 3v11H5z" /><path d="M12 3v3h3" /></svg>
+                          <span className="text-[15px] text-[#0e1b3d] truncate">{f.name}</span>
+                          <span className="text-[13px] text-[#8f94ae] flex-shrink-0">{f.sizeKb} KB</span>
+                        </div>
+                        <button type="button" onClick={() => removeUploadFile(f.id)} aria-label={`Remove ${f.name}`} className="text-[#8f94ae] hover:text-[#dc3545] flex-shrink-0">
+                          <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4l8 8M12 4l-8 8" strokeLinecap="round" /></svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -272,7 +321,11 @@ export default function ValidityExtensionDetailsPage({ row, onBack, onBackToList
             Back
           </button>
           <button
-            onClick={() => canProceed && onProceed({ days, reason })}
+            onClick={() => canProceed && onProceed({
+              rows: rows.map(r => ({ declarationNo: r.declarationNo, depositType: r.depositType, days: daysByDecl[`${r.declarationNo}__${r.depositType}`] ?? '' })),
+              reason,
+              documents: uploadFiles.map(f => ({ name: f.name, sizeKb: f.sizeKb })),
+            })}
             disabled={!canProceed}
             className="h-[48px] px-[40px] rounded-[4px] text-[16px] text-white transition-colors"
             style={{ background: canProceed ? '#1360d2' : '#a7c3eb', cursor: canProceed ? 'pointer' : 'not-allowed', fontFamily: font }}

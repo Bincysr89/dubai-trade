@@ -220,7 +220,6 @@ export default function RaiseClaimRequestPage({ claimType, declarationNo, onBack
 
       <BackToListingBar
         onBack={prev}
-        label={stepIndex === 0 ? 'Back to Listing' : 'Previous'}
         rightContent={
           <button
             onClick={next}

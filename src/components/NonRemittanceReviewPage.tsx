@@ -170,8 +170,15 @@ type Props = {
   uploadedDocs?: UploadedDoc[];
   /** Validity Extension flow: the declaration being extended and the number of days requested —
       renders a read-only Current vs New Expiry comparison card when both are set. */
-  extensionRow?: Row;
-  extensionDays?: string;
+  extensionEntries?: { row: Row; days: string }[];
+  extensionReason?: string;
+  extensionDocuments?: { name: string; sizeKb: string }[];
+};
+
+const IMPORTER_CODE_NAMES: Record<string, string> = {
+  'A180': 'IMPORTER SONY GULF UAE',
+  'A220': 'SW LOGISTICS LLC',
+  'A350': 'FREIGHT FORWARDER CO.',
 };
 
 /** "MM/DD/YYYY" + N days -> "MM/DD/YYYY", matching the date format used across this app's mock data. */
@@ -183,7 +190,7 @@ function addDaysToDate(dateStr: string, days: number): string {
   return `${String(dt.getMonth() + 1).padStart(2, '0')}/${String(dt.getDate()).padStart(2, '0')}/${dt.getFullYear()}`;
 }
 
-export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPreview, onViewClaim, selectedRows, paymentMode = 'Credit/Debit Account', accountNo = '1223193-SW LOGISTICS LLC', title, steps, activeIndex = 3, claimType = 'Non Remittance Claim', showAmendment = false, chargeDetails, outbounds, uploadedDocs, extensionRow, extensionDays }: Props) {
+export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPreview, onViewClaim, selectedRows, paymentMode = 'Credit/Debit Account', accountNo = '1223193-SW LOGISTICS LLC', title, steps, activeIndex = 3, claimType = 'Non Remittance Claim', showAmendment = false, chargeDetails, outbounds, uploadedDocs, extensionEntries, extensionReason, extensionDocuments }: Props) {
   const [declared, setDeclared] = useState(false);
   const [amendReason, setAmendReason] = useState('');
   const [amendReasonDesc, setAmendReasonDesc] = useState('');
@@ -253,82 +260,166 @@ export default function NonRemittanceReviewPage({ onBack, onSubmit, onSaveAndPre
             </div>
           )}
 
-          {/* Claimant Details */}
-          <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-            <div className="px-[24px] py-[16px] border-b border-[#eef1f6]">
-              <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Claimant Details</p>
-            </div>
-            <div className="px-[24px] py-[20px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-[32px] gap-y-[20px]">
-              {[
-                { label: 'Claimant Type',  value: 'Business' },
-                { label: 'Claimant Code',  value: 'AE-9106286' },
-                { label: 'Claimant Name',  value: 'SW Logistics LLC' },
-              ].map((f) => (
-                <div key={f.label} className="flex flex-col gap-[4px]">
-                  <span className="text-[16px] text-[#697498]">{f.label}</span>
-                  <span className="text-[16px] text-[#051937]" style={{ fontWeight: 500 }}>{f.value}</span>
+          {extensionEntries && extensionEntries.length > 0 ? (
+            <>
+              {/* Declaration Details — Validity Extension flow, one card per unique declaration */}
+              {Array.from(new Map(extensionEntries.map((e) => [e.row.declarationNo, e])).values()).map(({ row: extensionRow }) => (
+                <div key={extensionRow.declarationNo} className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+                  <div className="px-[24px] py-[16px] border-b border-[#eef1f6]">
+                    <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Declaration Details — {extensionRow.declarationNo}</p>
+                  </div>
+                  <div className="px-[24px] py-[20px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-[32px] gap-y-[20px]">
+                    {[
+                      { label: 'Declaration No.',   value: extensionRow.declarationNo as React.ReactNode },
+                      { label: 'Declaration Type',  value: (extensionRow.declarationCategory ?? '—') as React.ReactNode },
+                      { label: 'Declaration Date',  value: extensionRow.declarationDate as React.ReactNode },
+                      { label: 'Declaration Owner', value: (extensionRow.importerCode
+                          ? `${extensionRow.importerCode}${IMPORTER_CODE_NAMES[extensionRow.importerCode] ? ` - ${IMPORTER_CODE_NAMES[extensionRow.importerCode]}` : ''}`
+                          : '—') as React.ReactNode },
+                      { label: 'Total Charges',     value: <span className="inline-flex items-baseline gap-[3px]"><Dh style={{ fontSize: 15 }} />{extensionRow.depositAmount.replace(/^Dh\s*/, '')}</span> },
+                    ].map((f) => (
+                      <div key={f.label} className="flex flex-col gap-[4px]">
+                        <span className="text-[16px] text-[#697498]">{f.label}</span>
+                        <span className="text-[16px] text-[#051937]" style={{ fontWeight: 500 }}>{f.value}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ))}
-            </div>
-          </div>
 
-          {/* Request Details */}
-          <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-            <div className="px-[24px] py-[16px] border-b border-[#eef1f6]">
-              <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Request Details</p>
-            </div>
-            <div className="px-[24px] py-[20px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-[32px] gap-y-[20px]">
-              {[
-                { label: 'Request No.',                         value: '2588017' as React.ReactNode },
-                { label: 'Claim Type',                          value: claimType as React.ReactNode },
-                { label: 'Total No. of Sub Claims in the Claim', value: String(selectedRows.length || 1) as React.ReactNode },
-                { label: 'Deposit Method',                      value: depositMethodDisplay as React.ReactNode },
-                { label: 'Total Claim Amount (AED)',            value: totalClaimAmount !== null
-                    ? <span className="inline-flex items-baseline gap-[3px]"><Dh style={{ fontSize: 15 }} />{totalClaimAmount.toFixed(2)}</span>
-                    : '—' },
-              ].map((f) => (
-                <div key={f.label} className="flex flex-col gap-[4px]">
-                  <span className="text-[16px] text-[#697498]">{f.label}</span>
-                  <span className="text-[16px] text-[#051937]" style={{ fontWeight: 500 }}>{f.value}</span>
+              {/* Extension Reason */}
+              <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+                <div className="px-[24px] py-[16px] border-b border-[#eef1f6]">
+                  <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Extension Reason</p>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Validity Extension — Current vs New Expiry comparison */}
-          {extensionRow && extensionDays && (
-            <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-              <div className="px-[24px] py-[16px] border-b border-[#eef1f6]">
-                <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Validity Extension Details</p>
-                <p className="text-[14px] text-[#697498] mt-[2px]">Extension of {extensionDays} day{extensionDays === '1' ? '' : 's'} for {extensionRow.declarationNo}</p>
+                <div className="px-[24px] py-[20px]">
+                  <span className="text-[16px] text-[#051937]">{extensionReason || '—'}</span>
+                </div>
               </div>
-              <div className="px-[24px] py-[20px] overflow-x-auto">
-                <table style={{ width: '100%', minWidth: 640, borderCollapse: 'separate', borderSpacing: 0, fontFamily: font }}>
-                  <thead>
-                    <tr>
-                      {['Charge Type', 'Current Expiry', 'New Expiry'].map((h, i) => (
-                        <th key={h} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, fontSize: 16, color: '#051937', whiteSpace: 'nowrap', borderRadius: i === 0 ? '8px 0 0 0' : i === 2 ? '0 8px 0 0' : 0 }}>
-                          {h}
-                        </th>
+
+              {/* Extension Details */}
+              <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+                <div className="px-[24px] py-[16px] border-b border-[#eef1f6]">
+                  <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Extension Details</p>
+                </div>
+                <div className="px-[24px] py-[20px] overflow-x-auto">
+                  <table style={{ width: '100%', minWidth: 900, borderCollapse: 'separate', borderSpacing: 0, fontFamily: font }}>
+                    <thead>
+                      <tr>
+                        <th rowSpan={2} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, fontSize: 16, color: '#051937', whiteSpace: 'nowrap', borderRadius: '8px 0 0 0', borderRight: '1px solid #fff' }}>Declaration No.</th>
+                        <th rowSpan={2} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, fontSize: 16, color: '#051937', whiteSpace: 'nowrap', borderRight: '1px solid #fff' }}>Charge Type</th>
+                        <th rowSpan={2} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, fontSize: 16, color: '#051937', whiteSpace: 'nowrap', borderRight: '1px solid #fff' }}>Amount (AED)</th>
+                        <th rowSpan={2} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, fontSize: 16, color: '#051937', whiteSpace: 'nowrap', borderRight: '1px solid #fff' }}>Extension Required (in days)</th>
+                        <th colSpan={2} style={{ background: '#a6c2e9', padding: '8px 12px', textAlign: 'center', fontWeight: 500, fontSize: 16, color: '#051937', whiteSpace: 'nowrap', borderRight: '1px solid #fff', borderBottom: '1px solid #fff' }}>Current Expiry</th>
+                        <th colSpan={2} style={{ background: '#a6c2e9', padding: '8px 12px', textAlign: 'center', fontWeight: 500, fontSize: 16, color: '#051937', whiteSpace: 'nowrap', borderRadius: '0 8px 0 0', borderBottom: '1px solid #fff' }}>New Expected Expiry(subject for approval)</th>
+                      </tr>
+                      <tr>
+                        <th style={{ background: '#a6c2e9', padding: '8px 12px', textAlign: 'left', fontWeight: 500, fontSize: 14, color: '#051937', whiteSpace: 'nowrap', borderRight: '1px solid #fff' }}>Claim Expiry</th>
+                        <th style={{ background: '#a6c2e9', padding: '8px 12px', textAlign: 'left', fontWeight: 500, fontSize: 14, color: '#051937', whiteSpace: 'nowrap', borderRight: '1px solid #fff' }}>Export Expiry</th>
+                        <th style={{ background: '#a6c2e9', padding: '8px 12px', textAlign: 'left', fontWeight: 500, fontSize: 14, color: '#051937', whiteSpace: 'nowrap', borderRight: '1px solid #fff' }}>Claim Expiry</th>
+                        <th style={{ background: '#a6c2e9', padding: '8px 12px', textAlign: 'left', fontWeight: 500, fontSize: 14, color: '#051937', whiteSpace: 'nowrap' }}>Export Expiry</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {extensionEntries.map(({ row: extensionRow, days: extensionDays }) => (
+                        <tr key={`${extensionRow.declarationNo}__${extensionRow.depositType}`}>
+                          <td style={{ padding: '14px 12px', borderBottom: '1px solid #eef1f6' }}>
+                            <span className="text-[16px] text-[#051937]" style={{ fontWeight: 500 }}>{extensionRow.declarationNo}</span>
+                          </td>
+                          <td style={{ padding: '14px 12px', borderBottom: '1px solid #eef1f6' }}>
+                            <span className="text-[16px] text-[#051937]">{extensionRow.depositType}</span>
+                          </td>
+                          <td style={{ padding: '14px 12px', borderBottom: '1px solid #eef1f6' }}>
+                            <span className="inline-flex items-baseline gap-[3px] text-[16px] text-[#051937]"><Dh style={{ fontSize: 14 }} />{extensionRow.depositAmount.replace(/^Dh\s*/, '')}</span>
+                          </td>
+                          <td style={{ padding: '14px 12px', borderBottom: '1px solid #eef1f6' }}>
+                            <span className="text-[16px] text-[#051937]">{extensionDays}</span>
+                          </td>
+                          <td style={{ padding: '14px 12px', borderBottom: '1px solid #eef1f6' }}>
+                            <span className="text-[16px]" style={{ color: '#dc3545' }}>{extensionRow.claimExpiry}</span>
+                          </td>
+                          <td style={{ padding: '14px 12px', borderBottom: '1px solid #eef1f6' }}>
+                            <span className="text-[16px]" style={{ color: '#dc3545' }}>{extensionRow.exportExpiry}</span>
+                          </td>
+                          <td style={{ padding: '14px 12px', borderBottom: '1px solid #eef1f6' }}>
+                            <span className="text-[16px]" style={{ color: '#1aac72', fontWeight: 500 }}>{addDaysToDate(extensionRow.claimExpiry, parseInt(extensionDays, 10) || 0)}</span>
+                          </td>
+                          <td style={{ padding: '14px 12px', borderBottom: '1px solid #eef1f6' }}>
+                            <span className="text-[16px]" style={{ color: '#1aac72', fontWeight: 500 }}>{extensionRow.exportExpiry === 'N/A' ? 'N/A' : addDaysToDate(extensionRow.exportExpiry, parseInt(extensionDays, 10) || 0)}</span>
+                          </td>
+                        </tr>
                       ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td style={{ padding: '14px 12px', borderBottom: '1px solid #eef1f6' }}>
-                        <span className="text-[16px] text-[#051937]">{extensionRow.depositType}</span>
-                      </td>
-                      <td style={{ padding: '14px 12px', borderBottom: '1px solid #eef1f6' }}>
-                        <span className="text-[16px]" style={{ color: '#dc3545' }}>{extensionRow.claimExpiry}</span>
-                      </td>
-                      <td style={{ padding: '14px 12px', borderBottom: '1px solid #eef1f6' }}>
-                        <span className="text-[16px]" style={{ color: '#1aac72', fontWeight: 500 }}>{addDaysToDate(extensionRow.claimExpiry, parseInt(extensionDays, 10) || 0)}</span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
+
+              {/* Documents Uploaded */}
+              <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+                <div className="px-[24px] py-[16px] border-b border-[#eef1f6]">
+                  <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Documents Uploaded</p>
+                </div>
+                <div className="px-[24px] py-[20px]">
+                  {extensionDocuments && extensionDocuments.length > 0 ? (
+                    <div className="flex flex-col gap-[10px]">
+                      {extensionDocuments.map((doc, i) => (
+                        <div key={`${doc.name}-${i}`} className="flex items-center gap-[10px] rounded-[6px] px-[14px] py-[10px]" style={{ border: '1px solid #eef1f6' }}>
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#697498" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /></svg>
+                          <span className="text-[16px] text-[#051937]" style={{ fontWeight: 500 }}>{doc.name}</span>
+                          <span className="text-[14px] text-[#697498]">({doc.sizeKb} KB)</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-[16px] text-[#697498]">No documents uploaded</span>
+                  )}
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Claimant Details */}
+              <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+                <div className="px-[24px] py-[16px] border-b border-[#eef1f6]">
+                  <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Claimant Details</p>
+                </div>
+                <div className="px-[24px] py-[20px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-[32px] gap-y-[20px]">
+                  {[
+                    { label: 'Claimant Type',  value: 'Business' },
+                    { label: 'Claimant Code',  value: 'AE-9106286' },
+                    { label: 'Claimant Name',  value: 'SW Logistics LLC' },
+                  ].map((f) => (
+                    <div key={f.label} className="flex flex-col gap-[4px]">
+                      <span className="text-[16px] text-[#697498]">{f.label}</span>
+                      <span className="text-[16px] text-[#051937]" style={{ fontWeight: 500 }}>{f.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Request Details */}
+              <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+                <div className="px-[24px] py-[16px] border-b border-[#eef1f6]">
+                  <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Request Details</p>
+                </div>
+                <div className="px-[24px] py-[20px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-[32px] gap-y-[20px]">
+                  {[
+                    { label: 'Request No.',                         value: '2588017' as React.ReactNode },
+                    { label: 'Claim Type',                          value: claimType as React.ReactNode },
+                    { label: 'Total No. of Sub Claims in the Claim', value: String(selectedRows.length || 1) as React.ReactNode },
+                    { label: 'Deposit Method',                      value: depositMethodDisplay as React.ReactNode },
+                    { label: 'Total Claim Amount (AED)',            value: totalClaimAmount !== null
+                        ? <span className="inline-flex items-baseline gap-[3px]"><Dh style={{ fontSize: 15 }} />{totalClaimAmount.toFixed(2)}</span>
+                        : '—' },
+                  ].map((f) => (
+                    <div key={f.label} className="flex flex-col gap-[4px]">
+                      <span className="text-[16px] text-[#697498]">{f.label}</span>
+                      <span className="text-[16px] text-[#051937]" style={{ fontWeight: 500 }}>{f.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
           )}
 
           {/* Additional Details — Cash payment only */}

@@ -232,12 +232,13 @@ const SEA_EXPORT_MANIFEST: ListingConfig = {
     { key: 'requestId',         label: 'Request ID',            w: 150 },
     { key: 'rotationNumber',    label: 'Rotation Number',       w: 160 },
     { key: 'cargoType',         label: 'Cargo Type',            w: 190 },
+    { key: 'submissionDate',    label: 'Submission Date',       w: 170 },
     { key: 'lastModifiedDate',  label: 'Last Modified Date',    w: 190 },
   ],
   lockedColumns: [{ key: 'status', label: 'Status', w: 150 }, { key: 'actions', label: 'Actions' }],
   statuses: ['Active'],
-  searchKeys: ['bolNumber', 'rotationNumber', 'fileRefNo'],
-  searchKeyLabels: { rotationNumber: 'Rotation Number', fileRefNo: 'File Reference Number' },
+  searchKeys: ['bolNumber', 'rotationNumber', 'requestId'],
+  searchKeyLabels: { rotationNumber: 'Rotation Number' },
   noScrollArrows: true,
   advancedFilterKeys: ['bolNumber', 'rotationNumber', 'cargoType', 'lastModifiedDate'],
   flyoutItems: ['View Manifest Request', 'Amend', 'Audit History', 'Delete'],
@@ -248,14 +249,14 @@ const SEA_EXPORT_MANIFEST: ListingConfig = {
     { title: 'Upload Information', fields: [{ key: 'uploadRefNo', label: 'Upload Reference No.' }, { key: 'uploadDate', label: 'Upload Date' }, { key: 'remarks', label: 'Remarks' }] },
   ],
   rows: [
-    { bolNumber: 'BOL101',      requestId: '—', rotationNumber: '210101', cargoType: 'FCL CONTAINER',   lastModifiedDate: '01/06/2026 10:52:40', uploadRefNo: '26060160001', fileRefNo: '26060160001', fileName: 'Success BOL_3 new.csv', noOfBols: '3', noOfSuccessfulBols: '3', uploadDate: '01/06/2026 10:55:00', remarks: '—', status: 'Active' },
-    { bolNumber: 'BOL102',      requestId: '—', rotationNumber: '210102', cargoType: 'GENERAL CARGO (BREAK BULK)', lastModifiedDate: '21/05/2026 09:03:57', uploadRefNo: '26052160001', fileRefNo: '26052160001', fileName: 'Valid and Invalid ports.csv', noOfBols: '8', noOfSuccessfulBols: '8', uploadDate: '21/05/2026 09:03:57', remarks: '—', status: 'Active' },
-    { bolNumber: 'BOL103',      requestId: '—', rotationNumber: '210103', cargoType: 'BULK LIQUID',     lastModifiedDate: '18/05/2026 12:18:10', uploadRefNo: '26051860001', fileRefNo: '26051860001', fileName: 'emxn.csv', noOfBols: '1', noOfSuccessfulBols: '1', uploadDate: '18/05/2026 12:18:10', remarks: '—', status: 'Active' },
-    { bolNumber: 'BOL104',      requestId: '—', rotationNumber: '210104', cargoType: 'LCL CONTAINER',   lastModifiedDate: '17/05/2026 08:40:00', uploadRefNo: '—', fileRefNo: '—', fileName: '—', noOfBols: '—', noOfSuccessfulBols: '—', uploadDate: '—', remarks: 'Missing seal number', status: 'Active' },
-    { bolNumber: 'BOL105',      requestId: '—', rotationNumber: '210105', cargoType: 'BULK SOLID',      lastModifiedDate: '16/05/2026 14:20:00', uploadRefNo: '—', fileRefNo: '—', fileName: '—', noOfBols: '—', noOfSuccessfulBols: '—', uploadDate: '—', remarks: '—', status: 'Active' },
-    { bolNumber: 'BOL106',      requestId: '—', rotationNumber: '210106', cargoType: 'RO-RO UNIT',      lastModifiedDate: '15/05/2026 11:05:00', uploadRefNo: '—', fileRefNo: '—', fileName: '—', noOfBols: '—', noOfSuccessfulBols: '—', uploadDate: '—', remarks: '—', status: 'Active' },
-    { bolNumber: 'BOL107',      requestId: '—', rotationNumber: '210107', cargoType: 'EMPTY CONTAINER', lastModifiedDate: '14/05/2026 16:30:00', uploadRefNo: '—', fileRefNo: '—', fileName: '—', noOfBols: '—', noOfSuccessfulBols: '—', uploadDate: '—', remarks: '—', status: 'Active' },
-    { bolNumber: 'BOL-DRAFT01', requestId: 'REQ-4402198', rotationNumber: '210108', cargoType: 'FCL CONTAINER',   lastModifiedDate: '—', uploadRefNo: '—', fileRefNo: '—', fileName: '—', noOfBols: '—', noOfSuccessfulBols: '—', uploadDate: '—', remarks: '—', status: 'Active', isDraft: true },
+    { bolNumber: 'BOL101',      requestId: 'REQ-4402190', rotationNumber: '210101', cargoType: 'FCL CONTAINER',   submissionDate: '01/06/2026 09:40:00', lastModifiedDate: '01/06/2026 10:52:40', uploadRefNo: '26060160001', fileRefNo: '26060160001', fileName: 'Success BOL_3 new.csv', noOfBols: '3', noOfSuccessfulBols: '3', uploadDate: '01/06/2026 10:55:00', remarks: '—', status: 'Active' },
+    { bolNumber: 'BOL102',      requestId: 'REQ-4402191', rotationNumber: '210102', cargoType: 'GENERAL CARGO (BREAK BULK)', submissionDate: '21/05/2026 08:15:00', lastModifiedDate: '21/05/2026 09:03:57', uploadRefNo: '26052160001', fileRefNo: '26052160001', fileName: 'Valid and Invalid ports.csv', noOfBols: '8', noOfSuccessfulBols: '8', uploadDate: '21/05/2026 09:03:57', remarks: '—', status: 'Active' },
+    { bolNumber: 'BOL103',      requestId: 'REQ-4402192', rotationNumber: '210103', cargoType: 'BULK LIQUID',     submissionDate: '18/05/2026 11:50:00', lastModifiedDate: '18/05/2026 12:18:10', uploadRefNo: '26051860001', fileRefNo: '26051860001', fileName: 'emxn.csv', noOfBols: '1', noOfSuccessfulBols: '1', uploadDate: '18/05/2026 12:18:10', remarks: '—', status: 'Active' },
+    { bolNumber: 'BOL104',      requestId: 'REQ-4402193', rotationNumber: '210104', cargoType: 'LCL CONTAINER',   submissionDate: '17/05/2026 08:05:00', lastModifiedDate: '17/05/2026 08:40:00', uploadRefNo: '—', fileRefNo: '—', fileName: '—', noOfBols: '—', noOfSuccessfulBols: '—', uploadDate: '—', remarks: 'Missing seal number', status: 'Active' },
+    { bolNumber: 'BOL105',      requestId: 'REQ-4402194', rotationNumber: '210105', cargoType: 'BULK SOLID',      submissionDate: '16/05/2026 13:55:00', lastModifiedDate: '16/05/2026 14:20:00', uploadRefNo: '—', fileRefNo: '—', fileName: '—', noOfBols: '—', noOfSuccessfulBols: '—', uploadDate: '—', remarks: '—', status: 'Active' },
+    { bolNumber: 'BOL106',      requestId: 'REQ-4402195', rotationNumber: '210106', cargoType: 'RO-RO UNIT',      submissionDate: '15/05/2026 10:40:00', lastModifiedDate: '15/05/2026 11:05:00', uploadRefNo: '—', fileRefNo: '—', fileName: '—', noOfBols: '—', noOfSuccessfulBols: '—', uploadDate: '—', remarks: '—', status: 'Active' },
+    { bolNumber: 'BOL107',      requestId: 'REQ-4402196', rotationNumber: '210107', cargoType: 'EMPTY CONTAINER', submissionDate: '14/05/2026 16:00:00', lastModifiedDate: '14/05/2026 16:30:00', uploadRefNo: '—', fileRefNo: '—', fileName: '—', noOfBols: '—', noOfSuccessfulBols: '—', uploadDate: '—', remarks: '—', status: 'Active' },
+    { bolNumber: 'BOL-DRAFT01', requestId: 'REQ-4402198', rotationNumber: '210108', cargoType: 'FCL CONTAINER',   submissionDate: '—', lastModifiedDate: '—', uploadRefNo: '—', fileRefNo: '—', fileName: '—', noOfBols: '—', noOfSuccessfulBols: '—', uploadDate: '—', remarks: '—', status: 'Active', isDraft: true },
   ],
 };
 
@@ -433,9 +434,11 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
   const [viewRow, setViewRow]                 = useState<ListingRow | null>(null);
   const [auditHistoryRow, setAuditHistoryRow] = useState<ListingRow | null>(null);
   const [fileDetailsRow, setFileDetailsRow]   = useState<ListingRow | null>(null);
+  const [deleteBolLine, setDeleteBolLine]     = useState<{ bolNo: string } | null>(null);
+  const [deletedBolLineKeys, setDeletedBolLineKeys] = useState<Set<string>>(new Set());
   const [fmuDetailRow, setFmuDetailRow]       = useState<FlightManifestUploadRecord | null>(null);
   const [openErrorFileIds, setOpenErrorFileIds] = useState<Set<string>>(new Set());
-  const [semPrefill, setSemPrefill]           = useState<{ bolNumber: string; rotationNumber: string; cargoCode?: string } | null>(null);
+  const [semPrefill, setSemPrefill]           = useState<{ bolNumber: string; rotationNumber: string; cargoCode?: string; requestId?: string } | null>(null);
   const [semRequestKind, setSemRequestKind]   = useState<'new' | 'view' | 'amend'>('new');
   const [colOrder, setColOrder]               = useState<string[]>(() => config.columns.map(c => c.key));
 
@@ -523,6 +526,11 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
      The header checkbox selects only the current page; "Delete All BOL's"
      selects every filtered row across pages before opening the confirm
      dialog. Both drive the same selectedRowKeys state. */
+  // Bulk-delete only makes sense once the user has narrowed the list to one rotation.
+  const semRotationSearched = activeMenu === 'seaExportManifest' && (
+    (searchKey === 'rotationNumber' && searchValue.trim() !== '') ||
+    Boolean((afValues.rotationNumber ?? '').trim())
+  );
   const semPageKeys = activeMenu === 'seaExportManifest' ? paginated.map(r => str(r[config.refKey])) : [];
   const semAllKeys = activeMenu === 'seaExportManifest' ? filteredRows.map(r => str(r[config.refKey])) : [];
   const semAllOnPageSelected = semPageKeys.length > 0 && semPageKeys.every(k => selectedRowKeys.has(k));
@@ -548,7 +556,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
      a File Reference Number search (top search bar) further filters within it. */
   const showTrackUpload = activeMenu === 'seaExportManifest' && semTab === 'trackUpload';
   const trackUploadRows = showTrackUpload
-    ? config.rows.filter(r => searchQuery.trim() === '' || str(r.fileRefNo).toLowerCase().includes(searchQuery.trim().toLowerCase()))
+    ? config.rows.filter(r => searchQuery.trim() === '' || str(r.requestId).toLowerCase().includes(searchQuery.trim().toLowerCase()))
     : [];
 
   /* File Details page — mock per-BOL line items derived from the uploaded file's aggregate counts */
@@ -570,6 +578,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
       };
     });
   })() : [];
+  const visibleBolLines = bolLines.filter(l => !deletedBolLineKeys.has(l.bolNo));
 
   /* Flight Manifest — View/Amend prefill: convert the listing's "DD/MM/YYYY HH:mm" mock date to the ISO date the wizard's DatePicker expects, and synthesize a plausible pre-filled Airport of Unloading row */
   const toIsoDate = (ddmmyyyy: string): string => {
@@ -667,6 +676,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
         initialBolNumber={semPrefill?.bolNumber}
         initialRotationNumber={semPrefill?.rotationNumber}
         initialCargoCode={semPrefill?.cargoCode}
+        initialRequestId={semPrefill?.requestId}
         onBack={onBack}
         onBackToListing={() => { setSemView('list'); setSemPrefill(null); setSemRequestKind('new'); }}
       />
@@ -797,7 +807,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
               <div className="flex flex-col gap-[16px] flex-1">
                 <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>List of BOL</p>
                 <div className="bg-white rounded-[8px] p-[20px] flex-1" style={{ boxShadow: '0px 5px 32px 0px rgba(143,155,186,0.16)' }}>
-                  <p className="text-[15px] text-[#697498] mb-[16px]" style={{ fontFamily: font }}>Total No. of BOLs: <b style={{ color: '#0e1b3d' }}>{bolLines.length}</b></p>
+                  <p className="text-[15px] text-[#697498] mb-[16px]" style={{ fontFamily: font }}>Total No. of BOLs: <b style={{ color: '#0e1b3d' }}>{visibleBolLines.length}</b></p>
                   <div className="rounded-[6px] overflow-hidden overflow-x-auto" style={{ border: '1px solid #eef1f6' }}>
                     <table className="w-full" style={{ fontFamily: font, borderCollapse: 'collapse', minWidth: 760 }}>
                       <thead>
@@ -808,9 +818,9 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                         </tr>
                       </thead>
                       <tbody>
-                        {bolLines.length === 0 ? (
+                        {visibleBolLines.length === 0 ? (
                           <tr><td colSpan={6} className="text-center py-[28px] text-[15px] text-[#8f94ae]">No BOL records found for this upload.</td></tr>
-                        ) : bolLines.map((line, i) => (
+                        ) : visibleBolLines.map((line, i) => (
                           <tr key={i} style={{ borderTop: '1px solid #f0f4ff' }}>
                             <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{line.bolNo}</td>
                             <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{line.cargoCode}</td>
@@ -819,11 +829,19 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                             <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{line.remarks || '—'}</td>
                             <td className="px-[16px] py-[10px]">
                               {line.status === 'Success' && (
-                                <button
-                                  onClick={() => { setSemPrefill({ bolNumber: line.bolNo, rotationNumber: str(fileDetailsRow.rotationNumber) }); setSemRequestKind('amend'); setSemMode('manual'); setSemView('new'); setFileDetailsRow(null); }}
-                                  className="text-[15px] text-[#1360d2] hover:underline" style={{ fontWeight: 500, fontFamily: font }}>
-                                  Amend
-                                </button>
+                                <div className="flex items-center gap-[14px]">
+                                  <button
+                                    onClick={() => { setSemPrefill({ bolNumber: line.bolNo, rotationNumber: str(fileDetailsRow.rotationNumber), requestId: line.requestId }); setSemRequestKind('amend'); setSemMode('manual'); setSemView('new'); setFileDetailsRow(null); }}
+                                    className="text-[15px] text-[#1360d2] hover:underline" style={{ fontWeight: 500, fontFamily: font }}>
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() => setDeleteBolLine({ bolNo: line.bolNo })}
+                                    aria-label="Delete BOL"
+                                    className="text-[#dc3545] hover:opacity-70">
+                                    <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" /></svg>
+                                  </button>
+                                </div>
                               )}
                             </td>
                           </tr>
@@ -1202,7 +1220,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                         <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 1180 }}>
                           <thead>
                             <tr style={{ background: '#a6c2e9' }}>
-                              {['Upload Reference Number', 'Date Of Upload', 'Rotation No.', 'BOL Number', 'File Name', 'BOL Uploaded', 'Successful BOL', 'Failed BOL'].map(h => (
+                              {['Upload Reference Number', 'Date Of Upload', 'Rotation No.', 'File Name', 'Total Number of BOL', 'Successful BOL', 'Failed BOL'].map(h => (
                                 <th key={h} className="text-left text-[16px] text-[#051937]" style={{ padding: '10px 12px', fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
                               ))}
                               <th className="text-left text-[16px] text-[#051937]" style={{
@@ -1213,7 +1231,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                           </thead>
                           <tbody>
                             {trackUploadRows.length === 0 ? (
-                              <tr><td colSpan={9} style={{ padding: '40px 12px', textAlign: 'center' }}><span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>No matching upload records found.</span></td></tr>
+                              <tr><td colSpan={8} style={{ padding: '40px 12px', textAlign: 'center' }}><span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>No matching upload records found.</span></td></tr>
                             ) : trackUploadRows.map((row, i) => {
                               const failed = Number(row.noOfBols ?? 0) - Number(row.noOfSuccessfulBols ?? 0);
                               return (
@@ -1221,7 +1239,6 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                                 <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap', background: '#fff' }}>{str(row.uploadRefNo)}</td>
                                 <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap', background: '#fff' }}>{str(row.uploadDate)}</td>
                                 <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', background: '#fff' }}>{str(row.rotationNumber)}</td>
-                                <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', background: '#fff' }}>{str(row.bolNumber)}</td>
                                 <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap', background: '#fff' }}>{str(row.fileName)}</td>
                                 <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', background: '#fff' }}>{str(row.noOfBols)}</td>
                                 <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', background: '#fff' }}>{str(row.noOfSuccessfulBols)}</td>
@@ -1244,7 +1261,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                 })()
               ) : (
               <div className="pb-[20px] flex-1" style={{ position: 'relative' }}>
-                {activeMenu === 'seaExportManifest' && (
+                {activeMenu === 'seaExportManifest' && semRotationSearched && (
                   <div className="flex items-center justify-between flex-wrap gap-[12px] mb-[12px] pt-[12px]" style={{ borderTop: '1px solid #e1e7f4' }}>
                     <div className="flex items-center gap-[10px] text-[15px] text-[#5a6282]" style={{ fontFamily: font }}>
                       <span>{semAllKeys.length} BOL{semAllKeys.length !== 1 ? 's' : ''} available</span>
@@ -1370,6 +1387,10 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                               {col.key === config.refKey ? (
                                 <button onClick={() => {
                                     if (activeMenu === 'carrierMovement') { setCmSelectedRow(row); setCmView('view'); }
+                                    else if (activeMenu === 'seaExportManifest') {
+                                      setSemPrefill({ bolNumber: str(row.bolNumber), rotationNumber: str(row.rotationNumber), cargoCode: str(row.cargoType), requestId: str(row.requestId) });
+                                      setSemRequestKind('view'); setSemMode('manual'); setSemView('new');
+                                    }
                                     else setViewRow(row);
                                   }}
                                   className="text-[16px] text-[#1360d2] font-medium hover:underline whitespace-nowrap overflow-hidden text-ellipsis block" style={{ fontFamily: font, background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}>
@@ -1422,15 +1443,15 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                                                 else setShowNewRequest(true); // Cancel — no design provided yet
                                               } else if (activeMenu === 'seaExportManifest') {
                                                 if (label === 'View Manifest Request') {
-                                                  setSemPrefill({ bolNumber: str(row.bolNumber), rotationNumber: str(row.rotationNumber), cargoCode: str(row.cargoType) });
+                                                  setSemPrefill({ bolNumber: str(row.bolNumber), rotationNumber: str(row.rotationNumber), cargoCode: str(row.cargoType), requestId: str(row.requestId) });
                                                   setSemRequestKind('view'); setSemMode('manual'); setSemView('new');
                                                 }
                                                 else if (label === 'Amend') {
-                                                  setSemPrefill({ bolNumber: str(row.bolNumber), rotationNumber: str(row.rotationNumber), cargoCode: str(row.cargoType) });
+                                                  setSemPrefill({ bolNumber: str(row.bolNumber), rotationNumber: str(row.rotationNumber), cargoCode: str(row.cargoType), requestId: str(row.requestId) });
                                                   setSemRequestKind('amend'); setSemMode('manual'); setSemView('new');
                                                 }
                                                 else if (label === 'Continue') {
-                                                  setSemPrefill({ bolNumber: str(row.bolNumber), rotationNumber: str(row.rotationNumber), cargoCode: str(row.cargoType) });
+                                                  setSemPrefill({ bolNumber: str(row.bolNumber), rotationNumber: str(row.rotationNumber), cargoCode: str(row.cargoType), requestId: str(row.requestId) });
                                                   setSemRequestKind('new'); setSemMode('manual'); setSemView('new');
                                                 }
                                                 else if (label === 'Audit History') setAuditHistoryRow(row);
@@ -1493,9 +1514,9 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
 
       {auditHistoryRow && (() => {
         const auditEvents = [
-          { icon: 'clock', color: '#1360d2', title: 'Created', ts: str(auditHistoryRow.createdDate) || str(auditHistoryRow.lastModifiedDate) || '—', by: 'mohd.hamdan@trade.ae' },
-          ...(auditHistoryRow.status === 'Cancelled' ? [{ icon: 'trash', color: '#dc3545', title: 'Deleted', ts: str(auditHistoryRow.lastModifiedDate) || '—', by: 'mohd.hamdan@trade.ae' }]
-            : [{ icon: 'check', color: '#28a745', title: 'Modified', ts: str(auditHistoryRow.lastModifiedDate) || '—', by: 'mohd.hamdan@trade.ae' }]),
+          { icon: 'clock', color: '#1360d2', title: 'Created', ts: str(auditHistoryRow.createdDate) || str(auditHistoryRow.lastModifiedDate) || '—', by: 'mohd.hamdan' },
+          ...(auditHistoryRow.status === 'Cancelled' ? [{ icon: 'trash', color: '#dc3545', title: 'Deleted', ts: str(auditHistoryRow.lastModifiedDate) || '—', by: 'mohd.hamdan' }]
+            : [{ icon: 'check', color: '#28a745', title: 'Modified', ts: str(auditHistoryRow.lastModifiedDate) || '—', by: 'mohd.hamdan' }]),
         ];
         return (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center px-[20px]" style={{ background: 'rgba(14,27,61,0.55)' }} onClick={() => setAuditHistoryRow(null)}>
@@ -1565,6 +1586,35 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
               <button type="button" onClick={() => {
                   setDeletedRowKeys(prev => new Set(prev).add(str(deleteRow[config.refKey])));
                   setDeleteRow(null);
+                }}
+                className="h-[48px] px-[36px] rounded-[4px] text-[16px] text-white transition-colors" style={{ background: '#dc3545', fontWeight: 500, fontFamily: font }}>
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteBolLine && (
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center px-[20px]" style={{ background: 'rgba(14,27,61,0.55)' }} onClick={() => setDeleteBolLine(null)}>
+          <div className="bg-white rounded-[10px] flex flex-col items-center gap-[20px] px-[40px] py-[36px]" style={{ width: '100%', maxWidth: 460, boxShadow: '0 8px 40px rgba(0,0,0,0.18)', fontFamily: font }} onClick={e => e.stopPropagation()}>
+            <div className="size-[64px] rounded-full flex items-center justify-center" style={{ background: '#dc3545' }}>
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" />
+              </svg>
+            </div>
+            <div className="flex flex-col items-center gap-[8px] text-center">
+              <p className="text-[20px] text-[#0e1b3d]" style={{ fontWeight: 700 }}>Are you sure you want to delete?</p>
+              <p className="text-[16px] text-[#455174]" style={{ lineHeight: 1.4 }}>{deleteBolLine.bolNo} will be permanently removed from this file's BOL list.</p>
+            </div>
+            <div className="flex gap-[12px]">
+              <button type="button" onClick={() => setDeleteBolLine(null)}
+                className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>
+                Cancel
+              </button>
+              <button type="button" onClick={() => {
+                  setDeletedBolLineKeys(prev => new Set(prev).add(deleteBolLine.bolNo));
+                  setDeleteBolLine(null);
                 }}
                 className="h-[48px] px-[36px] rounded-[4px] text-[16px] text-white transition-colors" style={{ background: '#dc3545', fontWeight: 500, fontFamily: font }}>
                 Yes, Delete

@@ -437,10 +437,10 @@ export default function SeaDetailModal({ onClose }: Props) {
     }
     // View / Pay detail pages
     if (dccViewRow) {
-      return <DCCertificatesViewPage row={dccViewRow} onBack={() => setDccViewRow(null)} />;
+      return <DCCertificatesViewPage row={dccViewRow as any} onBack={() => setDccViewRow(null)} />;
     }
     if (dccPayRow) {
-      return <CWLPaymentPage row={dccPayRow} onBack={() => setDccPayRow(null)} />;
+      return <CWLPaymentPage row={dccPayRow as any} onBack={() => setDccPayRow(null)} />;
     }
     // Listing
     return (
@@ -478,10 +478,10 @@ export default function SeaDetailModal({ onClose }: Props) {
       return <CWLFormPage onBack={() => setShowCwlForm(false)} />;
     }
     if (cwlViewRow) {
-      return <CWLViewPage row={cwlViewRow} onBack={() => setCwlViewRow(null)} />;
+      return <CWLViewPage row={cwlViewRow as any} onBack={() => setCwlViewRow(null)} />;
     }
     if (cwlPayRow) {
-      return <CWLPaymentPage row={cwlPayRow} onBack={() => setCwlPayRow(null)} />;
+      return <CWLPaymentPage row={cwlPayRow as any} onBack={() => setCwlPayRow(null)} />;
     }
     const cfg = PAGE_CONFIGS['cwl'];
     return (

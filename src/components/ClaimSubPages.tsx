@@ -108,7 +108,7 @@ const PrimaryBtn = (
   </button>
 );
 
-const SaveExitBtn = ({ onBackToListing }: { onBackToListing: () => void }) => {
+const SaveExitBtn = ({ onBackToListing }: { onBackToListing?: () => void }) => {
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -988,8 +988,8 @@ export function PartialExportPage({
                                 </td>
                                 <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '8px 12px', fontWeight: 500 }}>{hs.code}</td>
                                 <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '8px 12px' }}>{hs.description}</td>
-                                <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '8px 12px' }}>{hs.quantity}</td>
-                                <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '8px 12px' }}>{hs.value}</td>
+                                <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '8px 12px' }}>{hs.itemQty}</td>
+                                <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '8px 12px' }}>{hs.valueOfGoods}</td>
                               </tr>
                             );
                           })}

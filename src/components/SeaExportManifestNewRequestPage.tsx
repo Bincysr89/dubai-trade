@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import Header from './Header';
 import BackToListingBar from './BackToListingBar';
 
@@ -258,12 +258,19 @@ type Step = 'upload' | 'uploadSuccess' | StepKey | 'success';
 type Props = {
   onBack: () => void; onBackToListing: () => void; mode?: 'manual' | 'upload';
   amend?: boolean; viewOnly?: boolean;
-  initialBolNumber?: string; initialRotationNumber?: string; initialCargoCode?: string;
+  initialBolNumber?: string; initialRotationNumber?: string; initialCargoCode?: string; initialRequestId?: string;
 };
 
-export default function SeaExportManifestNewRequestPage({ onBack, onBackToListing, mode = 'manual', amend, viewOnly, initialBolNumber, initialRotationNumber, initialCargoCode }: Props) {
+export default function SeaExportManifestNewRequestPage({ onBack, onBackToListing, mode = 'manual', amend, viewOnly, initialBolNumber, initialRotationNumber, initialCargoCode, initialRequestId }: Props) {
   const [step, setStep] = useState<Step>(mode === 'upload' ? 'upload' : 'bol');
-  const pageTitle = viewOnly ? 'View Export Manifest' : amend ? 'Amend Export Manifest' : 'New Export Manifest';
+  // pageTitle drives the success-message text; headerTitle is what's shown while viewing/amending.
+  const pageTitle = amend ? 'Amend Export Manifest' : viewOnly ? 'View Export Manifest' : 'New Export Manifest';
+  const requestNumber = (initialRequestId && initialRequestId !== '—') ? initialRequestId : (initialBolNumber || initialRotationNumber || '—');
+  const headerTitle = viewOnly
+    ? `View Manifest Request - ${requestNumber}`
+    : amend
+    ? `Amend Manifest Request - ${requestNumber}`
+    : 'New Export Manifest';
 
   const [rotationNumber, setRotationNumber] = useState(initialRotationNumber ?? '');
   const [showRotationSearch, setShowRotationSearch] = useState(false);
@@ -372,6 +379,152 @@ export default function SeaExportManifestNewRequestPage({ onBack, onBackToListin
     />
   ) : null;
 
+  /* ─── View Manifest Request — one read-only page of cards, matching the View Declaration pattern ─── */
+  if (viewOnly) {
+    const ViewSectionTitle = ({ children }: { children: ReactNode }) => (
+      <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>{children}</p>
+    );
+    const ViewCard = ({ children }: { children: ReactNode }) => (
+      <div className="bg-white rounded-[8px] p-[24px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+        {children}
+      </div>
+    );
+    const ViewField = ({ label, value }: { label: string; value: string }) => (
+      <div className="flex flex-col gap-[4px]">
+        <span className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>{label}</span>
+        <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500, fontFamily: font }}>{value || '—'}</span>
+      </div>
+    );
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col bg-[#f8fafd]">
+        <div className="flex-shrink-0"><Header onServiceCatalogue={onBack} /></div>
+        <Breadcrumb />
+        <div className="flex items-center gap-[10px] px-4 sm:px-10 mb-[16px] flex-shrink-0">
+          <h1 className="text-[28px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>{headerTitle}</h1>
+        </div>
+        <div className="flex-1 overflow-y-auto px-4 sm:px-10 pb-[32px] flex flex-col gap-[20px]">
+          <div className="flex flex-col gap-[16px]">
+            <ViewSectionTitle>Bill of Lading Header</ViewSectionTitle>
+            <ViewCard>
+              <ViewField label="Rotation Number" value={rotationNumber} />
+              <ViewField label="BOL Number" value={bolNumber} />
+              <ViewField label="Request Number" value={requestNumber} />
+            </ViewCard>
+          </div>
+
+          <div className="flex flex-col gap-[16px]">
+            <ViewSectionTitle>Location Details</ViewSectionTitle>
+            <ViewCard>
+              <ViewField label="Port Of Origin" value={portOfOrigin} />
+              <ViewField label="Port Of Loading" value={portOfLoading} />
+              <ViewField label="Port Of Discharge" value={portOfDischarge} />
+              <ViewField label="Place Of Delivery" value={placeOfDelivery} />
+            </ViewCard>
+          </div>
+
+          <div className="flex flex-col gap-[16px]">
+            <ViewSectionTitle>Cargo Details</ViewSectionTitle>
+            <ViewCard>
+              <ViewField label="Cargo Code" value={cargoCode} />
+              <ViewField label="Trade Code" value="Export" />
+              <ViewField label="Package Type" value={packageType} />
+              <ViewField label="Total Number Of Packages" value={totalPackages} />
+              <ViewField label="Gross Weight (in KG)" value={grossWeight} />
+              <ViewField label="Cargo Weight (in KG)" value={cargoWeight} />
+              <ViewField label="Cargo Volume (in CBM)" value={cargoVolume} />
+              <ViewField label="INCO Terms" value={incoTerms} />
+              <ViewField label="Marks & Number" value={marksNumber} />
+              <ViewField label="Remarks" value={remarks} />
+            </ViewCard>
+          </div>
+
+          <div className="flex flex-col gap-[16px]">
+            <ViewSectionTitle>List of Consignments</ViewSectionTitle>
+            <div className="bg-white rounded-[8px] p-[20px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+              <p className="text-[15px] text-[#697498] mb-[16px]" style={{ fontFamily: font }}>No. of Consignments: <b style={{ color: '#0e1b3d' }}>{consignments.length}</b></p>
+              <div className="rounded-[6px] overflow-hidden overflow-x-auto" style={{ border: '1px solid #eef1f6' }}>
+                <table className="w-full" style={{ fontFamily: font, borderCollapse: 'collapse', minWidth: 640 }}>
+                  <thead>
+                    <tr style={{ background: '#e2ebf9' }}>
+                      {['SR. No.', 'Commodity Code', 'No. Of Packages', 'Weight (in KG)', 'Cargo Description'].map(h => (
+                        <th key={h} className="text-left px-[16px] py-[10px] text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {consignments.length === 0 ? (
+                      <tr><td colSpan={5} className="text-center py-[28px] text-[15px] text-[#8f94ae]">No consignments recorded.</td></tr>
+                    ) : consignments.map(c => (
+                      <tr key={c.srNo} style={{ borderTop: '1px solid #f0f4ff' }}>
+                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{c.srNo}</td>
+                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{c.commodityCode || '—'}</td>
+                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{c.packages || '—'}</td>
+                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{c.weight || '—'}</td>
+                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{c.cargoDesc || '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-[16px]">
+            <ViewSectionTitle>List of Containers</ViewSectionTitle>
+            <div className="bg-white rounded-[8px] p-[20px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+              <p className="text-[15px] text-[#697498] mb-[16px]" style={{ fontFamily: font }}>No. of Containers: <b style={{ color: '#0e1b3d' }}>{containers.length}</b></p>
+              <div className="rounded-[6px] overflow-hidden overflow-x-auto" style={{ border: '1px solid #eef1f6' }}>
+                <table className="w-full" style={{ fontFamily: font, borderCollapse: 'collapse', minWidth: 500 }}>
+                  <thead>
+                    <tr style={{ background: '#e2ebf9' }}>
+                      {['SR. No.', 'Container No.', 'Tare Weight (in MT)', 'Seal Number'].map(h => (
+                        <th key={h} className="text-left px-[16px] py-[10px] text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {containers.length === 0 ? (
+                      <tr><td colSpan={4} className="text-center py-[28px] text-[15px] text-[#8f94ae]">No containers recorded.</td></tr>
+                    ) : containers.map(c => (
+                      <tr key={c.srNo} style={{ borderTop: '1px solid #f0f4ff' }}>
+                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{c.srNo}</td>
+                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{c.containerNo}</td>
+                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{c.tareWeight}</td>
+                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{c.sealNumber || '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-[16px]">
+            <ViewSectionTitle>Address Details</ViewSectionTitle>
+            <div className="bg-white rounded-[8px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+              <div className="p-[24px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]">
+                <p className="lg:col-span-4 text-[15px] text-[#697498]" style={{ fontFamily: font, fontWeight: 600 }}>Shipper</p>
+                <ViewField label="Shipper Name" value={shipperName} />
+                <div className="lg:col-span-3"><ViewField label="Shipper Address" value={shipperAddress} /></div>
+              </div>
+              <div className="border-t border-[#eef1f6] p-[24px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]">
+                <p className="lg:col-span-4 text-[15px] text-[#697498]" style={{ fontFamily: font, fontWeight: 600 }}>Consignee</p>
+                <ViewField label="Consignee Name" value={consigneeName} />
+                <div className="lg:col-span-3"><ViewField label="Consignee Address" value={consigneeAddress} /></div>
+              </div>
+              <div className="border-t border-[#eef1f6] p-[24px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]">
+                <p className="lg:col-span-4 text-[15px] text-[#697498]" style={{ fontFamily: font, fontWeight: 600 }}>Notify Party 1</p>
+                <ViewField label="Notify Party 1 Name" value={notifyPartyName} />
+                <div className="lg:col-span-3"><ViewField label="Notify Party 1 Address" value={notifyPartyAddress} /></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <BackToListingBar onBackToListing={onBackToListing} />
+      </div>
+    );
+  }
+
   /* ─── Upload File flow ─── */
   if (step === 'upload' || step === 'uploadSuccess') {
     if (step === 'uploadSuccess') {
@@ -387,7 +540,7 @@ export default function SeaExportManifestNewRequestPage({ onBack, onBackToListin
               <div className="size-[72px] rounded-full flex items-center justify-center" style={{ background: '#d1f5df' }}>
                 <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#28a745" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12l6 6L20 6" /></svg>
               </div>
-              <p className="text-[22px]" style={{ color: '#28a745', fontFamily: font, fontWeight: 700 }}>File Uploaded Successfully</p>
+              <p className="text-[22px]" style={{ color: '#28a745', fontFamily: font, fontWeight: 700 }}>New Export Manifest Uploaded Successfully</p>
               <div className="rounded-[6px] px-[24px] py-[18px] w-full max-w-[640px]" style={{ background: '#eafaf0', border: '1px solid #c9f0d8' }}>
                 <p className="text-[15px] text-[#0e1b3d]" style={{ fontFamily: font }}>
                   Your file has been successfully received. The file upload reference number is <b>{`266${rotationNumber.replace(/\D/g, '').padStart(7, '0').slice(-7)}`}</b>.
@@ -470,7 +623,7 @@ export default function SeaExportManifestNewRequestPage({ onBack, onBackToListin
             <div className="size-[72px] rounded-full flex items-center justify-center" style={{ background: '#d1f5df' }}>
               <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#28a745" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12l6 6L20 6" /></svg>
             </div>
-            <p className="text-[22px]" style={{ color: '#28a745', fontFamily: font, fontWeight: 700 }}>{amend ? 'Request amended successfully' : `${pageTitle} Submitted Successfully`}</p>
+            <p className="text-[22px]" style={{ color: '#28a745', fontFamily: font, fontWeight: 700 }}>{`${pageTitle} Submitted Successfully`}</p>
             <div className="rounded-[6px] px-[24px] py-[14px] flex items-center gap-[10px] w-full max-w-[560px]" style={{ background: '#eafaf0', border: '1px solid #c9f0d8' }}>
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#28a745" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0"><path d="M4 12l6 6L20 6" /></svg>
               <p className="text-[15px] text-[#0e1b3d]" style={{ fontFamily: font }}>Bill of Lading <b>{bolNumber || 'BOL101'}</b> has been submitted successfully.</p>
@@ -504,7 +657,7 @@ export default function SeaExportManifestNewRequestPage({ onBack, onBackToListin
       <div className="flex-shrink-0"><Header onServiceCatalogue={onBack} /></div>
       <Breadcrumb />
       <div className="flex items-center gap-[10px] px-4 sm:px-10 mb-[16px] flex-shrink-0">
-        <h1 className="text-[28px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>{pageTitle}</h1>
+        <h1 className="text-[28px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>{headerTitle}</h1>
         <button className="flex items-center gap-[6px] text-[16px] text-[#1360d2]" style={{ fontFamily: font }}>
           Need Help
           <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#1360d2" strokeWidth="1.7"><circle cx="10" cy="10" r="7.5" /><path d="M10 14v-1" strokeLinecap="round" /><path d="M10 7c0-1.1.9-2 2-2" strokeLinecap="round" /></svg>
@@ -521,6 +674,7 @@ export default function SeaExportManifestNewRequestPage({ onBack, onBackToListin
             <div className="bg-white rounded-[8px] p-[24px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
               <FInput label="Rotation Number" value={rotationNumber} onChange={() => {}} disabled />
               <FInput label="BOL Number" value={bolNumber} onChange={() => {}} disabled />
+              {amend && <FInput label="Request Number" value={requestNumber} onChange={() => {}} disabled />}
             </div>
           </div>
         )}
@@ -530,9 +684,10 @@ export default function SeaExportManifestNewRequestPage({ onBack, onBackToListin
             <div className="flex flex-col gap-[16px]">
               <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>Bill of Lading Header</p>
               <div className="bg-white rounded-[8px] p-[24px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-                <FInput label="Rotation Number" value={rotationNumber} onChange={setRotationNumber} req placeholder="Enter or search rotation number" disabled={viewOnly}
-                  trailing={() => setShowRotationSearch(true)} />
-                <FInput label="BOL Number" value={bolNumber} onChange={setBolNumber} req placeholder="e.g. BOL101" disabled={viewOnly} />
+                <FInput label="Rotation Number" value={rotationNumber} onChange={setRotationNumber} req placeholder="Enter or search rotation number" disabled={viewOnly || amend}
+                  trailing={viewOnly || amend ? undefined : () => setShowRotationSearch(true)} />
+                <FInput label="BOL Number" value={bolNumber} onChange={setBolNumber} req placeholder="e.g. BOL101" disabled={viewOnly || amend} />
+                {amend && <FInput label="Request Number" value={requestNumber} onChange={() => {}} disabled />}
               </div>
             </div>
             <div className="flex flex-col gap-[16px]">
@@ -716,29 +871,28 @@ export default function SeaExportManifestNewRequestPage({ onBack, onBackToListin
         {stepKey === 'address' && (
           <>
             <div className="flex flex-col gap-[16px]">
-              <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>Shipper Address</p>
-              <div className="bg-white rounded-[8px] p-[24px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-                <FInput label="Shipper Name" value={shipperName} onChange={setShipperName} req placeholder="Enter shipper name" disabled={viewOnly} />
-                <div className="lg:col-span-3">
-                  <FInput label="Shipper Address" value={shipperAddress} onChange={setShipperAddress} req placeholder="Enter shipper address" disabled={viewOnly} />
+              <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>Address Details</p>
+              <div className="bg-white rounded-[8px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+                <div className="p-[24px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]">
+                  <p className="lg:col-span-4 text-[15px] text-[#697498]" style={{ fontFamily: font, fontWeight: 600 }}>Shipper</p>
+                  <FInput label="Shipper Name" value={shipperName} onChange={setShipperName} req placeholder="Enter shipper name" disabled={viewOnly} />
+                  <div className="lg:col-span-3">
+                    <FInput label="Shipper Address" value={shipperAddress} onChange={setShipperAddress} req placeholder="Enter shipper address" disabled={viewOnly} />
+                  </div>
                 </div>
-              </div>
-            </div>
-            <div className="flex flex-col gap-[16px]">
-              <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>Consignee Address</p>
-              <div className="bg-white rounded-[8px] p-[24px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-                <FInput label="Consignee Name" value={consigneeName} onChange={setConsigneeName} req placeholder="Enter consignee name" disabled={viewOnly} />
-                <div className="lg:col-span-3">
-                  <FInput label="Consignee Address" value={consigneeAddress} onChange={setConsigneeAddress} req placeholder="Enter consignee address" disabled={viewOnly} />
+                <div className="border-t border-[#eef1f6] p-[24px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]">
+                  <p className="lg:col-span-4 text-[15px] text-[#697498]" style={{ fontFamily: font, fontWeight: 600 }}>Consignee</p>
+                  <FInput label="Consignee Name" value={consigneeName} onChange={setConsigneeName} req placeholder="Enter consignee name" disabled={viewOnly} />
+                  <div className="lg:col-span-3">
+                    <FInput label="Consignee Address" value={consigneeAddress} onChange={setConsigneeAddress} req placeholder="Enter consignee address" disabled={viewOnly} />
+                  </div>
                 </div>
-              </div>
-            </div>
-            <div className="flex flex-col gap-[16px]">
-              <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>Notify Party 1 Address</p>
-              <div className="bg-white rounded-[8px] p-[24px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-                <FInput label="Notify Party 1 Name" value={notifyPartyName} onChange={setNotifyPartyName} placeholder="Enter notify party name" disabled={viewOnly} />
-                <div className="lg:col-span-3">
-                  <FInput label="Notify Party 1 Address" value={notifyPartyAddress} onChange={setNotifyPartyAddress} placeholder="Enter notify party address" disabled={viewOnly} />
+                <div className="border-t border-[#eef1f6] p-[24px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]">
+                  <p className="lg:col-span-4 text-[15px] text-[#697498]" style={{ fontFamily: font, fontWeight: 600 }}>Notify Party 1</p>
+                  <FInput label="Notify Party 1 Name" value={notifyPartyName} onChange={setNotifyPartyName} placeholder="Enter notify party name" disabled={viewOnly} />
+                  <div className="lg:col-span-3">
+                    <FInput label="Notify Party 1 Address" value={notifyPartyAddress} onChange={setNotifyPartyAddress} placeholder="Enter notify party address" disabled={viewOnly} />
+                  </div>
                 </div>
               </div>
             </div>

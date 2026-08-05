@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Pagination from './Pagination';
 import StatusFilterHeader from './StatusFilterHeader';
 import { ColumnFilter } from './ColumnFilter';
@@ -8,7 +9,7 @@ import { useTableBehaviors, DragDots, ScrollArrows } from '../hooks/useTableBeha
 const font = "'Dubai', sans-serif";
 
 type Status = 'Under Processing' | 'Completed' | 'Suspended' | 'Draft' | 'Submitted';
-type FlyoutId = 'view' | 'amend' | 'cancel' | 'print' | 'viewDocs' | 'history' | 'uploadDoc' | 'printReceipt' | 'continue' | 'suspensionResponse';
+type FlyoutId = 'view' | 'amend' | 'cancel' | 'print' | 'viewDocs' | 'history' | 'uploadDoc' | 'printReceipt' | 'continue' | 'suspensionResponse' | 'viewRequest' | 'createFromRejected';
 
 const STATUS_STYLE: Record<Status, { bg: string; color: string }> = {
   'Under Processing': { bg: 'rgba(255,169,26,0.16)',  color: '#b45309' },
@@ -29,6 +30,8 @@ const ICONS: Record<FlyoutId, React.ReactNode> = {
   printReceipt: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 3h12v14l-2-1-2 1-2-1-2 1-2-1-2 1V3z" /><path d="M7 7h6M7 10h6M7 13h4" /></svg>,
   continue:     <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 10h12M11 5l5 5-5 5" strokeLinecap="round" strokeLinejoin="round"/></svg>,
   suspensionResponse: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="10" cy="10" r="7.5" /><path d="M8 7v6M12 7v6" /></svg>,
+  viewRequest:  <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z" /><circle cx="10" cy="10" r="2.5" /></svg>,
+  createFromRejected: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M10 4v12M4 10h12" strokeLinecap="round" /></svg>,
 };
 
 const LABELS: Record<FlyoutId, string> = {
@@ -42,6 +45,8 @@ const LABELS: Record<FlyoutId, string> = {
   printReceipt: 'Print Claim Acknowledgment Receipt',
   continue:     'Continue',
   suspensionResponse: 'Suspension Response',
+  viewRequest:  'View Request',
+  createFromRejected: 'Create New Claim Request from rejected sub claim',
 };
 
 function getFlyoutItems(status: Status, isDraft: boolean, isNonRemittance = false): FlyoutId[] {
@@ -55,6 +60,13 @@ function getFlyoutItems(status: Status, isDraft: boolean, isNonRemittance = fals
       : ['view', 'uploadDoc', 'printReceipt', 'history'];
   }
   return ['view', 'amend', 'cancel'];
+}
+
+// True for any row whose remark reports a rejected sub claim (e.g. "1 sub claim rejected",
+// "2 sub claim rejected") — these rows get the "Create New Claim Request from rejected sub
+// claim" flyout action regardless of whether they're a plain claim or a non-claim request.
+function hasRejectedSubClaim(remark: string): boolean {
+  return /sub claim.*rejected/i.test(remark);
 }
 
 export type DeclDetail = {
@@ -78,6 +90,20 @@ export type ClaimRow = {
   submissionDate: string;
   status: Status;
   remark: string;
+  // Generic "request" fields — only populated for non-claim requests (e.g. Time Validity Extension)
+  // surfaced via a Request Number search on the main listing.
+  transactionType?: string;
+  requestedFor?: string;
+  registrationNo?: string;
+  declarationOwnerName?: string;
+  declarationType?: string;
+  customsBroker?: string;
+  extReason?: string;
+  extDaysRequested?: string;
+  extDaysApproved?: string;
+  extChargeType?: string;
+  extAmount?: string;
+  attachments?: { file: string; fileType: string; size: string }[];
 };
 
 const CLAIM_ROWS: ClaimRow[] = [
@@ -133,6 +159,36 @@ const CLAIM_ROWS: ClaimRow[] = [
       { declNo: '510-03318821-24', date: '06/22/2024', category: 'Declaration Cancellation - Deposit', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '06/30/2025', exportExpiry: 'N/A' },
     ],
     depositType: 'Declaration Cancellation - Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/10/2024', status: 'Submitted', remark: '—',
+  },
+  {
+    reqNo: '231626', claimNo: '—', ver: '1', claimType: 'Time Validity Extension',
+    declarations: [
+      { declNo: '4010001887026', date: '03/08/2026', category: 'Temporary Admission from ROW to Local', ownerCode: "AE-8122451 - M&M's special holding private company", claimExpiry: '29/04/2027', exportExpiry: '29/01/2027' },
+    ],
+    depositType: 'Deposit Alternative duty rate', claimantName: "M&M's special holding private company associated with 1900 Waverly Co United arab emirates L.L.C", claimantCode: 'AE-8122451', submissionDate: '03/08/2026', status: 'Under Processing', remark: '—',
+    transactionType: 'Time Validity Extension', requestedFor: 'AE-8122451',
+    registrationNo: '547', declarationOwnerName: "M&M's special holding private company associated with 1900 Waverly Co United arab emirates L.L.C ( Business )", declarationType: 'Temporary Admission from ROW to Local', customsBroker: 'AE-8122451', extReason: 'extension request',
+    extDaysRequested: '100', extDaysApproved: '0', extChargeType: 'Deposit Alternative duty rate', extAmount: '2,000.00',
+    attachments: [{ file: '33 Invoice Line item.txt', fileType: 'text/plain', size: '4150' }],
+  },
+  {
+    reqNo: '4701820', claimNo: '3842140', ver: '1', claimType: 'Refund of Deposits',
+    declarations: [
+      { declNo: '105-01426501-24', date: '14/10/2024', category: 'Import for Re Export', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '10/03/2025', exportExpiry: '09/08/2025' },
+      { declNo: '105-01426502-24', date: '16/10/2024', category: 'Import for Re Export', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '12/03/2025', exportExpiry: '11/08/2025' },
+      { declNo: '105-01426503-24', date: '18/10/2024', category: 'Import for Re Export', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '14/03/2025', exportExpiry: '13/08/2025' },
+    ],
+    depositType: 'Alternative Duty Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '18/12/2024', status: 'Completed', remark: '1 sub claim rejected',
+    transactionType: 'New Claim', requestedFor: 'AE-1019056',
+  },
+  {
+    reqNo: '4701835', claimNo: '3842160', ver: '1', claimType: 'Refund of Deposits',
+    declarations: [
+      { declNo: '105-01426601-24', date: '20/10/2024', category: 'Import for Re Export', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '16/03/2025', exportExpiry: '15/08/2025' },
+      { declNo: '105-01426602-24', date: '22/10/2024', category: 'Import for Re Export', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '18/03/2025', exportExpiry: '17/08/2025' },
+      { declNo: '105-01426603-24', date: '24/10/2024', category: 'Import for Re Export', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '20/03/2025', exportExpiry: '19/08/2025' },
+    ],
+    depositType: 'Alternative Duty Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '24/12/2024', status: 'Completed', remark: '2 sub claim rejected',
   },
 ];
 
@@ -262,18 +318,29 @@ type Props = {
   onHistory?: () => void;
   onSuspensionResponse?: (row: ClaimRow) => void;
   onDeclarationOpen?: (declNo: string) => void;
+  onViewRequest?: (row: ClaimRow) => void;
+  onCreateFromRejected?: (row: ClaimRow) => void;
   showDrafts?: boolean;
   showColModal?: boolean;
   onCloseColModal?: () => void;
   /** Set when the user searched using "Declaration Number" as the basic-search parameter —
       filters rows to that declaration and switches the table to the dynamic column set. */
   searchDeclNo?: string;
+  /** Set when the user searched using "Request Number" — filters to that request and switches
+      the table to the request-specific dynamic column set (see REQ_SEARCH_COLS below). */
+  searchReqNo?: string;
+  /** Dedicated "Time Validity Extension" sidebar listing — shows all non-claim requests
+      (rows with a transactionType) by default, using the same column set as a Request Number
+      search, instead of requiring the user to search first. searchReqNo still narrows it. */
+  requestsOnly?: boolean;
 };
 
 const DECL_SEARCH_COLS = ['declNo', 'depositType', 'claimNo', 'reqNo', 'claimType', 'claimant', 'submissionDate', 'remark'];
+const REQ_SEARCH_COLS = ['reqNo', 'transactionType', 'requestedFor', 'submissionDate', 'remark'];
 
-export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onViewDocs, onHistory, onSuspensionResponse, onDeclarationOpen, showDrafts = false, showColModal, onCloseColModal, searchDeclNo }: Props = {}) {
+export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onViewDocs, onHistory, onSuspensionResponse, onDeclarationOpen, onViewRequest, onCreateFromRejected, showDrafts = false, showColModal, onCloseColModal, searchDeclNo, searchReqNo, requestsOnly = false }: Props = {}) {
   const [openFlyout, setOpenFlyout] = useState<number | null>(null);
+  const [flyoutPos, setFlyoutPos] = useState<{ top: number; left: number } | null>(null);
   const flyoutRef = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
@@ -295,19 +362,41 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
     const onDoc = (e: MouseEvent) => {
       if (flyoutRef.current && !flyoutRef.current.contains(e.target as Node)) setOpenFlyout(null);
     };
+    // The flyout is a fixed-position portal, so it won't track the table's own scroll —
+    // close it instead of leaving it floating in a stale spot.
+    const onScroll = () => setOpenFlyout(null);
     document.addEventListener('mousedown', onDoc);
-    return () => document.removeEventListener('mousedown', onDoc);
+    window.addEventListener('scroll', onScroll, true);
+    return () => {
+      document.removeEventListener('mousedown', onDoc);
+      window.removeEventListener('scroll', onScroll, true);
+    };
   }, [openFlyout]);
 
   const declSearchActive = !!searchDeclNo && searchDeclNo.trim() !== '';
+  const reqSearchActive = !!searchReqNo && searchReqNo.trim() !== '';
 
   const rows = useMemo(() => {
     const base = showDrafts ? DRAFT_ROWS : CLAIM_ROWS;
-    const statusFiltered = statusFilter ? base.filter((r) => r.status === statusFilter) : base;
+    if (requestsOnly) {
+      const requestRows = base.filter((r) => !!r.transactionType);
+      const statusFiltered = statusFilter ? requestRows.filter((r) => r.status === statusFilter) : requestRows;
+      if (!reqSearchActive) return statusFiltered;
+      const q = searchReqNo!.trim().toLowerCase();
+      return statusFiltered.filter((r) => r.reqNo.toLowerCase().includes(q));
+    }
+    if (reqSearchActive) {
+      const q = searchReqNo!.trim().toLowerCase();
+      const statusFiltered = statusFilter ? base.filter((r) => r.status === statusFilter) : base;
+      return statusFiltered.filter((r) => r.reqNo.toLowerCase().includes(q));
+    }
+    // Non-claim requests (e.g. Time Validity Extension) only surface via Request Number search.
+    const claimsOnly = base.filter((r) => !r.transactionType);
+    const statusFiltered = statusFilter ? claimsOnly.filter((r) => r.status === statusFilter) : claimsOnly;
     if (!declSearchActive) return statusFiltered;
     const q = searchDeclNo!.trim().toLowerCase();
     return statusFiltered.filter((r) => r.declarations.some((d) => d.declNo.toLowerCase().includes(q)));
-  }, [showDrafts, statusFilter, declSearchActive, searchDeclNo]);
+  }, [showDrafts, statusFilter, declSearchActive, searchDeclNo, reqSearchActive, searchReqNo, requestsOnly]);
 
   const matchedDeclNo = (row: ClaimRow) => {
     if (!declSearchActive) return row.declarations[0]?.declNo ?? '—';
@@ -325,17 +414,24 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
     { key: 'claimant',        label: 'Claimant Details',      w: 280 },
     { key: 'submissionDate',  label: 'Claim Submission Date', w: 170 },
     { key: 'remark',          label: 'Remarks',               w: 200 },
+    { key: 'transactionType', label: 'Transaction Type',      w: 200 },
+    { key: 'requestedFor',    label: 'Requested For',         w: 160 },
   ];
 
   const applicableDefs = CLAIMS_COL_DEFS.filter((c) => showDrafts ? !c.claimsOnly : !c.draftsOnly);
-  /* Default listing hides both Charge Type and the single-declaration-number column — those only
-     surface once the user searches by a specific Declaration Number (see DECL_SEARCH_COLS below). */
+  /* Default listing hides Charge Type, the single-declaration-number column, and the request-only
+     columns — those only surface once the user searches by Declaration Number or Request Number
+     (see DECL_SEARCH_COLS / REQ_SEARCH_COLS below). */
   const [visibleCols, setVisibleCols] = useState<string[]>(
-    CLAIMS_COL_DEFS.map((c) => c.key).filter((k) => k !== 'depositType' && k !== 'declNo'),
+    CLAIMS_COL_DEFS.map((c) => c.key).filter((k) => !['depositType', 'declNo', 'transactionType', 'requestedFor'].includes(k)),
   );
-  const visibleHeaders = (declSearchActive ? DECL_SEARCH_COLS : visibleCols)
+  const showRequestCols = reqSearchActive || requestsOnly;
+  const visibleHeaders = (showRequestCols ? REQ_SEARCH_COLS : declSearchActive ? DECL_SEARCH_COLS : visibleCols)
     .map((k) => applicableDefs.find((c) => c.key === k)!)
-    .filter(Boolean);
+    .filter(Boolean)
+    // "Claim Request No." reads as "Request No." once the listing is narrowed to a single
+    // Request Number search — these rows aren't necessarily claims (e.g. Validity Extension).
+    .map((c) => (showRequestCols && c.key === 'reqNo') ? { ...c, label: 'Request No.' } : c);
 
   const {
     tableRef, scrollRef,
@@ -365,26 +461,41 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
     </button>
   );
 
+  const FLYOUT_W = 272;
+  // Rendered via a fixed-position portal (not inline `absolute`) so it can never be clipped by
+  // the table's scroll container — `overflow-x-auto` also computes overflow-y to `auto`, which
+  // was cutting the flyout off above the pagination bar for rows near the bottom of the table.
   const renderFlyout = (i: number, row: ClaimRow) => (
-    <div className="relative inline-block" ref={openFlyout === i ? flyoutRef : undefined}>
+    <div className="relative inline-block">
       <button
         className="size-[28px] inline-flex items-center justify-center rounded hover:bg-[#f0f4ff] transition-colors"
         aria-label="More actions"
-        onClick={() => setOpenFlyout(openFlyout === i ? null : i)}
+        onClick={(e) => {
+          if (openFlyout === i) { setOpenFlyout(null); return; }
+          const r = e.currentTarget.getBoundingClientRect();
+          setFlyoutPos({ top: r.top, left: r.left - FLYOUT_W - 6 });
+          setOpenFlyout(i);
+        }}
       >
         <svg viewBox="0 0 4 18" width="4" height="18" fill="#697498">
           <circle cx="2" cy="2" r="2" /><circle cx="2" cy="9" r="2" /><circle cx="2" cy="16" r="2" />
         </svg>
       </button>
-      {openFlyout === i && (
-        <div className="absolute z-[100] bg-white rounded-[8px] py-[4px] overflow-hidden" style={{ right: '100%', top: 0, marginRight: 6, width: 272, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
-          {getFlyoutItems(row.status, showDrafts, row.claimType === 'Non Remittance').map((id) => (
+      {openFlyout === i && flyoutPos && createPortal(
+        <div ref={flyoutRef} className="fixed z-[1000] bg-white rounded-[8px] py-[4px] overflow-hidden" style={{ top: flyoutPos.top, left: flyoutPos.left, width: FLYOUT_W, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
+          {(hasRejectedSubClaim(row.remark)
+            ? (row.transactionType ? (['viewRequest', 'createFromRejected'] as FlyoutId[]) : (['view', 'history', 'createFromRejected'] as FlyoutId[]))
+            : row.transactionType
+            ? (['viewRequest', 'suspensionResponse'] as FlyoutId[])
+            : getFlyoutItems(row.status, showDrafts, row.claimType === 'Non Remittance')
+          ).map((id) => (
             <button
               key={id}
               className="group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
               onClick={() => {
                 setOpenFlyout(null);
                 if (id === 'view')     onView?.(row);
+                if (id === 'viewRequest') onViewRequest?.(row);
                 if (id === 'amend')    onAmend?.(row.claimType);
                 if (id === 'cancel')   onCancel?.(row.claimType);
                 if (id === 'print')       onPrint?.();
@@ -392,16 +503,36 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
                 if (id === 'viewDocs') onViewDocs?.();
                 if (id === 'history')  onHistory?.();
                 if (id === 'suspensionResponse') onSuspensionResponse?.(row);
+                if (id === 'createFromRejected') onCreateFromRejected?.(row);
               }}
             >
               <span className="text-[#1360d2] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">{ICONS[id]}</span>
               <span className="text-[16px] text-[#111838] group-hover:text-white leading-[20px]" style={{ fontFamily: font }}>{LABELS[id]}</span>
             </button>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
+
+  // Declaration-Number search results carry both a per-declaration "Sub Claim Status" and the
+  // overall "Claim Status" as static trailing columns, alongside Action.
+  const STICKY_STATUS_W = 160;
+  const STICKY_ACTION_W = 79;
+  const dualStatus = declSearchActive;
+  const stickyWidth = STICKY_ACTION_W + STICKY_STATUS_W * (dualStatus ? 2 : 1);
+
+  const renderSubClaimStatusCell = (status: Status, i: number) => {
+    const st = STATUS_STYLE[status];
+    return (
+      <td style={{ position: 'sticky', right: STICKY_ACTION_W + STICKY_STATUS_W, background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: STICKY_STATUS_W, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', borderBottom: '1px solid #f8f8f8', zIndex: openFlyout === i ? 49 : 1 }}>
+        <span className="text-[16px] whitespace-nowrap inline-flex items-center justify-center" style={{ background: st.bg, color: st.color, padding: '4px 12px', borderRadius: 4, lineHeight: '20px', fontWeight: 500, fontFamily: font }}>
+          {status}
+        </span>
+      </td>
+    );
+  };
 
   const renderStatusCell = (status: Status, i: number) => {
     const st = STATUS_STYLE[status];
@@ -420,7 +551,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
     </td>
   );
 
-  const tableMinWidth = visibleHeaders.reduce((s, c) => s + getW(c.key, c.w), 0) + 239;
+  const tableMinWidth = visibleHeaders.reduce((s, c) => s + getW(c.key, c.w), 0) + stickyWidth;
 
   return (
     <>
@@ -434,7 +565,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
       />
     )}
     <div style={{ position: 'relative' }}>
-      <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={239} />
+      <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={stickyWidth} />
       <div ref={scrollRef} onScroll={handleScroll} className="overflow-x-auto pb-[20px]" style={{ position: 'relative' }}>
         {resizeIndicatorLeft !== null && (
           <div style={{ position: 'absolute', top: 0, bottom: 0, left: resizeIndicatorLeft, width: 3, background: '#1360D2', borderRadius: 2, pointerEvents: 'none', zIndex: 100 }} />
@@ -473,9 +604,14 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
                   <ColumnFilter label={col.label} labelClass="text-[16px] font-medium text-[#051937]" />
                 </th>
               ))}
+              {dualStatus && (
+                <th style={{ position: 'sticky', right: STICKY_ACTION_W + STICKY_STATUS_W, width: STICKY_STATUS_W, minWidth: STICKY_STATUS_W, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
+                  <span className="text-[16px] text-[#051937]">Sub Claim Status</span>
+                </th>
+              )}
               <th style={{ position: 'sticky', right: 79, width: 160, minWidth: 160, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
                 <StatusFilterHeader
-                  label="Claim Status"
+                  label={showRequestCols ? 'Request Status' : 'Claim Status'}
                   options={Object.keys(STATUS_STYLE)}
                   value={statusFilter}
                   onChange={(v) => setStatusFilter(v as Status | null)}
@@ -497,6 +633,8 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
                   case 'declarations':   return cell(declLink(row), 'declarations', 150);
                   case 'declNo':         return cell(txt(matchedDeclNo(row)), 'declNo', 180);
                   case 'depositType':    return cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3, fontFamily: font }}>{row.depositType}</span>, 'depositType', 220);
+                  case 'transactionType': return cell(txt(row.transactionType ?? '—'), 'transactionType', 200);
+                  case 'requestedFor':    return cell(txt(row.requestedFor ?? '—'), 'requestedFor', 160);
                   case 'claimant':       return cell(
                     <div className="flex flex-col" style={{ lineHeight: 1.3 }}>
                       <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500, fontFamily: font }}>{row.claimantName}</span>
@@ -513,6 +651,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
               return (
                 <tr key={i}>
                   {visibleHeaders.map((col) => <React.Fragment key={col.key}>{renderCellByKey(col.key)}</React.Fragment>)}
+                  {dualStatus && renderSubClaimStatusCell(row.status, i)}
                   {renderStatusCell(row.status, i)}
                   {renderActionCell(i, row)}
                 </tr>
