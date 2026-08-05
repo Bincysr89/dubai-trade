@@ -399,21 +399,6 @@ export default function VccTable({ onView, onAmend, onDownload, onAudit, onDecla
                                 View Request
                               </span>
                             </button>
-                            {/* Make Payment — opens review page */}
-                            <button
-                              className="group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
-                              onClick={() => { setOpenFlyout(null); onMakePaymentReview?.(row.reqNo); }}
-                            >
-                              <span className="text-[#7a7a7a] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">
-                                <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                                  <rect x="2" y="5" width="16" height="12" rx="2"/>
-                                  <path d="M2 9h16"/><path d="M6 13h2"/><path d="M10 13h4"/>
-                                </svg>
-                              </span>
-                              <span className="text-[16px] text-[#111838] group-hover:text-white leading-[20px]" style={{ fontFamily: "'Dubai', sans-serif" }}>
-                                Make Payment
-                              </span>
-                            </button>
                             {/* Make ePayment — navigates to ePayment tab under Declaration */}
                             <button
                               className="group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"

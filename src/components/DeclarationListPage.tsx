@@ -2513,6 +2513,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
             onDeclarationOpen={(declNo) => { setClaimListDeclNo(declNo); setClaimListDeclViewOpen(true); }}
             onViewRequest={(row) => setViewRequestRow(row)}
             onCreateFromRejected={(row) => { setRejectedClaimRow(row); setClaimStep('createClaimFromRejectedList'); }}
+            onMakePayment={(row) => { setActiveMenu('Declaration'); setActiveTab('epay'); setEPayVccFilter(row.reqNo); }}
             showColModal={showColModal}
             onCloseColModal={() => setShowColModal(false)}
             searchDeclNo={searchType === 'Declaration Number' ? searchQuery : undefined}

@@ -8,8 +8,8 @@ import { useTableBehaviors, DragDots, ScrollArrows } from '../hooks/useTableBeha
 
 const font = "'Dubai', sans-serif";
 
-type Status = 'Under Processing' | 'Completed' | 'Suspended' | 'Draft' | 'Submitted';
-type FlyoutId = 'view' | 'amend' | 'cancel' | 'print' | 'viewDocs' | 'history' | 'uploadDoc' | 'printReceipt' | 'continue' | 'suspensionResponse' | 'viewRequest' | 'createFromRejected';
+type Status = 'Under Processing' | 'Completed' | 'Suspended' | 'Draft' | 'Submitted' | 'Payment Pending';
+type FlyoutId = 'view' | 'amend' | 'cancel' | 'print' | 'viewDocs' | 'history' | 'uploadDoc' | 'printReceipt' | 'continue' | 'suspensionResponse' | 'viewRequest' | 'createFromRejected' | 'makePayment';
 
 const STATUS_STYLE: Record<Status, { bg: string; color: string }> = {
   'Under Processing': { bg: 'rgba(255,169,26,0.16)',  color: '#b45309' },
@@ -17,6 +17,7 @@ const STATUS_STYLE: Record<Status, { bg: string; color: string }> = {
   'Suspended':        { bg: 'rgba(220,53,69,0.10)',   color: '#dc3545' },
   'Draft':            { bg: 'rgba(105,116,152,0.10)', color: '#697498' },
   'Submitted':        { bg: 'rgba(19,96,210,0.10)',   color: '#1360d2' },
+  'Payment Pending':  { bg: 'rgba(255,169,26,0.16)',  color: '#b45309' },
 };
 
 const ICONS: Record<FlyoutId, React.ReactNode> = {
@@ -32,6 +33,7 @@ const ICONS: Record<FlyoutId, React.ReactNode> = {
   suspensionResponse: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="10" cy="10" r="7.5" /><path d="M8 7v6M12 7v6" /></svg>,
   viewRequest:  <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z" /><circle cx="10" cy="10" r="2.5" /></svg>,
   createFromRejected: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M10 4v12M4 10h12" strokeLinecap="round" /></svg>,
+  makePayment:  <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="16" height="12" rx="2"/><path d="M2 9h16"/><path d="M6 13h2"/><path d="M10 13h4"/></svg>,
 };
 
 const LABELS: Record<FlyoutId, string> = {
@@ -47,10 +49,12 @@ const LABELS: Record<FlyoutId, string> = {
   suspensionResponse: 'Suspension Response',
   viewRequest:  'View Request',
   createFromRejected: 'Create New Claim Request from rejected sub claim',
+  makePayment:  'Make Payment',
 };
 
 function getFlyoutItems(status: Status, isDraft: boolean, isNonRemittance = false): FlyoutId[] {
   if (isDraft) return ['continue'];
+  if (status === 'Payment Pending') return ['makePayment'];
   if (status === 'Completed') return ['viewDocs', 'history'];
   if (status === 'Suspended') return ['view', 'amend', 'cancel', 'suspensionResponse', 'history'];
   if (status === 'Submitted') {
@@ -158,7 +162,7 @@ const CLAIM_ROWS: ClaimRow[] = [
     declarations: [
       { declNo: '510-03318821-24', date: '06/22/2024', category: 'Declaration Cancellation - Deposit', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '06/30/2025', exportExpiry: 'N/A' },
     ],
-    depositType: 'Declaration Cancellation - Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/10/2024', status: 'Submitted', remark: '—',
+    depositType: 'Declaration Cancellation - Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/10/2024', status: 'Payment Pending', remark: '—',
   },
   {
     reqNo: '231626', claimNo: '—', ver: '1', claimType: 'Claim Time Validity Extension',
@@ -320,6 +324,7 @@ type Props = {
   onDeclarationOpen?: (declNo: string) => void;
   onViewRequest?: (row: ClaimRow) => void;
   onCreateFromRejected?: (row: ClaimRow) => void;
+  onMakePayment?: (row: ClaimRow) => void;
   showDrafts?: boolean;
   showColModal?: boolean;
   onCloseColModal?: () => void;
@@ -338,7 +343,7 @@ type Props = {
 const DECL_SEARCH_COLS = ['declNo', 'depositType', 'claimNo', 'reqNo', 'claimType', 'claimant', 'submissionDate', 'remark'];
 const REQ_SEARCH_COLS = ['reqNo', 'transactionType', 'requestedFor', 'submissionDate', 'remark'];
 
-export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onViewDocs, onHistory, onSuspensionResponse, onDeclarationOpen, onViewRequest, onCreateFromRejected, showDrafts = false, showColModal, onCloseColModal, searchDeclNo, searchReqNo, requestsOnly = false }: Props = {}) {
+export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onViewDocs, onHistory, onSuspensionResponse, onDeclarationOpen, onViewRequest, onCreateFromRejected, onMakePayment, showDrafts = false, showColModal, onCloseColModal, searchDeclNo, searchReqNo, requestsOnly = false }: Props = {}) {
   const [openFlyout, setOpenFlyout] = useState<number | null>(null);
   const [flyoutPos, setFlyoutPos] = useState<{ top: number; left: number } | null>(null);
   const flyoutRef = useRef<HTMLDivElement>(null);
@@ -348,7 +353,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
   const [declModal, setDeclModal] = useState<ClaimRow | null>(null);
 
   const STATUS_COLOR: Record<Status, string> = {
-    'Under Processing': '#b45309', 'Completed': '#28a745', 'Suspended': '#dc3545', 'Draft': '#697498', 'Submitted': '#1360d2',
+    'Under Processing': '#b45309', 'Completed': '#28a745', 'Suspended': '#dc3545', 'Draft': '#697498', 'Submitted': '#1360d2', 'Payment Pending': '#b45309',
   };
 
   useEffect(() => {
@@ -504,6 +509,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
                 if (id === 'history')  onHistory?.();
                 if (id === 'suspensionResponse') onSuspensionResponse?.(row);
                 if (id === 'createFromRejected') onCreateFromRejected?.(row);
+                if (id === 'makePayment') onMakePayment?.(row);
               }}
             >
               <span className="text-[#1360d2] group-hover:text-white flex-shrink-0 inline-flex items-center justify-center">{ICONS[id]}</span>
