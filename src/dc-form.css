@@ -135,7 +135,7 @@
 .dc-float-dropdown { position: relative; width: 100%; }
 .dc-float-dropdown__trigger {
   width: 100%; height: 56px; padding: 0 40px 0 16px;
-  border: 1px solid #D5DDFB; border-radius: 8px;
+  border: 1px solid #D5DDFB; border-radius: 6px;
   background: #fff; font-size: 16px; color: #0E1B3D;
   cursor: pointer; outline: none; text-align: left;
   display: flex; align-items: center;

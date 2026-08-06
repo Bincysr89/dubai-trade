@@ -75,7 +75,7 @@ import NRPaymentSuccessPage from './NRPaymentSuccessPage';
 import NRPaymentRejectedPage from './NRPaymentRejectedPage';
 import type { Row } from './EligibleDeclarationsPage';
 import { ColumnFilter } from './ColumnFilter';
-import { DateInput } from './DatePicker';
+import { DateInput, StatusAsOnBadge } from './DatePicker';
 // @ts-ignore
 import importBySeaSrc from '../assets/importbysea.svg';
 // @ts-ignore
@@ -191,6 +191,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
   const [activeTab, setActiveTab] = useState<'all' | 'epay'>('all');
   const [ePayVccFilter, setEPayVccFilter] = useState<string>('');
   const [showFilters, setShowFilters] = useState(false);
+  const [statusFromDate, setStatusFromDate] = useState('2022-12-28');
+  const [statusToDate, setStatusToDate]     = useState('2023-01-10');
   // TODO: derive from auth context. For now broker login is enabled by default
   // so the Customer Type / Code filters are visible.
   const isBroker = true;
@@ -2375,20 +2377,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
 
           {/* Date range pill */}
           <div className="flex-1 flex justify-center">
-            <div
-              className="bg-white border border-[#d5ddfb] rounded-[8px] h-[49px] px-[16px] py-[8px] flex items-center gap-[12px] flex-shrink-0"
-              style={{ boxShadow: '0px 4px 10px rgba(0,0,0,0.08)' }}
-            >
-              <span className="text-[16px] text-[#4c4c4c] whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>
-                Status As On 28-Dec-22 To 10-Jan-23
-              </span>
-              <div className="flex items-center gap-[6px]">
-                <span className="text-[16px] text-[#1360d2] font-medium" style={{ fontFamily: "'Dubai', sans-serif" }}>Modify</span>
-                <svg viewBox="0 0 18 18" className="size-[18px]" fill="none" stroke="#1360d2" strokeWidth="1.8">
-                  <path d="M12 3l3 3-9 9H3v-3L12 3z" />
-                </svg>
-              </div>
-            </div>
+            <StatusAsOnBadge fromValue={statusFromDate} toValue={statusToDate}
+              onApply={(from, to) => { setStatusFromDate(from); setStatusToDate(to); }} />
           </div>
 
           {/* Drafts toggle — all tabs except VCC, ePayments sidebar, and epay sub-tabs */}

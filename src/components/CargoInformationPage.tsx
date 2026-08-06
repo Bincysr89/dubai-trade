@@ -3,7 +3,7 @@ import Header from './Header';
 import Pagination from './Pagination';
 import BackToListingBar from './BackToListingBar';
 import ManageColumnsModal, { ColDef } from './ManageColumnsModal';
-import { DateInput } from './DatePicker';
+import { DateInput, StatusAsOnBadge } from './DatePicker';
 import { useTableBehaviors, DragDots, ScrollArrows } from '../hooks/useTableBehaviors';
 import CarrierMovementNewRequestPage from './CarrierMovementNewRequestPage';
 import CarrierMovementViewPage, { type CarrierMovementRow } from './CarrierMovementViewPage';
@@ -406,6 +406,8 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
   const [panelCollapsed, setPanelCollapsed] = useState(false);
   const [activeMenu, setActiveMenu] = useState<MenuKey>('carrierMovement');
   const config = MENU_CONFIGS[activeMenu];
+  const [statusFromDate, setStatusFromDate] = useState('2022-12-28');
+  const [statusToDate, setStatusToDate]     = useState('2023-01-10');
 
   /* Toolbar state — shared by every listing, reset whenever the active menu changes */
   const [showFilters, setShowFilters]         = useState(false);
@@ -1026,17 +1028,8 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                   )}
                 </div>
                 <div className="flex-1 flex justify-center min-w-0 overflow-x-auto">
-                  <div
-                    className="inline-flex items-center gap-[10px] h-[44px] px-[24px] rounded-[8px] border border-[#d5ddfb] bg-white text-[16px] text-[#0e1b3d] flex-shrink-0"
-                    style={{ fontFamily: font, whiteSpace: 'nowrap' }}
-                  >
-                    <span>Status As On 28-Dec-22 To 10-Jan-23</span>
-                    <button className="text-[#1360d2] font-medium hover:opacity-80 ml-[6px]" style={{ fontFamily: font }}>Modify</button>
-                    <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#1360d2" strokeWidth="1.6">
-                      <rect x="3" y="4" width="14" height="13" rx="2" />
-                      <path d="M3 8h14M7 2v4M13 2v4" />
-                    </svg>
-                  </div>
+                  <StatusAsOnBadge fromValue={statusFromDate} toValue={statusToDate}
+                    onApply={(from, to) => { setStatusFromDate(from); setStatusToDate(to); }} />
                 </div>
                 <div className="flex items-center gap-[16px] flex-shrink-0">
                   {activeMenu !== 'flightManifest' && (

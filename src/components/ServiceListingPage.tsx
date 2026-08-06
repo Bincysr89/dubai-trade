@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Header from './Header';
 import Pagination from './Pagination';
-import { DateInput } from './DatePicker';
+import { DateInput, StatusAsOnBadge } from './DatePicker';
 import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
 
 const font = "'Dubai', sans-serif";
@@ -147,6 +147,8 @@ export default function ServiceListingPage({
   const [page, setPage]                   = useState(1);
   const [pageSize, setPageSize]           = useState(8);
   const [search, setSearch]               = useState('');
+  const [statusFromDate, setStatusFromDate] = useState('2022-12-28');
+  const [statusToDate, setStatusToDate]     = useState('2023-01-10');
   const [openFlyout, setOpenFlyout]       = useState<number | null>(null);
   const [showDrafts, setShowDrafts]       = useState(false);
   const [activeField, setActiveField]     = useState(searchFields?.[0] ?? searchLabel);
@@ -354,17 +356,8 @@ export default function ServiceListingPage({
         {/* Date filter row */}
         <div className="flex items-center justify-between mb-[16px]">
           <div className="flex-1 flex justify-center">
-            <div
-              className="inline-flex items-center gap-[10px] h-[44px] px-[24px] rounded-[8px] border border-[#d5ddfb] bg-white text-[16px] text-[#0e1b3d]"
-              style={{ fontFamily: font }}
-            >
-              <span>Status As On 28-Dec-22 To 10-Jan-23</span>
-              <button className="text-[#1360d2] font-medium hover:opacity-80 ml-[6px]">Modify</button>
-              <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#1360d2" strokeWidth="1.6">
-                <rect x="3" y="4" width="14" height="13" rx="2" />
-                <path d="M3 8h14M7 2v4M13 2v4" />
-              </svg>
-            </div>
+            <StatusAsOnBadge fromValue={statusFromDate} toValue={statusToDate}
+              onApply={(from, to) => { setStatusFromDate(from); setStatusToDate(to); }} />
           </div>
           {hasDraftsToggle && (
             <div className="flex items-center gap-[8px] ml-[16px]">

@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import CargoTransferViewPage from './CargoTransferViewPage';
 import Pagination from './Pagination';
-import { DateInputOutlined } from './DatePicker';
+import { DateInputOutlined, StatusAsOnBadge } from './DatePicker';
 import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
 
 const font = "'Dubai', sans-serif";
@@ -359,6 +359,8 @@ export default function CargoTransferReceiptReleasePage({ onBack }: Props) {
   const [rows, setRows]         = useState<Row[]>(INITIAL_ROWS);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [bulkDate, setBulkDate] = useState('');
+  const [statusFromDate, setStatusFromDate] = useState('2026-06-01');
+  const [statusToDate, setStatusToDate]     = useState('2026-06-10');
 
   const [confirmedRelRows, setConfirmedRelRows] = useState<Set<number>>(new Set());
   const [confirmedRecRows, setConfirmedRecRows] = useState<Set<number>>(new Set());
@@ -663,18 +665,8 @@ export default function CargoTransferReceiptReleasePage({ onBack }: Props) {
 
             {/* Status As On — centered */}
             <div className="flex-1 flex justify-center">
-              <div className="bg-white border border-[#d5ddfb] rounded-[8px] h-[49px] px-[16px] flex items-center gap-[12px] flex-shrink-0"
-                style={{ boxShadow: '0px 4px 10px rgba(0,0,0,0.08)' }}>
-                <span className="text-[16px] text-[#4c4c4c] whitespace-nowrap" style={{ fontFamily: font }}>
-                  Status As On 01-Jun-26 To 10-Jun-26
-                </span>
-                <div className="flex items-center gap-[6px] cursor-pointer">
-                  <span className="text-[16px] text-[#1360d2] font-medium" style={{ fontFamily: font }}>Modify</span>
-                  <svg viewBox="0 0 18 18" className="size-[16px]" fill="none" stroke="#1360d2" strokeWidth="1.8">
-                    <path d="M12 3l3 3-9 9H3v-3L12 3z" />
-                  </svg>
-                </div>
-              </div>
+              <StatusAsOnBadge fromValue={statusFromDate} toValue={statusToDate}
+                onApply={(from, to) => { setStatusFromDate(from); setStatusToDate(to); }} />
             </div>
 
             {/* Bulk apply date — right corner */}

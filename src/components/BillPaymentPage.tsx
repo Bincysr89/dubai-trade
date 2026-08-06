@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Header from './Header';
 import Pagination from './Pagination';
 import infoIconSrc from '../assets/icon-info.svg';
-import { DateTimePicker, DateInput } from './DatePicker';
+import { DateTimePicker, DateInput, StatusAsOnBadge } from './DatePicker';
 import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
 
 const font = "'Dubai', sans-serif";
@@ -825,8 +825,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const [payStatusOpen,   setPayStatusOpen]   = useState(false);
   const [invPayDetails,   setInvPayDetails]   = useState<typeof PAYMENT_ROWS[0] | null>(null);
   const [invTxDetails,    setInvTxDetails]    = useState<typeof PAYMENT_ROWS | null>(null);
-  const [payFromDate, setPayFromDate] = useState('09-06-2026');
-  const [payToDate,   setPayToDate]   = useState('10-06-2026');
+  const [payFromDate, setPayFromDate] = useState('2026-06-09');
+  const [payToDate,   setPayToDate]   = useState('2026-06-10');
   const [expandedPayRow, setExpandedPayRow] = useState<number | null>(null);
 
 
@@ -2330,18 +2330,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
 
       {/* Row 2 — Status As On badge */}
       <div className="flex justify-center mb-[10px]">
-        <div className="inline-flex items-center gap-[8px] h-[40px] px-[20px] rounded-[8px] border border-[#d5ddfb] bg-white text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>
-          <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="#1360d2" strokeWidth="1.6">
-            <rect x="3" y="4" width="14" height="13" rx="2" /><path d="M3 8h14M7 2v4M13 2v4" />
-          </svg>
-          <span>Status As On {payFromDate} To {payToDate}</span>
-          <button className="text-[#1360d2] font-medium hover:opacity-70 flex items-center gap-1">
-            Modify
-            <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#1360d2" strokeWidth="1.6">
-              <path d="M14 3l3 3-10 10H4v-3L14 3z" strokeLinejoin="round" />
-            </svg>
-          </button>
-        </div>
+        <StatusAsOnBadge fromValue={payFromDate} toValue={payToDate}
+          onApply={(from, to) => { setPayFromDate(from); setPayToDate(to); }} />
       </div>
 
       {/* Info banner */}

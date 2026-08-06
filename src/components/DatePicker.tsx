@@ -479,3 +479,241 @@ export function DateInputOutlined({
     </div>
   );
 }
+
+/* ── Date-range calendar (two-click range selection) ──────────────────────── */
+export function DateRangeCalendar({
+  fromValue,
+  toValue,
+  onApply,
+}: {
+  fromValue: string; // 'YYYY-MM-DD'
+  toValue: string;   // 'YYYY-MM-DD'
+  onApply: (from: string, to: string) => void;
+}) {
+  const today = new Date();
+  const initBase = toValue ? new Date(toValue + 'T00:00') : (fromValue ? new Date(fromValue + 'T00:00') : today);
+  const safeBase = isNaN(initBase.getTime()) ? today : initBase;
+
+  const [viewYear, setViewYear] = useState(safeBase.getFullYear());
+  const [viewMonth, setViewMonth] = useState(safeBase.getMonth());
+  const [mode, setMode] = useState<'day' | 'month' | 'year'>('day');
+  const [yrStart, setYrStart] = useState(safeBase.getFullYear() - 10);
+  const [rangeStart, setRangeStart] = useState(fromValue);
+  const [rangeEnd, setRangeEnd] = useState(toValue);
+
+  const daysInMo   = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const firstDow   = new Date(viewYear, viewMonth, 1).getDay();
+  const prevMoDays = new Date(viewYear, viewMonth, 0).getDate();
+  const cells: { day: number; t: 'p' | 'c' | 'n' }[] = [];
+  for (let i = firstDow - 1; i >= 0; i--) cells.push({ day: prevMoDays - i, t: 'p' });
+  for (let d = 1; d <= daysInMo; d++)     cells.push({ day: d, t: 'c' });
+  for (let nd = 1; cells.length < 42; nd++) cells.push({ day: nd, t: 'n' });
+
+  const navMonth = (delta: number) => {
+    const d = new Date(viewYear, viewMonth + delta, 1);
+    setViewMonth(d.getMonth());
+    setViewYear(d.getFullYear());
+  };
+  const isoOf = (day: number) => `${viewYear}-${p2(viewMonth + 1)}-${p2(day)}`;
+
+  const handleDayClick = (day: number) => {
+    const iso = isoOf(day);
+    if (!rangeStart || (rangeStart && rangeEnd)) {
+      setRangeStart(iso); setRangeEnd('');
+    } else if (iso < rangeStart) {
+      setRangeStart(iso); setRangeEnd('');
+    } else {
+      setRangeEnd(iso);
+    }
+  };
+
+  const ChevSvg = ({ dir }: { dir: 'l' | 'r' }) => (
+    <svg viewBox="0 0 20 20" width="12" height="12" fill="none">
+      <path d={dir === 'l' ? 'M13 4l-6 6 6 6' : 'M7 4l6 6-6 6'} stroke="#0e1b3d" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+  const TriUp = () => (
+    <svg viewBox="0 0 10 10" width="9" height="9" fill="#697498"><polygon points="5,2 9,8 1,8" /></svg>
+  );
+  const TriDown = () => (
+    <svg viewBox="0 0 10 10" width="9" height="9" fill="#697498"><polygon points="1,2 9,2 5,8" /></svg>
+  );
+  const NavBtn = ({ onClick, ch }: { onClick: () => void; ch: React.ReactNode }) => (
+    <button type="button" onClick={onClick}
+      style={{ width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center',
+               border: 'none', background: 'transparent', cursor: 'pointer', borderRadius: 4, flexShrink: 0 }}
+      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#f0f4ff'; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}>
+      {ch}
+    </button>
+  );
+
+  const pillBtn = (label: string | number, isActive: boolean, activeBg: string, onClick: () => void) => (
+    <button type="button" onClick={onClick}
+      style={{
+        padding: '10px 0', borderRadius: 20, border: 'none', width: '100%',
+        background: isActive ? activeBg : 'transparent',
+        color: isActive ? '#fff' : '#0e1b3d',
+        fontWeight: isActive ? 700 : 400,
+        fontSize: 14, cursor: 'pointer', transition: 'background 0.1s', fontFamily: FONT,
+      }}
+      onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = '#e8f0ff'; }}
+      onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}>
+      {label}
+    </button>
+  );
+
+  const header = (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <NavBtn onClick={() => mode === 'year' ? setYrStart(y => y - 21) : navMonth(-1)} ch={<ChevSvg dir="l" />} />
+        <button type="button"
+          onClick={() => setMode(m => m === 'month' ? 'day' : 'month')}
+          style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px', border: 'none', cursor: 'pointer',
+                   borderRadius: 16, fontFamily: FONT, fontSize: 14, fontWeight: 700, color: '#0e1b3d',
+                   background: mode === 'month' ? '#e8ecf4' : 'transparent' }}>
+          {MS[viewMonth]}{mode === 'month' ? <TriUp /> : <TriDown />}
+        </button>
+        <NavBtn onClick={() => mode === 'year' ? setYrStart(y => y + 21) : navMonth(1)} ch={<ChevSvg dir="r" />} />
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <NavBtn onClick={() => mode === 'year' ? setYrStart(y => y - 21) : setViewYear(y => y - 1)} ch={<ChevSvg dir="l" />} />
+        <button type="button"
+          onClick={() => setMode(m => m === 'year' ? 'day' : 'year')}
+          style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px', border: 'none', cursor: 'pointer',
+                   borderRadius: 16, fontFamily: FONT, fontSize: 14, fontWeight: 700, color: '#0e1b3d',
+                   background: mode === 'year' ? '#e8ecf4' : 'transparent' }}>
+          {viewYear}{mode === 'year' ? <TriUp /> : <TriDown />}
+        </button>
+        <NavBtn onClick={() => mode === 'year' ? setYrStart(y => y + 21) : setViewYear(y => y + 1)} ch={<ChevSvg dir="r" />} />
+      </div>
+    </div>
+  );
+
+  const monthGrid = (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '4px 12px' }}>
+      {MS.map((m, i) => pillBtn(m, i === viewMonth, '#3a4a6b', () => { setViewMonth(i); setMode('day'); }))}
+    </div>
+  );
+
+  const years = Array.from({ length: 21 }, (_, i) => yrStart + i);
+  const yearGrid = (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '4px 8px' }}>
+      {years.map(y => pillBtn(y, y === viewYear, '#5b7de8', () => { setViewYear(y); setMode('day'); }))}
+    </div>
+  );
+
+  const dayGrid = (
+    <>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', marginBottom: 6 }}>
+        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+          <div key={i} style={{ textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#697498', paddingBottom: 6 }}>{d}</div>
+        ))}
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)' }}>
+        {cells.map((cell, i) => {
+          const isCur = cell.t === 'c';
+          const iso = isCur ? isoOf(cell.day) : '';
+          const inRange = isCur && !!rangeStart && iso >= rangeStart && iso <= (rangeEnd || rangeStart);
+          return (
+            <button key={i} type="button"
+              onClick={() => { if (isCur) handleDayClick(cell.day); }}
+              style={{
+                height: 36, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 13, borderRadius: '50%', border: 'none',
+                background: inRange ? '#0e1b3d' : 'transparent',
+                color: inRange ? '#fff' : isCur ? '#0e1b3d' : '#c8d0e0',
+                fontWeight: inRange ? 700 : 400,
+                cursor: isCur ? 'pointer' : 'default',
+                transition: 'background 0.1s',
+              }}
+              onMouseEnter={e => { if (isCur && !inRange) e.currentTarget.style.background = '#e8f0ff'; }}
+              onMouseLeave={e => { if (!inRange) e.currentTarget.style.background = 'transparent'; }}>
+              {cell.day}
+            </button>
+          );
+        })}
+      </div>
+    </>
+  );
+
+  const applyBtn = (
+    <button type="button"
+      onClick={() => { if (rangeStart && rangeEnd) onApply(rangeStart, rangeEnd); }}
+      style={{
+        width: '100%', padding: '14px 0', borderRadius: 8, marginTop: 16,
+        fontSize: 15, fontWeight: 600, color: 'white', border: 'none',
+        background: rangeStart && rangeEnd ? '#3a5fd9' : '#a6c2e9',
+        cursor: rangeStart && rangeEnd ? 'pointer' : 'not-allowed',
+        fontFamily: FONT,
+      }}>
+      Apply
+    </button>
+  );
+
+  return (
+    <div style={{ width: 300, fontFamily: FONT }}>
+      {header}
+      {mode === 'month' ? monthGrid : mode === 'year' ? yearGrid : dayGrid}
+      {applyBtn}
+    </div>
+  );
+}
+
+/**
+ * StatusAsOnBadge — the "Status As On {from} To {to} [Modify]" pill used across
+ * several listing pages. Clicking Modify opens a DateRangeCalendar popover;
+ * picking a range and hitting Apply calls onApply with the new from/to dates.
+ */
+export function StatusAsOnBadge({
+  fromValue,
+  toValue,
+  onApply,
+}: {
+  fromValue: string; // 'YYYY-MM-DD'
+  toValue: string;   // 'YYYY-MM-DD'
+  onApply: (from: string, to: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const h = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, [open]);
+
+  return (
+    <div ref={wrapRef} style={{ position: 'relative', display: 'inline-flex' }}>
+      <div className="inline-flex items-center gap-[8px] h-[40px] px-[20px] rounded-[8px] border border-[#d5ddfb] bg-white text-[16px] text-[#0e1b3d]" style={{ fontFamily: FONT }}>
+        <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="#1360d2" strokeWidth="1.6">
+          <rect x="3" y="4" width="14" height="13" rx="2" /><path d="M3 8h14M7 2v4M13 2v4" />
+        </svg>
+        <span>Status As On {fmtDate(fromValue)} To {fmtDate(toValue)}</span>
+        <button type="button" onClick={() => setOpen(o => !o)}
+          className="text-[#1360d2] font-medium hover:opacity-70 flex items-center gap-1">
+          Modify
+          <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#1360d2" strokeWidth="1.6">
+            <path d="M14 3l3 3-10 10H4v-3L14 3z" strokeLinejoin="round" />
+          </svg>
+        </button>
+      </div>
+      {open && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 6px)', left: '50%', transform: 'translateX(-50%)', zIndex: 600,
+          background: '#fff', borderRadius: 12, border: '1px solid #e0e8f5',
+          padding: 20, boxShadow: '0 8px 32px rgba(14,27,61,0.16)',
+        }}>
+          <DateRangeCalendar
+            fromValue={fromValue}
+            toValue={toValue}
+            onApply={(from, to) => { onApply(from, to); setOpen(false); }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
