@@ -2983,7 +2983,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             const SUMMARY_CARDS = [
               { key: 'pending', label: 'Pending Invoices', count: pendingInvCount, amt: pendingInvAmt, color: '#1360d2', bg: 'linear-gradient(160deg,#dce9fc 0%,#ffffff 75%)', border: '#b3caff', onClick: openPending,
                 icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1360d2" strokeWidth="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5" strokeLinecap="round"/></svg>,
-                tip: 'Whether this includes every unpaid invoice or only invoices eligible for online payment is pending confirmation from IT.' },
+                tip: undefined as string | undefined },
               { key: 'overdue', label: 'Overdue Invoices', count: overdueInvCount, amt: overdueInvAmt, color: '#dc3545', bg: 'linear-gradient(160deg,#fde3e3 0%,#ffffff 75%)', border: '#f5b8b8', onClick: openOverdue,
                 icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#dc3545" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v6" strokeLinecap="round"/><circle cx="12" cy="16.5" r="0.9" fill="#dc3545"/></svg>,
                 tip: undefined as string | undefined },
