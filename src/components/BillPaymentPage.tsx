@@ -806,7 +806,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
       tab by due-date bucket. Shown as a dismissible chip so it can be cleared like any other filter. */
   const [fDueFilter, setFDueFilter] = useState<'' | 'overdue' | 'dueSoon'>('');
   /** Recent Activity Summary window toggle (Overview tab). */
-  const [recentPeriodDays, setRecentPeriodDays] = useState<7 | 30>(7);
+  const [recentPeriodDays, setRecentPeriodDays] = useState<'today' | 7 | 30>('today');
 
   /* Account & Payment bottom-bar search */
   const [accSearchType, setAccSearchType]         = useState('Account Number');
@@ -1024,13 +1024,11 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             ) : (
               <>
                 <div className="relative mb-[16px]">
-                  <svg className="absolute left-[12px] top-1/2 -translate-y-1/2" viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#8f94ae" strokeWidth="1.8">
-                    <circle cx="9" cy="9" r="6"/><path d="M15 15l-3-3" strokeLinecap="round"/>
-                  </svg>
                   <input type="text" value={value} onChange={e => setFilterValues(p => ({ ...p, [key]: e.target.value }))}
                     placeholder={`Search ${label}…`}
-                    className="w-full h-[48px] border border-[#d5ddfb] rounded-[6px] pl-[38px] pr-[12px] text-[15px] text-[#0e1b3d] placeholder-[#8f94ae] focus:outline-none focus:border-[#1360d2]"
+                    className="w-full h-[48px] border border-[#d5ddfb] rounded-[6px] pl-[12px] pr-[38px] text-[15px] text-[#0e1b3d] placeholder-[#8f94ae] focus:outline-none focus:border-[#1360d2]"
                     style={{ fontFamily: font }} autoFocus />
+                  <svg className="absolute right-[12px] top-1/2 -translate-y-1/2" width="16" height="16" viewBox="0 0 18 18" fill="none"><path fillRule="evenodd" clipRule="evenodd" d="M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z" fill="#0E1B3D"/></svg>
                 </div>
                 {(['oldest', 'newest'] as const).map(opt => (
                   <label key={opt} className="flex items-center gap-[12px] mb-[12px] cursor-pointer">
@@ -1150,11 +1148,13 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                         <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}><DirhamIcon size={14} color="#0e1b3d" />&nbsp;{row.settled}</span>
                       </td>
                       <td style={{ background: '#fff', padding: '14px 16px', verticalAlign: 'middle', textAlign: 'right' }}>
-                        <div className="flex items-center justify-end gap-2">
-                          <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>AED</span>
+                        <div className="relative inline-block w-[120px]">
+                          <span className="absolute left-[10px] top-1/2 -translate-y-1/2 pointer-events-none flex items-center">
+                            <DirhamIcon size={14} color="#697498" />
+                          </span>
                           <input
                             defaultValue={row.balance}
-                            className="w-[120px] text-right px-3 py-2 border border-[#d5ddfb] rounded-[4px] text-[16px] text-[#0e1b3d] focus:outline-none focus:border-[#1360d2]"
+                            className="w-full text-right pl-[30px] pr-3 py-2 border border-[#d5ddfb] rounded-[4px] text-[16px] text-[#0e1b3d] focus:outline-none focus:border-[#1360d2]"
                             style={{ fontFamily: font }}
                           />
                         </div>
@@ -1166,8 +1166,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                           onClick={() => toggleRow(INVOICE_ROWS.indexOf(row))}
                           className="size-[32px] inline-flex items-center justify-center rounded-[4px] border border-[#d5ddfb] text-[#dc3545] hover:bg-[#fdecea] transition-colors"
                         >
-                          <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8">
-                            <path d="M4 6h12M8 6V4.5A1.5 1.5 0 019.5 3h1A1.5 1.5 0 0112 4.5V6m-6.5 0v9a1.5 1.5 0 001.5 1.5h4a1.5 1.5 0 001.5-1.5V6" strokeLinecap="round" strokeLinejoin="round" />
+                          <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                            <path d="M3 5h14M8 5V3h4v2M17 5l-1 13H4L3 5" /><path d="M8 9v5M12 9v5" />
                           </svg>
                         </button>
                       </td>
@@ -1401,6 +1401,9 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                     <th style={{ background: '#a6c2e9', padding: '12px 16px', textAlign: 'right', fontWeight: 500 }}>
                       <span className="text-[16px] font-medium text-[#051937]">Pay Amount</span>
                     </th>
+                    <th style={{ background: '#a6c2e9', padding: '12px 16px', textAlign: 'center', fontWeight: 500, width: 80 }}>
+                      <span className="text-[16px] font-medium text-[#051937]">Action</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1421,17 +1424,34 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                           </span>
                         )}
                       </td>
-                      <td style={{ background: '#fff', padding: '14px 16px', verticalAlign: 'middle' }}>
-                        <div className="flex items-center justify-end gap-2">
-                          <DirhamIcon size={14} color="#697498" />
+                      <td style={{ background: '#fff', padding: '14px 16px', verticalAlign: 'middle', textAlign: 'right' }}>
+                        <div className="relative inline-block w-[130px]">
+                          <span className="absolute left-[10px] top-1/2 -translate-y-1/2 pointer-events-none flex items-center">
+                            <DirhamIcon size={14} color="#697498" />
+                          </span>
                           <input
                             value={accPayAmounts[idx] ?? ''}
                             onChange={e => setAccPayAmounts(prev => ({ ...prev, [idx]: e.target.value }))}
                             placeholder="0.00"
-                            className="w-[130px] text-right px-3 py-2 border border-[#d5ddfb] rounded-[4px] text-[16px] text-[#0e1b3d] focus:outline-none focus:border-[#1360d2]"
+                            className="w-full text-right pl-[30px] pr-3 py-2 border border-[#d5ddfb] rounded-[4px] text-[16px] text-[#0e1b3d] focus:outline-none focus:border-[#1360d2]"
                             style={{ fontFamily: font }}
                           />
                         </div>
+                      </td>
+                      <td style={{ background: '#fff', padding: '14px 16px', verticalAlign: 'middle', textAlign: 'center' }}>
+                        <button
+                          type="button"
+                          title="Remove account"
+                          onClick={() => {
+                            setSelectedAccs(prev => { const n = new Set(prev); n.delete(idx); return n; });
+                            setAccPayAmounts(prev => { const n = { ...prev }; delete n[idx]; return n; });
+                          }}
+                          className="size-[32px] inline-flex items-center justify-center rounded-[4px] border border-[#d5ddfb] text-[#dc3545] hover:bg-[#fdecea] transition-colors"
+                        >
+                          <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                            <path d="M3 5h14M8 5V3h4v2M17 5l-1 13H4L3 5" /><path d="M8 9v5M12 9v5" />
+                          </svg>
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -1900,9 +1920,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             className="flex-1 text-[16px] text-[#0e1b3d] placeholder-[#8f94ae] bg-transparent focus:outline-none min-w-0"
             style={{ fontFamily: font }}
           />
-          <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="#8f94ae" strokeWidth="1.8">
-            <circle cx="9" cy="9" r="6" /><path d="M15 15l-3-3" strokeLinecap="round" />
-          </svg>
+          <svg width="17" height="17" viewBox="0 0 18 18" fill="none"><path fillRule="evenodd" clipRule="evenodd" d="M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z" fill="#0E1B3D"/></svg>
         </div>
 
         {/* Status dropdown — checkboxes so several statuses can be selected at once */}
@@ -2007,6 +2025,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
       {/* Info bar — totals / selection summary */}
       <div className="flex items-center gap-[6px] mb-[8px] text-[15px]" style={{ fontFamily: font }}>
         <span className="text-[#697498]">Total Invoices: <span className="font-semibold text-[#0e1b3d]">{filteredInv.length}</span></span>
+        <span className="text-[#d5ddfb]">|</span>
+        <span className="text-[#697498]">Total of Balance Amount: <span className="font-semibold text-[#0e1b3d] inline-flex items-center gap-[3px]"><DirhamIcon size={13} color="#0e1b3d" />{filteredInv.reduce((s, r) => s + parseFloat(r.balance.replace(/,/g, '')), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></span>
         <span className="text-[#d5ddfb]">|</span>
         <span className="text-[#697498]">Selected: <span className="font-semibold text-[#1360d2]">{selectedRows.size}</span></span>
         {selectedRows.size > 0 && (
@@ -2224,9 +2244,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 className="flex-1 text-[16px] text-[#0e1b3d] placeholder-[#8f94ae] bg-transparent focus:outline-none min-w-0"
                 style={{ fontFamily: font }}
               />
-              <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="#8f94ae" strokeWidth="1.8">
-                <circle cx="9" cy="9" r="6" /><path d="M15 15l-3-3" strokeLinecap="round" />
-              </svg>
+              <svg width="17" height="17" viewBox="0 0 18 18" fill="none"><path fillRule="evenodd" clipRule="evenodd" d="M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z" fill="#0E1B3D"/></svg>
             </div>
           )}
         </div>
@@ -2343,6 +2361,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             <tr>
               {renderFilterHeader('pay', 'Transaction Type', { style: { borderTopLeftRadius: 8, borderBottomLeftRadius: 8, paddingLeft: 16 } })}
               {renderFilterHeader('pay', 'Transaction No.')}
+              {renderFilterHeader('pay', 'Receipt No.')}
               {renderFilterHeader('pay', 'Transaction Date')}
               {renderFilterHeader('pay', 'Invoice / Account No.')}
               {renderFilterHeader('pay', 'Amount', { align: 'right' })}
@@ -2371,6 +2390,9 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                     </td>
                     <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: isExpanded ? 'none' : '1px solid #f0f4ff' }}>
                       <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{row.txNo}</span>
+                    </td>
+                    <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: isExpanded ? 'none' : '1px solid #f0f4ff' }}>
+                      <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{isMultiple ? '—' : (row.details[0]?.receiptNo || '—')}</span>
                     </td>
                     <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: isExpanded ? 'none' : '1px solid #f0f4ff' }}>
                       <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{stripSeconds(row.txDate)}</span>
@@ -2457,6 +2479,11 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                         {/* Col 2: Transaction No. — blank (no tx column in inner rows) */}
                         <td style={{ padding: '0 12px', height: 50, verticalAlign: 'middle', borderBottom: isLastDetail ? '1px solid #f0f4ff' : '1px solid #dce8f8' }}>
                           <span className="text-[16px] text-[#697498]">—</span>
+                        </td>
+                        {/* Col 2b: Receipt No. — one per line item, since a Multiple Bill Settlement
+                            spans several receipts that the parent row can't summarize as one value. */}
+                        <td style={{ padding: '0 12px', height: 50, verticalAlign: 'middle', borderBottom: isLastDetail ? '1px solid #f0f4ff' : '1px solid #dce8f8' }}>
+                          <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{d.receiptNo || '—'}</span>
                         </td>
                         {/* Col 3: Transaction Date */}
                         <td style={{ padding: '0 12px', height: 50, verticalAlign: 'middle', borderBottom: isLastDetail ? '1px solid #f0f4ff' : '1px solid #dce8f8' }}>
@@ -2571,9 +2598,6 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
         {/* Simple search — account number only */}
         <div className="flex h-[48px] rounded-[4px] border border-[#d5ddfb] bg-white overflow-hidden" style={{ minWidth: 280 }}>
           <div className="flex items-center px-[12px] gap-[8px] flex-1">
-            <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="#8f94ae" strokeWidth="1.8">
-              <circle cx="9" cy="9" r="6" /><path d="M15 15l-3-3" strokeLinecap="round" />
-            </svg>
             <input
               type="text"
               value={accSearchValue}
@@ -2582,6 +2606,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               className="flex-1 text-[16px] text-[#0e1b3d] placeholder-[#8f94ae] bg-transparent focus:outline-none min-w-0"
               style={{ fontFamily: font }}
             />
+            <svg width="17" height="17" viewBox="0 0 18 18" fill="none"><path fillRule="evenodd" clipRule="evenodd" d="M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z" fill="#0E1B3D"/></svg>
           </div>
         </div>
 
@@ -2938,35 +2963,35 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             const openOverdue = () => { setActiveMenu('Invoices'); setFStatuses(new Set(['Unpaid', 'Partially Paid'])); setFDueFilter('overdue'); };
             const openDueSoon = () => { setActiveMenu('Invoices'); setFStatuses(new Set(['Unpaid', 'Partially Paid'])); setFDueFilter('dueSoon'); };
             const openFailed  = () => { setActiveMenu('Payments'); setPayStatusFilter('Failed'); };
-            const openInvoicesInPeriod = (period: 'today' | 'period') => {
+            const openInvoicesInPeriod = () => {
               setActiveMenu('Invoices'); setFStatuses(new Set()); setFDueFilter('');
-              setFFromDate(period === 'today' ? '2026-06-10' : recentPeriodDays === 7 ? '2026-06-04' : '2026-05-11');
+              setFFromDate(recentPeriodDays === 'today' ? '2026-06-10' : recentPeriodDays === 7 ? '2026-06-04' : '2026-05-11');
               setFToDate('2026-06-10');
             };
             const openPaymentsMade = () => { setActiveMenu('Payments'); setPayStatusFilter('Success'); };
 
-            const period = recentPeriodDays === 7 ? 'last7' : 'last30';
+            const period = recentPeriodDays === 'today' ? 'today' : recentPeriodDays === 7 ? 'last7' : 'last30';
             const ACTIVITY_ROWS = [
               { key: 'invGen', label: 'Invoices Generated', desc: 'New bills issued to your account', data: RECENT_ACTIVITY.invoicesGenerated, onClick: openInvoicesInPeriod,
-                color: '#1360d2', icon: <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1360d2" strokeWidth="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5" strokeLinecap="round"/></svg> },
-              { key: 'payMade', label: 'Payments Made', desc: 'Successfully settled transactions', data: RECENT_ACTIVITY.paymentsMade, onClick: (_period: 'today' | 'period') => openPaymentsMade(),
-                color: '#28a745', icon: <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#28a745" strokeWidth="1.8"><path d="M5 13l4 4 10-10" strokeLinecap="round" strokeLinejoin="round"/></svg> },
-              { key: 'payFailed', label: 'Failed Payments', desc: 'Attempts that need a retry', data: RECENT_ACTIVITY.failedPayments, onClick: (_period: 'today' | 'period') => openFailed(),
-                color: '#c0392b', icon: <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#c0392b" strokeWidth="1.8"><path d="M18 6L6 18M6 6l12 12" strokeLinecap="round"/></svg> },
+                color: '#568BDB', icon: <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#568BDB" strokeWidth="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5" strokeLinecap="round"/></svg> },
+              { key: 'payMade', label: 'Payments Made', desc: 'Successfully settled transactions', data: RECENT_ACTIVITY.paymentsMade, onClick: openPaymentsMade,
+                color: '#1B9841', icon: <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1B9841" strokeWidth="1.8"><path d="M5 13l4 4 10-10" strokeLinecap="round" strokeLinejoin="round"/></svg> },
+              { key: 'payFailed', label: 'Failed Payments', desc: 'Attempts that need a retry', data: RECENT_ACTIVITY.failedPayments, onClick: openFailed,
+                color: '#DC3545', icon: <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#DC3545" strokeWidth="1.8"><path d="M18 6L6 18M6 6l12 12" strokeLinecap="round"/></svg> },
             ];
 
             const SUMMARY_CARDS = [
-              { key: 'pending', label: 'Pending Invoices', count: pendingInvCount, amt: pendingInvAmt, color: '#1360d2', bg: 'linear-gradient(135deg,#eef4ff,#f5f8ff)', border: '#b3caff', onClick: openPending,
+              { key: 'pending', label: 'Pending Invoices', count: pendingInvCount, amt: pendingInvAmt, color: '#1360d2', bg: 'linear-gradient(160deg,#dce9fc 0%,#ffffff 75%)', border: '#b3caff', onClick: openPending,
                 icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1360d2" strokeWidth="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5" strokeLinecap="round"/></svg>,
                 tip: 'Whether this includes every unpaid invoice or only invoices eligible for online payment is pending confirmation from IT.' },
-              { key: 'overdue', label: 'Overdue Invoices', count: overdueInvCount, amt: overdueInvAmt, color: '#dc3545', bg: 'linear-gradient(135deg,#fff0f0,#fff8f8)', border: '#f5b8b8', onClick: openOverdue,
+              { key: 'overdue', label: 'Overdue Invoices', count: overdueInvCount, amt: overdueInvAmt, color: '#dc3545', bg: 'linear-gradient(160deg,#fde3e3 0%,#ffffff 75%)', border: '#f5b8b8', onClick: openOverdue,
                 icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#dc3545" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v6" strokeLinecap="round"/><circle cx="12" cy="16.5" r="0.9" fill="#dc3545"/></svg>,
                 tip: undefined as string | undefined },
-              { key: 'dueSoon', label: 'Current / Due Soon', count: dueSoonInvCount, amt: dueSoonInvAmt, color: '#b45309', bg: 'linear-gradient(135deg,#fff7ec,#fffaf4)', border: '#fcd7a0', onClick: openDueSoon,
+              { key: 'dueSoon', label: 'Current / Due Soon', count: dueSoonInvCount, amt: dueSoonInvAmt, color: '#b45309', bg: 'linear-gradient(160deg,#ffedd1 0%,#ffffff 75%)', border: '#fcd7a0', onClick: openDueSoon,
                 icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#b45309" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
                 tip: undefined as string | undefined },
               { key: 'failed', label: 'Failed Payments', count: failedPayCount, amt: failedPayAmt, color: failedPayCount > 0 ? '#c0392b' : '#28a745',
-                bg: failedPayCount > 0 ? 'linear-gradient(135deg,#fff0f0,#fff8f8)' : 'linear-gradient(135deg,#eafaf0,#f4fdf7)', border: failedPayCount > 0 ? '#f5b8b8' : '#b7ecc8', onClick: openFailed,
+                bg: failedPayCount > 0 ? 'linear-gradient(160deg,#fde3e3 0%,#ffffff 75%)' : 'linear-gradient(160deg,#d7f5e3 0%,#ffffff 75%)', border: failedPayCount > 0 ? '#f5b8b8' : '#b7ecc8', onClick: openFailed,
                 icon: failedPayCount > 0
                   ? <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#c0392b" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v6" strokeLinecap="round"/><circle cx="12" cy="16.5" r="0.9" fill="#c0392b"/></svg>
                   : <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#28a745" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5" strokeLinecap="round" strokeLinejoin="round"/></svg>,
@@ -2980,108 +3005,156 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               <div className="grid grid-cols-4 gap-[16px]">
                 {SUMMARY_CARDS.map(({ key, label, count, amt, color, bg, border, icon, onClick, tip }) => (
                   <button key={key} onClick={onClick}
-                    className="rounded-[16px] p-[18px] text-left flex flex-col gap-[14px] relative overflow-hidden hover:shadow-lg hover:-translate-y-[1px] transition-all"
-                    style={{ background: bg, border: `1.5px solid ${border}` }}>
-                    <div className="absolute left-0 top-0 bottom-0 w-[4px]" style={{ background: color }} />
-                    <div className="flex items-center justify-between">
-                      <div className="size-[42px] rounded-[11px] flex items-center justify-center flex-shrink-0" style={{ background: `${color}1a` }}>{icon}</div>
-                      {tip ? (
-                        <div className="group/tip relative cursor-help flex-shrink-0" onClick={e => e.stopPropagation()}>
-                          <img src={infoIconSrc} alt="info" width="14" height="14" />
-                          <div className="absolute top-[calc(100%+6px)] right-0 z-[300] hidden group-hover/tip:block bg-[#0e1b3d] text-white rounded-[6px] px-[10px] py-[8px] shadow-lg pointer-events-none"
-                            style={{ fontSize: 12, fontFamily: font, width: 220 }}>
-                            {tip}
-                          </div>
-                        </div>
-                      ) : (
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke={color} strokeWidth="2" className="flex-shrink-0 opacity-60"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                      )}
+                    className="rounded-[16px] p-[20px] text-left relative overflow-hidden hover:shadow-lg hover:-translate-y-[1px] transition-all"
+                    style={{ background: bg, border: `1.5px solid ${border}`, boxShadow: '0 1px 4px rgba(14,27,61,0.06)' }}>
+                    <div className="absolute top-[16px] right-[16px] size-[44px] rounded-[12px] flex items-center justify-center bg-white flex-shrink-0" style={{ boxShadow: '0 4px 10px rgba(14,27,61,0.10)' }}>
+                      {icon}
                     </div>
-                    <div>
-                      <p className="text-[32px] font-extrabold leading-none mb-[6px]" style={{ color, fontFamily: font, letterSpacing: '-1px' }}>{count}</p>
-                      <p className="text-[16px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>{label}</p>
-                      <p className="text-[15px] text-[#697498] mt-[2px] flex items-center gap-[3px]" style={{ fontFamily: font }}><DirhamIcon size={12} color="#697498" />{amt.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+                    <div style={{ paddingRight: 56 }}>
+                      <span className="text-[15px] font-medium text-[#4b5468] flex items-center gap-[6px]" style={{ fontFamily: font }}>
+                        {label}
+                        {tip && (
+                          <span className="group/tip relative cursor-help" onClick={e => e.stopPropagation()}>
+                            <img src={infoIconSrc} alt="info" width="13" height="13" />
+                            <span className="absolute top-[calc(100%+6px)] left-0 z-[300] hidden group-hover/tip:block bg-[#0e1b3d] text-white rounded-[6px] px-[10px] py-[8px] shadow-lg pointer-events-none"
+                              style={{ fontSize: 12, fontFamily: font, width: 220 }}>
+                              {tip}
+                            </span>
+                          </span>
+                        )}
+                      </span>
+                      <span className="text-[34px] font-extrabold leading-none block mt-[10px]" style={{ color: '#0e1b3d', fontFamily: font, letterSpacing: '-1px' }}>{count}</span>
+                    </div>
+                    <div className="flex items-center justify-between mt-[14px] pt-[10px]" style={{ borderTop: `1px solid ${border}` }}>
+                      <span className="text-[11px] font-semibold uppercase tracking-wide text-[#8f94ae]" style={{ fontFamily: font }}>Amount</span>
+                      <span className="text-[18px] font-extrabold text-[#0e1b3d] flex items-center gap-[4px]" style={{ fontFamily: font, letterSpacing: '-0.3px' }}>
+                        <DirhamIcon size={14} color="#0e1b3d" />{amt.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      </span>
                     </div>
                   </button>
                 ))}
               </div>
 
-              {/* ── 2. Main Payment Action + Wallet ──────────────────────── */}
-              <div className="flex items-center gap-[14px] flex-wrap">
-                <button onClick={() => setActiveMenu('Invoices')}
-                  className="h-[52px] px-[24px] rounded-[10px] text-[16px] font-semibold text-white flex items-center gap-[10px] hover:opacity-90 transition-opacity"
-                  style={{ background: '#1360d2', fontFamily: font }}>
-                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="6" width="20" height="13" rx="2" /><path d="M2 10h20" strokeLinecap="round" /></svg>
-                  View &amp; Pay Invoices
-                </button>
-                <button onClick={() => setActiveMenu('Payments')}
-                  className="h-[52px] px-[24px] rounded-[10px] text-[16px] font-semibold text-[#1360d2] bg-white flex items-center gap-[10px] hover:bg-[#f0f4ff] transition-colors"
-                  style={{ border: '1.5px solid #1360d2', fontFamily: font }}>
-                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 3" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                  View Payment History
-                </button>
+              {/* ── 2. Actions + Wallet (left) | Recent Activity (right) ──── */}
+              <div className="grid gap-[16px]" style={{ gridTemplateColumns: 'minmax(240px,1fr) 2fr' }}>
 
-                <button onClick={() => setActiveMenu('Accounts')}
-                  className="h-[52px] px-[18px] rounded-[10px] flex items-center gap-[10px] text-left ml-auto hover:shadow-md transition-shadow"
-                  style={{ background: 'linear-gradient(135deg,#e8f0fe,#f0f5ff)', border: '1.5px solid #93b4f7', fontFamily: font }}>
-                  <div className="size-[30px] rounded-[8px] flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(30,64,175,0.14)' }}>
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#1e40af" strokeWidth="1.8"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 14h4" strokeLinecap="round"/></svg>
-                  </div>
-                  <div className="leading-tight">
-                    <p className="text-[12px] text-[#697498]">Debit Account (Wallet)</p>
-                    <p className="text-[16px] font-extrabold text-[#1e40af]">{fmtBalance(debitTotal)}</p>
-                  </div>
-                  <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#1e40af" strokeWidth="2" className="flex-shrink-0 ml-[2px]"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                </button>
-              </div>
-
-              {/* ── 3. Recent Activity ───────────────────────────────────── */}
-              <div className="rounded-[16px] overflow-hidden" style={{ border: '1.5px solid #e0e8f5', boxShadow: '0 2px 12px rgba(19,96,210,0.06)' }}>
-                <div className="flex items-center justify-between px-[20px] py-[16px]" style={{ borderBottom: '1px solid #eef1f6' }}>
-                  <div>
-                    <p className="text-[17px] font-bold text-[#0e1b3d]" style={{ fontFamily: font }}>Recent Activity</p>
-                    <p className="text-[14px] text-[#697498] mt-[1px]" style={{ fontFamily: font }}>Bill generation and payment activity at a glance</p>
-                  </div>
-                  <div className="inline-flex rounded-[8px] overflow-hidden border border-[#d5ddfb] flex-shrink-0">
-                    {([7, 30] as const).map(d => (
-                      <button key={d} onClick={() => setRecentPeriodDays(d)}
-                        className="px-[14px] h-[32px] text-[13px] font-semibold transition-colors"
-                        style={{ fontFamily: font, background: recentPeriodDays === d ? '#1360d2' : 'white', color: recentPeriodDays === d ? 'white' : '#697498' }}>
-                        {d} Days
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Column captions */}
-                <div className="flex items-center px-[20px] pt-[12px]">
-                  <div className="flex-1" />
-                  <span className="w-[110px] text-right text-[12px] font-semibold uppercase tracking-wide text-[#8f94ae]" style={{ fontFamily: font }}>Today</span>
-                  <span className="w-[130px] text-right text-[12px] font-semibold uppercase tracking-wide text-[#8f94ae]" style={{ fontFamily: font }}>Last {recentPeriodDays} Days</span>
-                </div>
-
-                <div>
-                  {ACTIVITY_ROWS.map(({ key, label, desc, data, onClick, color, icon }) => (
-                    <div key={key} className="flex items-center gap-[14px] px-[20px] py-[14px] hover:bg-[#fafbff] transition-colors" style={{ borderTop: '1px solid #f0f4ff' }}>
-                      <div className="size-[38px] rounded-[10px] flex items-center justify-center flex-shrink-0" style={{ background: `${color}1a` }}>{icon}</div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[16px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>{label}</p>
-                        <p className="text-[13px] text-[#8f94ae]" style={{ fontFamily: font }}>{desc}</p>
-                      </div>
-                      <button onClick={() => onClick('today')} disabled={data.today.count === 0}
-                        className="w-[110px] flex flex-col items-end hover:underline disabled:no-underline disabled:cursor-default flex-shrink-0"
-                        style={{ fontFamily: font }}>
-                        <span className="text-[17px] font-bold" style={{ color: data.today.count > 0 ? color : '#c0c8e0' }}>{data.today.count}</span>
-                        <span className="text-[13px] text-[#8f94ae] flex items-center gap-[3px]"><DirhamIcon size={10} color="#8f94ae" />{data.today.amt.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-                      </button>
-                      <button onClick={() => onClick('period')} disabled={data[period].count === 0}
-                        className="w-[130px] flex flex-col items-end hover:underline disabled:no-underline disabled:cursor-default flex-shrink-0"
-                        style={{ fontFamily: font }}>
-                        <span className="text-[17px] font-bold" style={{ color: data[period].count > 0 ? color : '#c0c8e0' }}>{data[period].count}</span>
-                        <span className="text-[13px] text-[#8f94ae] flex items-center gap-[3px]"><DirhamIcon size={10} color="#8f94ae" />{data[period].amt.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-                      </button>
+                {/* Left: wallet balance + primary actions */}
+                <div className="flex flex-col gap-[12px]">
+                  <button onClick={() => setActiveMenu('Accounts')}
+                    className="p-[20px] rounded-[16px] text-left relative overflow-hidden hover:shadow-md transition-shadow"
+                    style={{ background: '#fff', border: '1.5px solid #93b4f7', fontFamily: font }}>
+                    <div className="absolute top-[16px] right-[16px] size-[44px] rounded-[12px] flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(30,64,175,0.10)' }}>
+                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1e40af" strokeWidth="1.8"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 14h4" strokeLinecap="round"/></svg>
                     </div>
-                  ))}
+                    <div style={{ paddingRight: 56 }}>
+                      <p className="text-[15px] text-[#697498]">Debit Account (Wallet)</p>
+                      <p className="text-[26px] font-extrabold text-[#1e40af] mt-[10px]" style={{ letterSpacing: '-0.5px' }}>{fmtBalance(debitTotal)}</p>
+                    </div>
+                    <div className="flex items-center justify-between mt-[14px] pt-[12px]" style={{ borderTop: '1px solid #e0e8f5' }}>
+                      <span className="text-[13px] text-[#697498]">{DEBIT_ACCOUNTS.length} account{DEBIT_ACCOUNTS.length !== 1 ? 's' : ''}</span>
+                      <span className="text-[14px] text-[#1e40af] font-semibold flex items-center gap-1">
+                        View all <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#1e40af" strokeWidth="2"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      </span>
+                    </div>
+                  </button>
+
+                  <button onClick={() => setActiveMenu('Invoices')}
+                    className="p-[20px] rounded-[16px] text-left relative overflow-hidden hover:shadow-md transition-shadow"
+                    style={{ background: '#fff', border: '1.5px solid #93b4f7', fontFamily: font }}>
+                    <div className="absolute top-[16px] right-[16px] size-[44px] rounded-[12px] flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(30,64,175,0.10)' }}>
+                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1e40af" strokeWidth="1.8"><rect x="2" y="6" width="20" height="13" rx="2" /><path d="M2 10h20" strokeLinecap="round" /></svg>
+                    </div>
+                    <div style={{ paddingRight: 56 }}>
+                      <p className="text-[15px] text-[#697498]">Total Invoices Available</p>
+                      <p className="text-[26px] font-extrabold text-[#1e40af] mt-[10px]" style={{ letterSpacing: '-0.5px' }}>{INVOICE_ROWS.length}</p>
+                    </div>
+                    <div className="flex items-center justify-between mt-[14px] pt-[12px]" style={{ borderTop: '1px solid #e0e8f5' }}>
+                      <span className="text-[13px] text-[#697498]">View &amp; pay your invoices</span>
+                      <span className="text-[14px] text-[#1e40af] font-semibold flex items-center gap-1">
+                        View &amp; Pay <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#1e40af" strokeWidth="2"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      </span>
+                    </div>
+                  </button>
+
+                  <button onClick={() => setActiveMenu('Payments')}
+                    className="h-[52px] px-[24px] rounded-[10px] text-[16px] font-semibold text-[#1360d2] bg-white flex items-center gap-[10px] hover:bg-[#f0f4ff] transition-colors"
+                    style={{ border: '1.5px solid #1360d2', fontFamily: font }}>
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 3" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    View Payment History
+                  </button>
+                </div>
+
+                {/* Right: Recent Activity */}
+                <div className="rounded-[16px] overflow-hidden" style={{ border: '1.5px solid #e0e8f5', boxShadow: '0 2px 12px rgba(19,96,210,0.06)' }}>
+                  <div className="flex items-center justify-between px-[20px] py-[16px]" style={{ borderBottom: '1px solid #eef1f6' }}>
+                    <div>
+                      <p className="text-[17px] font-bold text-[#0e1b3d]" style={{ fontFamily: font }}>Recent Activity</p>
+                      <p className="text-[14px] text-[#697498] mt-[1px]" style={{ fontFamily: font }}>Bill generation and payment activity at a glance</p>
+                    </div>
+                    <div className="inline-flex rounded-[8px] overflow-hidden border border-[#d5ddfb] flex-shrink-0">
+                      {(['today', 7, 30] as const).map(d => (
+                        <button key={d} onClick={() => setRecentPeriodDays(d)}
+                          className="px-[14px] h-[32px] text-[13px] font-semibold transition-colors"
+                          style={{ fontFamily: font, background: recentPeriodDays === d ? '#1360d2' : 'white', color: recentPeriodDays === d ? 'white' : '#697498' }}>
+                          {d === 'today' ? 'Today' : `${d} Days`}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {(() => {
+                    const periodCounts = ACTIVITY_ROWS.map(r => r.data[period].count);
+                    const rawTotal = periodCounts.reduce((s, n) => s + n, 0);
+                    const total = rawTotal || 1; // guard divide-by-zero for the segment math
+                    let cumulative = 0;
+                    const segments = ACTIVITY_ROWS.map((row, i) => {
+                      const pct = (periodCounts[i] / total) * 100;
+                      const seg = { color: row.color, pct, offset: 25 - cumulative };
+                      cumulative += pct;
+                      return seg;
+                    });
+
+                    return (
+                      <div className="flex items-center gap-[28px] px-[20px] py-[22px] flex-wrap">
+                        {/* Donut chart — composition of activity events for the selected period */}
+                        <div className="relative flex-shrink-0" style={{ width: 168, height: 168 }}>
+                          <svg viewBox="0 0 42 42" width={168} height={168}>
+                            <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#eef1f6" strokeWidth="6" />
+                            {rawTotal > 0 && segments.map((seg, i) => seg.pct > 0 && (
+                              <circle key={i} cx="21" cy="21" r="15.915" fill="transparent"
+                                stroke={seg.color} strokeWidth="6"
+                                strokeDasharray={`${seg.pct} ${100 - seg.pct}`}
+                                strokeDashoffset={seg.offset}
+                                style={{ transition: 'stroke-dasharray 0.3s' }} />
+                            ))}
+                          </svg>
+                          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                            <span className="text-[30px] font-extrabold text-[#0e1b3d] leading-none" style={{ fontFamily: font }}>{rawTotal}</span>
+                            <span className="text-[12px] text-[#8f94ae] mt-[4px]" style={{ fontFamily: font }}>events · {recentPeriodDays === 'today' ? 'today' : `${recentPeriodDays}d`}</span>
+                          </div>
+                        </div>
+
+                        {/* Legend — each row still drills through to a filtered list */}
+                        <div className="flex-1 min-w-[260px] flex flex-col gap-[4px]">
+                          {ACTIVITY_ROWS.map(({ key, label, desc, data, onClick, color, icon }) => (
+                            <button key={key} onClick={onClick} disabled={data[period].count === 0}
+                              className="flex items-center gap-[12px] py-[10px] px-[10px] rounded-[10px] hover:bg-[#fafbff] transition-colors text-left disabled:cursor-default"
+                              style={{ fontFamily: font }}>
+                              <div className="size-[34px] rounded-[9px] flex items-center justify-center flex-shrink-0" style={{ background: `${color}1a` }}>{icon}</div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[16px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>{label}</p>
+                                <p className="text-[13px] text-[#8f94ae]" style={{ fontFamily: font }}>{desc}{period !== 'today' ? ` · ${data.today.count} today` : ''}</p>
+                              </div>
+                              <div className="flex flex-col items-end flex-shrink-0">
+                                <span className="text-[18px] font-bold" style={{ color: data[period].count > 0 ? color : '#c0c8e0' }}>{data[period].count}</span>
+                                <span className="text-[13px] text-[#8f94ae] flex items-center gap-[3px]"><DirhamIcon size={10} color="#8f94ae" />{data[period].amt.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             </div>
@@ -3121,10 +3194,6 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                   className="flex items-center border rounded-[4px] overflow-hidden transition-colors"
                   style={{ borderColor: stmtAccOpen ? '#1360d2' : '#d5ddfb', background: 'white' }}
                 >
-                  <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#697498" strokeWidth="1.8"
-                    className="ml-3 flex-shrink-0">
-                    <circle cx="9" cy="9" r="6" /><path d="M15 15l3 3" strokeLinecap="round" />
-                  </svg>
                   <input
                     type="text"
                     value={stmtAccOpen ? stmtAccSearch : (stmtAccount || stmtAccSearch)}
@@ -3134,6 +3203,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                     className="flex-1 h-[44px] px-3 text-[16px] placeholder-[#8f94ae] focus:outline-none bg-transparent"
                     style={{ fontFamily: font, color: '#0e1b3d' }}
                   />
+                  <svg width="16" height="16" viewBox="0 0 18 18" fill="none" className="mr-2 flex-shrink-0"><path fillRule="evenodd" clipRule="evenodd" d="M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z" fill="#0E1B3D"/></svg>
                   {stmtAccount && (
                     <button type="button" onClick={() => { setStmtAccount(''); setStmtAccSearch(''); }}
                       className="px-2 text-[#697498] hover:text-[#dc3545] transition-colors">

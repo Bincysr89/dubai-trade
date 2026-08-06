@@ -374,7 +374,7 @@ export function RefundTypePage({
                     placeholder="e.g. 2080004915824"
                     value={outboundSearch}
                     onChange={setOutboundSearch}
-                    trailingIcon={<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><circle cx="9" cy="9" r="6" /><path d="M14 14l4 4" strokeLinecap="round" /></svg>}
+                    trailingIcon={<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path fillRule="evenodd" clipRule="evenodd" d="M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z" fill="#0E1B3D" /></svg>}
                   />
                   {showSuggestions && (
                     <div className="absolute left-0 right-0 mt-[4px] bg-white border border-[#d5ddfb] rounded-[4px] z-10 max-h-[260px] overflow-auto" style={{ boxShadow: '0px 8px 24px rgba(0,0,0,0.08)' }}>
@@ -663,7 +663,7 @@ export function RefundTypePage({
                       placeholder="Enter HS code or goods description"
                       className="flex-1 text-[16px] text-[#0e1b3d] focus:outline-none bg-transparent placeholder:text-[#697498]"
                     />
-                    <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><circle cx="9" cy="9" r="6" /><path d="M14 14l4 4" strokeLinecap="round" /></svg>
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path fillRule="evenodd" clipRule="evenodd" d="M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z" fill="#0E1B3D" /></svg>
                   </div>
                   <label className="absolute pointer-events-none" style={{ left: 10, top: -9, background: '#fff', padding: '0 4px', fontSize: 12, color: '#0e1b3d' }}>
                     <span style={{ color: '#dc3545' }}>*</span> HS Code
@@ -1846,8 +1846,8 @@ function OutboundDeclInput({ value, onChange }: { value: string; onChange: (v: s
               className="flex-shrink-0 size-[20px] inline-flex items-center justify-center rounded-full text-[#697498] hover:bg-[#f0f4ff]">
               <svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4l8 8M12 4l-8 8" strokeLinecap="round" /></svg>
             </button>
-          : <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" className="flex-shrink-0 pointer-events-none">
-              <circle cx="9" cy="9" r="6" /><path d="M14 14l4 4" strokeLinecap="round" />
+          : <svg width="18" height="18" viewBox="0 0 18 18" fill="none" className="flex-shrink-0 pointer-events-none">
+              <path fillRule="evenodd" clipRule="evenodd" d="M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z" fill="#0E1B3D" />
             </svg>
         }
 

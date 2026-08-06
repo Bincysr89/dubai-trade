@@ -182,11 +182,12 @@ export default function AirDetailModal({ onClose, onHome }: Props) {
               style={{ fontFamily: "'Dubai', sans-serif" }}
             />
             <svg
-              viewBox="0 0 24 24"
-              className="absolute right-4 top-1/2 -translate-y-1/2 size-[20px] text-[#8f94ae]"
-              fill="none" stroke="currentColor" strokeWidth="2"
+              viewBox="0 0 18 18"
+              width="20" height="20"
+              className="absolute right-4 top-1/2 -translate-y-1/2"
+              fill="none"
             >
-              <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
+              <path fillRule="evenodd" clipRule="evenodd" d="M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z" fill="#0E1B3D" />
             </svg>
           </div>
         </div>

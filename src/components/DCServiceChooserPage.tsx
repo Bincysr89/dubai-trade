@@ -1045,8 +1045,8 @@ export default function DCServiceChooserPage({ onBack }: {
                       <button type="button" className="dc-btn dc-btn--blue"
                         style={{ height: 56, paddingLeft: 28, paddingRight: 28, marginTop: 0 }}
                         onClick={() => setCertBillInfo(true)}>
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 6 }}>
-                          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                        <svg width="15" height="15" viewBox="0 0 18 18" fill="none" style={{ marginRight: 6 }}>
+                          <path fillRule="evenodd" clipRule="evenodd" d="M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z" fill="#0E1B3D"/>
                         </svg>
                         Search
                       </button>

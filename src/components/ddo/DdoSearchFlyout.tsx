@@ -24,15 +24,15 @@ export default function DdoSearchFlyout({ bol, setBol, shippingAgent, setShippin
           <div className="flex flex-col gap-2">
             <label className="text-[#364153] font-dubai font-medium text-[16px]">Shipping Agent</label>
             <div className="relative">
-              <svg viewBox="0 0 24 24" className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-[#99a1af]" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
+              <svg viewBox="0 0 18 18" width="20" height="20" className="absolute right-3 top-1/2 -translate-y-1/2" fill="none">
+                <path fillRule="evenodd" clipRule="evenodd" d="M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z" fill="#0E1B3D" />
               </svg>
               <input
                 type="text"
                 value={shippingAgent}
                 onChange={e => setShippingAgent(e.target.value)}
                 placeholder="Search shipping agent"
-                className="w-full border border-[#d1d5dc] rounded-[10px] pl-10 pr-4 py-3 text-[16px] text-[#1e2939] placeholder-[#99a1af] outline-none focus:border-[#1360d2] font-dubai transition-colors"
+                className="w-full border border-[#d1d5dc] rounded-[10px] pl-4 pr-10 py-3 text-[16px] text-[#1e2939] placeholder-[#99a1af] outline-none focus:border-[#1360d2] font-dubai transition-colors"
               />
             </div>
           </div>

@@ -1509,8 +1509,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                 aria-label="Search"
                 className="flex-shrink-0 ml-[8px] disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                <svg viewBox="0 0 24 24" className="size-[22px] text-[#455174]" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" className="flex-shrink-0">
+                  <path fillRule="evenodd" clipRule="evenodd" d="M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z" fill="#0E1B3D" />
                 </svg>
               </button>
             </div>
@@ -1745,7 +1745,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                       style={{ fontFamily: "'Dubai', sans-serif" }}
                     />
                     <span style={floatLabel(true)}><span style={{ color: '#e8212e' }}>*</span>Business Code</span>
-                    <svg className="absolute right-[12px] top-1/2 -translate-y-1/2" viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2"><circle cx="9" cy="9" r="6" /><path d="M14 14l4 4" strokeLinecap="round" /></svg>
+                    <svg className="absolute right-[12px] top-1/2 -translate-y-1/2" width="18" height="18" viewBox="0 0 18 18" fill="none"><path fillRule="evenodd" clipRule="evenodd" d="M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z" fill="#0E1B3D" /></svg>
                   </div>
 
                   {/* *Date Type — dropdown (default: Clearance Date) */}
