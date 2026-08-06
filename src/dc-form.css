@@ -37,7 +37,6 @@
 
 /* ─── Form Card ──────────────────────────────────────────────────────────────── */
 .dc-form-card {
-  background: #F4F7FB;
   border-radius: 16px; overflow: visible;
   display: flex; flex-direction: column; gap: 12px;
   padding: 12px;
@@ -93,7 +92,7 @@
 }
 .dc-float-input {
   width: 100%; height: 56px; padding: 0 16px;
-  border: 1px solid #D5DDFB; border-radius: 8px;
+  border: 1px solid #D5DDFB; border-radius: 6px;
   background: #fff; font-size: 16px; color: #0E1B3D;
   outline: none; transition: border-color 150ms;
   font-family: inherit;
@@ -198,6 +197,7 @@
   justify-content: center; overflow: hidden;
   background: #f8fafd; border: 1px dashed #8f94ae; border-radius: 4px;
   padding: 15px 12px;
+  width: 50%;
 }
 .dc-dropzone--active { border-color: #1360D2; background: #EBF2FF; }
 .dc-dropzone__icon {
