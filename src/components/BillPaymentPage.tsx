@@ -3043,12 +3043,12 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                   <button onClick={() => setActiveMenu('Accounts')}
                     className="p-[20px] rounded-[16px] text-left relative overflow-hidden hover:shadow-md transition-shadow"
                     style={{ background: '#fff', border: '1.5px solid #93b4f7', fontFamily: font }}>
-                    <div className="absolute top-[16px] right-[16px] size-[44px] rounded-[12px] flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(30,64,175,0.10)' }}>
+                    <div className="absolute top-[16px] right-[16px] size-[44px] rounded-[12px] flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(160deg,#e8f0fe 0%,#ffffff 90%)', boxShadow: '0 4px 10px rgba(14,27,61,0.10)' }}>
                       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1e40af" strokeWidth="1.8"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 14h4" strokeLinecap="round"/></svg>
                     </div>
                     <div style={{ paddingRight: 56 }}>
                       <p className="text-[15px] text-[#697498]">Debit Account (Wallet)</p>
-                      <p className="text-[26px] font-extrabold text-[#1e40af] mt-[10px]" style={{ letterSpacing: '-0.5px' }}>{fmtBalance(debitTotal)}</p>
+                      <p className="text-[34px] font-extrabold text-[#1e40af] leading-none mt-[10px]" style={{ letterSpacing: '-1px' }}>{fmtBalance(debitTotal)}</p>
                     </div>
                     <div className="flex items-center justify-between mt-[14px] pt-[12px]" style={{ borderTop: '1px solid #e0e8f5' }}>
                       <span className="text-[13px] text-[#697498]">{DEBIT_ACCOUNTS.length} account{DEBIT_ACCOUNTS.length !== 1 ? 's' : ''}</span>
@@ -3061,12 +3061,12 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                   <button onClick={() => setActiveMenu('Invoices')}
                     className="p-[20px] rounded-[16px] text-left relative overflow-hidden hover:shadow-md transition-shadow"
                     style={{ background: '#fff', border: '1.5px solid #93b4f7', fontFamily: font }}>
-                    <div className="absolute top-[16px] right-[16px] size-[44px] rounded-[12px] flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(30,64,175,0.10)' }}>
+                    <div className="absolute top-[16px] right-[16px] size-[44px] rounded-[12px] flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(160deg,#e8f0fe 0%,#ffffff 90%)', boxShadow: '0 4px 10px rgba(14,27,61,0.10)' }}>
                       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1e40af" strokeWidth="1.8"><rect x="2" y="6" width="20" height="13" rx="2" /><path d="M2 10h20" strokeLinecap="round" /></svg>
                     </div>
                     <div style={{ paddingRight: 56 }}>
                       <p className="text-[15px] text-[#697498]">Total Invoices Available</p>
-                      <p className="text-[26px] font-extrabold text-[#1e40af] mt-[10px]" style={{ letterSpacing: '-0.5px' }}>{INVOICE_ROWS.length}</p>
+                      <p className="text-[34px] font-extrabold text-[#1e40af] leading-none mt-[10px]" style={{ letterSpacing: '-1px' }}>{INVOICE_ROWS.length}</p>
                     </div>
                     <div className="flex items-center justify-between mt-[14px] pt-[12px]" style={{ borderTop: '1px solid #e0e8f5' }}>
                       <span className="text-[13px] text-[#697498]">View &amp; pay your invoices</span>
@@ -3146,8 +3146,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                                 <p className="text-[13px] text-[#8f94ae]" style={{ fontFamily: font }}>{desc}{period !== 'today' ? ` · ${data.today.count} today` : ''}</p>
                               </div>
                               <div className="flex flex-col items-end flex-shrink-0">
-                                <span className="text-[18px] font-bold" style={{ color: data[period].count > 0 ? color : '#c0c8e0' }}>{data[period].count}</span>
-                                <span className="text-[13px] text-[#8f94ae] flex items-center gap-[3px]"><DirhamIcon size={10} color="#8f94ae" />{data[period].amt.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                                <span className="text-[24px] font-extrabold leading-none" style={{ color: data[period].count > 0 ? color : '#c0c8e0', letterSpacing: '-0.5px' }}>{data[period].count}</span>
+                                <span className="text-[13px] text-[#8f94ae] flex items-center gap-[3px] mt-[6px]"><DirhamIcon size={11} color="#8f94ae" />{data[period].amt.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                               </div>
                             </button>
                           ))}
