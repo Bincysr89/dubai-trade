@@ -27,7 +27,12 @@ import EligibleDeclarationsPage from './EligibleDeclarationsPage';
 import RaiseClaimRequestPage from './RaiseClaimRequestPage';
 import type { ClaimType } from './ClaimTypeSelectionPage';
 import { RDChargeFlowPage, isMissingDocCharge, type OutboundState, type ChargeDetail } from './RDChargeFlowPage';
-import { REFUND_DEPOSIT_STEPS, REFUND_DEPOSIT_STEPS_NO_DOCS, REFUND_DEPOSIT_AMEND_STEPS, VALIDITY_EXT_STEPS } from './ClaimStepper';
+import { REFUND_DEPOSIT_STEPS, REFUND_DEPOSIT_STEPS_NO_DOCS, REFUND_DEPOSIT_AMEND_STEPS, VALIDITY_EXT_STEPS, REFUND_AUCTION_STEPS, REFUND_AUCTION_AMEND_STEPS } from './ClaimStepper';
+import AuctionLotDetailsPage, { type AuctionLotRow } from './AuctionLotDetailsPage';
+import AuctionAmendLotDetailsPage from './AuctionAmendLotDetailsPage';
+import AuctionClaimDetailsPage, { type AuctionClaimDetail } from './AuctionClaimDetailsPage';
+import AuctionClaimReviewPage from './AuctionClaimReviewPage';
+import AuctionClaimViewPage from './AuctionClaimViewPage';
 import CargoTransferPrePage from './CargoTransferPrePage';
 import CargoTransferRequestPage from './CargoTransferRequestPage';
 import CargoTransferNewRequestPage from './CargoTransferNewRequestPage';
@@ -116,6 +121,22 @@ const RD_AMEND_DOCS: NRUploadedDoc[] = [
   { id: 'rd-am-1', declNo: '105-01426431-24', docType: 'Export Bill',              fileName: 'Export-Bill-105.pdf',  fileSize: 2_400_000, uploadedOn: '10/09/2024', remarks: '' },
   { id: 'rd-am-2', declNo: '105-01426431-24', docType: 'Exit / Entry Certificate', fileName: 'Exit-Cert-105.pdf',    fileSize: 1_100_000, uploadedOn: '10/09/2024', remarks: '' },
   { id: 'rd-am-3', declNo: '404-09988123-24', docType: 'Export Bill',              fileName: 'Export-Bill-404.pdf',  fileSize: 3_200_000, uploadedOn: '02/07/2024', remarks: '' },
+];
+
+/* Auction lots of an existing Refund on Auction Proceed claim being amended — matches the
+   ClaimsTable mock row (reqNo 4701850, claimNo 3842200). */
+const AUCTION_AMEND_LOTS: AuctionLotRow[] = [
+  { auctionNo: 'AUC-2025-0041', auctionLotNo: 'LOT-000112', description: 'Assorted Electronics — Mobile Accessories', auctionDate: '14/03/2025', saleProceeds: '18,500.00' },
+  { auctionNo: 'AUC-2025-0041', auctionLotNo: 'LOT-000113', description: 'Assorted Electronics — Home Appliances',   auctionDate: '14/03/2025', saleProceeds: '42,300.00' },
+];
+const AUCTION_AMEND_CLAIM_DETAILS: AuctionClaimDetail[] = [
+  { auctionLotNo: 'LOT-000112', claimAmount: '15000', remarks: 'Refund against sale proceeds', transportDocs: [{ id: 'auc-am-t1', value: 'TRN-88213' }], containerNos: [{ id: 'auc-am-c1', value: 'MSCU-1122334' }] },
+  { auctionLotNo: 'LOT-000113', claimAmount: '38000', remarks: '', transportDocs: [{ id: 'auc-am-t2', value: 'TRN-88214' }, { id: 'auc-am-t3', value: 'TRN-88215' }], containerNos: [{ id: 'auc-am-c2', value: 'MSCU-2233445' }] },
+];
+/* Documents already uploaded on the Refund on Auction Proceed claim being amended. */
+const AUCTION_AMEND_DOCS: NRUploadedDoc[] = [
+  { id: 'auc-am-1', declNo: 'LOT-000112', docType: 'Export Bill', fileName: 'Export-Bill-LOT112.pdf', fileSize: 2_100_000, uploadedOn: '14/03/2025', remarks: '' },
+  { id: 'auc-am-2', declNo: 'LOT-000113', docType: 'Export Bill', fileName: 'Export-Bill-LOT113.pdf', fileSize: 1_800_000, uploadedOn: '14/03/2025', remarks: '' },
 ];
 
 type Props = {
@@ -260,7 +281,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
   const [stepperReturnStep, setStepperReturnStep] = useState(0);
   const [cargoPreValues, setCargoPreValues] = useState<{ cargoChannel: string; clientRef: string; carrierReg: string; transferType: string }>({ cargoChannel: 'Sea', clientRef: '', carrierReg: '', transferType: '' });
   const [cargoFormValues, setCargoFormValues] = useState<{ clientRef: string; carrierReg: string; mawb: string; transferorBizCode: string; transferorPremCode: string; transfereeBizCode: string; transfereePremCode: string }>({ clientRef: '', carrierReg: '', mawb: '', transferorBizCode: '', transferorPremCode: '', transfereeBizCode: '', transfereePremCode: '' });
-  type ClaimSubStep = 'list' | 'claimTypeEntry' | 'eligible' | 'eligibleDeclView' | 'amendDeclDetails' | 'chargeDetails' | 'rdDocuments' | 'rdPayment' | 'rdReview' | 'nonRemittanceDocs' | 'nonRemittanceCharges' | 'nonRemittanceReview' | 'nonRemittanceSuccess' | 'nonRemittanceAck' | 'nonRemittanceClaimView' | 'rdClaimView' | 'claimListView' | 'claimHistory' | 'cancelClaim' | 'amendClaim' | 'claimDocs' | 'claimSuspensionList' | 'claimSuspension' | 'rdNrSuccess' | 'nrPaymentPending' | 'nrPaymentProcessing' | 'nrPaymentSuccess' | 'nrPaymentRejected' | 'rdPaymentPending' | 'rdPaymentProcessing' | 'rdPaymentSuccess' | 'rdPaymentRejected' | 'validityExtEligible' | 'validityExtDetails' | 'validityExtPayment' | 'validityExtReview' | 'validityExtSuccess' | 'declStatusExpiry' | 'createClaimFromRejectedList';
+  type ClaimSubStep = 'list' | 'claimTypeEntry' | 'eligible' | 'eligibleDeclView' | 'amendDeclDetails' | 'chargeDetails' | 'rdDocuments' | 'rdPayment' | 'rdReview' | 'nonRemittanceDocs' | 'nonRemittanceCharges' | 'nonRemittanceReview' | 'nonRemittanceSuccess' | 'nonRemittanceAck' | 'nonRemittanceClaimView' | 'rdClaimView' | 'claimListView' | 'claimHistory' | 'cancelClaim' | 'amendClaim' | 'claimDocs' | 'claimSuspensionList' | 'claimSuspension' | 'rdNrSuccess' | 'nrPaymentPending' | 'nrPaymentProcessing' | 'nrPaymentSuccess' | 'nrPaymentRejected' | 'rdPaymentPending' | 'rdPaymentProcessing' | 'rdPaymentSuccess' | 'rdPaymentRejected' | 'validityExtEligible' | 'validityExtDetails' | 'validityExtPayment' | 'validityExtReview' | 'validityExtSuccess' | 'declStatusExpiry' | 'createClaimFromRejectedList' | 'auctionLots' | 'amendAuctionLots' | 'auctionClaimDetails' | 'auctionDocuments' | 'auctionPayment' | 'auctionReview' | 'auctionClaimView' | 'auctionSuccess' | 'auctionPaymentPending' | 'auctionPaymentProcessing' | 'auctionPaymentSuccess' | 'auctionPaymentRejected';
   const [claimListDeclNo, setClaimListDeclNo] = useState<string>('');
   const [claimListDeclViewOpen, setClaimListDeclViewOpen] = useState(false);
   const [viewRequestRow, setViewRequestRow] = useState<ClaimRow | null>(null);
@@ -299,6 +320,16 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
   const [validityExtDetails, setValidityExtDetails] = useState<ExtensionDetails | null>(null);
   const [validityExtPaymentMode, setValidityExtPaymentMode] = useState('');
   const [validityExtAccountNo, setValidityExtAccountNo] = useState('');
+  // Refund on Auction Proceed flow state — selected auction lots, per-lot claim amount/remarks/
+  // transport & container entries, uploaded documents, and payment mode.
+  const [auctionSelectedLots, setAuctionSelectedLots] = useState<AuctionLotRow[]>([]);
+  const [auctionClaimDetails, setAuctionClaimDetails] = useState<AuctionClaimDetail[]>([]);
+  const [auctionUploadedDocs, setAuctionUploadedDocs] = useState<NRUploadedDoc[]>([]);
+  const [auctionPaymentMode, setAuctionPaymentMode] = useState('');
+  const [auctionAccountNo, setAuctionAccountNo] = useState('');
+  const resetAuctionClaim = () => { setAuctionSelectedLots([]); setAuctionClaimDetails([]); setAuctionUploadedDocs([]); setAuctionPaymentMode(''); setAuctionAccountNo(''); };
+  // Amend mode reuses the Refund on Auction Proceed new-claim steps with editable pre-filled fields.
+  const [auctionAmendMode, setAuctionAmendMode] = useState(false);
   const [claimViewReturnStep, setClaimViewReturnStep] = useState<ClaimSubStep>('nonRemittanceSuccess');
   const [ackReturnStep, setAckReturnStep] = useState<ClaimSubStep>('nonRemittanceSuccess');
   const [ackStep, setAckStep] = useState<'list' | 'acceptSuccess' | 'declineSuccess'>('list');
@@ -465,6 +496,25 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
   const rdBreadcrumbLast = rdAmendMode ? 'Amend Claim' : 'Raise New Claim';
   const exitRdAmend = () => { setRdAmendMode(false); setClaimStep('list'); };
 
+  const auctionFlowTitle = auctionAmendMode ? 'Amend - Refund on Auction Proceed - 3842200' : 'Raise New Claim - Refund on Auction Proceed';
+  const exitAuctionAmend = () => { setAuctionAmendMode(false); resetAuctionClaim(); setClaimStep('list'); };
+
+  // Refund on Auction Proceed — Upload Documents / Payment Details reuse the generic
+  // declaration-keyed components, so selected auction lots are mapped into the Row shape
+  // those components expect, keyed by Auction Lot No. instead of a declaration number.
+  const auctionLotsAsRows: Row[] = auctionSelectedLots.map((lot) => ({
+    declarationNo: lot.auctionLotNo,
+    declarationDate: lot.auctionDate,
+    depositType: 'Refund on Auction Proceed',
+    declarationCategory: lot.auctionNo,
+    depositAmount: `Dh ${lot.saleProceeds}`,
+    depositMethod: 'N/A',
+    claimExpiry: '—',
+    exportExpiry: '—',
+    remarks: '—',
+    kind: 'request',
+  }));
+
   if (claimStep !== 'list') {
     return (
       <div className="fixed inset-0 z-50 flex flex-col bg-[#f8fafd] overflow-hidden">
@@ -477,7 +527,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
               onBack={() => setClaimStep('list')}
               onContinue={(selectedType) => {
                 setSelectedClaimTypeForFlow(selectedType);
-                setClaimStep('eligible');
+                setClaimStep(selectedType === 'refundAuction' ? 'auctionLots' : 'eligible');
               }}
             />
           )}
@@ -719,6 +769,14 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                 submissionDate={viewClaimRow?.submissionDate}
                 onBack={() => setClaimStep('list')}
               />
+            ) : listClaimType === 'Refund on Auction Proceed' ? (
+              <AuctionClaimViewPage
+                claimNo={viewClaimRow?.claimNo}
+                claimStatus={viewClaimRow?.status}
+                submissionDate={viewClaimRow?.submissionDate}
+                claimantName={viewClaimRow?.claimantName}
+                onBack={() => setClaimStep('list')}
+              />
             ) : (
               <NonRemittanceClaimViewPage
                 selectedRows={[]}
@@ -885,6 +943,136 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
             <NRPaymentRejectedPage
               onBackToListing={() => { setClaimStep('list'); resetNRClaim(); }}
               onRetryPayment={() => setClaimStep('nrPaymentProcessing')}
+            />
+          )}
+          {claimStep === 'auctionLots' && (
+            <AuctionLotDetailsPage
+              onBack={() => setClaimStep('claimTypeEntry')}
+              onBackToListing={() => setClaimStep('list')}
+              onProceed={(lots) => { setAuctionSelectedLots(lots); setClaimStep('auctionClaimDetails'); }}
+            />
+          )}
+          {claimStep === 'amendAuctionLots' && auctionSelectedLots.length > 0 && (
+            <AuctionAmendLotDetailsPage
+              rows={auctionSelectedLots}
+              onRowsChange={setAuctionSelectedLots}
+              claimNo="3842200"
+              steps={REFUND_AUCTION_AMEND_STEPS}
+              onBack={exitAuctionAmend}
+              onBackToListing={exitAuctionAmend}
+              onProceed={() => setClaimStep('auctionClaimDetails')}
+            />
+          )}
+          {claimStep === 'auctionClaimDetails' && auctionSelectedLots.length > 0 && (
+            <AuctionClaimDetailsPage
+              rows={auctionSelectedLots}
+              initialDetails={auctionClaimDetails.length > 0 ? auctionClaimDetails : undefined}
+              title={auctionFlowTitle}
+              steps={auctionAmendMode ? REFUND_AUCTION_AMEND_STEPS : REFUND_AUCTION_STEPS}
+              hideSaveExit={auctionAmendMode}
+              onBack={() => setClaimStep(auctionAmendMode ? 'amendAuctionLots' : 'auctionLots')}
+              onBackToListing={() => auctionAmendMode ? exitAuctionAmend() : setClaimStep('list')}
+              onProceed={(details) => { setAuctionClaimDetails(details); setClaimStep('auctionDocuments'); }}
+            />
+          )}
+          {claimStep === 'auctionDocuments' && auctionSelectedLots.length > 0 && (
+            <NonRemittanceDocumentsPage
+              rows={auctionLotsAsRows}
+              title={auctionFlowTitle}
+              badge="Refund on Auction Proceed"
+              steps={auctionAmendMode ? REFUND_AUCTION_AMEND_STEPS : REFUND_AUCTION_STEPS}
+              activeIndex={2}
+              itemLabel="Auction Lot"
+              initialDocs={auctionUploadedDocs}
+              hideSaveExit={auctionAmendMode}
+              onBack={() => setClaimStep('auctionClaimDetails')}
+              onBackToListing={() => { if (auctionAmendMode) { exitAuctionAmend(); } else { setClaimStep('list'); resetAuctionClaim(); } }}
+              onContinue={() => setClaimStep(auctionAmendMode ? 'auctionReview' : 'auctionPayment')}
+              onUploadedDocsChange={setAuctionUploadedDocs}
+            />
+          )}
+          {claimStep === 'auctionPayment' && (
+            <NonRemittanceChargesPage
+              selectedRows={auctionLotsAsRows}
+              title={auctionFlowTitle}
+              steps={REFUND_AUCTION_STEPS}
+              activeIndex={3}
+              declNoColumnLabel="Auction Lot Number"
+              typeColumnLabel="Auction Number"
+              declarationCountLabel="No. of Auction Numbers applicable for registration fee"
+              onBack={() => setClaimStep('auctionDocuments')}
+              onBackToListing={() => { setClaimStep('list'); resetAuctionClaim(); }}
+              onContinue={(mode, acct) => { setAuctionPaymentMode(mode); setAuctionAccountNo(acct); setClaimStep('auctionReview'); }}
+              onDeclarationOpen={(declNo) => { setClaimListDeclNo(declNo); setClaimListDeclViewOpen(true); }}
+            />
+          )}
+          {claimStep === 'auctionReview' && (
+            <AuctionClaimReviewPage
+              selectedLots={auctionSelectedLots}
+              claimDetails={auctionClaimDetails}
+              paymentMode={auctionPaymentMode}
+              accountNo={auctionAccountNo}
+              uploadedDocs={auctionUploadedDocs}
+              title={auctionFlowTitle}
+              steps={auctionAmendMode ? REFUND_AUCTION_AMEND_STEPS : REFUND_AUCTION_STEPS}
+              activeIndex={auctionAmendMode ? 3 : 4}
+              showAmendment={auctionAmendMode}
+              onBack={() => setClaimStep(auctionAmendMode ? 'auctionDocuments' : 'auctionPayment')}
+              onSubmit={() => setClaimStep(auctionPaymentMode === 'E-Payment' ? 'auctionPaymentPending' : 'auctionSuccess')}
+              onSaveAndPreview={() => { setClaimViewReturnStep('auctionReview'); setClaimStep('auctionClaimView'); }}
+            />
+          )}
+          {claimStep === 'auctionClaimView' && (
+            <AuctionClaimViewPage
+              selectedLots={auctionSelectedLots}
+              claimDetails={auctionClaimDetails}
+              uploadedDocs={auctionUploadedDocs}
+              onBack={() => setClaimStep(claimViewReturnStep)}
+            />
+          )}
+          {claimStep === 'auctionSuccess' && (
+            <NonRemittanceSuccessPage
+              title={auctionFlowTitle}
+              heading={auctionAmendMode ? 'Refund on Auction Proceed Claim Amendment Submitted Successfully' : 'Refund on Auction Proceed Claim Submitted Successfully'}
+              message={auctionAmendMode
+                ? 'Your Refund on Auction Proceed claim amendment request has been submitted successfully and is currently under processing. Please click on View Claim button for the details.'
+                : 'Your Refund on Auction Proceed Claim has been submitted successfully and is currently under processing. Please click on View Claim button for the details.'}
+              onBack={exitAuctionAmend}
+              onViewAck={() => { setAckReturnStep('list'); setClaimStep('nonRemittanceAck'); }}
+              onViewDocs={() => setClaimStep('claimDocs')}
+              onViewClaim={() => { setClaimViewReturnStep('list'); setClaimStep('auctionClaimView'); }}
+            />
+          )}
+          {claimStep === 'auctionPaymentPending' && (
+            <NRPaymentPendingPage
+              title="Raise New Claim - Refund on Auction Proceed"
+              badgeLabel="Refund on Auction Proceed"
+              claimLabel="Refund on Auction Proceed"
+              onBackToListing={() => { setClaimStep('list'); resetAuctionClaim(); }}
+              onMakePayment={() => setClaimStep('auctionPaymentProcessing')}
+            />
+          )}
+          {claimStep === 'auctionPaymentProcessing' && (
+            <NRPaymentProcessingPage
+              title="Raise New Claim - Refund on Auction Proceed"
+              onBackToListing={() => { setClaimStep('list'); resetAuctionClaim(); }}
+              onCheckStatus={() => setClaimStep('auctionPaymentSuccess')}
+              onPaymentFailed={() => setClaimStep('auctionPaymentRejected')}
+            />
+          )}
+          {claimStep === 'auctionPaymentSuccess' && (
+            <NRPaymentSuccessPage
+              title="Raise New Claim - Refund on Auction Proceed"
+              onBackToListing={() => { setClaimStep('list'); resetAuctionClaim(); }}
+              onDownloadAck={() => { setAckReturnStep('list'); setClaimStep('nonRemittanceAck'); }}
+              onViewClaim={() => { setClaimViewReturnStep('list'); setClaimStep('auctionClaimView'); }}
+            />
+          )}
+          {claimStep === 'auctionPaymentRejected' && (
+            <NRPaymentRejectedPage
+              title="Raise New Claim - Refund on Auction Proceed"
+              onBackToListing={() => { setClaimStep('list'); resetAuctionClaim(); }}
+              onRetryPayment={() => setClaimStep('auctionPaymentProcessing')}
             />
           )}
         </div>
@@ -2478,6 +2666,14 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                 setClaimSelectedRows(RD_AMEND_ROWS);
                 setRdAmendMode(true);
                 setClaimStep('amendDeclDetails');
+              } else if (ct === 'Refund on Auction Proceed') {
+                // Auction amend reuses the auction new-claim steps with editable pre-filled
+                // fields, starting on an Auction Lot Details review step (not the full search UI).
+                setAuctionSelectedLots(AUCTION_AMEND_LOTS);
+                setAuctionClaimDetails(AUCTION_AMEND_CLAIM_DETAILS);
+                setAuctionUploadedDocs(AUCTION_AMEND_DOCS);
+                setAuctionAmendMode(true);
+                setClaimStep('amendAuctionLots');
               } else {
                 setRdAmendMode(false);
                 setClaimStep('amendClaim');

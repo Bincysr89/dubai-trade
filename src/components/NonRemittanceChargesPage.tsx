@@ -68,6 +68,10 @@ type Props = {
   title?: string; steps?: { id: string; label: string }[]; activeIndex?: number;
   /** When set, the "Declaration Type" column is relabelled and shows the deposit/charge type. */
   typeColumnLabel?: string; showChargeType?: boolean;
+  /** Overrides the "Declaration No." column header — e.g. "Auction Lot Number" for the Refund on Auction Proceed flow. */
+  declNoColumnLabel?: string;
+  /** Overrides the "No. of Declarations applicable for registration fee" summary line. */
+  declarationCountLabel?: string;
   /** Amend flow: hide the Save & Exit button. */
   hideSaveExit?: boolean;
   /** Amend flow: show an info bar and make the payment mode/reference read-only. */
@@ -78,7 +82,7 @@ type Props = {
   hideDeclarationCount?: boolean;
 };
 
-export default function NonRemittanceChargesPage({ onBack, onBackToListing, onContinue, selectedRows, onDeclarationOpen, title, steps, activeIndex = 2, typeColumnLabel = 'Declaration Type', showChargeType = false, hideSaveExit = false, chargesNote, hideClaimantBroker = false, hideDeclarationCount = false }: Props) {
+export default function NonRemittanceChargesPage({ onBack, onBackToListing, onContinue, selectedRows, onDeclarationOpen, title, steps, activeIndex = 2, typeColumnLabel = 'Declaration Type', showChargeType = false, hideSaveExit = false, chargesNote, hideClaimantBroker = false, hideDeclarationCount = false, declNoColumnLabel = 'Declaration No.', declarationCountLabel = 'No. of Declarations applicable for registration fee' }: Props) {
   const [paymentMode, setPaymentMode] = useState('Credit/Debit Account');
   const [paymentRef,  setPaymentRef]  = useState('');
   const [showSaveModal, setShowSaveModal] = useState(false);
@@ -143,7 +147,7 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
                     {(showChargeType
                       ? [
                           { label: '#',                              w: 48  },
-                          { label: 'Declaration No.',                w: 170 },
+                          { label: declNoColumnLabel,                w: 170 },
                           { label: 'Declaration Clearance Date',     w: 180 },
                           { label: typeColumnLabel,                  w: 180 },
                           { label: 'Owner Code',                     w: 240 },
@@ -152,7 +156,7 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
                         ]
                       : [
                           { label: '#',                              w: 48  },
-                          { label: 'Declaration No.',                w: 170 },
+                          { label: declNoColumnLabel,                w: 170 },
                           { label: typeColumnLabel,                  w: 180 },
                           { label: 'Owner Code',                     w: 240 },
                           { label: 'Registration Charge',            w: 200 },
@@ -219,7 +223,7 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
               {/* Line items — label left-aligned (60%), fee right-aligned (40%) */}
               {!hideDeclarationCount && (
                 <div className="flex items-start">
-                  <span className="text-[15px] text-[#697498] w-[60%] pr-[12px] text-left" style={{ fontFamily: font, lineHeight: 1.4 }}>No. of Declarations applicable for registration fee</span>
+                  <span className="text-[15px] text-[#697498] w-[60%] pr-[12px] text-left" style={{ fontFamily: font, lineHeight: 1.4 }}>{declarationCountLabel}</span>
                   <span className="text-[15px] text-[#051937] w-[40%] text-right" style={{ fontFamily: font, fontWeight: 500 }}>{displayRows.length}</span>
                 </div>
               )}

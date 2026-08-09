@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import BackToListingBar from './BackToListingBar';
 
-export type ClaimType = 'refundDeposit' | 'refundDuty' | 'nonRemittance';
+export type ClaimType = 'refundDeposit' | 'refundDuty' | 'nonRemittance' | 'refundAuction';
 
 const OPTIONS: { id: ClaimType; title: string; sub: string; icon: React.ReactNode }[] = [
   {
@@ -36,6 +36,19 @@ const OPTIONS: { id: ClaimType; title: string; sub: string; icon: React.ReactNod
       <svg viewBox="0 0 32 32" width="40" height="40" fill="none" stroke="#1360d2" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="16" cy="16" r="11" />
         <path d="M11 16h10M16 11v10" />
+      </svg>
+    ),
+  },
+  {
+    id: 'refundAuction',
+    title: 'Refund on Auction Proceed',
+    sub: 'Applicable for refunds against auctioned lots and their sale proceeds.',
+    icon: (
+      <svg viewBox="0 0 32 32" width="40" height="40" fill="none" stroke="#1360d2" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 6l7 7-11 11-7-7z" />
+        <path d="M18 3l11 11" />
+        <path d="M22 7l4-4" />
+        <circle cx="7" cy="25" r="1.4" fill="#1360d2" stroke="none" />
       </svg>
     ),
   },

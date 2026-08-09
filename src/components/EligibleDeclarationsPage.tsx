@@ -629,6 +629,8 @@ const CLAIM_TYPE_LABEL: Record<ClaimType, string> = {
   refundDeposit: 'Refund of Deposits',
   refundDuty:    'Refund of Duty',
   nonRemittance: 'Non Remittance',
+  // Refund on Auction Proceed never reaches this page — it has its own Auction Lot Details step.
+  refundAuction: 'Refund on Auction Proceed',
 };
 
 /**
@@ -661,6 +663,8 @@ const CLAIM_TYPE_DEPOSITS: Record<ClaimType, string[]> = {
   nonRemittance: [
     'Non Remittance Claim',
   ],
+  // Refund on Auction Proceed never reaches this page — it has its own Auction Lot Details step.
+  refundAuction: [],
 };
 
 const IMPORTER_CODE_NAMES: Record<string, string> = {

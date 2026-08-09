@@ -31,6 +31,22 @@ export const NR_CLAIM_STEPS: { id: string; label: string }[] = [
   { id: 'review',    label: 'Review & Submit' },
 ];
 
+/* Refund on Auction Proceed — Auction Lot Details replaces Eligible Declarations, and a
+   dedicated Claim Details step (claim amount/remarks + transport & container per lot)
+   sits between it and Upload Documents. */
+export const REFUND_AUCTION_STEPS: { id: string; label: string }[] = [
+  { id: 'auctionLots',  label: 'Auction Lot Details' },
+  { id: 'claimDetails', label: 'Claim Details' },
+  { id: 'documents',    label: 'Upload Documents' },
+  { id: 'payment',      label: 'Payment Details' },
+  { id: 'review',       label: 'Review & Submit' },
+];
+
+/* Amend flow has no payment step — the first step reviews the already-selected auction lots
+   (with remove) rather than searching for new ones. */
+export const REFUND_AUCTION_AMEND_STEPS: { id: string; label: string }[] =
+  REFUND_AUCTION_STEPS.filter(s => s.id !== 'payment');
+
 export const VALIDITY_EXT_STEPS: { id: string; label: string }[] = [
   { id: 'eligible', label: 'Eligible Declarations' },
   { id: 'details',  label: 'Extension Details' },

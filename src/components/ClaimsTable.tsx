@@ -194,6 +194,14 @@ const CLAIM_ROWS: ClaimRow[] = [
     ],
     depositType: 'Alternative Duty Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '24/12/2024', status: 'Completed', remark: '2 sub claim rejected',
   },
+  {
+    reqNo: '4701850', claimNo: '3842200', ver: '1', claimType: 'Refund on Auction Proceed',
+    declarations: [
+      { declNo: 'LOT-000112', date: '14/03/2025', category: 'AUC-2025-0041', ownerCode: 'AE-9106286 - SW LOGISTICS LLC', claimExpiry: 'N/A', exportExpiry: 'N/A' },
+      { declNo: 'LOT-000113', date: '14/03/2025', category: 'AUC-2025-0041', ownerCode: 'AE-9106286 - SW LOGISTICS LLC', claimExpiry: 'N/A', exportExpiry: 'N/A' },
+    ],
+    depositType: 'Refund on Auction Proceed', claimantName: 'SW LOGISTICS LLC', claimantCode: 'AE-9106286', submissionDate: '29/06/2026', status: 'Under Processing', remark: '—',
+  },
 ];
 
 const DRAFT_ROWS: ClaimRow[] = [
@@ -636,7 +644,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
                   case 'reqNo':          return cell(txt(row.reqNo), 'reqNo', 150, { paddingLeft: 16 });
                   case 'claimNo':        return !showDrafts ? cell(txt(row.claimNo), 'claimNo', 120) : null;
                   case 'claimType':      return cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3, fontFamily: font }}>{row.claimType}</span>, 'claimType', 160);
-                  case 'declarations':   return cell(declLink(row), 'declarations', 150);
+                  case 'declarations':   return cell(row.claimType === 'Refund on Auction Proceed' ? txt('—') : declLink(row), 'declarations', 150);
                   case 'declNo':         return cell(txt(matchedDeclNo(row)), 'declNo', 180);
                   case 'depositType':    return cell(<span className="text-[16px] text-[#0e1b3d]" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.3, fontFamily: font }}>{row.depositType}</span>, 'depositType', 220);
                   case 'transactionType': return cell(txt(row.transactionType ?? '—'), 'transactionType', 200);

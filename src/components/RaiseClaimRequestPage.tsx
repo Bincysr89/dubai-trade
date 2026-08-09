@@ -10,6 +10,8 @@ const CLAIM_TYPE_LABEL: Record<ClaimType, string> = {
   refundDeposit: 'Refund of Deposits',
   refundDuty:    'Refund of Duty',
   nonRemittance: 'Non Remittance',
+  // Refund on Auction Proceed never reaches this page — it has its own dedicated flow.
+  refundAuction: 'Refund on Auction Proceed',
 };
 
 type StepId = 'claim' | 'payment' | 'review';

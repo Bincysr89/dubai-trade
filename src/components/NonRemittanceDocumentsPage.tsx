@@ -64,6 +64,9 @@ type Props = {
   initialDocs?: UploadedDoc[];
   /** Amend flow: hide the Save & Exit button. */
   hideSaveExit?: boolean;
+  /** Overrides "Declaration" throughout (field label, dropdown, grouped-docs headers) —
+      e.g. "Auction Lot" for the Refund on Auction Proceed flow. */
+  itemLabel?: string;
 };
 
 function formatBytes(bytes: number) {
@@ -77,8 +80,10 @@ function formatBytes(bytes: number) {
    flat table mixing every declaration together, each declaration gets its own card —
    the customer can see at a glance which files were uploaded against which record.
    Reused read-only (no onRemove) on the Review step. */
-export function UploadedDocsByDeclaration({ docs, declOrder, onRemove }: {
+export function UploadedDocsByDeclaration({ docs, declOrder, onRemove, itemLabel = 'Declaration' }: {
   docs: UploadedDoc[]; declOrder?: string[]; onRemove?: (id: string) => void;
+  /** Overrides "Declaration" in "Declaration No. {x}" — e.g. "Auction Lot" for the Refund on Auction Proceed flow. */
+  itemLabel?: string;
 }) {
   const groups = new Map<string, UploadedDoc[]>();
   docs.forEach(doc => {
@@ -119,7 +124,7 @@ export function UploadedDocsByDeclaration({ docs, declOrder, onRemove }: {
                     <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round"><path d="M5 2h7l3 3v12H5z" /><path d="M12 2v3h3" /></svg>
                   </div>
                   <div className="flex flex-col gap-[1px] min-w-0 flex-1">
-                    <span className="text-[14px] text-[#051937] truncate" style={{ fontWeight: 500, fontFamily: FONT }}>Declaration No. {declNo}</span>
+                    <span className="text-[14px] text-[#051937] truncate" style={{ fontWeight: 500, fontFamily: FONT }}>{itemLabel} No. {declNo}</span>
                     <span className="text-[14px]" style={{ color: '#219653', fontFamily: FONT }}>{declDocs.length} document{declDocs.length !== 1 ? 's' : ''}</span>
                   </div>
                 </div>
@@ -133,7 +138,7 @@ export function UploadedDocsByDeclaration({ docs, declOrder, onRemove }: {
           {selectedDoc && (
             <>
               <div className="px-[20px] py-[14px]" style={{ background: '#f8fafd', borderBottom: '1px solid #eef1f6' }}>
-                <p className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500, fontFamily: FONT }}>Uploaded Documents — Declaration No. {selectedDoc}</p>
+                <p className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500, fontFamily: FONT }}>Uploaded Documents — {itemLabel} No. {selectedDoc}</p>
               </div>
               <div className="flex-1 overflow-auto">
                 {selectedDocs.length === 0 ? (
@@ -210,7 +215,7 @@ export function UploadedDocsByDeclaration({ docs, declOrder, onRemove }: {
   );
 }
 
-function DeclDropdown({ value, options, onChange }: { value: string; options: string[]; onChange: (v: string) => void }) {
+function DeclDropdown({ value, options, onChange, itemLabel = 'Declaration' }: { value: string; options: string[]; onChange: (v: string) => void; itemLabel?: string }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="relative" style={{ minWidth: 240 }}>
@@ -218,7 +223,7 @@ function DeclDropdown({ value, options, onChange }: { value: string; options: st
         className="w-full flex items-center justify-between px-[12px] bg-white rounded-[4px]"
         style={{ height: 44, border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}`, fontFamily: FONT }}>
         <span className="text-[15px]" style={{ color: value ? '#051937' : '#697498' }}>
-          {value || 'Select Declaration Number'}
+          {value || `Select ${itemLabel} Number`}
         </span>
         <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="#697498" strokeWidth="2"
           className={`flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}>
@@ -241,7 +246,7 @@ function DeclDropdown({ value, options, onChange }: { value: string; options: st
   );
 }
 
-export default function NonRemittanceDocumentsPage({ rows, onBack, onContinue, onBackToListing, onUploadedDocsChange, title, badge, steps, activeIndex = 1, initialDocs, hideSaveExit = false }: Props) {
+export default function NonRemittanceDocumentsPage({ rows, onBack, onContinue, onBackToListing, onUploadedDocsChange, title, badge, steps, activeIndex = 1, initialDocs, hideSaveExit = false, itemLabel = 'Declaration' }: Props) {
   const [selectedDecl, setSelectedDecl] = useState<string>(rows[0]?.declarationNo ?? '');
   const [selectedDocTypes, setSelectedDocTypes] = useState<Set<string>>(new Set());
   const toggleDocType = (docName: string) => setSelectedDocTypes(prev => {
@@ -338,11 +343,12 @@ export default function NonRemittanceDocumentsPage({ rows, onBack, onContinue, o
               {/* Declaration dropdown + Remarks — one row */}
               <div className="flex gap-[16px] flex-wrap sm:flex-nowrap">
                 <div className="flex flex-col gap-[6px] flex-1">
-                  <label className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Declaration Number</label>
+                  <label className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{itemLabel} Number</label>
                   <DeclDropdown
                     value={selectedDecl}
                     options={rows.map(r => r.declarationNo)}
                     onChange={(v) => { setSelectedDecl(v); setSelectedDocTypes(new Set()); setRemarks(''); }}
+                    itemLabel={itemLabel}
                   />
                 </div>
                 <div className="flex flex-col gap-[6px] flex-1">
@@ -471,7 +477,7 @@ export default function NonRemittanceDocumentsPage({ rows, onBack, onContinue, o
 
           {/* Uploaded documents — grouped by declaration so it's clear which attachments belong to which record */}
           {uploadedDocs.length > 0 && (
-            <UploadedDocsByDeclaration docs={uploadedDocs} declOrder={rows.map(r => r.declarationNo)} onRemove={removeDoc} />
+            <UploadedDocsByDeclaration docs={uploadedDocs} declOrder={rows.map(r => r.declarationNo)} onRemove={removeDoc} itemLabel={itemLabel} />
           )}
 
           <ClaimantBrokerDetail />
