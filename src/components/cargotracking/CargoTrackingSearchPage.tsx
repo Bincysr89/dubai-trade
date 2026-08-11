@@ -95,28 +95,56 @@ export default function CargoTrackingSearchPage({
           </div>
 
           <div className="p-[24px]">
-          <div className="max-w-[320px] mb-[20px]">
-            <DTSelect
-              label="Search By"
-              value={searchBy}
-              onChange={v => setSearchBy(v as SearchBy)}
-              options={[{ value: 'declaration', label: 'Declaration No.' }, { value: 'bolAwb', label: 'BOL / AWB No.' }]}
-              required
-            />
-          </div>
-
           {searchBy === 'declaration' ? (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-[16px] items-end">
-              <FloatingField
-                label="Declaration Number"
-                required
-                placeholder="e.g. 2026100856123"
-                value={declarationNo}
-                onChange={setDeclarationNo}
-              />
+            <div className="flex flex-wrap items-end gap-[16px]">
+              <div className="w-full sm:w-[240px] flex-shrink-0">
+                <DTSelect
+                  label="Search By"
+                  value={searchBy}
+                  onChange={v => setSearchBy(v as SearchBy)}
+                  options={[{ value: 'declaration', label: 'Declaration No.' }, { value: 'bolAwb', label: 'BOL / AWB No.' }]}
+                  required
+                />
+              </div>
+              <div className="flex-1 min-w-[220px]">
+                <FloatingField
+                  label="Declaration Number"
+                  required
+                  placeholder="e.g. 2026100856123"
+                  value={declarationNo}
+                  onChange={setDeclarationNo}
+                />
+              </div>
+              <button
+                onClick={onSearch}
+                disabled={!canSearch}
+                className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white inline-flex items-center gap-[8px] transition-colors disabled:cursor-not-allowed flex-shrink-0"
+                style={{ background: canSearch ? '#1360d2' : '#a7c3eb', fontFamily: font, fontWeight: 500 }}
+              >
+                <SearchIcon />
+                Search
+              </button>
+              <button
+                onClick={onReset}
+                className="h-[48px] px-[28px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] inline-flex items-center gap-[8px] transition-colors flex-shrink-0"
+                style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
+              >
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" /></svg>
+                Reset
+              </button>
             </div>
           ) : (
             <div className="flex flex-col gap-[20px]">
+              <div className="max-w-[320px]">
+                <DTSelect
+                  label="Search By"
+                  value={searchBy}
+                  onChange={v => setSearchBy(v as SearchBy)}
+                  options={[{ value: 'declaration', label: 'Declaration No.' }, { value: 'bolAwb', label: 'BOL / AWB No.' }]}
+                  required
+                />
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
                 <div>
                   <p className="text-[14px] text-[#455174] mb-[8px]" style={{ fontFamily: font, fontWeight: 500 }}>
@@ -143,43 +171,44 @@ export default function CargoTrackingSearchPage({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
-                <FloatingField
-                  label="Bill of Lading / AWB Number"
-                  required
-                  placeholder="e.g. NAV9100030225"
-                  value={bolNo}
-                  onChange={setBolNo}
-                />
-                <FloatingField
-                  label="Rotation Number"
-                  placeholder="e.g. 820489 (optional)"
-                  value={rotationNo}
-                  onChange={setRotationNo}
-                />
+              <div className="flex flex-wrap items-end gap-[16px]">
+                <div className="flex-1 min-w-[220px]">
+                  <FloatingField
+                    label="Bill of Lading / AWB Number"
+                    required
+                    placeholder="e.g. NAV9100030225"
+                    value={bolNo}
+                    onChange={setBolNo}
+                  />
+                </div>
+                <div className="flex-1 min-w-[220px]">
+                  <FloatingField
+                    label="Rotation Number"
+                    placeholder="e.g. 820489 (optional)"
+                    value={rotationNo}
+                    onChange={setRotationNo}
+                  />
+                </div>
+                <button
+                  onClick={onSearch}
+                  disabled={!canSearch}
+                  className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white inline-flex items-center gap-[8px] transition-colors disabled:cursor-not-allowed flex-shrink-0"
+                  style={{ background: canSearch ? '#1360d2' : '#a7c3eb', fontFamily: font, fontWeight: 500 }}
+                >
+                  <SearchIcon />
+                  Search
+                </button>
+                <button
+                  onClick={onReset}
+                  className="h-[48px] px-[28px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] inline-flex items-center gap-[8px] transition-colors flex-shrink-0"
+                  style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
+                >
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" /></svg>
+                  Reset
+                </button>
               </div>
             </div>
           )}
-
-          <div className="flex gap-[12px] mt-[24px]">
-            <button
-              onClick={onSearch}
-              disabled={!canSearch}
-              className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white inline-flex items-center gap-[8px] transition-colors disabled:cursor-not-allowed"
-              style={{ background: canSearch ? '#1360d2' : '#a7c3eb', fontFamily: font, fontWeight: 500 }}
-            >
-              <SearchIcon />
-              Search
-            </button>
-            <button
-              onClick={onReset}
-              className="h-[48px] px-[28px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] inline-flex items-center gap-[8px] transition-colors"
-              style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
-            >
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" /></svg>
-              Reset
-            </button>
-          </div>
           </div>
         </div>
 
