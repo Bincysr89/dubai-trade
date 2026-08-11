@@ -35,7 +35,7 @@ function DetailCard({ number, title, fields }: { number: number; title: string; 
             {row.map((f, ci) => (
               <div key={ci} className="flex items-center gap-[6px] px-[20px] py-[11px] flex-wrap" style={{ borderTop: '1px solid #eef1f6' }}>
                 <span className="text-[14px] text-[#697498] whitespace-nowrap" style={{ fontFamily: font }}>{f.label} :</span>
-                <span className="text-[14px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 600 }}>{f.value}</span>
+                <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 600 }}>{f.value}</span>
               </div>
             ))}
             {row.length === 1 && <div className="hidden sm:block" style={{ borderTop: '1px solid #eef1f6' }} />}
@@ -139,10 +139,10 @@ export default function CargoTrackingDetailPage({ result, onBack }: Props) {
                 </svg>
               </div>
               <h1 className="text-[24px] font-bold text-[#0e1b3d]" style={{ fontFamily: font }}>{result.transportDocNo}</h1>
-              <span className="px-[12px] py-[4px] rounded-[4px] text-[14px] font-medium" style={{ background: '#e2ebf9', color: '#1360d2', fontFamily: font }}>
+              <span className="px-[12px] py-[4px] rounded-[4px] text-[16px] font-medium" style={{ background: '#e2ebf9', color: '#1360d2', fontFamily: font }}>
                 {result.channel} {result.movement}
               </span>
-              <span className="inline-flex items-center gap-[5px] px-[12px] py-[4px] rounded-[4px] text-[14px] font-medium" style={{ background: st.bg, color: st.color, fontFamily: font }}>
+              <span className="inline-flex items-center gap-[5px] px-[12px] py-[4px] rounded-[4px] text-[16px] font-medium" style={{ background: st.bg, color: st.color, fontFamily: font }}>
                 <span className="size-[6px] rounded-full flex-shrink-0" style={{ background: st.color }} />
                 {result.status}
               </span>

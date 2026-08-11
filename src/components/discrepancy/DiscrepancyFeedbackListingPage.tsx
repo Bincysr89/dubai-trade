@@ -302,7 +302,7 @@ export default function DiscrepancyFeedbackListingPage({ onBack }: Props) {
                       {g.rows.length} discrepanc{g.rows.length === 1 ? 'y' : 'ies'}
                     </span>
                     {actionRequiredCount > 0 && (
-                      <span className="inline-flex items-center gap-[5px] px-[10px] py-[3px] rounded-[4px] text-[13px] font-medium whitespace-nowrap" style={{ background: 'rgba(180,83,9,0.10)', color: '#b45309', fontFamily: font }}>
+                      <span className="inline-flex items-center gap-[5px] px-[10px] py-[3px] rounded-[4px] text-[16px] font-medium whitespace-nowrap" style={{ background: 'rgba(180,83,9,0.10)', color: '#b45309', fontFamily: font }}>
                         <WarningIcon />
                         {actionRequiredCount} action required
                       </span>
@@ -310,7 +310,7 @@ export default function DiscrepancyFeedbackListingPage({ onBack }: Props) {
                   </button>
                   <button
                     onClick={() => {}}
-                    className="h-[36px] px-[14px] flex items-center gap-[6px] rounded-[4px] border border-[#d5ddfb] bg-white text-[14px] text-[#0e1b3d] hover:bg-[#f0f4ff] transition-colors flex-shrink-0"
+                    className="h-[36px] px-[14px] flex items-center gap-[6px] rounded-[4px] border border-[#d5ddfb] bg-white text-[16px] text-[#0e1b3d] hover:bg-[#f0f4ff] transition-colors flex-shrink-0"
                     style={{ fontFamily: font }}
                   >
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v12M7 10l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" /><path d="M4 17v3h16v-3" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -336,14 +336,14 @@ export default function DiscrepancyFeedbackListingPage({ onBack }: Props) {
                             <input type="checkbox" checked={groupAllSelected} onChange={() => toggleGroupSelectAll(g)} className="size-[16px] accent-[#1360d2] cursor-pointer" />
                           </th>
                           {orderedVisibleCols.map(c => (
-                            <th key={c.key} className="text-left px-[12px] py-[10px] text-[14px] text-[#0e1b3d] whitespace-nowrap" style={{ fontWeight: 500 }}>
+                            <th key={c.key} className="text-left px-[12px] py-[10px] text-[16px] text-[#051937] whitespace-nowrap" style={{ fontWeight: 500 }}>
                               {c.label}
                             </th>
                           ))}
-                          <th className="text-left px-[12px] py-[10px] text-[14px] text-[#0e1b3d] whitespace-nowrap" style={{ fontWeight: 500 }}>
+                          <th className="text-left px-[12px] py-[10px] text-[16px] text-[#051937] whitespace-nowrap" style={{ fontWeight: 500 }}>
                             Discrepancy / Action Status
                           </th>
-                          <th className="text-center px-[12px] py-[10px] text-[14px] text-[#0e1b3d] whitespace-nowrap" style={{ fontWeight: 500 }}>
+                          <th className="text-center px-[12px] py-[10px] text-[16px] text-[#051937] whitespace-nowrap" style={{ fontWeight: 500 }}>
                             Comment
                           </th>
                         </tr>
@@ -357,12 +357,12 @@ export default function DiscrepancyFeedbackListingPage({ onBack }: Props) {
                                 <input type="checkbox" checked={selectedIds.has(r.id)} onChange={() => toggleRow(r.id)} className="size-[16px] accent-[#1360d2] cursor-pointer" />
                               </td>
                               {orderedVisibleCols.map(c => (
-                                <td key={c.key} className="px-[12px] py-[12px] text-[14px] text-[#0e1b3d]" style={{ maxWidth: c.key === 'description' ? 240 : undefined, whiteSpace: c.key === 'description' ? 'normal' : 'nowrap' }}>
+                                <td key={c.key} className="px-[12px] py-[12px] text-[16px] text-[#0e1b3d]" style={{ maxWidth: c.key === 'description' ? 240 : undefined, whiteSpace: c.key === 'description' ? 'normal' : 'nowrap' }}>
                                   {(r as unknown as Record<string, string>)[c.key] ?? ''}
                                 </td>
                               ))}
                               <td className="px-[12px] py-[12px]">
-                                <span className="inline-flex items-center gap-[5px] px-[10px] py-[3px] rounded-[4px] text-[13px] font-medium whitespace-nowrap" style={{ background: st.bg, color: st.color, fontFamily: font }}>
+                                <span className="inline-flex items-center gap-[5px] px-[10px] py-[3px] rounded-[4px] text-[16px] font-medium whitespace-nowrap" style={{ background: st.bg, color: st.color, fontFamily: font }}>
                                   {(r.status === 'Info Requested' || r.status === 'Action Required') && <WarningIcon color={st.color} />}
                                   {r.status}
                                 </span>
@@ -370,7 +370,7 @@ export default function DiscrepancyFeedbackListingPage({ onBack }: Props) {
                               <td className="px-[12px] py-[12px] text-center">
                                 <button
                                   onClick={() => setModal({ mode: 'single', rows: [r] })}
-                                  className="inline-flex items-center gap-[5px] text-[14px] text-[#1360d2] hover:underline whitespace-nowrap"
+                                  className="inline-flex items-center gap-[5px] text-[16px] text-[#1360d2] hover:underline whitespace-nowrap"
                                   style={{ fontFamily: font, fontWeight: 500 }}
                                 >
                                   <CommentIcon />

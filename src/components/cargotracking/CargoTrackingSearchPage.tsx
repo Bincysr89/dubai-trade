@@ -230,10 +230,10 @@ export default function CargoTrackingSearchPage({
               <div className="overflow-x-auto">
                 <table style={{ width: '100%', minWidth: 900, borderCollapse: 'collapse', fontFamily: font }}>
                   <thead>
-                    <tr style={{ background: '#f8fafd' }}>
+                    <tr style={{ background: '#a6c2e9' }}>
                       {['Transport Document No. (BOL/AWB)', 'Declaration Number', 'Type', 'Declaration Status', 'Submission Date', 'Clearance Date', 'Action'].map(h => (
-                        <th key={h} className="text-left px-[16px] py-[10px] text-[13px] text-[#697498] whitespace-nowrap" style={{ fontWeight: 500, letterSpacing: '0.2px' }}>
-                          {h.toUpperCase()}
+                        <th key={h} className="text-left px-[16px] py-[10px] text-[16px] text-[#051937] whitespace-nowrap" style={{ fontWeight: 500 }}>
+                          {h}
                         </th>
                       ))}
                     </tr>
@@ -243,10 +243,10 @@ export default function CargoTrackingSearchPage({
                       const st = STATUS_STYLE[r.status];
                       return (
                         <tr key={r.id} style={{ borderTop: '1px solid #f0f4ff' }}>
-                          <td className="px-[16px] py-[14px] text-[14px] whitespace-nowrap" style={{ color: '#1360d2', fontWeight: 600 }}>{r.transportDocNo}</td>
-                          <td className="px-[16px] py-[14px] text-[14px] text-[#0e1b3d] whitespace-nowrap">{r.declarationNo}</td>
+                          <td className="px-[16px] py-[14px] text-[16px] whitespace-nowrap" style={{ color: '#1360d2', fontWeight: 600 }}>{r.transportDocNo}</td>
+                          <td className="px-[16px] py-[14px] text-[16px] text-[#0e1b3d] whitespace-nowrap">{r.declarationNo}</td>
                           <td className="px-[16px] py-[14px] whitespace-nowrap">
-                            <span className="inline-flex items-center gap-[5px] px-[10px] py-[3px] rounded-[4px] text-[13px] font-medium" style={{ background: '#e2ebf9', color: '#1360d2', fontFamily: font }}>
+                            <span className="inline-flex items-center gap-[5px] px-[10px] py-[3px] rounded-[4px] text-[16px] font-medium" style={{ background: '#e2ebf9', color: '#1360d2', fontFamily: font }}>
                               {r.channel === 'Sea'
                                 ? <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 17l1.5-4h15L21 17M6 13V8h12v5M12 3v5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                                 : <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12l18-7-7 18-2-8-8-3z" strokeLinecap="round" strokeLinejoin="round" /></svg>}
@@ -254,15 +254,15 @@ export default function CargoTrackingSearchPage({
                             </span>
                           </td>
                           <td className="px-[16px] py-[14px] whitespace-nowrap">
-                            <span className="inline-flex items-center gap-[5px] px-[10px] py-[3px] rounded-[4px] text-[13px] font-medium" style={{ background: st.bg, color: st.color, fontFamily: font }}>
+                            <span className="inline-flex items-center gap-[5px] px-[10px] py-[3px] rounded-[4px] text-[16px] font-medium" style={{ background: st.bg, color: st.color, fontFamily: font }}>
                               <span className="size-[6px] rounded-full flex-shrink-0" style={{ background: st.color }} />
                               {r.status}
                             </span>
                           </td>
-                          <td className="px-[16px] py-[14px] text-[14px] text-[#0e1b3d] whitespace-nowrap">{r.submissionDate}</td>
-                          <td className="px-[16px] py-[14px] text-[14px] text-[#0e1b3d] whitespace-nowrap">{r.clearanceDate}</td>
+                          <td className="px-[16px] py-[14px] text-[16px] text-[#0e1b3d] whitespace-nowrap">{r.submissionDate}</td>
+                          <td className="px-[16px] py-[14px] text-[16px] text-[#0e1b3d] whitespace-nowrap">{r.clearanceDate}</td>
                           <td className="px-[16px] py-[14px] whitespace-nowrap">
-                            <button onClick={() => onViewCargoStatus(r)} className="h-[36px] px-[14px] rounded-[4px] text-[13px] text-white inline-flex items-center gap-[6px] hover:opacity-90 transition-opacity" style={{ background: '#1360d2', fontFamily: font, fontWeight: 500 }}>
+                            <button onClick={() => onViewCargoStatus(r)} className="h-[36px] px-[14px] rounded-[4px] text-[16px] text-white inline-flex items-center gap-[6px] hover:opacity-90 transition-opacity" style={{ background: '#1360d2', fontFamily: font, fontWeight: 500 }}>
                               View Cargo Status
                               <svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 4l6 6-6 6" /></svg>
                             </button>
