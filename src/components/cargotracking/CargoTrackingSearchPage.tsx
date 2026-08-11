@@ -97,7 +97,7 @@ export default function CargoTrackingSearchPage({
           <div className="p-[24px]">
           {searchBy === 'declaration' ? (
             <div className="flex flex-wrap items-end gap-[16px]">
-              <div className="w-full sm:w-[240px] flex-shrink-0">
+              <div className="w-[220px] flex-shrink-0">
                 <DTSelect
                   label="Search By"
                   value={searchBy}
@@ -106,7 +106,7 @@ export default function CargoTrackingSearchPage({
                   required
                 />
               </div>
-              <div className="flex-1 min-w-[220px]">
+              <div className="w-[300px] flex-shrink-0">
                 <FloatingField
                   label="Declaration Number"
                   required
@@ -118,7 +118,7 @@ export default function CargoTrackingSearchPage({
               <button
                 onClick={onSearch}
                 disabled={!canSearch}
-                className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white inline-flex items-center gap-[8px] transition-colors disabled:cursor-not-allowed flex-shrink-0"
+                className="h-[56px] px-[28px] rounded-[4px] text-[16px] text-white inline-flex items-center gap-[8px] transition-colors disabled:cursor-not-allowed flex-shrink-0"
                 style={{ background: canSearch ? '#1360d2' : '#a7c3eb', fontFamily: font, fontWeight: 500 }}
               >
                 <SearchIcon />
@@ -126,7 +126,7 @@ export default function CargoTrackingSearchPage({
               </button>
               <button
                 onClick={onReset}
-                className="h-[48px] px-[28px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] inline-flex items-center gap-[8px] transition-colors flex-shrink-0"
+                className="h-[56px] px-[28px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] inline-flex items-center gap-[8px] transition-colors flex-shrink-0"
                 style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
               >
                 <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" /></svg>
@@ -192,7 +192,7 @@ export default function CargoTrackingSearchPage({
                 <button
                   onClick={onSearch}
                   disabled={!canSearch}
-                  className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white inline-flex items-center gap-[8px] transition-colors disabled:cursor-not-allowed flex-shrink-0"
+                  className="h-[56px] px-[28px] rounded-[4px] text-[16px] text-white inline-flex items-center gap-[8px] transition-colors disabled:cursor-not-allowed flex-shrink-0"
                   style={{ background: canSearch ? '#1360d2' : '#a7c3eb', fontFamily: font, fontWeight: 500 }}
                 >
                   <SearchIcon />
@@ -200,7 +200,7 @@ export default function CargoTrackingSearchPage({
                 </button>
                 <button
                   onClick={onReset}
-                  className="h-[48px] px-[28px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] inline-flex items-center gap-[8px] transition-colors flex-shrink-0"
+                  className="h-[56px] px-[28px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] inline-flex items-center gap-[8px] transition-colors flex-shrink-0"
                   style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
                 >
                   <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" /></svg>

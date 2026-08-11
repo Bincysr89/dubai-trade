@@ -1,5 +1,4 @@
 import Header from '../Header';
-import ClaimStepper from '../ClaimStepper';
 import BackToListingBar from '../BackToListingBar';
 import { JOURNEY_STAGES, type CargoSearchResult } from './cargoTrackingData';
 
@@ -10,43 +9,33 @@ const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
   Cancelled: { bg: 'rgba(255,169,26,0.16)', color: '#b45309' },
 };
 
-const JOURNEY_STEPS = JOURNEY_STAGES.map((stage, i) => ({ id: `stage-${i}`, label: stage }));
-
 type Props = {
   result: CargoSearchResult;
   onBack: () => void;
   onBackToListing: () => void;
 };
 
-/* ── Detail card: numbered header + 2-column zebra-striped field grid ───── */
-function DetailCard({ number, title, fields }: { number: number; title: string; fields: { label: string; value: string }[] }) {
-  const rows: { label: string; value: string }[][] = [];
-  for (let i = 0; i < fields.length; i += 2) rows.push(fields.slice(i, i + 2));
+const CheckIcon = () => (
+  <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M4 10l4 4 8-8" /></svg>
+);
 
+/* ── Milestone icons — one per journey stage, shown inside the timeline node ── */
+const STAGE_ICONS: ((color: string) => React.ReactNode)[] = [
+  c => <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 17l1.5-4h15L21 17M6 13V8h12v5M12 3v5" /></svg>,
+  c => <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 3h9l3 3v15H6z" /><path d="M9 10h6M9 14h6" /></svg>,
+  c => <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="9" width="18" height="9" rx="1" /><path d="M7 9V6a2 2 0 012-2h6a2 2 0 012 2v3" /></svg>,
+  c => <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7h16v11H4z" /><path d="M4 7l8 6 8-6" /></svg>,
+  c => <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M9 12l2 2 4-4" /></svg>,
+  c => <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M8 2v4M16 2v4M3 10h18" /></svg>,
+  c => <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="9" width="18" height="9" rx="1" /><path d="M7 18v2M17 18v2" /></svg>,
+  c => <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-1.5z" /></svg>,
+];
+
+function FieldRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.10)' }}>
-      <div className="flex items-center gap-[10px] px-[20px] py-[14px]">
-        <span
-          className="size-[22px] rounded-full flex items-center justify-center flex-shrink-0 text-[12px] text-white"
-          style={{ background: '#1360d2', fontFamily: font, fontWeight: 700 }}
-        >
-          {number}
-        </span>
-        <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 700 }}>{title}</span>
-      </div>
-      <div>
-        {rows.map((row, ri) => (
-          <div key={ri} className="grid grid-cols-1 sm:grid-cols-2" style={{ background: ri % 2 === 0 ? '#f8fafd' : '#fff' }}>
-            {row.map((f, ci) => (
-              <div key={ci} className="flex items-center gap-[6px] px-[20px] py-[11px] flex-wrap" style={{ borderTop: '1px solid #eef1f6' }}>
-                <span className="text-[14px] text-[#697498] whitespace-nowrap" style={{ fontFamily: font }}>{f.label} :</span>
-                <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 600 }}>{f.value}</span>
-              </div>
-            ))}
-            {row.length === 1 && <div className="hidden sm:block" style={{ borderTop: '1px solid #eef1f6' }} />}
-          </div>
-        ))}
-      </div>
+    <div className="flex items-center gap-[6px] flex-wrap">
+      <span className="text-[14px] text-[#697498] whitespace-nowrap" style={{ fontFamily: font }}>{label} :</span>
+      <span className="text-[15px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 600 }}>{value}</span>
     </div>
   );
 }
@@ -54,6 +43,36 @@ function DetailCard({ number, title, fields }: { number: number; title: string; 
 export default function CargoTrackingDetailPage({ result, onBack, onBackToListing }: Props) {
   const st = STATUS_STYLE[result.status];
   const d = result.detail;
+
+  const stages: { label: string; fields: { label: string; value: string }[] }[] = [
+    { label: JOURNEY_STAGES[0], fields: [
+      { label: 'Rotation Number', value: d.vessel.rotationNumber },
+      { label: 'Expected Time Of Arrival', value: d.vessel.eta },
+      { label: 'Actual Time of Arrival', value: d.vessel.ata },
+    ] },
+    { label: JOURNEY_STAGES[1], fields: [
+      { label: 'BOL Number', value: d.manifest.bolNumber },
+      { label: 'BOL Submission Agent', value: d.manifest.submissionAgent },
+      { label: 'BOL Submission Date', value: d.manifest.submissionDate },
+    ] },
+    { label: JOURNEY_STAGES[2], fields: [
+      { label: 'Container Category Status', value: d.discharge.containerCategoryStatus },
+      { label: 'No. Of Containers', value: d.discharge.noOfContainers },
+    ] },
+    { label: JOURNEY_STAGES[3], fields: [
+      { label: 'Issue Date', value: d.delivery.issueDate },
+      { label: 'Consignee', value: d.delivery.consignee },
+      { label: 'Expiry Date', value: d.delivery.expiryDate },
+    ] },
+    { label: JOURNEY_STAGES[4], fields: [
+      { label: 'Declaration Number', value: result.declarationNo },
+      { label: 'Submission Date', value: result.submissionDate },
+      { label: 'Clearance Date', value: result.clearanceDate },
+    ] },
+    { label: JOURNEY_STAGES[5], fields: [] },
+    { label: JOURNEY_STAGES[6], fields: [] },
+    { label: JOURNEY_STAGES[7], fields: [] },
+  ];
 
   return (
     <div className="fixed inset-0 z-50 bg-[#f8fafd] flex flex-col overflow-hidden">
@@ -89,44 +108,64 @@ export default function CargoTrackingDetailPage({ result, onBack, onBackToListin
               {result.status}
             </span>
           </div>
-          <div className="flex items-center gap-[20px] flex-wrap text-[14px] text-[#697498] mb-[14px]" style={{ fontFamily: font, paddingLeft: 58 }}>
+          <div className="flex items-center gap-[20px] flex-wrap text-[14px] text-[#697498]" style={{ fontFamily: font, paddingLeft: 58 }}>
             <span>Declaration: <b style={{ color: '#0e1b3d' }}>{result.declarationNo}</b></span>
             <span>Submitted: <b style={{ color: '#0e1b3d' }}>{result.submissionDate}</b></span>
             <span>Cleared: <b style={{ color: '#0e1b3d' }}>{result.clearanceDate}</b></span>
           </div>
-          <div className="flex items-center gap-[8px] pt-[14px]" style={{ borderTop: '1px solid #eef1f6' }}>
-            <span className="size-[8px] rounded-full flex-shrink-0" style={{ background: '#1360d2' }} />
-            <span className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>
-              Current stage: <b style={{ color: '#0e1b3d' }}>{JOURNEY_STAGES[d.currentStageIndex]}</b>
-            </span>
-          </div>
         </div>
 
-        <div className="mb-[24px]">
-          <ClaimStepper activeIndex={d.currentStageIndex} steps={JOURNEY_STEPS} />
-        </div>
+        {/* Cargo journey — vertical milestone tracker */}
+        <div className="bg-white rounded-[8px] p-[24px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+          <p className="text-[18px] text-[#0e1b3d] mb-[24px]" style={{ fontFamily: font, fontWeight: 700 }}>Cargo Journey</p>
 
-        {/* Detail sections */}
-        <div className="flex flex-col gap-[16px]">
-          <DetailCard number={1} title="Vessel Details" fields={[
-            { label: 'Rotation Number', value: d.vessel.rotationNumber },
-            { label: 'Expected Time Of Arrival', value: d.vessel.eta },
-            { label: 'Actual Time of Arrival', value: d.vessel.ata },
-          ]} />
-          <DetailCard number={2} title="Manifest Details" fields={[
-            { label: 'BOL Number', value: d.manifest.bolNumber },
-            { label: 'BOL Submission Agent', value: d.manifest.submissionAgent },
-            { label: 'BOL Submission Date', value: d.manifest.submissionDate },
-          ]} />
-          <DetailCard number={3} title="Discharge List Details" fields={[
-            { label: 'Container Category Status', value: d.discharge.containerCategoryStatus },
-            { label: 'No. Of Containers', value: d.discharge.noOfContainers },
-          ]} />
-          <DetailCard number={4} title="Delivery Order Details" fields={[
-            { label: 'Issue Date', value: d.delivery.issueDate },
-            { label: 'Consignee', value: d.delivery.consignee },
-            { label: 'Expiry Date', value: d.delivery.expiryDate },
-          ]} />
+          {stages.map((stage, i) => {
+            const done = i < d.currentStageIndex;
+            const current = i === d.currentStageIndex;
+            const isLast = i === stages.length - 1;
+            const nodeColor = done ? '#28a745' : current ? '#1360d2' : '#fff';
+            const ringColor = done ? '#28a745' : current ? '#1360d2' : '#d5ddfb';
+            const iconColor = done || current ? '#fff' : '#a1aebe';
+            const labelColor = done ? '#219653' : current ? '#1360d2' : '#8f94ae';
+
+            return (
+              <div key={stage.label} className="flex gap-[16px]">
+                {/* Node + connecting line */}
+                <div className="flex flex-col items-center flex-shrink-0">
+                  <div
+                    className="size-[36px] rounded-full flex items-center justify-center flex-shrink-0"
+                    style={{
+                      background: nodeColor,
+                      border: `2px solid ${ringColor}`,
+                      boxShadow: current ? '0 0 0 4px rgba(19,96,210,0.14)' : 'none',
+                    }}
+                  >
+                    {done ? <CheckIcon /> : STAGE_ICONS[i](iconColor)}
+                  </div>
+                  {!isLast && (
+                    <div className="flex-1 w-[2px] min-h-[28px]" style={{ background: done ? '#28a745' : '#e0e6f5' }} />
+                  )}
+                </div>
+
+                {/* Stage content */}
+                <div className={isLast ? 'flex-1 min-w-0' : 'flex-1 min-w-0 pb-[24px]'}>
+                  <div className="flex items-center gap-[10px] flex-wrap" style={{ paddingTop: 6, marginBottom: stage.fields.length ? 10 : 0 }}>
+                    <span className="text-[16px]" style={{ fontFamily: font, fontWeight: 700, color: labelColor }}>{stage.label}</span>
+                    {current && (
+                      <span className="px-[10px] py-[2px] rounded-[12px] text-[13px] font-medium" style={{ background: '#e2ebf9', color: '#1360d2', fontFamily: font }}>
+                        In Progress
+                      </span>
+                    )}
+                  </div>
+                  {stage.fields.length > 0 && (done || current) && (
+                    <div className="rounded-[6px] p-[14px] flex flex-col gap-[6px]" style={{ background: '#f8fafd', border: '1px solid #eef1f6', maxWidth: 620 }}>
+                      {stage.fields.map(f => <FieldRow key={f.label} label={f.label} value={f.value} />)}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
