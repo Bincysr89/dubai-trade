@@ -88,8 +88,8 @@ export default function CargoTrackingSearchPage({
         </p>
 
         {/* Search card */}
-        <div className="bg-white rounded-[8px] overflow-hidden mb-[24px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-          <div className="flex items-center gap-[8px] px-[24px] py-[16px]" style={{ borderBottom: '1px solid #eef1f6' }}>
+        <div className="bg-white rounded-[8px] mb-[24px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+          <div className="flex items-center gap-[8px] px-[24px] py-[16px] rounded-t-[8px]" style={{ borderBottom: '1px solid #eef1f6' }}>
             <svg width="16" height="16" viewBox="0 0 18 18" fill="none" style={{ color: '#1360d2' }}><path fillRule="evenodd" clipRule="evenodd" d="M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z" fill="currentColor" /></svg>
             <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 600 }}>Search Criteria</span>
           </div>
