@@ -4,7 +4,7 @@ import DTSelect from '../DTSelect';
 import StatusFilterHeader from '../StatusFilterHeader';
 import ManageColumnsModal, { type ColDef } from '../ManageColumnsModal';
 import { StatusAsOnBadge } from '../DatePicker';
-import DiscrepancyFeedbackModal from './DiscrepancyFeedbackModal';
+import DiscrepancyFeedbackFormPage from './DiscrepancyFeedbackFormPage';
 import {
   ROTATION_GROUPS, STATUS_COLORS, ATTRIBUTE_OPTIONS,
   type RotationGroup, type DiscrepancyRow, type DiscrepancyStatus, type ReconciliationType,
@@ -67,7 +67,7 @@ export default function DiscrepancyFeedbackListingPage({ onBack }: Props) {
   const [dateTo, setDateTo] = useState('2026-08-11');
   const [visibleCols, setVisibleCols] = useState<string[]>(ALL_COLUMNS.map(c => c.key));
   const [manageColsOpen, setManageColsOpen] = useState(false);
-  const [modal, setModal] = useState<{ mode: 'multi' | 'single'; rows: DiscrepancyRow[] } | null>(null);
+  const [feedbackTarget, setFeedbackTarget] = useState<{ mode: 'multi' | 'single'; rows: DiscrepancyRow[] } | null>(null);
 
   const orderedVisibleCols = ALL_COLUMNS.filter(c => visibleCols.includes(c.key));
 
@@ -132,6 +132,17 @@ export default function DiscrepancyFeedbackListingPage({ onBack }: Props) {
     })));
     setSelectedIds(new Set());
   };
+
+  if (feedbackTarget) {
+    return (
+      <DiscrepancyFeedbackFormPage
+        mode={feedbackTarget.mode}
+        rows={feedbackTarget.rows}
+        onBack={() => setFeedbackTarget(null)}
+        onSubmit={(rowIds, comment) => applyFeedback(rowIds, comment)}
+      />
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 bg-[#f8fafd] flex flex-col overflow-hidden">
@@ -198,7 +209,7 @@ export default function DiscrepancyFeedbackListingPage({ onBack }: Props) {
               </svg>
             </button>
             <button
-              onClick={() => selectedIds.size > 0 && setModal({ mode: 'multi', rows: selectedRows })}
+              onClick={() => selectedIds.size > 0 && setFeedbackTarget({ mode: 'multi', rows: selectedRows })}
               disabled={selectedIds.size === 0}
               className="h-[48px] px-[22px] rounded-[4px] text-[16px] text-white flex-shrink-0 transition-colors disabled:cursor-not-allowed"
               style={{ background: selectedIds.size > 0 ? '#1360d2' : '#a7c3eb', fontFamily: font, fontWeight: 500, boxShadow: selectedIds.size > 0 ? '0px 0px 8px 0px rgba(28,72,191,0.16)' : 'none' }}
@@ -369,7 +380,7 @@ export default function DiscrepancyFeedbackListingPage({ onBack }: Props) {
                               </td>
                               <td className="px-[12px] py-[12px] text-center">
                                 <button
-                                  onClick={() => setModal({ mode: 'single', rows: [r] })}
+                                  onClick={() => setFeedbackTarget({ mode: 'single', rows: [r] })}
                                   className="inline-flex items-center gap-[5px] text-[16px] text-[#1360d2] hover:underline whitespace-nowrap"
                                   style={{ fontFamily: font, fontWeight: 500 }}
                                 >
@@ -400,14 +411,6 @@ export default function DiscrepancyFeedbackListingPage({ onBack }: Props) {
         />
       )}
 
-      {modal && (
-        <DiscrepancyFeedbackModal
-          mode={modal.mode}
-          rows={modal.rows}
-          onClose={() => setModal(null)}
-          onSubmit={(rowIds, comment) => applyFeedback(rowIds, comment)}
-        />
-      )}
     </div>
   );
 }
