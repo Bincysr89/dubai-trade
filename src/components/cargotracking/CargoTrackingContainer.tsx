@@ -41,7 +41,7 @@ export default function CargoTrackingContainer({ onBack }: Props) {
   };
 
   if (selectedResult) {
-    return <CargoTrackingDetailPage result={selectedResult} onBack={() => setSelectedResult(null)} />;
+    return <CargoTrackingDetailPage result={selectedResult} onBack={() => setSelectedResult(null)} onBackToListing={onBack} />;
   }
 
   return (
