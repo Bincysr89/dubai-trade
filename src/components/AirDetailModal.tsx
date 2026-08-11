@@ -4,6 +4,8 @@ import Header from './Header';
 import planeIconSrc from '../assets/Plane (5).svg';
 import catalogueBg from '../assets/catalogue background.jpg';
 import CargoInformationPage from './CargoInformationPage';
+import DiscrepancyFeedbackListingPage from './discrepancy/DiscrepancyFeedbackListingPage';
+import CargoTrackingContainer from './cargotracking/CargoTrackingContainer';
 
 type Props = { onClose: () => void; onHome?: () => void };
 
@@ -24,6 +26,7 @@ const AIR_COLUMNS: { title: string; items: string[] }[] = [
     title: 'Cargo Clearance',
     items: [
       'Submit Cargo Information',
+      'Provide Discrepancy Feedback', 'Cargo Tracking',
       'Acknowledgement', 'Cargo Transfer Services', 'Claim Services',
       'DC - Inspection Services', 'DC - Letter & Certificates',
       'DC - Smart Workspace', 'DC-Courier Batch',
@@ -54,11 +57,13 @@ function Star({ filled }: { filled: boolean }) {
   );
 }
 
-type PageKey = 'cgi';
+type PageKey = 'cgi' | 'discrepancy' | 'tracking';
 const ITEM_PAGE_MAP: Record<string, PageKey> = {
   'Submit Cargo Information': 'cgi',
+  'Provide Discrepancy Feedback': 'discrepancy',
+  'Cargo Tracking': 'tracking',
 };
-const HIGHLIGHTED = new Set(['Submit Cargo Information']);
+const HIGHLIGHTED = new Set(['Submit Cargo Information', 'Provide Discrepancy Feedback', 'Cargo Tracking']);
 
 export default function AirDetailModal({ onClose, onHome }: Props) {
   const [search, setSearch] = useState('');
@@ -73,6 +78,12 @@ export default function AirDetailModal({ onClose, onHome }: Props) {
 
   if (activePage === 'cgi') {
     return <CargoInformationPage onBack={() => setActivePage(null)} onHome={onHome ?? onClose} />;
+  }
+  if (activePage === 'discrepancy') {
+    return <DiscrepancyFeedbackListingPage onBack={() => setActivePage(null)} />;
+  }
+  if (activePage === 'tracking') {
+    return <CargoTrackingContainer onBack={() => setActivePage(null)} />;
   }
 
   return (

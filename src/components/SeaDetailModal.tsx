@@ -16,8 +16,6 @@ import DCServiceChooserPage from './DCServiceChooserPage';
 import JoinClientAccreditationPage from './JoinClientAccreditationPage';
 import SubmitVoluntaryDisclosurePage from './SubmitVoluntaryDisclosurePage';
 import GoodsLandingCertPage from './GoodsLandingCertPage';
-import DiscrepancyFeedbackListingPage from './discrepancy/DiscrepancyFeedbackListingPage';
-import CargoTrackingContainer from './cargotracking/CargoTrackingContainer';
 
 type Props = { onClose: () => void };
 
@@ -100,8 +98,8 @@ const SEA_COLUMNS: { title: string; items: string[] }[] = [
       'Request Duty Account',
       'DC - landing Certificate', 'DC - Letter & Certificates', 'DM Permits',
       'DP World Work Permits', 'e-Certificates', 'IMDG NOC Management',
-      'Marine NOC', 'Master Declaration', 'Provide Discrepancy Feedback',
-      'Cargo Tracking', 'DC - Export Manifest', 'DC - Inspection Services',
+      'Marine NOC', 'Master Declaration', 'DC - Cargo Reconcilation',
+      'DC - Cargo Tracking', 'DC - Export Manifest', 'DC - Inspection Services',
       'DC - Smart Workspace', 'Declaration Services', 'Digital Certificate',
       'Cargo Transfer Services', 'M1- Bill Clearance', 'VCC Services',
     ],
@@ -292,9 +290,9 @@ const DCC_FILTER_FIELDS: AFFieldDef[] = [
   { key: 'dateTo',      label: 'Request Date To',   type: 'date' },
 ];
 
-type PageKey = 'glc' | 'jap' | 'cwl' | 'ctr' | 'rda' | 'pbf' | 'dcc' | 'discrepancy' | 'tracking';
+type PageKey = 'glc' | 'jap' | 'cwl' | 'ctr' | 'rda' | 'pbf' | 'dcc';
 
-const PAGE_CONFIGS: Record<Exclude<PageKey, 'pbf' | 'dcc' | 'ctr' | 'cwl' | 'discrepancy' | 'tracking'> | 'ctr' | 'cwl', {
+const PAGE_CONFIGS: Record<Exclude<PageKey, 'pbf' | 'dcc' | 'ctr' | 'cwl'> | 'ctr' | 'cwl', {
   title: string; breadcrumb: string; primaryLabel: string;
   searchLabel: string; searchPlaceholder: string; searchFields?: string[];
   advancedFilterFields?: AFFieldDef[];
@@ -358,8 +356,6 @@ const ITEM_PAGE_MAP: Record<string, PageKey> = {
   'Request Customs Transactions Report':  'ctr',
   'Request Duty Account':                 'rda',
   'DC - Service Request':                 'dcc',
-  'Provide Discrepancy Feedback':         'discrepancy',
-  'Cargo Tracking':                       'tracking',
 };
 /* ── Generic Form Configs ────────────────────────────────────────────────── */
 const CTR_CONFIG: GenericServiceConfig = {
@@ -540,12 +536,6 @@ export default function SeaDetailModal({ onClose }: Props) {
       />
     );
   }
-  if (activePage === 'discrepancy') {
-    return <DiscrepancyFeedbackListingPage onBack={() => setActivePage(null)} />;
-  }
-  if (activePage === 'tracking') {
-    return <CargoTrackingContainer onBack={() => setActivePage(null)} />;
-  }
   if (activePage) {
     const cfg = PAGE_CONFIGS[activePage as 'glc'];
     if (!cfg) return null;
@@ -712,8 +702,6 @@ export default function SeaDetailModal({ onClose }: Props) {
                         'Request Duty Account',
                         'Request Customs Warehouse License',
                         'DC - Service Request',
-                        'Provide Discrepancy Feedback',
-                        'Cargo Tracking',
                       ]);
                       const TALL_ITEMS = new Set([
                         'Request Goods Landing Certificate',
