@@ -1,6 +1,10 @@
-export type ReconciliationType = 'Import' | 'Export';
+export type ReconciliationType = 'loadList' | 'discharge';
 
-export type DiscrepancyStatus = 'Closed' | 'Submitted' | 'Info Requested' | 'Action Required';
+/** Per-row workflow state — shown in the "Action Status" column. */
+export type ActionStatus = 'Feedback Submitted' | 'Discrepancy Closed' | 'Additional Information Requested';
+
+/** System-level discrepancy state — Advance Filters "Discrepancy Status" only, not a column. */
+export type DiscrepancyStatus = 'Discrepancy Exists' | 'Discrepancy Exists - Escalated' | 'Discrepancy Ignored by Customs' | 'Discrepancy Resolved';
 
 export type CommentEntry = {
   createdBy: string;
@@ -12,13 +16,32 @@ export type DiscrepancyRow = {
   id: string;
   rotationNo: string;
   type: ReconciliationType;
-  dischargeListContainer: string;
-  inboundManifestContainer: string;
-  bolNo: string;
-  mrn: string;
+
+  // Load List - Export Manifest columns
+  loadedInfoContainerNo: string;
+  exportManifestContainerNo: string;
+  exportManifestBolNo: string;
+  discrepancyValueLoaded: string;
+  discrepancyValueManifest: string;
+
+  // Discharge List - Import Manifest columns
+  dischargeListContainerNo: string;
+  inboundManifestContainerNo: string;
+  inboundManifestBolNo: string;
+  inboundManifestMrn: string;
+  discrepancyDischargeList: string;
+  discrepancyInboundManifest: string;
+
+  // Shared
   attribute: string;
   description: string;
-  status: DiscrepancyStatus;
+  status: ActionStatus;
+
+  // Advance-filter-only fields (not rendered as table columns)
+  discrepancyType: string;
+  discrepancyStatus: DiscrepancyStatus;
+  discrepancyDate: string; // 'YYYY-MM-DD'
+
   conversation: CommentEntry[];
 };
 
@@ -28,159 +51,153 @@ export type RotationGroup = {
   rows: DiscrepancyRow[];
 };
 
-export const STATUS_COLORS: Record<DiscrepancyStatus, { bg: string; color: string }> = {
-  Closed:            { bg: 'rgba(40,167,69,0.10)',  color: '#28a745' },
-  Submitted:         { bg: 'rgba(19,96,210,0.10)',  color: '#1360d2' },
-  'Info Requested':  { bg: 'rgba(255,169,26,0.16)', color: '#b45309' },
-  'Action Required': { bg: 'rgba(220,53,69,0.12)',  color: '#dc3545' },
+export const ACTION_STATUS_COLORS: Record<ActionStatus, { bg: string; color: string }> = {
+  'Feedback Submitted':               { bg: 'rgba(19,96,210,0.10)',  color: '#1360d2' },
+  'Discrepancy Closed':               { bg: 'rgba(40,167,69,0.10)',  color: '#28a745' },
+  'Additional Information Requested': { bg: 'rgba(255,169,26,0.16)', color: '#b45309' },
 };
+
+export const LOAD_LIST_DISCREPANCY_TYPES = [
+  'Container not Found in Load List',
+  'Container not Found in Manifest',
+  'Discharge Port mismatch',
+  'LCL BOL Manifest Not Found against Stuffing Tally',
+  'Manifest Not Found against General Cargo Loaded',
+  'Manifested Cargo not found in General Cargo Loaded',
+  'No. Of Packages mismatch between LCL BOL & S.Tally',
+  'No. Of Packages mismatch for General Cargo',
+  'Stuffing Tally Not found for LCL Manifested Cargo',
+  'Weight Mismatch for General Cargo',
+];
+
+export const DISCHARGE_DISCREPANCY_TYPES = [
+  'Container category mismatch',
+  'Container Record Not Found in Discharge List',
+  'Container Record Not Found in Import Manifest',
+  'Discharge Port Mismatch',
+  'LCL Container - Only Single BOL Found',
+];
+
+export const DISCREPANCY_STATUS_OPTIONS: DiscrepancyStatus[] = [
+  'Discrepancy Exists',
+  'Discrepancy Exists - Escalated',
+  'Discrepancy Ignored by Customs',
+  'Discrepancy Resolved',
+];
 
 /* ── Mock rotation groups ─────────────────────────────────────────────── */
 let seq = 0;
 const nextId = () => `disc-${++seq}`;
 
-function row(partial: Omit<DiscrepancyRow, 'id'>): DiscrepancyRow {
-  return { id: nextId(), ...partial };
+function loadListRow(partial: {
+  rotationNo: string;
+  exportManifestContainerNo: string;
+  exportManifestBolNo: string;
+  status: ActionStatus;
+  discrepancyStatus: DiscrepancyStatus;
+  discrepancyDate: string;
+  conversation?: CommentEntry[];
+}): DiscrepancyRow {
+  return {
+    id: nextId(),
+    rotationNo: partial.rotationNo,
+    type: 'loadList',
+    loadedInfoContainerNo: '',
+    exportManifestContainerNo: partial.exportManifestContainerNo,
+    exportManifestBolNo: partial.exportManifestBolNo,
+    discrepancyValueLoaded: '',
+    discrepancyValueManifest: partial.exportManifestContainerNo,
+    dischargeListContainerNo: '', inboundManifestContainerNo: '', inboundManifestBolNo: '', inboundManifestMrn: '',
+    discrepancyDischargeList: '', discrepancyInboundManifest: '',
+    attribute: 'Container Number',
+    description: 'Container not Found in Load List',
+    status: partial.status,
+    discrepancyType: 'Container not Found in Load List',
+    discrepancyStatus: partial.discrepancyStatus,
+    discrepancyDate: partial.discrepancyDate,
+    conversation: partial.conversation ?? [],
+  };
+}
+
+function dischargeRow(partial: {
+  rotationNo: string;
+  dischargeListContainerNo: string;
+  inboundManifestContainerNo: string;
+  inboundManifestBolNo: string;
+  inboundManifestMrn: string;
+  description: string;
+  discrepancyType: string;
+  status: ActionStatus;
+  discrepancyStatus: DiscrepancyStatus;
+  discrepancyDate: string;
+  conversation?: CommentEntry[];
+}): DiscrepancyRow {
+  return {
+    id: nextId(),
+    rotationNo: partial.rotationNo,
+    type: 'discharge',
+    loadedInfoContainerNo: '', exportManifestContainerNo: '', exportManifestBolNo: '',
+    discrepancyValueLoaded: '', discrepancyValueManifest: '',
+    dischargeListContainerNo: partial.dischargeListContainerNo,
+    inboundManifestContainerNo: partial.inboundManifestContainerNo,
+    inboundManifestBolNo: partial.inboundManifestBolNo,
+    inboundManifestMrn: partial.inboundManifestMrn,
+    discrepancyDischargeList: partial.dischargeListContainerNo,
+    discrepancyInboundManifest: partial.inboundManifestContainerNo,
+    attribute: 'Container Number',
+    description: partial.description,
+    status: partial.status,
+    discrepancyType: partial.discrepancyType,
+    discrepancyStatus: partial.discrepancyStatus,
+    discrepancyDate: partial.discrepancyDate,
+    conversation: partial.conversation ?? [],
+  };
 }
 
 export const ROTATION_GROUPS: RotationGroup[] = [
   {
-    rotationNo: '900131',
-    type: 'Import',
+    rotationNo: '5289596',
+    type: 'loadList',
     rows: [
-      row({
-        rotationNo: '900131', type: 'Import',
-        dischargeListContainer: 'DLC9001311', inboundManifestContainer: 'MSCU7012341',
-        bolNo: 'BOL9001311', mrn: 'MRN90013101',
-        attribute: 'Container Number Mismatch',
-        description: 'Container number on discharge list does not match inbound manifest.',
-        status: 'Action Required', conversation: [],
-      }),
-      row({
-        rotationNo: '900131', type: 'Import',
-        dischargeListContainer: 'DLC9001312', inboundManifestContainer: 'MSCU7012342',
-        bolNo: 'BOL9001312', mrn: 'MRN90013102',
-        attribute: 'Weight Mismatch',
-        description: 'Gross weight declared exceeds manifest weight by 340 KG.',
-        status: 'Action Required', conversation: [],
-      }),
-      row({
-        rotationNo: '900131', type: 'Import',
-        dischargeListContainer: 'DLC9001313', inboundManifestContainer: 'MSCU7012343',
-        bolNo: 'BOL9001313', mrn: 'MRN90013103',
-        attribute: 'Package Count Discrepancy',
-        description: 'Package count on BOL (24) differs from discharge list (22).',
-        status: 'Info Requested',
-        conversation: [
-          { createdBy: 'CUSTOMS02', createdDate: '29/07/2026 10:05', comment: 'Please confirm the correct package count with the shipping line.' },
-        ],
-      }),
-      row({
-        rotationNo: '900131', type: 'Import',
-        dischargeListContainer: 'DLC9001314', inboundManifestContainer: 'MSCU7012344',
-        bolNo: 'BOL9001314', mrn: 'MRN90013104',
-        attribute: 'HS Code Mismatch',
-        description: 'HS code on declaration does not align with manifest description.',
-        status: 'Submitted',
-        conversation: [
-          { createdBy: 'AE-1019056', createdDate: '28/07/2026 15:42', comment: 'HS code corrected to 8471.30 as per commercial invoice.' },
-        ],
-      }),
-      row({
-        rotationNo: '900131', type: 'Import',
-        dischargeListContainer: 'DLC9001315', inboundManifestContainer: 'MSCU7012345',
-        bolNo: 'BOL9001315', mrn: 'MRN90013105',
-        attribute: 'Marks & Numbers Mismatch',
-        description: 'Shipping marks on packages do not match manifest description.',
-        status: 'Closed',
-        conversation: [
-          { createdBy: 'AE-1019056', createdDate: '25/07/2026 09:12', comment: 'Marks verified against packing list — matches manifest.' },
-          { createdBy: 'CUSTOMS01', createdDate: '25/07/2026 14:30', comment: 'Reviewed and closed. No further action required.' },
-        ],
-      }),
+      loadListRow({ rotationNo: '5289596', exportManifestContainerNo: 'MAEU405767', exportManifestBolNo: '910892340', status: 'Feedback Submitted', discrepancyStatus: 'Discrepancy Exists', discrepancyDate: '2026-07-20' }),
+      loadListRow({ rotationNo: '5289596', exportManifestContainerNo: 'MAEU421393', exportManifestBolNo: '910892344', status: 'Feedback Submitted', discrepancyStatus: 'Discrepancy Exists', discrepancyDate: '2026-07-20' }),
+      loadListRow({ rotationNo: '5289596', exportManifestContainerNo: 'MAEU421393', exportManifestBolNo: '910892342', status: 'Discrepancy Closed', discrepancyStatus: 'Discrepancy Resolved', discrepancyDate: '2026-07-18' }),
+      loadListRow({ rotationNo: '5289596', exportManifestContainerNo: 'MAEU421393', exportManifestBolNo: '910892343', status: 'Feedback Submitted', discrepancyStatus: 'Discrepancy Exists - Escalated', discrepancyDate: '2026-07-21' }),
+      loadListRow({ rotationNo: '5289596', exportManifestContainerNo: 'MAEU421393', exportManifestBolNo: '910892340', status: 'Additional Information Requested', discrepancyStatus: 'Discrepancy Exists', discrepancyDate: '2026-07-22',
+        conversation: [{ createdBy: 'CUSTOMS02', createdDate: '22/07/2026 10:05', comment: 'Please confirm the correct container number with the shipping line.' }] }),
+      loadListRow({ rotationNo: '5289596', exportManifestContainerNo: 'MAEU421393', exportManifestBolNo: '910892341', status: 'Discrepancy Closed', discrepancyStatus: 'Discrepancy Resolved', discrepancyDate: '2026-07-15' }),
+      loadListRow({ rotationNo: '5289596', exportManifestContainerNo: 'MAEU405767', exportManifestBolNo: '910892343', status: 'Feedback Submitted', discrepancyStatus: 'Discrepancy Exists', discrepancyDate: '2026-07-23' }),
+      loadListRow({ rotationNo: '5289596', exportManifestContainerNo: 'MAEU405767', exportManifestBolNo: '910892344', status: 'Discrepancy Ignored by Customs' as ActionStatus, discrepancyStatus: 'Discrepancy Ignored by Customs', discrepancyDate: '2026-07-16' }),
     ],
   },
   {
-    rotationNo: 'AF2026041',
-    type: 'Export',
+    rotationNo: 'LL-882134',
+    type: 'loadList',
     rows: [
-      row({
-        rotationNo: 'AF2026041', type: 'Export',
-        dischargeListContainer: '—', inboundManifestContainer: '—',
-        bolNo: 'AWB1760224410', mrn: 'MRNAF204101',
-        attribute: 'Weight Mismatch',
-        description: 'Weight listed on airway bill does not match export declaration.',
-        status: 'Action Required',
-        conversation: [
-          { createdBy: 'CUSTOMS01', createdDate: '31/07/2026 08:10', comment: 'Verify the weight listed on the airway bill.' },
-        ],
-      }),
+      loadListRow({ rotationNo: 'LL-882134', exportManifestContainerNo: 'TCLU998123', exportManifestBolNo: '820489001', status: 'Feedback Submitted', discrepancyStatus: 'Discrepancy Exists', discrepancyDate: '2026-07-10' }),
+      loadListRow({ rotationNo: 'LL-882134', exportManifestContainerNo: 'TCLU998124', exportManifestBolNo: '820489002', status: 'Discrepancy Closed', discrepancyStatus: 'Discrepancy Resolved', discrepancyDate: '2026-07-09' }),
     ],
   },
   {
-    rotationNo: 'SEA2026118',
-    type: 'Import',
+    rotationNo: '5289596',
+    type: 'discharge',
     rows: [
-      row({
-        rotationNo: 'SEA2026118', type: 'Import',
-        dischargeListContainer: 'DLC2026181', inboundManifestContainer: 'TCLU9981231',
-        bolNo: 'BOL2026181', mrn: 'MRNSEA26181',
-        attribute: 'Container Seal Mismatch',
-        description: 'Seal number on discharge list differs from inbound manifest record.',
-        status: 'Submitted',
-        conversation: [
-          { createdBy: 'AE-1019056', createdDate: '20/07/2026 11:00', comment: 'Seal number confirmed with shipping line — updating manifest.' },
-        ],
-      }),
-      row({
-        rotationNo: 'SEA2026118', type: 'Import',
-        dischargeListContainer: 'DLC2026182', inboundManifestContainer: 'TCLU9981232',
-        bolNo: 'BOL2026182', mrn: 'MRNSEA26182',
-        attribute: 'Package Count Discrepancy',
-        description: 'Discharge list shows 10 packages; manifest declares 12.',
-        status: 'Closed',
-        conversation: [
-          { createdBy: 'CUSTOMS02', createdDate: '18/07/2026 09:30', comment: 'Recount confirmed 12 packages. Closing discrepancy.' },
-        ],
-      }),
-      row({
-        rotationNo: 'SEA2026118', type: 'Import',
-        dischargeListContainer: 'DLC2026183', inboundManifestContainer: 'TCLU9981233',
-        bolNo: 'BOL2026183', mrn: 'MRNSEA26183',
-        attribute: 'HS Code Mismatch',
-        description: 'Declared HS code inconsistent with goods description on manifest.',
-        status: 'Info Requested', conversation: [],
-      }),
+      dischargeRow({ rotationNo: '5289596', dischargeListContainerNo: 'CONT69', inboundManifestContainerNo: '', inboundManifestBolNo: '', inboundManifestMrn: '', description: 'Container Record Not Found in Import Manifest', discrepancyType: 'Container Record Not Found in Import Manifest', status: 'Feedback Submitted', discrepancyStatus: 'Discrepancy Exists', discrepancyDate: '2026-07-20' }),
+      dischargeRow({ rotationNo: '5289596', dischargeListContainerNo: 'CONT38', inboundManifestContainerNo: '', inboundManifestBolNo: '', inboundManifestMrn: '', description: 'Container Record Not Found in Import Manifest', discrepancyType: 'Container Record Not Found in Import Manifest', status: 'Discrepancy Closed', discrepancyStatus: 'Discrepancy Resolved', discrepancyDate: '2026-07-14' }),
+      dischargeRow({ rotationNo: '5289596', dischargeListContainerNo: 'CONT26', inboundManifestContainerNo: '', inboundManifestBolNo: '', inboundManifestMrn: '', description: 'Container Record Not Found in Import Manifest', discrepancyType: 'Container Record Not Found in Import Manifest', status: 'Discrepancy Closed', discrepancyStatus: 'Discrepancy Resolved', discrepancyDate: '2026-07-13' }),
+      dischargeRow({ rotationNo: '5289596', dischargeListContainerNo: 'CONT65', inboundManifestContainerNo: '', inboundManifestBolNo: '', inboundManifestMrn: '', description: 'Container Record Not Found in Import Manifest', discrepancyType: 'Container Record Not Found in Import Manifest', status: 'Feedback Submitted', discrepancyStatus: 'Discrepancy Exists', discrepancyDate: '2026-07-21' }),
+      dischargeRow({ rotationNo: '5289596', dischargeListContainerNo: 'CONT66', inboundManifestContainerNo: '', inboundManifestBolNo: '', inboundManifestMrn: '', description: 'Container Record Not Found in Import Manifest', discrepancyType: 'Container Record Not Found in Import Manifest', status: 'Feedback Submitted', discrepancyStatus: 'Discrepancy Exists - Escalated', discrepancyDate: '2026-07-22' }),
+      dischargeRow({ rotationNo: '5289596', dischargeListContainerNo: '', inboundManifestContainerNo: 'CONT800056', inboundManifestBolNo: 'BOL04274031741010050', inboundManifestMrn: '04274031', description: 'Container Record Not Found in Discharge List', discrepancyType: 'Container Record Not Found in Discharge List', status: 'Additional Information Requested', discrepancyStatus: 'Discrepancy Exists', discrepancyDate: '2026-07-23',
+        conversation: [{ createdBy: 'CUSTOMS01', createdDate: '23/07/2026 09:12', comment: 'Please provide the discharge list entry for this container.' }] }),
+      dischargeRow({ rotationNo: '5289596', dischargeListContainerNo: 'CONT70', inboundManifestContainerNo: '', inboundManifestBolNo: '', inboundManifestMrn: '', description: 'Container Record Not Found in Import Manifest', discrepancyType: 'Container Record Not Found in Import Manifest', status: 'Feedback Submitted', discrepancyStatus: 'Discrepancy Exists', discrepancyDate: '2026-07-24' }),
     ],
   },
   {
-    rotationNo: 'DXB0092',
-    type: 'Export',
+    rotationNo: 'DL-990211',
+    type: 'discharge',
     rows: [
-      row({
-        rotationNo: 'DXB0092', type: 'Export',
-        dischargeListContainer: '—', inboundManifestContainer: '—',
-        bolNo: 'BOLDXB00921', mrn: 'MRNDXB00921',
-        attribute: 'Consignee Details Mismatch',
-        description: 'Consignee name on export declaration differs from bill of lading.',
-        status: 'Info Requested',
-        conversation: [
-          { createdBy: 'CUSTOMS01', createdDate: '15/07/2026 13:20', comment: 'Please provide amended bill of lading with corrected consignee name.' },
-        ],
-      }),
-      row({
-        rotationNo: 'DXB0092', type: 'Export',
-        dischargeListContainer: '—', inboundManifestContainer: '—',
-        bolNo: 'BOLDXB00922', mrn: 'MRNDXB00922',
-        attribute: 'Package Count Discrepancy',
-        description: 'Package count on export declaration exceeds BOL by 3 units.',
-        status: 'Submitted',
-        conversation: [
-          { createdBy: 'AE-1019056', createdDate: '14/07/2026 16:05', comment: 'Corrected package count submitted for review.' },
-        ],
-      }),
+      dischargeRow({ rotationNo: 'DL-990211', dischargeListContainerNo: 'CONT91', inboundManifestContainerNo: '', inboundManifestBolNo: '', inboundManifestMrn: '', description: 'Container category mismatch', discrepancyType: 'Container category mismatch', status: 'Feedback Submitted', discrepancyStatus: 'Discrepancy Exists', discrepancyDate: '2026-07-11' }),
+      dischargeRow({ rotationNo: 'DL-990211', dischargeListContainerNo: 'CONT92', inboundManifestContainerNo: '', inboundManifestBolNo: '', inboundManifestMrn: '', description: 'Discharge Port Mismatch', discrepancyType: 'Discharge Port Mismatch', status: 'Discrepancy Closed', discrepancyStatus: 'Discrepancy Resolved', discrepancyDate: '2026-07-10' }),
     ],
   },
 ];
-
-export const ATTRIBUTE_OPTIONS = Array.from(new Set(ROTATION_GROUPS.flatMap(g => g.rows.map(r => r.attribute))));

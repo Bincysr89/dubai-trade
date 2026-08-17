@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import Header from '../Header';
 import BackToListingBar from '../BackToListingBar';
 import { JOURNEY_STAGES, type CargoSearchResult } from './cargoTrackingData';
@@ -15,10 +16,6 @@ type Props = {
   onBackToListing: () => void;
 };
 
-const CheckIcon = () => (
-  <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M4 10l4 4 8-8" /></svg>
-);
-
 /* ── Milestone icons — one per journey stage, shown inside the timeline node ── */
 const STAGE_ICONS: ((color: string) => React.ReactNode)[] = [
   c => <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 17l1.5-4h15L21 17M6 13V8h12v5M12 3v5" /></svg>,
@@ -31,11 +28,11 @@ const STAGE_ICONS: ((color: string) => React.ReactNode)[] = [
   c => <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-1.5z" /></svg>,
 ];
 
-function FieldRow({ label, value }: { label: string; value: string }) {
+function FieldStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center gap-[6px] flex-wrap">
-      <span className="text-[14px] text-[#697498] whitespace-nowrap" style={{ fontFamily: font }}>{label} :</span>
-      <span className="text-[15px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 600 }}>{value}</span>
+    <div className="flex flex-col gap-[4px]">
+      <span className="text-[13px] text-[#8f94ae] whitespace-nowrap" style={{ fontFamily: font }}>{label}</span>
+      <span className="text-[15px] text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: font, fontWeight: 600 }}>{value}</span>
     </div>
   );
 }
@@ -43,8 +40,9 @@ function FieldRow({ label, value }: { label: string; value: string }) {
 export default function CargoTrackingDetailPage({ result, onBack, onBackToListing }: Props) {
   const st = STATUS_STYLE[result.status];
   const d = result.detail;
+  const [containersOpen, setContainersOpen] = useState(false);
 
-  const stages: { label: string; fields: { label: string; value: string }[] }[] = [
+  const stages: { label: string; fields: { label: string; value: string }[]; containers?: { containerNo: string; releasedDate: string }[] }[] = [
     { label: JOURNEY_STAGES[0], fields: [
       { label: 'Rotation Number', value: d.vessel.rotationNumber },
       { label: 'Expected Time Of Arrival', value: d.vessel.eta },
@@ -69,9 +67,19 @@ export default function CargoTrackingDetailPage({ result, onBack, onBackToListin
       { label: 'Submission Date', value: result.submissionDate },
       { label: 'Clearance Date', value: result.clearanceDate },
     ] },
-    { label: JOURNEY_STAGES[5], fields: [] },
-    { label: JOURNEY_STAGES[6], fields: [] },
-    { label: JOURNEY_STAGES[7], fields: [] },
+    { label: JOURNEY_STAGES[5], fields: [
+      { label: 'Booking Date', value: d.inspectionBooking.bookingDate },
+      { label: 'Booking Status', value: d.inspectionBooking.bookingStatus },
+    ] },
+    { label: JOURNEY_STAGES[6], fields: [
+      { label: 'Cargo Released', value: d.cargoRelease.released },
+      { label: 'Last Release Date', value: d.cargoRelease.lastReleaseDate },
+    ], containers: d.cargoRelease.containers },
+    { label: JOURNEY_STAGES[7], fields: [
+      { label: 'Inspection Status', value: d.inspectionResult.inspectionStatus },
+      { label: 'Inspection Approval Date', value: d.inspectionResult.approvalDate },
+      { label: 'Declaration Status', value: result.status },
+    ] },
   ];
 
   return (
@@ -140,7 +148,7 @@ export default function CargoTrackingDetailPage({ result, onBack, onBackToListin
                       boxShadow: current ? '0 0 0 4px rgba(19,96,210,0.14)' : 'none',
                     }}
                   >
-                    {done ? <CheckIcon /> : STAGE_ICONS[i](iconColor)}
+                    {STAGE_ICONS[i](iconColor)}
                   </div>
                   {!isLast && (
                     <div className="flex-1 w-[2px] min-h-[28px]" style={{ background: done ? '#28a745' : '#e0e6f5' }} />
@@ -158,8 +166,50 @@ export default function CargoTrackingDetailPage({ result, onBack, onBackToListin
                     )}
                   </div>
                   {stage.fields.length > 0 && (done || current) && (
-                    <div className="rounded-[6px] p-[14px] flex flex-col gap-[6px]" style={{ background: '#f8fafd', border: '1px solid #eef1f6', maxWidth: 620 }}>
-                      {stage.fields.map(f => <FieldRow key={f.label} label={f.label} value={f.value} />)}
+                    <div className="rounded-[6px] p-[14px]" style={{ background: '#f8fafd', border: '1px solid #eef1f6' }}>
+                      <div className="flex flex-wrap gap-x-[36px] gap-y-[12px]">
+                        {stage.fields.map(f => <FieldStat key={f.label} label={f.label} value={f.value} />)}
+                      </div>
+
+                      {stage.containers && stage.containers.length > 0 && (
+                        <div className="mt-[14px] pt-[12px]" style={{ borderTop: '1px solid #eef1f6' }}>
+                          <button
+                            type="button"
+                            onClick={() => setContainersOpen(v => !v)}
+                            className="inline-flex items-center gap-[6px] text-[14px] hover:underline"
+                            style={{ fontFamily: font, fontWeight: 500, color: '#1360d2' }}
+                          >
+                            List of containers released
+                            <svg
+                              viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="#1360d2" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"
+                              style={{ transform: containersOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}
+                            >
+                              <path d="M5 7.5l5 5 5-5" />
+                            </svg>
+                          </button>
+
+                          {containersOpen && (
+                            <div className="mt-[10px] rounded-[6px] overflow-hidden bg-white" style={{ border: '1px solid #eef1f6', maxWidth: 480 }}>
+                              <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: font }}>
+                                <thead>
+                                  <tr style={{ background: '#a6c2e9' }}>
+                                    <th className="text-left px-[14px] py-[9px] text-[14px] text-[#051937]" style={{ fontWeight: 500 }}>Container Number</th>
+                                    <th className="text-left px-[14px] py-[9px] text-[14px] text-[#051937]" style={{ fontWeight: 500 }}>Released Date</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {stage.containers.map(c => (
+                                    <tr key={c.containerNo} style={{ borderTop: '1px solid #f0f4ff' }}>
+                                      <td className="px-[14px] py-[9px] text-[14px] text-[#0e1b3d]">{c.containerNo}</td>
+                                      <td className="px-[14px] py-[9px] text-[14px] text-[#0e1b3d]">{c.releasedDate}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

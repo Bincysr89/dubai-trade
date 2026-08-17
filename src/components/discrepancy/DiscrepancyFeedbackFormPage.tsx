@@ -9,116 +9,159 @@ const MAX_ATTACHMENTS = 15;
 const MAX_SIZE_BYTES = 1024 * 1024; // 1 MB
 const ALLOWED_EXT = ['txt', 'png', 'pptx', 'doc', 'docx', 'xls', 'jpg', 'ppt', 'bmp', 'pdf', 'xlsx'];
 
-type Attachment = { id: string; name: string; sizeKb: string };
+type Attachment = { id: string; name: string; sizeKb: string; uploadedOn: string };
 
 function extOf(name: string) {
   return name.split('.').pop()?.toLowerCase() ?? '';
 }
 
-/* ── Attachment uploader ─────────────────────────────────────────────── */
-function AttachmentUploader({ attachments, onAdd, onRemove }: {
+const CloudUploadIcon = () => (
+  <svg viewBox="0 0 32 32" width="28" height="28" fill="none" stroke="#1360d2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M16 20v-8M12 16l4-4 4 4" />
+    <path d="M8 24a6 6 0 0 1-2-11.6A8 8 0 0 1 22 8a6 6 0 0 1 2 11.6" />
+  </svg>
+);
+const DownloadIcon = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#1360d2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v12M7 10l5 5 5-5" /><path d="M4 17v3h16v-3" /></svg>
+);
+const DeleteIcon = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#dc3545" strokeWidth="2" strokeLinecap="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" /></svg>
+);
+
+/* ── Attachments — drag-and-drop zone (left) + rules panel (right) + uploaded-files table ── */
+function AttachmentsSection({ attachments, onAdd, onRemove }: {
   attachments: Attachment[];
   onAdd: (a: Attachment) => void;
   onRemove: (id: string) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [pending, setPending] = useState<File | null>(null);
+  const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState('');
 
-  const handlePick = (file: File | undefined) => {
+  const tryAdd = (file: File | undefined) => {
     setError('');
-    if (!file) { setPending(null); return; }
+    if (!file) return;
     if (!ALLOWED_EXT.includes(extOf(file.name))) {
       setError(`File type not allowed. Allowed types: ${ALLOWED_EXT.join(' / ')}`);
-      setPending(null);
       return;
     }
     if (file.size > MAX_SIZE_BYTES) {
       setError('File exceeds the maximum size of 1 MB.');
-      setPending(null);
       return;
     }
-    setPending(file);
-  };
-
-  const handleUpload = () => {
-    if (!pending) return;
     if (attachments.length >= MAX_ATTACHMENTS) {
       setError(`Maximum of ${MAX_ATTACHMENTS} attachments allowed.`);
       return;
     }
-    onAdd({ id: `att-${Date.now()}-${attachments.length}`, name: pending.name, sizeKb: (pending.size / 1024).toFixed(1) });
-    setPending(null);
+    const now = new Date();
+    const p2 = (n: number) => String(n).padStart(2, '0');
+    onAdd({
+      id: `att-${Date.now()}-${attachments.length}`,
+      name: file.name,
+      sizeKb: (file.size / 1024).toFixed(1),
+      uploadedOn: `${p2(now.getDate())}/${p2(now.getMonth() + 1)}/${now.getFullYear()}`,
+    });
     if (inputRef.current) inputRef.current.value = '';
   };
 
   return (
-    <div className="flex flex-col gap-[12px]">
-      <div className="rounded-[8px] px-[18px] py-[14px]" style={{ background: '#e2ebf9', border: '1px solid #c7d9f7' }}>
-        <p className="text-[14px] text-[#1360d2] mb-[6px]" style={{ fontFamily: font, fontWeight: 600 }}>Information:</p>
-        <ul className="text-[14px] text-[#455174] flex flex-col gap-[3px]" style={{ fontFamily: font }}>
-          <li>• Allowed Attachment Type : <b style={{ color: '#0e1b3d' }}>{ALLOWED_EXT.join(' / ')}</b></li>
-          <li>• Maximum size of each attachment : <b style={{ color: '#0e1b3d' }}>1 MB</b></li>
-          <li>• No. of Attachments allowed : <b style={{ color: '#0e1b3d' }}>{MAX_ATTACHMENTS}</b></li>
-          <li>• No. of Attachments : <b style={{ color: '#0e1b3d' }}>{attachments.length}</b></li>
-        </ul>
-      </div>
+    <div className="flex flex-col gap-[16px]">
+      {/* Upload File card — full width; only the dropzone itself is constrained */}
+      <div className="bg-white rounded-[8px] px-[24px] py-[22px] flex flex-col gap-[16px] w-full" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.10)' }}>
+        <p className="text-[18px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 500 }}>Upload File</p>
 
-      <div className="flex items-center gap-[10px] flex-wrap">
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          disabled={attachments.length >= MAX_ATTACHMENTS}
-          className="h-[44px] px-[18px] rounded-[4px] text-[16px] border transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{ fontFamily: font, borderColor: '#0e1b3d', color: '#0e1b3d', background: '#fff' }}
-        >
-          Choose File
-        </button>
-        <input ref={inputRef} type="file" className="hidden" onChange={e => handlePick(e.target.files?.[0])} />
-        <span className="text-[14px] text-[#697498] flex-1 min-w-[120px] truncate" style={{ fontFamily: font }}>
-          {pending ? pending.name : 'No file chosen'}
-        </span>
-        <button
-          type="button"
-          onClick={handleUpload}
-          disabled={!pending}
-          className="h-[44px] px-[20px] rounded-[4px] text-[16px] text-white inline-flex items-center gap-[6px] transition-colors disabled:cursor-not-allowed"
-          style={{ fontFamily: font, fontWeight: 500, background: pending ? '#0e1b3d' : '#a7b0c4' }}
-        >
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M12 3v12M7 8l5-5 5 5" strokeLinecap="round" strokeLinejoin="round" /><path d="M4 17v3h16v-3" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          Upload
-        </button>
-      </div>
-
-      {error && <p className="text-[14px] text-[#dc3545]" style={{ fontFamily: font }}>{error}</p>}
-
-      {attachments.length > 0 && (
-        <div className="rounded-[6px] overflow-hidden" style={{ border: '1px solid #eef1f6' }}>
-          {attachments.map(a => (
-            <div key={a.id} className="flex items-center justify-between px-[14px] py-[10px]" style={{ borderTop: '1px solid #f0f4ff' }}>
-              <span className="text-[16px] text-[#0e1b3d] truncate" style={{ fontFamily: font }}>{a.name} <span className="text-[#8f94ae]">({a.sizeKb} KB)</span></span>
-              <button type="button" onClick={() => onRemove(a.id)} className="text-[#c0392b] hover:opacity-70 flex-shrink-0 ml-[10px]">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" strokeLinecap="round" strokeLinejoin="round" /></svg>
-              </button>
-            </div>
-          ))}
+        {/* Information — blue notice box, same convention as the rest of the app */}
+        <div className="flex items-start gap-[10px] rounded-[6px] px-[14px] py-[10px]" style={{ background: '#e2ebf9', border: '1px solid #d5ddfb' }}>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#1360d2" strokeWidth="2" className="flex-shrink-0 mt-[2px]"><circle cx="12" cy="12" r="9" /><path d="M12 8h.01M11 12h1v4h1" strokeLinecap="round" /></svg>
+          <div className="flex flex-col gap-[2px]">
+            <p className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>Allowed Attachment Type : <b>{ALLOWED_EXT.join(' / ')}</b></p>
+            <p className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>Maximum size of each attachment : <b>1 MB</b></p>
+            <p className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>No. of Attachments allowed : <b>{MAX_ATTACHMENTS}</b></p>
+            <p className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>No. of Attachments : <b>{attachments.length}</b></p>
+          </div>
         </div>
-      )}
+
+        <div
+          onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={e => { e.preventDefault(); setDragOver(false); tryAdd(e.dataTransfer.files?.[0]); }}
+          className="flex flex-col items-center justify-center gap-[10px] rounded-[8px] py-[32px] px-[16px] w-full lg:w-1/2 transition-colors"
+          style={{ border: `1.5px dashed ${dragOver ? '#1360d2' : '#b5c8e8'}`, background: dragOver ? '#eef4ff' : '#f8fafd' }}
+        >
+          <div className="size-[52px] rounded-full inline-flex items-center justify-center" style={{ background: '#e2ebf9' }}>
+            <CloudUploadIcon />
+          </div>
+          <p className="text-[16px] text-[#697498] text-center" style={{ fontFamily: font }}>Drag and drop or</p>
+          <button type="button" onClick={() => inputRef.current?.click()} disabled={attachments.length >= MAX_ATTACHMENTS}
+            className="h-[44px] px-[20px] rounded-[4px] text-[16px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ border: '1.5px solid #1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500, background: '#fff' }}>
+            Choose File
+          </button>
+          <input ref={inputRef} type="file" className="hidden" onChange={e => tryAdd(e.target.files?.[0])} />
+        </div>
+        {error && <p className="text-[14px] text-[#dc3545]" style={{ fontFamily: font }}>{error}</p>}
+      </div>
+
+      {/* Attachments table */}
+      <div className="bg-white rounded-[8px] px-[14px] pt-[20px] pb-[16px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.10)' }}>
+        <p className="text-[18px] text-[#051937] mb-[14px] px-[6px]" style={{ fontFamily: font, fontWeight: 500 }}>Attachments</p>
+        {attachments.length === 0 ? (
+          <p className="text-[16px] text-[#8f94ae] text-center py-[24px]" style={{ fontFamily: font }}>No attachments added yet.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontFamily: font }}>
+              <thead>
+                <tr>
+                  <th style={{ width: 50, background: '#a6c2e9', padding: '10px 8px', borderRadius: '8px 0 0 0' }} />
+                  <th style={{ background: '#a6c2e9', padding: '10px 8px', textAlign: 'left' }}><span className="text-[16px] text-[#051937]" style={{ fontWeight: 500 }}>Document Name</span></th>
+                  <th style={{ width: 140, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left' }}><span className="text-[16px] text-[#051937]" style={{ fontWeight: 500 }}>Size</span></th>
+                  <th style={{ width: 160, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left' }}><span className="text-[16px] text-[#051937]" style={{ fontWeight: 500 }}>Uploaded On</span></th>
+                  <th style={{ width: 110, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', borderRadius: '0 8px 0 0' }}><span className="text-[16px] text-[#051937]" style={{ fontWeight: 500 }}>Action</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                {attachments.map((a, i) => (
+                  <tr key={a.id} style={{ borderTop: '1px solid #f0f4ff' }}>
+                    <td style={{ padding: '14px 8px', textAlign: 'center' }}><span className="text-[16px] text-[#051937]">{i + 1}</span></td>
+                    <td style={{ padding: '14px 8px' }}><span className="text-[16px] text-[#051937] truncate" style={{ display: 'block', maxWidth: 320 }}>{a.name}</span></td>
+                    <td style={{ padding: '14px 8px' }}><span className="text-[16px] text-[#051937]">{a.sizeKb} KB</span></td>
+                    <td style={{ padding: '14px 8px' }}><span className="text-[16px] text-[#051937]">{a.uploadedOn}</span></td>
+                    <td style={{ padding: '14px 8px' }}>
+                      <div className="flex items-center gap-[14px]">
+                        <button type="button" onClick={() => onRemove(a.id)} className="hover:opacity-70 transition-opacity" aria-label="Delete"><DeleteIcon /></button>
+                        <button type="button" className="hover:opacity-70 transition-opacity" aria-label="Download"><DownloadIcon /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-/* ── Discrepancy details compact table ───────────────────────────────── */
+/* ── Discrepancy details compact table — columns depend on the row type ── */
 function DetailsTable({ rows }: { rows: DiscrepancyRow[] }) {
-  const cols = [
+  const isDischarge = rows[0]?.type === 'discharge';
+  const cols = isDischarge ? ([
     { key: 'rotationNo', label: 'Rotation No.' },
-    { key: 'dischargeListContainer', label: 'Discharge List Container No.' },
-    { key: 'inboundManifestContainer', label: 'Inbound Manifest Container No.' },
-    { key: 'bolNo', label: 'Inbound Manifest BOL No.' },
-    { key: 'mrn', label: 'Inbound Manifest MRN' },
+    { key: 'dischargeListContainerNo', label: 'Discharge List Container No.' },
+    { key: 'inboundManifestContainerNo', label: 'Inbound Manifest Container No.' },
+    { key: 'inboundManifestBolNo', label: 'Inbound Manifest BOL No.' },
+    { key: 'inboundManifestMrn', label: 'Inbound Manifest MRN' },
     { key: 'attribute', label: 'Discrepancy Attribute' },
-    { key: 'description', label: 'Discrepancy Value/Details' },
-  ] as const;
+    { key: 'description', label: 'Discrepancy Description' },
+  ] as const) : ([
+    { key: 'rotationNo', label: 'Rotation No.' },
+    { key: 'loadedInfoContainerNo', label: 'Loaded Information Container No.' },
+    { key: 'exportManifestContainerNo', label: 'Export Manifest Container No.' },
+    { key: 'exportManifestBolNo', label: 'Export Manifest BOL No.' },
+    { key: 'attribute', label: 'Discrepancy Attribute' },
+    { key: 'description', label: 'Discrepancy Description' },
+  ] as const);
 
   return (
     <div className="rounded-[6px] overflow-x-auto" style={{ border: '1px solid #eef1f6' }}>
@@ -137,7 +180,7 @@ function DetailsTable({ rows }: { rows: DiscrepancyRow[] }) {
             <tr key={r.id} style={{ borderTop: '1px solid #f0f4ff' }}>
               {cols.map(c => (
                 <td key={c.key} className="px-[14px] py-[10px] text-[16px] text-[#0e1b3d]" style={{ maxWidth: c.key === 'description' ? 260 : undefined, whiteSpace: c.key === 'description' ? 'normal' : 'nowrap' }}>
-                  {r[c.key as keyof DiscrepancyRow] as string}
+                  {(r[c.key as keyof DiscrepancyRow] as string) || '—'}
                 </td>
               ))}
             </tr>
@@ -276,16 +319,11 @@ export default function DiscrepancyFeedbackFormPage({ mode, rows, onBack, onSubm
               </span>
             </div>
 
-            <div className="bg-white rounded-[8px] p-[20px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.10)' }}>
-              <p className="text-[16px] text-[#0e1b3d] mb-[12px]" style={{ fontFamily: font, fontWeight: 700, letterSpacing: '0.3px' }}>
-                ADD ATTACHMENTS
-              </p>
-              <AttachmentUploader
-                attachments={attachments}
-                onAdd={a => setAttachments(p => [...p, a])}
-                onRemove={id => setAttachments(p => p.filter(a => a.id !== id))}
-              />
-            </div>
+            <AttachmentsSection
+              attachments={attachments}
+              onAdd={a => setAttachments(p => [...p, a])}
+              onRemove={id => setAttachments(p => p.filter(a => a.id !== id))}
+            />
           </div>
         )}
       </div>

@@ -18,6 +18,9 @@ export type CargoDetail = {
   manifest: { bolNumber: string; submissionAgent: string; submissionDate: string };
   discharge: { containerCategoryStatus: string; noOfContainers: string };
   delivery: { issueDate: string; consignee: string; expiryDate: string };
+  inspectionBooking: { bookingDate: string; bookingStatus: string };
+  cargoRelease: { released: string; lastReleaseDate: string; containers: { containerNo: string; releasedDate: string }[] };
+  inspectionResult: { inspectionStatus: string; approvalDate: string };
   currentStageIndex: number;
 };
 
@@ -48,7 +51,14 @@ const RESULT_A: CargoSearchResult = {
     manifest: { bolNumber: 'MSC2026DXB008', submissionAgent: 'AE-1032210 (MSC GULF FZE...)', submissionDate: '22/04/26 07:10' },
     discharge: { containerCategoryStatus: 'FCL CONTAINER', noOfContainers: '3' },
     delivery: { issueDate: '22/04/26 12:00', consignee: 'AE-1041233 (GULF TRADING CO...)', expiryDate: '22/06/26 00:00' },
-    currentStageIndex: 4,
+    inspectionBooking: { bookingDate: '23/04/26 09:53', bookingStatus: 'Booking Complete' },
+    cargoRelease: { released: '3 of 3 Containers', lastReleaseDate: '23/04/26 14:02', containers: [
+      { containerNo: 'MSCU4051767', releasedDate: '23/04/2026' },
+      { containerNo: 'MSCU4213930', releasedDate: '23/04/2026' },
+      { containerNo: 'MSCU4213931', releasedDate: '23/04/2026' },
+    ] },
+    inspectionResult: { inspectionStatus: 'Complete', approvalDate: '23/04/26 15:10' },
+    currentStageIndex: 8,
   },
 };
 
@@ -68,7 +78,12 @@ const RESULT_B1: CargoSearchResult = {
     manifest: { bolNumber: 'NAV9100030225', submissionAgent: 'AE-1051144 (XCRN BUSINESS...)', submissionDate: '10/06/21 18:17' },
     discharge: { containerCategoryStatus: 'FCL CONTAINER', noOfContainers: '1' },
     delivery: { issueDate: '08/06/21 14:04', consignee: 'AE-1026467 (ALOKOZAY GENE...)', expiryDate: '15/07/25 00:00' },
-    currentStageIndex: 4,
+    inspectionBooking: { bookingDate: '22/06/21 09:53', bookingStatus: 'Booking Complete' },
+    cargoRelease: { released: '1 of 1 Container', lastReleaseDate: '23/06/21 14:02', containers: [
+      { containerNo: 'NAVU9100322', releasedDate: '23/06/2021' },
+    ] },
+    inspectionResult: { inspectionStatus: 'Complete', approvalDate: '24/06/21 09:02' },
+    currentStageIndex: 8,
   },
 };
 
@@ -86,6 +101,9 @@ const RESULT_B2: CargoSearchResult = {
     manifest: { bolNumber: 'NAV9100030225', submissionAgent: 'AE-1051144 (XCRN BUSINESS...)', submissionDate: '11/06/21 09:00' },
     discharge: { containerCategoryStatus: 'LCL CONTAINER', noOfContainers: '2' },
     delivery: { issueDate: '—', consignee: '—', expiryDate: '—' },
+    inspectionBooking: { bookingDate: '—', bookingStatus: '—' },
+    cargoRelease: { released: '—', lastReleaseDate: '—', containers: [] },
+    inspectionResult: { inspectionStatus: '—', approvalDate: '—' },
     currentStageIndex: 1,
   },
 };

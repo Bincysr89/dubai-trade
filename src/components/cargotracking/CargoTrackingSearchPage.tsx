@@ -1,8 +1,6 @@
 import Header from '../Header';
 import DTSelect from '../DTSelect';
 import FloatingField from '../FloatingField';
-import iconSea from '../../assets/icon-sea.svg';
-import iconAir from '../../assets/icon-air.svg';
 import type { Channel, Movement, CargoSearchResult } from './cargoTrackingData';
 
 const font = "'Dubai', sans-serif";
@@ -34,25 +32,6 @@ type Props = {
   onReset: () => void;
   onViewCargoStatus: (result: CargoSearchResult) => void;
 };
-
-function PillButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="h-[56px] flex-1 flex items-center justify-center gap-[8px] rounded-[4px] border text-[16px] transition-colors"
-      style={{
-        fontFamily: font,
-        borderColor: active ? '#1360d2' : '#d5ddfb',
-        background: active ? '#e2ebf9' : '#fff',
-        color: active ? '#1360d2' : '#0e1b3d',
-        fontWeight: active ? 500 : 400,
-      }}
-    >
-      {children}
-    </button>
-  );
-}
 
 const SearchIcon = () => (
   <svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path fillRule="evenodd" clipRule="evenodd" d="M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z" fill="currentColor" /></svg>
@@ -135,44 +114,38 @@ export default function CargoTrackingSearchPage({
             </div>
           ) : (
             <div className="flex flex-col gap-[20px]">
-              <div className="max-w-[320px]">
-                <DTSelect
-                  label="Search By"
-                  value={searchBy}
-                  onChange={v => setSearchBy(v as SearchBy)}
-                  options={[{ value: 'declaration', label: 'Declaration No.' }, { value: 'bolAwb', label: 'BOL / AWB No.' }]}
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
-                <div>
-                  <p className="text-[14px] text-[#455174] mb-[8px]" style={{ fontFamily: font, fontWeight: 500 }}>
-                    Channel <span style={{ color: '#dc3545' }}>*</span>
-                  </p>
-                  <div className="flex gap-[12px]">
-                    <PillButton active={channel === 'Sea'} onClick={() => setChannel('Sea')}>
-                      <img src={iconSea} alt="" className="size-[20px]" />Sea
-                    </PillButton>
-                    <PillButton active={channel === 'Air'} onClick={() => setChannel('Air')}>
-                      <img src={iconAir} alt="" className="size-[20px]" />Air
-                    </PillButton>
-                  </div>
+              <div className="flex flex-wrap items-end gap-[16px]">
+                <div className="w-[220px] flex-shrink-0">
+                  <DTSelect
+                    label="Search By"
+                    value={searchBy}
+                    onChange={v => setSearchBy(v as SearchBy)}
+                    options={[{ value: 'declaration', label: 'Declaration No.' }, { value: 'bolAwb', label: 'BOL / AWB No.' }]}
+                    required
+                  />
                 </div>
-
-                <div>
-                  <p className="text-[14px] text-[#455174] mb-[8px]" style={{ fontFamily: font, fontWeight: 500 }}>
-                    Movement Type <span style={{ color: '#dc3545' }}>*</span>
-                  </p>
-                  <div className="flex gap-[12px]">
-                    <PillButton active={movement === 'Inbound'} onClick={() => setMovement('Inbound')}>Inbound</PillButton>
-                    <PillButton active={movement === 'Outbound'} onClick={() => setMovement('Outbound')}>Outbound</PillButton>
-                  </div>
+                <div className="w-[200px] flex-shrink-0">
+                  <DTSelect
+                    label="Channel"
+                    value={channel}
+                    onChange={v => setChannel(v as Channel)}
+                    options={[{ value: 'Sea', label: 'Sea' }, { value: 'Air', label: 'Air' }]}
+                    required
+                  />
+                </div>
+                <div className="w-[200px] flex-shrink-0">
+                  <DTSelect
+                    label="Movement Type"
+                    value={movement}
+                    onChange={v => setMovement(v as Movement)}
+                    options={[{ value: 'Inbound', label: 'Inbound' }, { value: 'Outbound', label: 'Outbound' }]}
+                    required
+                  />
                 </div>
               </div>
 
               <div className="flex flex-wrap items-end gap-[16px]">
-                <div className="flex-1 min-w-[220px]">
+                <div className="w-[260px] flex-shrink-0">
                   <FloatingField
                     label="Bill of Lading / AWB Number"
                     required
@@ -181,7 +154,7 @@ export default function CargoTrackingSearchPage({
                     onChange={setBolNo}
                   />
                 </div>
-                <div className="flex-1 min-w-[220px]">
+                <div className="w-[260px] flex-shrink-0">
                   <FloatingField
                     label="Rotation Number"
                     placeholder="e.g. 820489 (optional)"
@@ -231,7 +204,7 @@ export default function CargoTrackingSearchPage({
                 <table style={{ width: '100%', minWidth: 900, borderCollapse: 'collapse', fontFamily: font }}>
                   <thead>
                     <tr style={{ background: '#a6c2e9' }}>
-                      {['Transport Document No. (BOL/AWB)', 'Declaration Number', 'Type', 'Declaration Status', 'Submission Date', 'Clearance Date', 'Action'].map(h => (
+                      {['Transport Document No. (BOL/AWB)', 'Declaration Number', 'Type', 'Declaration Status', 'Submission Date', 'Clearance Date', 'Cargo Status'].map(h => (
                         <th key={h} className="text-left px-[16px] py-[10px] text-[16px] text-[#051937] whitespace-nowrap" style={{ fontWeight: 500 }}>
                           {h}
                         </th>

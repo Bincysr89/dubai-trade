@@ -75,10 +75,98 @@ function formatBytes(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+/* ─── One declaration's accordion row — mirrors DocDeclarationCard from the
+       View Claim pages (RefundDepositsClaimViewPage.tsx / NonRemittanceClaimViewPage.tsx),
+       with an optional Delete action alongside Download when onRemove is supplied. ─── */
+function DocAccordionRow({ declNo, docs, itemLabel, open, onToggle, onRemove }: {
+  declNo: string; docs: UploadedDoc[]; itemLabel: string; open: boolean; onToggle: () => void; onRemove?: (id: string) => void;
+}) {
+  return (
+    <div style={{ borderTop: '1px solid #eef1f6' }}>
+      <button type="button" onClick={onToggle}
+        className="w-full flex items-center gap-[10px] px-[20px] py-[14px] text-left transition-colors hover:bg-[#f8fafd]"
+        style={{ border: 'none', background: open ? '#e2ebf9' : 'transparent', cursor: 'pointer', fontFamily: FONT }}>
+        <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="#697498" strokeWidth="2.2" strokeLinecap="round"
+          style={{ transition: 'transform 0.15s', transform: open ? 'rotate(90deg)' : 'rotate(0deg)', flexShrink: 0 }}>
+          <path d="M5 3l4 4-4 4" />
+        </svg>
+        <span className="text-[16px] text-[#1360d2]" style={{ fontWeight: 500, fontFamily: FONT }}>{itemLabel} No. {declNo}</span>
+        <span className="text-[14px] px-[10px] py-[3px] rounded-[12px]" style={{ background: open ? '#fff' : '#e2ebf9', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: FONT }}>
+          {docs.length} document{docs.length !== 1 ? 's' : ''}
+        </span>
+        <span className="text-[14px] text-[#697498] ml-auto" style={{ fontFamily: FONT, flexShrink: 0 }}>{open ? 'Collapse' : 'Expand'}</span>
+      </button>
+      {open && (
+        <div className="px-[20px] pb-[16px] pt-[4px]" style={{ borderTop: '1px solid #f5f7fc' }}>
+          {docs.length === 0 ? (
+            <p className="text-[15px] text-[#697498] text-center" style={{ padding: '20px 0', fontFamily: FONT }}>No files uploaded yet.</p>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontFamily: FONT, minWidth: 700 }}>
+                <thead>
+                  <tr>
+                    {['Document Type', 'File Name', 'Uploaded On', 'Remarks', 'Action'].map(h => (
+                      <th key={h} style={{ background: '#a6c2e9', padding: '10px 14px', textAlign: 'left', borderBottom: '1px solid #e8edf5', whiteSpace: 'nowrap' }}>
+                        <span className="text-[16px]" style={{ color: '#000', fontFamily: FONT, fontWeight: 600 }}>{h}</span>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {docs.map(doc => (
+                    <tr key={doc.id} style={{ borderBottom: '1px solid #f0f3fa' }}>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: FONT }}>{doc.docType}</span></td>
+                      <td style={{ padding: '10px 14px' }}>
+                        <div className="flex flex-col gap-[1px]">
+                          <span className="text-[16px]" style={{ color: '#051937', fontFamily: FONT }}>{doc.fileName}</span>
+                          <span className="text-[13px] text-[#697498]">{formatBytes(doc.fileSize)}</span>
+                        </div>
+                      </td>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: FONT }}>{doc.uploadedOn}</span></td>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#697498', fontFamily: FONT }}>{doc.remarks || '—'}</span></td>
+                      <td style={{ padding: '10px 14px' }}>
+                        <div className="flex items-center gap-[8px]">
+                          <button
+                            title="Download"
+                            onClick={() => {}}
+                            className="inline-flex items-center justify-center w-[34px] h-[34px] rounded-[4px] hover:bg-[#e8f0ff] transition-colors"
+                            style={{ border: '1px solid #d5ddfb', color: '#1360d2' }}
+                          >
+                            <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M10 3v10M6 9l4 4 4-4" /><path d="M4 16h12" />
+                            </svg>
+                          </button>
+                          {onRemove && (
+                            <button
+                              title="Delete"
+                              onClick={() => onRemove(doc.id)}
+                              className="inline-flex items-center justify-center w-[34px] h-[34px] rounded-[4px] hover:bg-[#fef2f2] transition-colors"
+                              style={{ border: '1px solid #f3d0d3', color: '#dc3545' }}
+                            >
+                              <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                                <path d="M3 5h14M8 5V3h4v2M17 5l-1 13H4L3 5" /><path d="M8 9v5M12 9v5" />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─── Uploaded documents, grouped by declaration ─────────────────────
    Every attachment belongs to a specific declaration in the claim, so instead of one
-   flat table mixing every declaration together, each declaration gets its own card —
-   the customer can see at a glance which files were uploaded against which record.
+   flat table mixing every declaration together, each declaration gets its own accordion
+   row — the customer can see at a glance which files were uploaded against which record.
+   Mirrors the accordion pattern used by the View Claim pages' Uploaded Documents section.
    Reused read-only (no onRemove) on the Review step. */
 export function UploadedDocsByDeclaration({ docs, declOrder, onRemove, itemLabel = 'Declaration' }: {
   docs: UploadedDoc[]; declOrder?: string[]; onRemove?: (id: string) => void;
@@ -98,118 +186,34 @@ export function UploadedDocsByDeclaration({ docs, declOrder, onRemove, itemLabel
     ...(declOrder ?? []).filter(d => groups.has(d)),
     ...Array.from(groups.keys()).filter(d => !(declOrder ?? []).includes(d)),
   ];
-  const [selectedDeclNo, setSelectedDeclNo] = useState<string | null>(orderedDeclNos[0] ?? null);
-  const selectedDoc = orderedDeclNos.includes(selectedDeclNo ?? '') ? selectedDeclNo : orderedDeclNos[0] ?? null;
-  const selectedDocs = selectedDoc ? (groups.get(selectedDoc) ?? []) : [];
+  const [openDecl, setOpenDecl] = useState<Set<string>>(() => new Set(orderedDeclNos.slice(0, 1)));
+  const toggleDecl = (declNo: string) => setOpenDecl(prev => {
+    const next = new Set(prev);
+    next.has(declNo) ? next.delete(declNo) : next.add(declNo);
+    return next;
+  });
 
   return (
     <div className="flex flex-col gap-[16px]">
       <div className="flex flex-col gap-[4px]">
-        <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Documents Uploaded</p>
-        <p className="text-[16px] text-[#697498]">Attachments uploaded against each declaration in this claim.</p>
+        <div className="flex items-center gap-[10px]">
+          <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Documents Uploaded</p>
+          <span className="text-[14px] px-[10px] py-[3px] rounded-[12px]" style={{ background: '#e2ebf9', color: '#1360d2', fontWeight: 500, fontFamily: FONT }}>
+            {orderedDeclNos.length} {itemLabel.toLowerCase()}{orderedDeclNos.length !== 1 ? 's' : ''}
+          </span>
+        </div>
+        <p className="text-[16px] text-[#697498]">Attachments uploaded against each {itemLabel.toLowerCase()} in this claim.</p>
       </div>
 
-      <div className="bg-white rounded-[8px] overflow-hidden flex flex-col md:flex-row" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)', minHeight: 320 }}>
-        {/* Sidebar — declarations */}
-        <div className="flex flex-col flex-shrink-0 md:w-[260px]" style={{ borderBottom: '1px solid #f3f4f6' }}>
-          <div className="flex-1 overflow-y-auto" style={{ maxHeight: 420 }}>
-            {orderedDeclNos.map(declNo => {
-              const declDocs = groups.get(declNo) ?? [];
-              const isSelected = selectedDoc === declNo;
-              return (
-                <div key={declNo} onClick={() => setSelectedDeclNo(declNo)}
-                  className="flex items-center gap-[10px] px-[14px] py-[12px] cursor-pointer transition-colors"
-                  style={{ background: isSelected ? '#f0f4ff' : 'transparent', borderLeft: `3px solid ${isSelected ? '#1360d2' : 'transparent'}`, borderBottom: '1px solid #f8fafd' }}>
-                  <div className="size-[36px] rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#1360d2' }}>
-                    <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round"><path d="M5 2h7l3 3v12H5z" /><path d="M12 2v3h3" /></svg>
-                  </div>
-                  <div className="flex flex-col gap-[1px] min-w-0 flex-1">
-                    <span className="text-[14px] text-[#051937] truncate" style={{ fontWeight: 500, fontFamily: FONT }}>{itemLabel} No. {declNo}</span>
-                    <span className="text-[14px]" style={{ color: '#219653', fontFamily: FONT }}>{declDocs.length} document{declDocs.length !== 1 ? 's' : ''}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Detail pane — selected declaration's files */}
-        <div className="flex-1 flex flex-col min-w-0" style={{ borderLeft: '1px solid #f3f4f6' }}>
-          {selectedDoc && (
-            <>
-              <div className="px-[20px] py-[14px]" style={{ background: '#f8fafd', borderBottom: '1px solid #eef1f6' }}>
-                <p className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500, fontFamily: FONT }}>Uploaded Documents — {itemLabel} No. {selectedDoc}</p>
-              </div>
-              <div className="flex-1 overflow-auto">
-                {selectedDocs.length === 0 ? (
-                  <p className="text-[15px] text-[#697498] text-center" style={{ padding: '32px 16px', fontFamily: FONT }}>No files uploaded yet.</p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: FONT }}>
-                      <thead>
-                        <tr style={{ background: '#e2ebf9' }}>
-                          {['Document Type', 'File Name', 'Uploaded On', 'Remarks', 'Action'].map(h => (
-                            <th key={h} style={{ padding: '11px 16px', textAlign: 'left', fontSize: 14, fontWeight: 500, color: '#0e1b3d', whiteSpace: 'nowrap' }}>{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {selectedDocs.map(doc => (
-                          <tr key={doc.id} style={{ borderTop: '1px solid #f0f4ff' }}>
-                            <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
-                              <span className="text-[15px] text-[#0e1b3d]">{doc.docType}</span>
-                            </td>
-                            <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
-                              <div className="flex items-center gap-[8px]">
-                                <div className="size-[28px] rounded-[4px] flex-shrink-0 inline-flex items-center justify-center" style={{ background: '#e8f0ff' }}>
-                                  <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#1360d2" strokeWidth="1.8" strokeLinecap="round">
-                                    <path d="M5 2h7l3 3v12H5z" /><path d="M12 2v3h3" />
-                                  </svg>
-                                </div>
-                                <div className="flex flex-col gap-[1px]">
-                                  <span className="text-[15px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{doc.fileName}</span>
-                                  <span className="text-[11px] text-[#697498]">{formatBytes(doc.fileSize)}</span>
-                                </div>
-                              </div>
-                            </td>
-                            <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
-                              <span className="text-[15px] text-[#697498]">{doc.uploadedOn}</span>
-                            </td>
-                            <td style={{ padding: '12px 16px', verticalAlign: 'middle', maxWidth: 180 }}>
-                              <span className="text-[15px] text-[#455174]">{doc.remarks || '—'}</span>
-                            </td>
-                            <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
-                              <div className="flex items-center gap-[4px]">
-                                <button type="button" onClick={() => {}}
-                                  title="Download"
-                                  className="size-[32px] inline-flex items-center justify-center rounded hover:bg-[#e8f0ff] transition-colors"
-                                  style={{ color: '#1360d2' }}>
-                                  <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M10 3v10M5 12l5 5 5-5" /><path d="M3 17h14" />
-                                  </svg>
-                                </button>
-                                {onRemove && (
-                                  <button type="button" onClick={() => onRemove(doc.id)}
-                                    title="Delete"
-                                    className="size-[32px] inline-flex items-center justify-center rounded hover:bg-[#fef2f2] transition-colors"
-                                    style={{ color: '#dc3545' }}>
-                                    <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                                      <path d="M3 5h14M8 5V3h4v2M17 5l-1 13H4L3 5" /><path d="M8 9v5M12 9v5" />
-                                    </svg>
-                                  </button>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-        </div>
+      <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+        {orderedDeclNos.length === 0 ? (
+          <p className="text-[15px] text-[#697498] text-center" style={{ padding: '32px 16px', fontFamily: FONT }}>No files uploaded yet.</p>
+        ) : (
+          orderedDeclNos.map(declNo => (
+            <DocAccordionRow key={declNo} declNo={declNo} docs={groups.get(declNo) ?? []} itemLabel={itemLabel}
+              open={openDecl.has(declNo)} onToggle={() => toggleDecl(declNo)} onRemove={onRemove} />
+          ))
+        )}
       </div>
     </div>
   );
