@@ -94,10 +94,10 @@ function AFDropdown({ label, value, options, onChange }: { label: string; value:
   );
 }
 
-/* ── Authority dropdown in toolbar (not floating-label, inline style) ── */
+/* ── Generic pill dropdown for the toolbar (Authority Name, Service Name) ── */
 const AUTHORITIES = ['Dubai Municipality', 'DCAA', 'SIRA', 'Dubai Chambers'];
 
-function AuthorityDropdown({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+function FilterDropdown({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (v: string) => void }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="relative">
@@ -109,7 +109,7 @@ function AuthorityDropdown({ value, onChange }: { value: string; onChange: (v: s
         }`}
         style={{ fontFamily: font, minWidth: 180 }}
       >
-        <span className="flex-1 text-left truncate">{value || 'Authority Name'}</span>
+        <span className="flex-1 text-left truncate">{value || label}</span>
         {value && (
           <span
             onClick={e => { e.stopPropagation(); onChange(''); setOpen(false); }}
@@ -131,7 +131,7 @@ function AuthorityDropdown({ value, onChange }: { value: string; onChange: (v: s
           style={{ minWidth: 180, boxShadow: '0 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
           <button className="w-full px-[14px] py-[10px] text-left text-[16px] text-[#697498] hover:bg-[#f5f7ff]"
             style={{ fontFamily: font }} onClick={() => { onChange(''); setOpen(false); }}>— All —</button>
-          {AUTHORITIES.map(a => (
+          {options.map(a => (
             <button key={a} className="w-full px-[14px] py-[10px] text-left text-[16px] text-[#0e1b3d] hover:bg-[#e2ebf9]"
               style={{ fontFamily: font }} onClick={() => { onChange(a); setOpen(false); }}>{a}</button>
           ))}
@@ -194,26 +194,30 @@ const PAY_STATUS_COLORS: Record<PaymentStatus, string> = {
   'Failed': '#c0392b', 'Refunded': '#1360d2',
 };
 
-/* ── Column definitions ── */
+/* ── Column definitions ──
+   Default order/visibility mirrors the reference screenshot; the extra fields
+   (Service Request No., Declaration No., BOL/AWB No.) stay available via Manage Columns. */
 const COL_DEFS: (ColDef & { w: number })[] = [
-  { key: 'authority',     label: 'Authority',            w: 150 },
   { key: 'appRefNo',      label: 'Application Ref No.',  w: 200 },
+  { key: 'authority',     label: 'Authority',            w: 200 },
+  { key: 'serviceName',   label: 'Service Name',         w: 300 },
+  { key: 'mode',          label: 'Mode',                 w: 120 },
+  { key: 'submittedDate', label: 'Submitted Date',       w: 150 },
   { key: 'serviceReqNo',  label: 'Service Request No.',  w: 170 },
-  { key: 'serviceName',   label: 'Service Name',         w: 260 },
-  { key: 'mode',          label: 'Mode',                 w: 100 },
   { key: 'declarationNo', label: 'Declaration No.',      w: 170 },
   { key: 'bolAwbNo',      label: 'BOL / AWB No.',        w: 150 },
-  { key: 'submittedDate', label: 'Submitted Date',       w: 150 },
 ];
 
+const DEFAULT_VISIBLE_COLS = ['appRefNo', 'authority', 'serviceName', 'mode', 'submittedDate'];
+
 const SEARCH_FIELDS = ['Application Ref No', 'Service Req Name', 'BOL / AWB', 'Declaration No'];
+const SERVICE_NAMES = Array.from(new Set(MOCK_DATA.map(r => r.serviceName)));
 
 /* Sticky = App Status (163) + Pay Status (150) + Actions (72) */
 const STICKY_W = 362; // Pay(150) + App(140) + Actions(72)
 
 export default function PermitsCertificatesPage({ onClose, createPrefill }: Props) {
   const [showCreate, setShowCreate]         = useState(false);
-  const [activeTab, setActiveTab]           = useState<'permits' | 'certificates'>('permits');
   const [page, setPage]                     = useState(1);
   const [pageSize, setPageSize]             = useState(8);
   const [searchType, setSearchType]         = useState(SEARCH_FIELDS[0]);
@@ -225,8 +229,9 @@ export default function PermitsCertificatesPage({ onClose, createPrefill }: Prop
   const [appStatusFilter, setAppStatusFilter]   = useState<AppStatus | null>(null);
   const [payStatusFilter, setPayStatusFilter]   = useState<PaymentStatus | null>(null);
   const [authorityFilter, setAuthorityFilter]   = useState('');
+  const [serviceNameFilter, setServiceNameFilter] = useState('');
 
-  const [visibleCols, setVisibleCols] = useState<string[]>(COL_DEFS.map(c => c.key));
+  const [visibleCols, setVisibleCols] = useState<string[]>(DEFAULT_VISIBLE_COLS);
   const visibleHeaders = visibleCols.map(k => COL_DEFS.find(c => c.key === k)!).filter(Boolean);
 
   const {
@@ -239,27 +244,23 @@ export default function PermitsCertificatesPage({ onClose, createPrefill }: Prop
   } = useTableBehaviors();
 
   /* AF state */
-  const [afAppRef,    setAfAppRef]    = useState('');
-  const [afSvcReq,    setAfSvcReq]    = useState('');
   const [afAuthority, setAfAuthority] = useState('');
+  const [afAppRef,    setAfAppRef]    = useState('');
   const [afService,   setAfService]   = useState('');
+  const [afAppStatus, setAfAppStatus] = useState('');
   const [afMode,      setAfMode]      = useState('');
-  const [afDecl,      setAfDecl]      = useState('');
-  const [afBol,       setAfBol]       = useState('');
   const [afDateFrom,  setAfDateFrom]  = useState('');
   const [afDateTo,    setAfDateTo]    = useState('');
-  const [afAppStatus, setAfAppStatus] = useState('');
-  const [afPayStatus, setAfPayStatus] = useState('');
   const resetAF = () => {
-    setAfAppRef(''); setAfSvcReq(''); setAfAuthority(''); setAfService('');
-    setAfMode(''); setAfDecl(''); setAfBol(''); setAfDateFrom('');
-    setAfDateTo(''); setAfAppStatus(''); setAfPayStatus('');
+    setAfAuthority(''); setAfAppRef(''); setAfService(''); setAfAppStatus('');
+    setAfMode(''); setAfDateFrom(''); setAfDateTo('');
   };
 
   const filtered = MOCK_DATA.filter(r => {
     if (appStatusFilter && r.appStatus !== appStatusFilter) return false;
     if (payStatusFilter && r.paymentStatus !== payStatusFilter) return false;
     if (authorityFilter && r.authority !== authorityFilter) return false;
+    if (serviceNameFilter && r.serviceName !== serviceNameFilter) return false;
     if (!searchValue) return true;
     const val =
       searchType === 'Application Ref No' ? r.appRefNo :
@@ -370,7 +371,10 @@ export default function PermitsCertificatesPage({ onClose, createPrefill }: Prop
             </div>
 
             {/* Authority Name dropdown */}
-            <AuthorityDropdown value={authorityFilter} onChange={setAuthorityFilter} />
+            <FilterDropdown label="Authority Name" value={authorityFilter} onChange={setAuthorityFilter} options={AUTHORITIES} />
+
+            {/* Service Name dropdown */}
+            <FilterDropdown label="Service Name" value={serviceNameFilter} onChange={setServiceNameFilter} options={SERVICE_NAMES} />
 
             <div className="flex-1" />
 
@@ -403,46 +407,30 @@ export default function PermitsCertificatesPage({ onClose, createPrefill }: Prop
                 </svg>
               </button>
               <div className="grid grid-cols-4 gap-4 pt-2">
-                <AFInput    label="Application Ref No."  value={afAppRef}    onChange={setAfAppRef} />
-                <AFInput    label="Service Request No."  value={afSvcReq}    onChange={setAfSvcReq} />
-                <AFDropdown label="Authority"            value={afAuthority} onChange={setAfAuthority}
+                <AFDropdown label="Authority name"       value={afAuthority} onChange={setAfAuthority}
                   options={AUTHORITIES} />
-                <AFInput    label="Service Name"         value={afService}   onChange={setAfService} />
-                <AFDropdown label="Mode"                 value={afMode}      onChange={setAfMode}
-                  options={['Sea', 'Air', 'Land', 'NA']} />
-                <AFInput    label="Declaration No."      value={afDecl}      onChange={setAfDecl} />
-                <AFInput    label="BOL / AWB No."        value={afBol}       onChange={setAfBol} />
-                <AFDate     label="Submitted Date From"  value={afDateFrom}  onChange={setAfDateFrom} />
-                <AFDate     label="Submitted Date To"    value={afDateTo}    onChange={setAfDateTo} />
+                <AFInput    label="Application Number"   value={afAppRef}    onChange={setAfAppRef} />
+                <AFDropdown label="Service name"         value={afService}   onChange={setAfService}
+                  options={SERVICE_NAMES} />
                 <AFDropdown label="Application Status"   value={afAppStatus} onChange={setAfAppStatus}
                   options={Object.keys(APP_STATUS_STYLE)} />
-                <AFDropdown label="Payment Status"       value={afPayStatus} onChange={setAfPayStatus}
-                  options={Object.keys(PAY_STATUS_STYLE)} />
+                <AFDropdown label="Mode"                 value={afMode}      onChange={setAfMode}
+                  options={['Sea', 'Air', 'Land', 'NA']} />
+                <AFDate     label="From Date"            value={afDateFrom}  onChange={setAfDateFrom} />
+                <AFDate     label="To Date"              value={afDateTo}    onChange={setAfDateTo} />
                 <div className="flex gap-2 self-end">
-                  <button className="h-[44px] px-5 rounded-[4px] text-[15px] text-white"
-                    style={{ background: '#1360d2', fontFamily: font }}>Search</button>
                   <button onClick={resetAF}
                     className="h-[44px] px-5 rounded-[4px] border border-[#1360d2] text-[15px] text-[#1360d2] bg-white hover:bg-[#f0f4ff]"
                     style={{ fontFamily: font }}>Reset</button>
+                  <button className="h-[44px] px-5 rounded-[4px] text-[15px] text-white"
+                    style={{ background: '#1360d2', fontFamily: font }}>Apply</button>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Tabs + Columns button */}
-          <div className="flex items-center justify-between mb-[12px]">
-            <div className="bg-white flex items-center gap-[12px] h-[48px] px-[16px] py-[8px] rounded-[6px]"
-              style={{ boxShadow: '0px 4px 10px rgba(0,0,0,0.08)' }}>
-              {(['permits', 'certificates'] as const).map(tab => (
-                <button key={tab} onClick={() => setActiveTab(tab)}
-                  className={`h-[40px] px-[16px] rounded-[4px] text-[16px] font-medium transition-colors ${
-                    activeTab === tab ? 'bg-[#1360d2] text-white' : 'bg-[#f7faff] text-[#697498] border border-[#e5efff]'
-                  }`}
-                  style={{ fontFamily: font }}>
-                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                </button>
-              ))}
-            </div>
+          {/* Columns button */}
+          <div className="flex items-center justify-end mb-[12px]">
             <button
               onClick={() => setShowColModal(true)}
               className="h-[40px] px-[14px] flex items-center gap-[8px] rounded-[4px] border border-[#d5ddfb] bg-white text-[16px] text-[#0e1b3d] hover:bg-[#f0f4ff] transition-colors"
