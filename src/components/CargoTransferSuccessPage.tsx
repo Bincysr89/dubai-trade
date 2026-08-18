@@ -1,4 +1,5 @@
 import React from 'react';
+import HappinessMeterBar from './HappinessMeterBar';
 
 type Props = { onBack: () => void; requestNumber?: string; cargoTransferNumber?: string; mode?: 'create' | 'amend' | 'cancel'; onViewDetails?: () => void; transferType?: string; transferNumber?: string };
 
@@ -109,6 +110,7 @@ export default function CargoTransferSuccessPage({ onBack, requestNumber = '1234
           </div>
         </div>
       </div>
+      <HappinessMeterBar />
     </div>
   );
 }

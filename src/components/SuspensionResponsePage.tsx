@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import HappinessMeterBar from './HappinessMeterBar';
 import { ColumnFilter } from './ColumnFilter';
 
 const font = "'Dubai', sans-serif";
@@ -155,6 +156,7 @@ export default function SuspensionResponsePage({ onBack, onBackToListing, onSubm
             </button>
           </div>
         </div>
+        <HappinessMeterBar />
       </div>
     );
   }

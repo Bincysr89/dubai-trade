@@ -1,4 +1,5 @@
 import React from 'react';
+import HappinessMeterBar from './HappinessMeterBar';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
 
@@ -106,6 +107,7 @@ export default function NonRemittanceSuccessPage({ onBack, onViewAck, onViewClai
           </div>
         </div>
       </div>
+      <HappinessMeterBar />
     </div>
   );
 }

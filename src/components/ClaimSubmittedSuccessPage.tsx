@@ -1,4 +1,5 @@
 import React from 'react';
+import HappinessMeterBar from './HappinessMeterBar';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
 
@@ -81,6 +82,7 @@ export default function ClaimSubmittedSuccessPage({
           </button>
         </div>
       </div>
+      <HappinessMeterBar />
     </div>
   );
 }

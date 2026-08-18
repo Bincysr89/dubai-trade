@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import HappinessMeterBar from './HappinessMeterBar';
 import NonRemittanceClaimViewPage from './NonRemittanceClaimViewPage';
 import NonRemittanceDocumentsPage, { UploadedDoc as NRUploadedDoc } from './NonRemittanceDocumentsPage';
 import ClaimDocumentsPage from './ClaimDocumentsPage';
@@ -496,6 +497,7 @@ function SuccessPage({ onBackToListing, onViewClaim, onViewDocs }: { onBackToLis
           </div>
         </div>
       </div>
+      <HappinessMeterBar />
     </div>
   );
 }

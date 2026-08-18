@@ -1,4 +1,5 @@
 import React from 'react';
+import HappinessMeterBar from './HappinessMeterBar';
 
 type Props = {
   onBackToListing: () => void;
@@ -104,7 +105,7 @@ export default function VccEPaymentSuccessPage({
           </div>
         </div>
       </div>
-
+      <HappinessMeterBar />
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import HappinessMeterBar from './HappinessMeterBar';
 
 const Backdrop: React.FC<{ children: React.ReactNode; onClose: () => void }> = ({ children, onClose }) => (
   <div
@@ -267,10 +268,11 @@ export const AckSuccessPage: React.FC<SuccessProps> = ({ mode, count, declaratio
         </div>
       </div>
 
-      <div className="bg-white px-4 sm:px-10 py-[16px] flex items-center justify-start flex-shrink-0" style={{ boxShadow: '0px -4px 12px rgba(0,0,0,0.08)', position: 'sticky', bottom: 0, zIndex: 10 }}>
+      <div className="bg-white px-4 sm:px-10 py-[16px] flex items-center justify-between flex-shrink-0" style={{ boxShadow: '0px -4px 12px rgba(0,0,0,0.08)', position: 'sticky', bottom: 0, zIndex: 10 }}>
         <button onClick={onBack} className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors" style={{ fontWeight: 500 }}>
           Back To Listing
         </button>
+        <HappinessMeterBar variant="inline" />
       </div>
     </div>
   );
