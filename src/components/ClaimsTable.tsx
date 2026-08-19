@@ -213,6 +213,14 @@ const DRAFT_ROWS: ClaimRow[] = [
     ],
     depositType: 'Deposit Alternative Duty Rate', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '—', status: 'Draft', remark: '—',
   },
+  {
+    reqNo: '231699', claimNo: '—', ver: '1', claimType: 'Claim Time Validity Extension',
+    declarations: [
+      { declNo: '4010001887099', date: '15/03/2026', category: 'Import for Re Export', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '20/05/2026', exportExpiry: '18/02/2026' },
+    ],
+    depositType: 'Alternative Duty Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '—', status: 'Draft', remark: '—',
+    transactionType: 'Claim Time Validity Extension', requestedFor: 'AE-1019056',
+  },
 ];
 
 function DeclarationsModal({ declarations, chargeType, subClaimStatus, onClose, onDeclarationOpen }: { declarations: DeclDetail[]; chargeType: string; subClaimStatus: Status; onClose: () => void; onDeclarationOpen?: (declNo: string) => void }) {
@@ -342,9 +350,9 @@ type Props = {
   /** Set when the user searched using "Request Number" — filters to that request and switches
       the table to the request-specific dynamic column set (see REQ_SEARCH_COLS below). */
   searchReqNo?: string;
-  /** Dedicated "Claim Time Validity Extension" sidebar listing — shows all non-claim requests
-      (rows with a transactionType) by default, using the same column set as a Request Number
-      search, instead of requiring the user to search first. searchReqNo still narrows it. */
+  /** Dedicated "Claim Time Validity Extension" sidebar listing — shows all Claim Time Validity
+      Extension requests by default, using the same column set as a Request Number search,
+      instead of requiring the user to search first. searchReqNo still narrows it. */
   requestsOnly?: boolean;
 };
 
@@ -392,7 +400,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
   const rows = useMemo(() => {
     const base = showDrafts ? DRAFT_ROWS : CLAIM_ROWS;
     if (requestsOnly) {
-      const requestRows = base.filter((r) => !!r.transactionType);
+      const requestRows = base.filter((r) => r.transactionType === 'Claim Time Validity Extension');
       const statusFiltered = statusFilter ? requestRows.filter((r) => r.status === statusFilter) : requestRows;
       if (!reqSearchActive) return statusFiltered;
       const q = searchReqNo!.trim().toLowerCase();
