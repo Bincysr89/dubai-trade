@@ -30,8 +30,7 @@ export default function LoginPage() {
     <div
       className="min-h-screen w-full flex items-center justify-start px-4 sm:px-8 md:px-16 py-8 bg-cover bg-center relative"
       style={{
-        backgroundImage:
-          `linear-gradient(to bottom, rgba(14,27,61,0.15), rgba(14,27,61,0.35)), url(${loginBgSrc})`,
+        backgroundImage: `url(${loginBgSrc})`,
       }}
     >
       <div className="bg-white rounded-2xl p-8 shadow-xl w-full max-w-[544px]">
