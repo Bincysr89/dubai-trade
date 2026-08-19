@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 const loginLogoSrc = new URL('../assets/dt-logo-login.svg', import.meta.url).href;
 const uaePassLogoSrc = new URL('../assets/uaepass-logo.svg', import.meta.url).href;
+import loginBgSrc from '../assets/login-bg.jpg';
 import { setAuthenticated } from '../auth';
 
 const REQUIRED_PASSWORD = 'IntegratedClearance';
@@ -30,7 +31,7 @@ export default function LoginPage() {
       className="min-h-screen w-full flex items-center justify-start px-4 sm:px-8 md:px-16 py-8 bg-cover bg-center relative"
       style={{
         backgroundImage:
-          "linear-gradient(to bottom, rgba(14,27,61,0.35), rgba(14,27,61,0.55)), url('https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?auto=format&fit=crop&w=2400&q=80')",
+          `linear-gradient(to bottom, rgba(14,27,61,0.15), rgba(14,27,61,0.35)), url(${loginBgSrc})`,
       }}
     >
       <div className="bg-white rounded-2xl p-8 shadow-xl w-full max-w-[544px]">
