@@ -2079,18 +2079,18 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
             </svg>
           </button>
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            <DateInput label="From Date" value={fFromDate} onChange={setFFromDate} />
-            <DateInput label="To Date"   value={fToDate}   onChange={setFToDate}   />
-            <FloatDropdown
-              label="Source"
-              value={fSource}
-              options={['CDR', 'SGRCS', 'SAS', 'CRNS']}
-              onChange={setFSource}
-            />
-          </div>
           <div className="flex items-center gap-4">
-            <div style={{ width: 'calc(25% - 12px)' }}>
+            <div className="flex-1 min-w-0"><DateInput label="From Date" value={fFromDate} onChange={setFFromDate} /></div>
+            <div className="flex-1 min-w-0"><DateInput label="To Date"   value={fToDate}   onChange={setFToDate}   /></div>
+            <div className="flex-1 min-w-0">
+              <FloatDropdown
+                label="Source"
+                value={fSource}
+                options={['CDR', 'SGRCS', 'SAS', 'CRNS']}
+                onChange={setFSource}
+              />
+            </div>
+            <div className="flex-1 min-w-0">
               <StatusMultiDropdown
                 label="Status"
                 values={fStatuses}
@@ -3223,12 +3223,15 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                         <DirhamIcon size={14} color="#0e1b3d" />{pendingInvAmt.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                       </span>
                     </button>
-                    <button onClick={openPending}
-                      className="flex items-center justify-center gap-[8px] mt-auto rounded-[10px] h-[44px] text-[15px] font-bold text-white transition-transform hover:-translate-y-[1px]"
-                      style={{ fontFamily: font, background: '#1360d2', boxShadow: '0 4px 10px rgba(19,96,210,0.28)' }}>
-                      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#fff" strokeWidth="2"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20" strokeLinecap="round"/><path d="M6 14h4" strokeLinecap="round"/></svg>
-                      View and Pay
-                    </button>
+                    <div className="flex items-center justify-center gap-[10px] mt-auto pt-[6px]">
+                      <button onClick={openCdr} className="text-[14px] font-bold text-[#1360d2] hover:underline" style={{ fontFamily: font }}>
+                        View Accounts
+                      </button>
+                      <span className="text-[13px] text-[#93b4f7]">|</span>
+                      <button onClick={openPending} className="text-[14px] font-bold text-[#1360d2] hover:underline" style={{ fontFamily: font }}>
+                        View Invoices
+                      </button>
+                    </div>
                   </div>
                 </div>
 
