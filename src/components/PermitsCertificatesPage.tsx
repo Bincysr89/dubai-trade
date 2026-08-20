@@ -150,6 +150,7 @@ type Permit = {
   serviceReqNo:  string;
   authority:     string;
   serviceName:   string;
+  agentCode:     string;
   mode:          string;
   declarationNo: string;
   bolAwbNo:      string;
@@ -159,14 +160,14 @@ type Permit = {
 };
 
 const MOCK_DATA: Permit[] = [
-  { appRefNo: 'DM-REQ-2026-000123',  serviceReqNo: 'SYS-PMT-001', authority: 'Dubai Municipality',             serviceName: 'Release of Imported Food Consignment', mode: 'Sea',  declarationNo: 'BOE-2026-0011', bolAwbNo: 'BOL123456',      submittedDate: '25-Jun-26', appStatus: 'Approved',    paymentStatus: 'Paid' },
-  { appRefNo: 'DCAA-REQ-00045',       serviceReqNo: 'SYS-CRT-002', authority: 'DCAA',            serviceName: 'Air Cargo Certificate',                mode: 'Air',  declarationNo: 'CDN-2026-0022', bolAwbNo: '176-12345678',   submittedDate: '24-Jun-26', appStatus: 'Submitted',   paymentStatus: 'Pending' },
-  { appRefNo: 'DM-REQ-2026-000124',  serviceReqNo: 'SYS-PMT-003', authority: 'Dubai Municipality',             serviceName: 'Phytosanitary Certificate',             mode: 'Sea',  declarationNo: 'BOE-2026-0033', bolAwbNo: 'BOL789012',      submittedDate: '23-Jun-26', appStatus: 'Under Review',paymentStatus: 'Not Required' },
-  { appRefNo: 'SIRA-REQ-2026-00087', serviceReqNo: 'SYS-PMT-004', authority: 'SIRA',            serviceName: 'Import Permit — Regulated Goods',      mode: 'Land', declarationNo: 'CDN-2026-0044', bolAwbNo: 'N/A',            submittedDate: '22-Jun-26', appStatus: 'Approved',    paymentStatus: 'Paid' },
-  { appRefNo: 'DC-REQ-2026-00201',   serviceReqNo: 'SYS-CRT-005', authority: 'Dubai Chambers', serviceName: 'Certificate of Origin',                mode: 'Sea',  declarationNo: 'BOE-2026-0055', bolAwbNo: 'BOL345678',      submittedDate: '21-Jun-26', appStatus: 'Rejected',    paymentStatus: 'Refunded' },
-  { appRefNo: 'DM-REQ-2026-000125',  serviceReqNo: 'SYS-PMT-006', authority: 'Dubai Municipality',             serviceName: 'Health Certificate — Meat Products',   mode: 'Air',  declarationNo: 'CDN-2026-0066', bolAwbNo: '176-98765432',   submittedDate: '20-Jun-26', appStatus: 'Draft',       paymentStatus: 'Not Required' },
-  { appRefNo: 'DCAA-REQ-00046',       serviceReqNo: 'SYS-CRT-007', authority: 'DCAA',            serviceName: 'Dangerous Goods Declaration',          mode: 'Air',  declarationNo: 'CDN-2026-0077', bolAwbNo: '176-11223344',   submittedDate: '19-Jun-26', appStatus: 'Approved',    paymentStatus: 'Paid' },
-  { appRefNo: 'SIRA-REQ-2026-00088', serviceReqNo: 'SYS-PMT-008', authority: 'SIRA',            serviceName: 'Export Permit — Controlled Items',     mode: 'Sea',  declarationNo: 'BOE-2026-0088', bolAwbNo: 'BOL901234',      submittedDate: '18-Jun-26', appStatus: 'Cancelled',   paymentStatus: 'Refunded' },
+  { appRefNo: 'DM-REQ-2026-000123',  serviceReqNo: 'SYS-PMT-001', authority: 'Dubai Municipality',             serviceName: 'Release of Imported Food Consignment', agentCode: 'A121324', mode: 'Sea',  declarationNo: 'BOE-2026-0011', bolAwbNo: 'BOL123456',      submittedDate: '25-Jun-26', appStatus: 'Approved',    paymentStatus: 'Paid' },
+  { appRefNo: 'DCAA-REQ-00045',       serviceReqNo: 'SYS-CRT-002', authority: 'DCAA',            serviceName: 'Air Cargo Certificate',                agentCode: 'M132432', mode: 'Air',  declarationNo: 'CDN-2026-0022', bolAwbNo: '176-12345678',   submittedDate: '24-Jun-26', appStatus: 'Submitted',   paymentStatus: 'Pending' },
+  { appRefNo: 'DM-REQ-2026-000124',  serviceReqNo: 'SYS-PMT-003', authority: 'Dubai Municipality',             serviceName: 'Phytosanitary Certificate',             agentCode: 'A121324', mode: 'Sea',  declarationNo: 'BOE-2026-0033', bolAwbNo: 'BOL789012',      submittedDate: '23-Jun-26', appStatus: 'Under Review',paymentStatus: 'Not Required' },
+  { appRefNo: 'SIRA-REQ-2026-00087', serviceReqNo: 'SYS-PMT-004', authority: 'SIRA',            serviceName: 'Import Permit — Regulated Goods',      agentCode: 'A118765', mode: 'Land', declarationNo: 'CDN-2026-0044', bolAwbNo: 'N/A',            submittedDate: '22-Jun-26', appStatus: 'Approved',    paymentStatus: 'Paid' },
+  { appRefNo: 'DC-REQ-2026-00201',   serviceReqNo: 'SYS-CRT-005', authority: 'Dubai Chambers', serviceName: 'Certificate of Origin',                agentCode: 'M129981', mode: 'Sea',  declarationNo: 'BOE-2026-0055', bolAwbNo: 'BOL345678',      submittedDate: '21-Jun-26', appStatus: 'Rejected',    paymentStatus: 'Refunded' },
+  { appRefNo: 'DM-REQ-2026-000125',  serviceReqNo: 'SYS-PMT-006', authority: 'Dubai Municipality',             serviceName: 'Health Certificate — Meat Products',   agentCode: 'M132432', mode: 'Air',  declarationNo: 'CDN-2026-0066', bolAwbNo: '176-98765432',   submittedDate: '20-Jun-26', appStatus: 'Draft',       paymentStatus: 'Not Required' },
+  { appRefNo: 'DCAA-REQ-00046',       serviceReqNo: 'SYS-CRT-007', authority: 'DCAA',            serviceName: 'Dangerous Goods Declaration',          agentCode: 'A118765', mode: 'Air',  declarationNo: 'CDN-2026-0077', bolAwbNo: '176-11223344',   submittedDate: '19-Jun-26', appStatus: 'Approved',    paymentStatus: 'Paid' },
+  { appRefNo: 'SIRA-REQ-2026-00088', serviceReqNo: 'SYS-PMT-008', authority: 'SIRA',            serviceName: 'Export Permit — Controlled Items',     agentCode: 'A104532', mode: 'Sea',  declarationNo: 'BOE-2026-0088', bolAwbNo: 'BOL901234',      submittedDate: '18-Jun-26', appStatus: 'Cancelled',   paymentStatus: 'Refunded' },
 ];
 
 const APP_STATUS_STYLE: Record<AppStatus, { bg: string; color: string }> = {
@@ -201,6 +202,7 @@ const COL_DEFS: (ColDef & { w: number })[] = [
   { key: 'appRefNo',      label: 'Application Ref No.',  w: 200 },
   { key: 'authority',     label: 'Authority',            w: 200 },
   { key: 'serviceName',   label: 'Service Name',         w: 300 },
+  { key: 'agentCode',     label: 'Agent Code',           w: 140 },
   { key: 'mode',          label: 'Mode',                 w: 120 },
   { key: 'submittedDate', label: 'Submitted Date',       w: 150 },
   { key: 'serviceReqNo',  label: 'Service Request No.',  w: 170 },
@@ -208,10 +210,11 @@ const COL_DEFS: (ColDef & { w: number })[] = [
   { key: 'bolAwbNo',      label: 'BOL / AWB No.',        w: 150 },
 ];
 
-const DEFAULT_VISIBLE_COLS = ['appRefNo', 'authority', 'serviceName', 'mode', 'submittedDate'];
+const DEFAULT_VISIBLE_COLS = ['appRefNo', 'authority', 'serviceName', 'agentCode', 'mode', 'submittedDate'];
 
 const SEARCH_FIELDS = ['Application Ref No', 'Service Req Name', 'BOL / AWB', 'Declaration No'];
 const SERVICE_NAMES = Array.from(new Set(MOCK_DATA.map(r => r.serviceName)));
+const AGENT_CODES = Array.from(new Set(MOCK_DATA.map(r => r.agentCode)));
 
 /* Sticky = App Status (163) + Pay Status (150) + Actions (72) */
 const STICKY_W = 362; // Pay(150) + App(140) + Actions(72)
@@ -230,6 +233,7 @@ export default function PermitsCertificatesPage({ onClose, createPrefill }: Prop
   const [payStatusFilter, setPayStatusFilter]   = useState<PaymentStatus | null>(null);
   const [authorityFilter, setAuthorityFilter]   = useState('');
   const [serviceNameFilter, setServiceNameFilter] = useState('');
+  const [agentCodeFilter, setAgentCodeFilter]   = useState('');
 
   const [visibleCols, setVisibleCols] = useState<string[]>(DEFAULT_VISIBLE_COLS);
   const visibleHeaders = visibleCols.map(k => COL_DEFS.find(c => c.key === k)!).filter(Boolean);
@@ -247,12 +251,13 @@ export default function PermitsCertificatesPage({ onClose, createPrefill }: Prop
   const [afAuthority, setAfAuthority] = useState('');
   const [afAppRef,    setAfAppRef]    = useState('');
   const [afService,   setAfService]   = useState('');
+  const [afAgentCode, setAfAgentCode] = useState('');
   const [afAppStatus, setAfAppStatus] = useState('');
   const [afMode,      setAfMode]      = useState('');
   const [afDateFrom,  setAfDateFrom]  = useState('');
   const [afDateTo,    setAfDateTo]    = useState('');
   const resetAF = () => {
-    setAfAuthority(''); setAfAppRef(''); setAfService(''); setAfAppStatus('');
+    setAfAuthority(''); setAfAppRef(''); setAfService(''); setAfAgentCode(''); setAfAppStatus('');
     setAfMode(''); setAfDateFrom(''); setAfDateTo('');
   };
 
@@ -261,6 +266,7 @@ export default function PermitsCertificatesPage({ onClose, createPrefill }: Prop
     if (payStatusFilter && r.paymentStatus !== payStatusFilter) return false;
     if (authorityFilter && r.authority !== authorityFilter) return false;
     if (serviceNameFilter && r.serviceName !== serviceNameFilter) return false;
+    if (agentCodeFilter && r.agentCode !== agentCodeFilter) return false;
     if (!searchValue) return true;
     const val =
       searchType === 'Application Ref No' ? r.appRefNo :
@@ -376,6 +382,9 @@ export default function PermitsCertificatesPage({ onClose, createPrefill }: Prop
             {/* Service Name dropdown */}
             <FilterDropdown label="Service Name" value={serviceNameFilter} onChange={setServiceNameFilter} options={SERVICE_NAMES} />
 
+            {/* Agent Code dropdown */}
+            <FilterDropdown label="Agent Code" value={agentCodeFilter} onChange={setAgentCodeFilter} options={AGENT_CODES} />
+
             <div className="flex-1" />
 
             <button className="flex items-center gap-[6px] text-[16px] text-[#1360d2] hover:opacity-80 px-[8px]" style={{ fontFamily: font }}>
@@ -412,6 +421,8 @@ export default function PermitsCertificatesPage({ onClose, createPrefill }: Prop
                 <AFInput    label="Application Number"   value={afAppRef}    onChange={setAfAppRef} />
                 <AFDropdown label="Service name"         value={afService}   onChange={setAfService}
                   options={SERVICE_NAMES} />
+                <AFDropdown label="Agent Code"           value={afAgentCode} onChange={setAfAgentCode}
+                  options={AGENT_CODES} />
                 <AFDropdown label="Application Status"   value={afAppStatus} onChange={setAfAppStatus}
                   options={Object.keys(APP_STATUS_STYLE)} />
                 <AFDropdown label="Mode"                 value={afMode}      onChange={setAfMode}

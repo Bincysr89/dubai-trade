@@ -126,6 +126,9 @@ const AUTHORITY_COLORS: Record<string, { bg: string; text: string; border: strin
 };
 const authorityStyle = (a: string) => AUTHORITY_COLORS[a] ?? { bg: '#eef4ff', text: '#1360d2', border: '#c0d4f8' };
 
+/* Agent codes offered on the "Select Agent Code" gate shown before Start Journey / View Requests. */
+const AGENT_CODES = ['A121324', 'M132432', 'A118765', 'M129981', 'A104532'];
+
 type Step = 'welcome' | 'recent' | 'search' | 'activity' | 'mode' | 'cargo' | 'done' | 'prepare' | 'p-activity' | 'p-mode' | 'p-cargo' | 'p-info' | 'p-steps';
 const STEP_META: Record<string, { question: string }> = {
   welcome:    { question: "Hi! How would you like to find a permit or certificate today?" },
@@ -646,6 +649,15 @@ function SearchResults({ q, onSelect }: { q: string; onSelect: (label: string) =
 function DoneWithPrepare({ answers, onRestart, onOpenService }: { answers: Record<string,string>; onRestart: () => void; onOpenService?: (service: string) => void }) {
   const cargo = answers['cargo'] ?? 'Other Goods';
   const permits = PERMITS_MAP[cargo] ?? [];
+  /* Start Journey / View Requests both gate through an Agent Code selection popup first. */
+  const [agentGate, setAgentGate] = useState<{ service: string; action: string } | null>(null);
+  const [pickedAgentCode, setPickedAgentCode] = useState('');
+  const openAgentGate = (service: string, action: string) => { setPickedAgentCode(''); setAgentGate({ service, action }); };
+  const confirmAgentGate = () => {
+    if (!agentGate) return;
+    onOpenService?.(agentGate.service);
+    setAgentGate(null);
+  };
   const ACTION_BTNS = [
     { label:'Start Journey', bg:'#1360d2', color:'#fff', border:'none', shadow:'0 2px 8px rgba(19,96,210,0.22)',
       icon:<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg> },
@@ -655,6 +667,7 @@ function DoneWithPrepare({ answers, onRestart, onOpenService }: { answers: Recor
       icon:<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#5a6478" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><title>Service Info</title><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M12 12v4"/></svg> },
   ];
   return (
+    <>
     <div style={{ display:'flex', flexDirection:'column', gap:10, animation:'msgIn 0.35s ease' }}>
       {/* Header */}
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', background:'#fff', border:'1.5px solid #1360d2', borderRadius:14, padding:'16px 20px', boxShadow:'0 2px 10px rgba(19,96,210,0.08)' }}>
@@ -719,7 +732,7 @@ function DoneWithPrepare({ answers, onRestart, onOpenService }: { answers: Recor
               <div style={{ display:'flex', gap:6, flexShrink:0 }}>
                 {ACTION_BTNS.map(a => (
                   <button key={a.label}
-                    onClick={() => { if (a.label === 'Start Journey' || a.label === 'View Requests') onOpenService?.(p.label); }}
+                    onClick={() => { if (a.label === 'Start Journey' || a.label === 'View Requests') openAgentGate(p.label, a.label); }}
                     style={{ display:'flex', alignItems:'center', gap:4, padding:'5px 10px', borderRadius:6, background:a.bg, border:a.border, color:a.color, fontFamily:font, fontSize:11, fontWeight:600, cursor:'pointer', whiteSpace:'nowrap', boxShadow:a.shadow, transition:'opacity 0.15s' }}
                     onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.opacity='0.8'}
                     onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.opacity='1'}>
@@ -732,6 +745,44 @@ function DoneWithPrepare({ answers, onRestart, onOpenService }: { answers: Recor
         );
       })}
     </div>
+
+    {agentGate && (
+      <div style={{ position:'fixed', inset:0, zIndex:300, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(14,27,61,0.45)' }}
+        onClick={() => setAgentGate(null)}>
+        <div style={{ background:'#fff', borderRadius:16, width:420, maxWidth:'90vw', boxShadow:'0 10px 40px rgba(0,0,0,0.2)', overflow:'hidden' }}
+          onClick={e => e.stopPropagation()}>
+          <div style={{ padding:'20px 24px', borderBottom:'1px solid #eef0f6', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+            <div>
+              <p style={{ fontFamily:font, fontSize:18, fontWeight:700, color:'#111838', margin:0 }}>Select Agent Code</p>
+              <p style={{ fontFamily:font, fontSize:12, color:'#697498', margin:'3px 0 0' }}>{agentGate.action} — {agentGate.service}</p>
+            </div>
+            <button onClick={() => setAgentGate(null)}
+              style={{ width:32, height:32, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', background:'transparent', border:'none', cursor:'pointer', color:'#697498' }}>
+              <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 5l10 10M15 5L5 15" strokeLinecap="round" /></svg>
+            </button>
+          </div>
+          <div style={{ padding:'20px 24px' }}>
+            <label style={{ fontFamily:font, fontSize:13, fontWeight:600, color:'#111838', display:'block', marginBottom:8 }}>Agent Code</label>
+            <select value={pickedAgentCode} onChange={e => setPickedAgentCode(e.target.value)}
+              style={{ width:'100%', height:44, borderRadius:8, border:'1.5px solid #d5ddfb', padding:'0 12px', fontFamily:font, fontSize:14, color:'#111838', background:'#fff' }}>
+              <option value="">Select an agent code…</option>
+              {AGENT_CODES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div style={{ padding:'16px 24px', borderTop:'1px solid #eef0f6', display:'flex', justifyContent:'flex-end', gap:10 }}>
+            <button onClick={() => setAgentGate(null)}
+              style={{ height:42, padding:'0 18px', borderRadius:8, border:'1.5px solid #1360d2', background:'#fff', color:'#1360d2', fontFamily:font, fontSize:14, fontWeight:600, cursor:'pointer' }}>
+              Cancel
+            </button>
+            <button onClick={confirmAgentGate} disabled={!pickedAgentCode}
+              style={{ height:42, padding:'0 18px', borderRadius:8, border:'none', background: pickedAgentCode ? '#1360d2' : '#a9c2f0', color:'#fff', fontFamily:font, fontSize:14, fontWeight:600, cursor: pickedAgentCode ? 'pointer' : 'not-allowed' }}>
+              Proceed
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
 

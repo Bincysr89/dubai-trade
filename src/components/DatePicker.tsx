@@ -290,6 +290,7 @@ export function DateInput({
   showTime = false,
   style,
   className,
+  disabled = false,
 }: {
   label: string;
   value: string;
@@ -298,6 +299,7 @@ export function DateInput({
   showTime?: boolean;
   style?: React.CSSProperties;
   className?: string;
+  disabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -340,19 +342,19 @@ export function DateInput({
       onMouseLeave={() => setHovered(false)}>
       {/* Trigger field */}
       <div
-        onClick={() => setOpen(o => !o)}
+        onClick={() => { if (!disabled) setOpen(o => !o); }}
         style={{
           height: 56, border: `1.5px solid ${open ? '#1360d2' : '#d5ddfb'}`,
-          borderRadius: 4, background: '#fff', display: 'flex', alignItems: 'center',
-          paddingLeft: 12, paddingRight: 12, cursor: 'pointer',
+          borderRadius: 4, background: disabled ? '#f2f4f8' : '#fff', display: 'flex', alignItems: 'center',
+          paddingLeft: 12, paddingRight: 12, cursor: disabled ? 'not-allowed' : 'pointer',
           justifyContent: 'space-between', boxSizing: 'border-box',
-          transition: 'border-color 0.15s',
+          transition: 'border-color 0.15s', opacity: disabled ? 0.65 : 1,
         }}>
         <span style={{ fontSize: 16, color: hasVal ? '#0e1b3d' : 'transparent', fontFamily: FONT, lineHeight: 1, flex: 1 }}>
           {displayVal || 'placeholder'}
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingBottom: 0 }}>
-          {hasVal && hovered && (
+          {hasVal && hovered && !disabled && (
             <XIcon onClear={e => { e.stopPropagation(); onChange(''); }} />
           )}
           <CalIcon />
@@ -363,7 +365,7 @@ export function DateInput({
         {required && <span style={{ color: '#e8212e' }}>*</span>}{label}
       </span>
       {/* Calendar popup */}
-      {open && (
+      {open && !disabled && (
         <div style={{
           position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 600,
           background: '#fff', borderRadius: 12, border: '1px solid #e0e8f5',
@@ -669,10 +671,12 @@ export function StatusAsOnBadge({
   fromValue,
   toValue,
   onApply,
+  label = 'Status',
 }: {
   fromValue: string; // 'YYYY-MM-DD'
   toValue: string;   // 'YYYY-MM-DD'
   onApply: (from: string, to: string) => void;
+  label?: string;
 }) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -692,7 +696,7 @@ export function StatusAsOnBadge({
         <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="#1360d2" strokeWidth="1.6">
           <rect x="3" y="4" width="14" height="13" rx="2" /><path d="M3 8h14M7 2v4M13 2v4" />
         </svg>
-        <span>Status As On {fmtDate(fromValue)} To {fmtDate(toValue)}</span>
+        <span>{label} As On {fmtDate(fromValue)} To {fmtDate(toValue)}</span>
         <button type="button" onClick={() => setOpen(o => !o)}
           className="text-[#1360d2] font-medium hover:opacity-70 flex items-center gap-1">
           Modify

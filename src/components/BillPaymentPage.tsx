@@ -135,6 +135,63 @@ const failedPaymentRows = PAYMENT_ROWS.filter(r => r.status === 'Failed');
 const failedPayCount    = failedPaymentRows.length;
 const failedPayAmt      = sumPayAmount(failedPaymentRows);
 
+/* CDR (Credit Account) aggregates — "usage" is the portion of each account's limit that's
+   been drawn down (totalLimit - availableLimit), not the raw availableLimit figure itself. */
+const cdrDueAmt      = ACCOUNTS.reduce((s, a) => s + parseFloat(a.amountDue.replace(/,/g, '')), 0);
+const cdrUsageAmt    = ACCOUNTS.reduce((s, a) => s + (parseFloat(a.totalLimit.replace(/,/g, '')) - parseFloat(a.availableLimit.replace(/,/g, ''))), 0);
+const cdrTotalLimit  = ACCOUNTS.reduce((s, a) => s + parseFloat(a.totalLimit.replace(/,/g, '')), 0);
+const cdrAvailable   = ACCOUNTS.reduce((s, a) => s + parseFloat(a.availableLimit.replace(/,/g, '')), 0);
+const cdrTotalToPay = cdrDueAmt;
+const totalDueToDubaiCustoms = cdrTotalToPay + pendingInvAmt;
+
+/* CDR Usage trend — last 6 months, trailing up to the current month's real usage figure. */
+const CDR_USAGE_TREND = [
+  { month: 'Jan', amt: 980000 },
+  { month: 'Feb', amt: 1120000 },
+  { month: 'Mar', amt: 1045000 },
+  { month: 'Apr', amt: 1210000 },
+  { month: 'May', amt: 1298000 },
+  { month: 'Jun', amt: cdrUsageAmt },
+];
+
+/* Debit account top-ups — last 6 months, total amount added to the wallet each month. */
+const DEBIT_TOPUP_TREND = [
+  { month: 'Jan', amt: 12000 },
+  { month: 'Feb', amt: 8500 },
+  { month: 'Mar', amt: 21000 },
+  { month: 'Apr', amt: 15500 },
+  { month: 'May', amt: 9800 },
+  { month: 'Jun', amt: 18200 },
+];
+
+/* Overview dashboard — status breakdowns for the Invoice / Payment donut charts. */
+const INVOICE_STATUS_ORDER = ['Unpaid', 'Partially Paid', 'Initiated', 'Paid'] as const;
+const INVOICE_STATUS_COLOR: Record<string, string> = { 'Unpaid': '#b45309', 'Partially Paid': '#ea580c', 'Initiated': '#1360d2', 'Paid': '#1b9841' };
+const invoiceStatusBreakdown = INVOICE_STATUS_ORDER.map(status => {
+  const rows = INVOICE_ROWS.filter(r => r.status === status);
+  return { status, count: rows.length, amt: sumAmount(rows), color: INVOICE_STATUS_COLOR[status] };
+}).filter(s => s.count > 0);
+
+const PAYMENT_STATUS_ORDER = ['Success', 'Initiated', 'Failed'] as const;
+/* Lighter red/amber/green traffic-light shades, per the requested donut styling. */
+const PAYMENT_STATUS_COLOR: Record<string, string> = { 'Success': '#1B9841', 'Initiated': '#fbbf24', 'Failed': '#f87171' };
+
+/* Payment Status, bucketed by the same Today / 7 Days / 30 Days window as Recent Activity,
+   so the Payment Status card can carry its own period toggle. */
+const PAYMENT_STATUS_BY_PERIOD: Record<'today' | 'last7' | 'last30', { status: string; count: number; amt: number; color: string }[]> = {
+  today: [], last7: [], last30: [],
+};
+(['today', 'last7', 'last30'] as const).forEach(p => {
+  PAYMENT_STATUS_BY_PERIOD[p] = PAYMENT_STATUS_ORDER.map(status => {
+    const rows = PAYMENT_ROWS.filter(r => r.status === status && (
+      p === 'today' ? parseTxDate(r.txDate) === DASHBOARD_TODAY_ORD :
+      p === 'last7'  ? DASHBOARD_TODAY_ORD - parseTxDate(r.txDate) < 7 :
+                        DASHBOARD_TODAY_ORD - parseTxDate(r.txDate) < 30
+    ));
+    return { status, count: rows.length, amt: sumPayAmount(rows), color: PAYMENT_STATUS_COLOR[status] };
+  }).filter(s => s.count > 0);
+});
+
 /* Recent Activity Summary — Today / Last 7 Days / Last 30 Days, precomputed for both
    windows so the component can toggle between them without re-deriving on every render. */
 const invGenToday  = INVOICE_ROWS.filter(r => parseInvDate(r.date) === DASHBOARD_TODAY_ORD);
@@ -168,6 +225,14 @@ const RECENT_ACTIVITY = {
 
 const fmtBalance = (n: number) =>
   'AED ' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+/* Compact currency — CDR limits run into the billions, too wide for a dashboard tile. */
+const fmtCompact = (n: number) => {
+  if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
+  if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+  if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+  return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
 
 /* Transaction date timestamps carry seconds (DD-MM-YYYY HH:MM:SS) — display without them. */
 const stripSeconds = (ts: string) => ts.replace(/(\d{2}:\d{2}):\d{2}\b/, '$1');
@@ -291,10 +356,10 @@ function ReceiptModal({ onClose, rows }: { onClose: () => void; rows: typeof PAY
           <div className="bg-[#f5f8ff] rounded-[8px] border border-[#e0e8f5] p-4 grid grid-cols-4 gap-4">
             {[
               ['Business Name', 'crnuser01'],
-              ['Username', 'crnuser01'],
               ['Business Code', 'AE-1051144'],
               ['Date', '10-06-2026'],
               ['Receipt No.', 'Z-12645'],
+              ['Username', 'crnuser01'],
             ].map(([label, value]) => (
               <div key={label}>
                 <p className="text-[16px] text-[#697498] mb-[3px]" style={{ fontFamily: font }}>{label}</p>
@@ -782,8 +847,9 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const [stmtType, setStmtType]         = useState<'summary' | 'detailed' | 'transaction'>('summary');
   const [stmtYear, setStmtYear]         = useState('2026');
   const [stmtMonth, setStmtMonth]       = useState('May');
-  const [stmtFromDate, setStmtFromDate] = useState('09-06-2026');
-  const [stmtToDate, setStmtToDate]     = useState('10-06-2026');
+  const [stmtFromDate, setStmtFromDate] = useState('2026-06-09');
+  const [stmtToDate, setStmtToDate]     = useState('2026-06-10');
+  const [stmtRangeError, setStmtRangeError] = useState(false);
   const [downloadFmt, setDownloadFmt]   = useState('');
   const [stmtAccount, setStmtAccount]   = useState('');
   const [stmtAccSearch, setStmtAccSearch] = useState('');
@@ -807,6 +873,11 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const [fDueFilter, setFDueFilter] = useState<'' | 'overdue' | 'dueSoon'>('');
   /** Recent Activity Summary window toggle (Overview tab). */
   const [recentPeriodDays, setRecentPeriodDays] = useState<'today' | 7 | 30>('today');
+  /** Account-number picker for the Overview tab's CDR Usage / Debit Account Top-ups trend charts. */
+  const [cdrChartAccount, setCdrChartAccount]     = useState(ACCOUNTS[0]?.account ?? '');
+  const [cdrChartAccountOpen, setCdrChartAccountOpen] = useState(false);
+  const [debitChartAccount, setDebitChartAccount] = useState(DEBIT_ACCOUNTS[0]?.account ?? '');
+  const [debitChartAccountOpen, setDebitChartAccountOpen] = useState(false);
 
   /* Account & Payment bottom-bar search */
   const [accSearchType, setAccSearchType]         = useState('Account Number');
@@ -827,6 +898,9 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const [invTxDetails,    setInvTxDetails]    = useState<typeof PAYMENT_ROWS | null>(null);
   const [payFromDate, setPayFromDate] = useState('2026-06-09');
   const [payToDate,   setPayToDate]   = useState('2026-06-10');
+  const [payDateFilterType, setPayDateFilterType] = useState('');
+  const [payExportOpen, setPayExportOpen] = useState(false);
+  const payExportRef = useRef<HTMLDivElement>(null);
   const [expandedPayRow, setExpandedPayRow] = useState<number | null>(null);
 
 
@@ -839,6 +913,15 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
     document.addEventListener('mousedown', h);
     return () => document.removeEventListener('mousedown', h);
   }, [openFlyout]);
+
+  useEffect(() => {
+    if (!payExportOpen) return;
+    const h = (e: MouseEvent) => {
+      if (payExportRef.current && !payExportRef.current.contains(e.target as Node)) setPayExportOpen(false);
+    };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, [payExportOpen]);
 
   useEffect(() => {
     if (!invTypeOpen) return;
@@ -1745,10 +1828,10 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 <div className="bg-[#f5f8ff] rounded-[8px] border border-[#e0e8f5] p-4 grid grid-cols-4 gap-4">
                   {[
                     ['Business Name', 'crnuser01'],
-                    ['Username',      'crnuser01'],
                     ['Business Code', 'AE-1051144'],
                     ['Date',          '10-06-2026'],
                     ['Receipt No.',   'Z-12648'],
+                    ['Username',      'crnuser01'],
                   ].map(([label, value]) => (
                     <div key={label}>
                       <p className="text-[16px] text-[#697498] mb-[3px]" style={{ fontFamily: font }}>{label}</p>
@@ -2215,13 +2298,13 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
           </button>
           {paySearchTypeOpen && (
             <div className="absolute z-[200] top-[50px] left-0 bg-white shadow-lg rounded border border-[#e0e8f5] w-[180px] py-1">
-              {['Transaction No.', 'Transaction Type'].map(opt => (
+              {['Transaction No.', 'Invoice Type'].map(opt => (
                 <button key={opt} className="w-full px-4 py-2 text-left text-[16px] text-[#0e1b3d] hover:bg-[#e2ebf9]" style={{ fontFamily: font }}
                   onClick={() => { setPaySearchType(opt); setPaySearchValue(''); setPaySearchTypeOpen(false); }}>{opt}</button>
               ))}
             </div>
           )}
-          {paySearchType === 'Transaction Type' ? (
+          {paySearchType === 'Invoice Type' ? (
             <div className="flex items-center px-[12px] gap-[8px] flex-1">
               <select
                 value={paySearchValue}
@@ -2271,45 +2354,66 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
 
         <div className="flex-1" />
 
-        {/* Download payments (Excel) */}
-        <button
-          className="h-[48px] px-[16px] flex items-center gap-2 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] transition-colors flex-shrink-0"
-          style={{ fontFamily: font }}
-        >
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8">
-            <path d="M12 3v12M8 11l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" strokeLinecap="round" />
-          </svg>
-          Download
-        </button>
+        {/* Export payments (Excel / PDF) */}
+        <div className="relative flex-shrink-0" ref={payExportRef}>
+          <button
+            onClick={() => setPayExportOpen(o => !o)}
+            className="h-[48px] px-[16px] flex items-center gap-2 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] transition-colors"
+            style={{ fontFamily: font }}
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <path d="M12 3v12M8 11l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" strokeLinecap="round" />
+            </svg>
+            Export
+            <svg viewBox="0 0 20 20" width="14" height="14" fill="none">
+              <path d="M5 8l5 5 5-5" stroke="#1360d2" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </button>
+          {payExportOpen && (
+            <div className="absolute z-[200] top-[52px] right-0 bg-white shadow-lg rounded border border-[#e0e8f5] w-[140px] py-1">
+              {['Excel', 'PDF'].map(opt => (
+                <button key={opt} className="w-full px-4 py-2 text-left text-[16px] text-[#0e1b3d] hover:bg-[#e2ebf9]" style={{ fontFamily: font }}
+                  onClick={() => setPayExportOpen(false)}>{opt}</button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Advance Filters panel */}
       {payAdvFilters && (
         <div className="relative bg-white rounded-[8px] border border-[#d5ddfb] p-5 mb-[10px]"
           style={{ boxShadow: 'rgba(0, 0, 0, 0.12) 4px 4px 30px 0px' }}>
-          {/* Close button */}
+          {/* Close button — floats above the panel's top-right corner so it never overlaps the field row */}
           <button onClick={() => setPayAdvFilters(false)}
-            className="absolute top-3 right-3 z-10 size-[28px] flex items-center justify-center rounded-full hover:bg-[#f0f4ff] transition-colors text-[#697498] hover:text-[#0e1b3d]">
+            className="absolute z-10 size-[28px] flex items-center justify-center rounded-full bg-white hover:bg-[#f0f4ff] transition-colors text-[#697498] hover:text-[#0e1b3d]"
+            style={{ top: -14, right: -10, border: '1px solid #e0e8f5', boxShadow: '0 2px 8px rgba(14,27,61,0.12)' }}>
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2">
               <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
             </svg>
           </button>
-          {/* Row 1: 4 fields */}
-          <div className="grid grid-cols-4 gap-4 mb-4">
+          {/* Row 1: 5 fields */}
+          <div className="grid grid-cols-5 gap-4 mb-4">
             <FloatDropdown
-              label="Transaction Type"
-              value={paySearchType === 'Transaction Type' ? paySearchValue : ''}
+              label="Invoice Type"
+              value={paySearchType === 'Invoice Type' ? paySearchValue : ''}
               options={['Case Management Demand Notice', 'Multiple Bill Settlement']}
-              onChange={v => { setPaySearchType('Transaction Type'); setPaySearchValue(v); }}
+              onChange={v => { setPaySearchType('Invoice Type'); setPaySearchValue(v); }}
             />
             <FloatInput
               label="Invoice / Account No."
               value={paySearchType === 'Transaction No.' ? paySearchValue : ''}
               onChange={v => { setPaySearchType('Transaction No.'); setPaySearchValue(v); }}
             />
-            <DateInput label="From Date" value={payFromDate} onChange={setPayFromDate} />
-            <DateInput label="To Date"   value={payToDate}   onChange={setPayToDate}   />
+            <FloatDropdown
+              label="Date Filter Type"
+              value={payDateFilterType}
+              options={['Receipt Date', 'Transaction Date']}
+              onChange={v => { setPayDateFilterType(v); if (!v) { setPayFromDate(''); setPayToDate(''); } }}
+            />
+            <DateInput label="From Date" value={payFromDate} onChange={setPayFromDate} disabled={!payDateFilterType} />
+            <DateInput label="To Date" value={payToDate} onChange={setPayToDate} disabled={!payDateFilterType} />
           </div>
           {/* Row 2: 1 field + buttons */}
           <div className="flex items-center gap-4">
@@ -2322,15 +2426,15 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               />
             </div>
             <button className="h-[56px] px-6 rounded-[4px] text-[16px] text-white flex-shrink-0" style={{ background: '#1360d2', fontFamily: font }}>Search</button>
-            <button onClick={() => { setPayFromDate('09-06-2026'); setPayToDate('10-06-2026'); setPayStatusFilter(''); setPaySearchValue(''); }}
+            <button onClick={() => { setPayFromDate('2026-06-09'); setPayToDate('2026-06-10'); setPayDateFilterType(''); setPayStatusFilter(''); setPaySearchValue(''); }}
               className="h-[56px] px-6 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] flex-shrink-0" style={{ fontFamily: font }}>Reset</button>
           </div>
         </div>
       )}
 
-      {/* Row 2 — Status As On badge */}
+      {/* Row 2 — Transaction Date As On badge */}
       <div className="flex justify-center mb-[10px]">
-        <StatusAsOnBadge fromValue={payFromDate} toValue={payToDate}
+        <StatusAsOnBadge label="Transaction Date" fromValue={payFromDate} toValue={payToDate}
           onApply={(from, to) => { setPayFromDate(from); setPayToDate(to); }} />
       </div>
 
@@ -2349,7 +2453,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
         <table style={{ width: '100%', minWidth: 1100, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }}>
           <thead>
             <tr>
-              {renderFilterHeader('pay', 'Transaction Type', { style: { borderTopLeftRadius: 8, borderBottomLeftRadius: 8, paddingLeft: 16 } })}
+              {renderFilterHeader('pay', 'Invoice Type', { style: { borderTopLeftRadius: 8, borderBottomLeftRadius: 8, paddingLeft: 16 } })}
               {renderFilterHeader('pay', 'Transaction No.')}
               {renderFilterHeader('pay', 'Receipt No.')}
               {renderFilterHeader('pay', 'Transaction Date')}
@@ -2959,6 +3063,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               setFToDate('2026-06-10');
             };
             const openPaymentsMade = () => { setActiveMenu('Payments'); setPayStatusFilter('Success'); };
+            const openCdr = () => { setActiveMenu('Accounts'); setAccTypeFilter('Credit Account'); };
+            const openPaymentStatus = (status: string) => { setActiveMenu('Payments'); setPayStatusFilter(status); };
 
             const period = recentPeriodDays === 'today' ? 'today' : recentPeriodDays === 7 ? 'last7' : 'last30';
             const ACTIVITY_ROWS = [
@@ -2966,187 +3072,609 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 color: '#568BDB', icon: <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#568BDB" strokeWidth="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5" strokeLinecap="round"/></svg> },
               { key: 'payMade', label: 'Payments Made', desc: 'Successfully settled transactions', data: RECENT_ACTIVITY.paymentsMade, onClick: openPaymentsMade,
                 color: '#1B9841', icon: <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1B9841" strokeWidth="1.8"><path d="M5 13l4 4 10-10" strokeLinecap="round" strokeLinejoin="round"/></svg> },
-              { key: 'payFailed', label: 'Failed Payments', desc: 'Attempts that need a retry', data: RECENT_ACTIVITY.failedPayments, onClick: openFailed,
+              { key: 'payFailed', label: 'Pending Payments', desc: 'Attempts that need a retry', data: RECENT_ACTIVITY.failedPayments, onClick: openFailed,
                 color: '#DC3545', icon: <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#DC3545" strokeWidth="1.8"><path d="M18 6L6 18M6 6l12 12" strokeLinecap="round"/></svg> },
             ];
 
             const SUMMARY_CARDS = [
-              { key: 'pending', label: 'Pending Invoices', count: pendingInvCount, amt: pendingInvAmt, color: '#1360d2', bg: 'linear-gradient(160deg,#dce9fc 0%,#ffffff 75%)', border: '#b3caff', onClick: openPending,
-                icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1360d2" strokeWidth="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5" strokeLinecap="round"/></svg>,
-                tip: undefined as string | undefined },
+              { key: 'pending', label: 'Pending Invoices', count: pendingInvCount, amt: pendingInvAmt, color: '#b45309', bg: 'linear-gradient(160deg,#ffedd1 0%,#ffffff 75%)', border: '#fcd7a0', onClick: openPending,
+                icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#b45309" strokeWidth="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5" strokeLinecap="round"/></svg> },
               { key: 'overdue', label: 'Overdue Invoices', count: overdueInvCount, amt: overdueInvAmt, color: '#dc3545', bg: 'linear-gradient(160deg,#fde3e3 0%,#ffffff 75%)', border: '#f5b8b8', onClick: openOverdue,
-                icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#dc3545" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v6" strokeLinecap="round"/><circle cx="12" cy="16.5" r="0.9" fill="#dc3545"/></svg>,
-                tip: undefined as string | undefined },
+                icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#dc3545" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v6" strokeLinecap="round"/><circle cx="12" cy="16.5" r="0.9" fill="#dc3545"/></svg> },
               { key: 'dueSoon', label: 'Current / Due Soon', count: dueSoonInvCount, amt: dueSoonInvAmt, color: '#b45309', bg: 'linear-gradient(160deg,#ffedd1 0%,#ffffff 75%)', border: '#fcd7a0', onClick: openDueSoon,
-                icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#b45309" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
-                tip: undefined as string | undefined },
-              { key: 'failed', label: 'Failed Payments', count: failedPayCount, amt: failedPayAmt, color: failedPayCount > 0 ? '#c0392b' : '#28a745',
-                bg: failedPayCount > 0 ? 'linear-gradient(160deg,#fde3e3 0%,#ffffff 75%)' : 'linear-gradient(160deg,#d7f5e3 0%,#ffffff 75%)', border: failedPayCount > 0 ? '#f5b8b8' : '#b7ecc8', onClick: openFailed,
-                icon: failedPayCount > 0
-                  ? <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#c0392b" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v6" strokeLinecap="round"/><circle cx="12" cy="16.5" r="0.9" fill="#c0392b"/></svg>
-                  : <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#28a745" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5" strokeLinecap="round" strokeLinejoin="round"/></svg>,
-                tip: undefined as string | undefined },
+                icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#b45309" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3" strokeLinecap="round" strokeLinejoin="round"/></svg> },
             ];
 
-            return (
-            <div className="flex flex-col gap-[18px] w-full">
+            /* Total Due to Dubai Customs — CDR Total Amount to Pay + Pending Invoices, with a mini
+               donut breaking out how much of that total is already overdue. */
+            const dueOverduePct = totalDueToDubaiCustoms > 0 ? (overdueInvAmt / totalDueToDubaiCustoms) * 100 : 0;
 
-              {/* ── 1. Payment Summary Cards — equal weight, four peers ────── */}
-              <div className="grid grid-cols-4 gap-[16px]">
-                {SUMMARY_CARDS.map(({ key, label, count, amt, color, bg, border, icon, onClick, tip }) => (
-                  <button key={key} onClick={onClick}
-                    className="rounded-[16px] p-[20px] text-left relative overflow-hidden hover:shadow-lg hover:-translate-y-[1px] transition-all"
-                    style={{ background: bg, border: `1.5px solid ${border}`, boxShadow: '0 1px 4px rgba(14,27,61,0.06)' }}>
+            /* Shared donut-segment math — first segment starts at 12 o'clock, each subsequent
+               segment picks up where the previous one left off. A small gap is trimmed from each
+               segment's true span so adjacent slices read as visually distinct wedges. */
+            const donutSegments = (parts: { pct: number; color: string }[], gap = 6) => {
+              let cumulative = 0;
+              return parts.map(p => {
+                const seg = { ...p, pct: Math.max(0, p.pct - gap), offset: 25 - (cumulative + gap / 2) };
+                cumulative += p.pct;
+                return seg;
+              });
+            };
+            const Donut = ({ size, segments, centerValue, centerLabel }: { size: number; segments: { pct: number; color: string; offset: number }[]; centerValue: React.ReactNode; centerLabel: string }) => {
+              const shadowId = `donutShadow-${centerLabel.replace(/[^a-zA-Z0-9]/g, '')}`;
+              return (
+                <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
+                  <svg viewBox="0 0 42 42" width={size} height={size}>
+                    <defs>
+                      <filter id={shadowId} x="-60%" y="-60%" width="220%" height="220%">
+                        <feDropShadow dx="0" dy="0.5" stdDeviation="0.9" floodColor="#0e1b3d" floodOpacity="0.16" />
+                      </filter>
+                    </defs>
+                    {segments.map((seg, i) => seg.pct > 0 && (
+                      <circle key={i} cx="21" cy="21" r="15.915" fill="transparent" stroke={seg.color} strokeWidth="3" strokeLinecap="round"
+                        strokeDasharray={`${seg.pct} ${100 - seg.pct}`} strokeDashoffset={seg.offset}
+                        style={{ transition: 'stroke-dasharray 0.3s' }} />
+                    ))}
+                    <circle cx="21" cy="21" r="13" fill="#fff" filter={`url(#${shadowId})`} />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-[6px]">
+                    <span className="text-[22px] font-extrabold text-[#0e1b3d] leading-none flex items-center gap-[3px]" style={{ fontFamily: font }}>{centerValue}</span>
+                    <span className="text-[12px] text-[#8f94ae] mt-[5px]" style={{ fontFamily: font }}>{centerLabel}</span>
+                  </div>
+                </div>
+              );
+            };
+            /* Concentric double-ring gauge — each metric gets its own full-circle track, so a
+               small percentage still reads as a clearly visible arc instead of a sliver of a
+               single shared ring. Values are the true percentages; a minimum sweep keeps a
+               non-zero-but-tiny value from disappearing visually. */
+            const RingGauge = ({ size, outer, inner }: { size: number; outer: { pct: number; color: string; track: string }; inner: { pct: number; color: string; track: string } }) => {
+              const outerVisual = outer.pct > 0 ? Math.max(outer.pct, 4) : 0;
+              const innerVisual = inner.pct > 0 ? Math.max(inner.pct, 4) : 0;
+              return (
+                <svg viewBox="0 0 42 42" width={size} height={size}>
+                  <circle cx="21" cy="21" r="16" fill="transparent" stroke={outer.track} strokeWidth="3" />
+                  {outerVisual > 0 && (
+                    <circle cx="21" cy="21" r="16" fill="transparent" stroke={outer.color} strokeWidth="3" strokeLinecap="round"
+                      pathLength={100} strokeDasharray={`${outerVisual} ${100 - outerVisual}`} strokeDashoffset="25"
+                      style={{ transition: 'stroke-dasharray 0.3s' }} />
+                  )}
+                  <circle cx="21" cy="21" r="10" fill="transparent" stroke={inner.track} strokeWidth="3" />
+                  {innerVisual > 0 && (
+                    <circle cx="21" cy="21" r="10" fill="transparent" stroke={inner.color} strokeWidth="3" strokeLinecap="round"
+                      pathLength={100} strokeDasharray={`${innerVisual} ${100 - innerVisual}`} strokeDashoffset="25"
+                      style={{ transition: 'stroke-dasharray 0.3s' }} />
+                  )}
+                </svg>
+              );
+            };
+            /* Dashed-tick circular utilisation ring — a full circle of short radial dashes,
+               with the utilised-percentage arc (starting at 12 o'clock, clockwise) picked out
+               in the zone color while the rest stay a neutral track color. */
+            const DashRingGauge = ({ pct, size = 200, ticks = 60, color }: { pct: number; size?: number; ticks?: number; color: string }) => {
+              const p = Math.min(100, Math.max(0, pct));
+              const activeTicks = p > 0 ? Math.max(1, Math.round((p / 100) * ticks)) : 0;
+              const cx = 100, cy = 100, outerR = 92, innerR = 78;
+              return (
+                <svg viewBox="0 0 200 200" width={size} height={size}>
+                  {Array.from({ length: ticks }).map((_, i) => (
+                    <line key={i} x1={cx} y1={cy - outerR} x2={cx} y2={cy - innerR}
+                      stroke={i < activeTicks ? color : '#e7ebf3'} strokeWidth="2.2" strokeLinecap="round"
+                      transform={`rotate(${(360 / ticks) * i},${cx},${cy})`} />
+                  ))}
+                </svg>
+              );
+            };
+            const legendRow = (key: string, color: string, label: string, right: React.ReactNode, sub: React.ReactNode, onClick?: () => void) => (
+              <button key={key} onClick={onClick} disabled={!onClick}
+                className="flex items-center gap-[8px] py-[7px] px-[8px] rounded-[8px] hover:bg-[#fafbff] transition-colors text-left disabled:cursor-default w-full"
+                style={{ fontFamily: font }}>
+                <span className="size-[9px] rounded-full flex-shrink-0" style={{ background: color }} />
+                <span className="min-w-0 text-[14px] text-[#4b5468] truncate">{label}</span>
+                <span className="text-[16px] font-bold text-[#0e1b3d] leading-none flex-shrink-0">{right}</span>
+                <div className="flex-1 min-w-[8px]" />
+                {sub && <span className="text-[13px] font-medium text-[#4b5468] leading-none flex-shrink-0">{sub}</span>}
+              </button>
+            );
+
+            const cdrDuePct = cdrTotalLimit > 0 ? (cdrDueAmt / cdrTotalLimit) * 100 : 0;
+            const cdrUsagePct = cdrTotalLimit > 0 ? (cdrUsageAmt / cdrTotalLimit) * 100 : 0;
+            const cdrAvailPct = Math.max(0, 100 - cdrDuePct - cdrUsagePct);
+            const cdrSegs = donutSegments([
+              { pct: cdrDuePct, color: '#b45309' },
+              { pct: cdrUsagePct, color: '#7c3aed' },
+              { pct: cdrAvailPct, color: '#93b4f7' },
+            ]);
+            /* Total limit utilised, as a % of the total CDR limit — drives the meter gauge below.
+               Pinned to a fixed demo value so the gauge always reads as a meaningful, visible arc. */
+            const cdrUtilPct = 15;
+            const cdrZone = (pct: number) =>
+              pct < 60 ? { color: '#1b9841', label: 'Healthy' } :
+              pct < 85 ? { color: '#b45309', label: 'Moderate' } :
+              { color: '#dc2626', label: 'Critical' };
+
+            return (
+            <div className="flex flex-col gap-[20px] w-full">
+
+              {/* ── Above-the-fold — 3 vertical sections ────────────────────── */}
+              <div className="grid grid-cols-3 gap-[16px] items-stretch">
+
+                {/* Section 1: Total Due to Dubai Customs — with its calculation breakdown */}
+                <div className="rounded-[16px] p-[22px] flex flex-col"
+                  style={{ background: 'linear-gradient(160deg,#e2ebf9 0%,#ffffff 75%)', border: '1.5px solid #93b4f7', boxShadow: '0 1px 4px rgba(14,27,61,0.06)' }}>
+                  <button onClick={openPending} className="text-left">
+                    <span className="text-[15px] font-medium text-[#4b5468]" style={{ fontFamily: font }}>Total Due to Dubai Customs</span>
+                    <span className="text-[30px] font-extrabold leading-none block mt-[10px] flex items-center gap-[6px]" style={{ color: '#1360d2', fontFamily: font, letterSpacing: '-1px' }}>
+                      <DirhamIcon size={24} color="#1360d2" />{totalDueToDubaiCustoms.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </span>
+                  </button>
+                  {/* Calculation breakdown */}
+                  <div className="flex flex-col gap-[10px] mt-[18px] pt-[16px] flex-1" style={{ borderTop: '1px solid #b3caff' }}>
+                    <button onClick={openCdr} className="flex items-center justify-between text-left hover:opacity-75 transition-opacity">
+                      <span className="text-[15px] text-[#4b5468]" style={{ fontFamily: font }}>Total Amount Pending to Pay – CDR</span>
+                      <span className="text-[17px] font-bold text-[#0e1b3d] flex items-center gap-[4px]" style={{ fontFamily: font }}>
+                        <DirhamIcon size={14} color="#0e1b3d" />{cdrTotalToPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      </span>
+                    </button>
+                    <div className="text-center text-[13px] text-[#93b4f7]" style={{ fontFamily: font }}>+</div>
+                    <button onClick={openPending} className="flex items-center justify-between text-left hover:opacity-75 transition-opacity">
+                      <span className="text-[15px] text-[#4b5468]" style={{ fontFamily: font }}>Total Amount - Pending Invoices</span>
+                      <span className="text-[17px] font-bold text-[#0e1b3d] flex items-center gap-[4px]" style={{ fontFamily: font }}>
+                        <DirhamIcon size={14} color="#0e1b3d" />{pendingInvAmt.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      </span>
+                    </button>
+                    <button onClick={openPending}
+                      className="flex items-center justify-center gap-[8px] mt-auto rounded-[10px] h-[44px] text-[15px] font-bold text-white transition-transform hover:-translate-y-[1px]"
+                      style={{ fontFamily: font, background: '#1360d2', boxShadow: '0 4px 10px rgba(19,96,210,0.28)' }}>
+                      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#fff" strokeWidth="2"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20" strokeLinecap="round"/><path d="M6 14h4" strokeLinecap="round"/></svg>
+                      View and Pay
+                    </button>
+                  </div>
+                </div>
+
+                {/* Section 2: CDR Account information + Wallet */}
+                <div className="flex flex-col gap-[16px]">
+                  <button onClick={openCdr}
+                    className="rounded-[16px] p-[20px] text-left relative overflow-hidden hover:shadow-lg hover:-translate-y-[1px] transition-all flex-1"
+                    style={{ background: 'linear-gradient(160deg,#ffedd1 0%,#ffffff 75%)', border: '1.5px solid #fcd7a0', boxShadow: '0 1px 4px rgba(14,27,61,0.06)' }}>
                     <div className="absolute top-[16px] right-[16px] size-[44px] rounded-[12px] flex items-center justify-center bg-white flex-shrink-0" style={{ boxShadow: '0 4px 10px rgba(14,27,61,0.10)' }}>
-                      {icon}
+                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#b45309" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3" strokeLinecap="round" strokeLinejoin="round"/></svg>
                     </div>
                     <div style={{ paddingRight: 56 }}>
-                      <span className="text-[15px] font-medium text-[#4b5468] flex items-center gap-[6px]" style={{ fontFamily: font }}>
-                        {label}
-                        {tip && (
-                          <span className="group/tip relative cursor-help" onClick={e => e.stopPropagation()}>
-                            <img src={infoIconSrc} alt="info" width="13" height="13" />
-                            <span className="absolute top-[calc(100%+6px)] left-0 z-[300] hidden group-hover/tip:block bg-[#0e1b3d] text-white rounded-[6px] px-[10px] py-[8px] shadow-lg pointer-events-none"
-                              style={{ fontSize: 12, fontFamily: font, width: 220 }}>
-                              {tip}
-                            </span>
-                          </span>
-                        )}
-                      </span>
-                      <span className="text-[34px] font-extrabold leading-none block mt-[10px]" style={{ color: '#0e1b3d', fontFamily: font, letterSpacing: '-1px' }}>{count}</span>
+                      <p className="text-[15px] text-[#4b5468]" style={{ fontFamily: font }}>Amount Pending to Pay – CDR</p>
+                      <p className="text-[24px] font-extrabold text-[#b45309] leading-none mt-[10px] flex items-center gap-[6px]" style={{ fontFamily: font, letterSpacing: '-1px' }}>
+                        <DirhamIcon size={19} color="#b45309" />{cdrDueAmt.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      </p>
                     </div>
-                    <div className="flex items-center justify-between mt-[14px] pt-[10px]" style={{ borderTop: `1px solid ${border}` }}>
-                      <span className="text-[11px] font-semibold uppercase tracking-wide text-[#8f94ae]" style={{ fontFamily: font }}>Amount</span>
-                      <span className="text-[18px] font-extrabold text-[#0e1b3d] flex items-center gap-[4px]" style={{ fontFamily: font, letterSpacing: '-0.3px' }}>
-                        <DirhamIcon size={14} color="#0e1b3d" />{amt.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    <div className="flex items-center justify-between mt-[14px] pt-[10px]" style={{ borderTop: '1px solid #fcd7a0' }}>
+                      <span className="text-[12px] text-[#697498]" style={{ fontFamily: font }}>{ACCOUNTS.length} CDR accounts</span>
+                      <span className="text-[13px] text-[#b45309] font-semibold flex items-center gap-1">
+                        View all <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#b45309" strokeWidth="2"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       </span>
                     </div>
                   </button>
-                ))}
-              </div>
 
-              {/* ── 2. Actions + Wallet (left) | Recent Activity (right) ──── */}
-              <div className="grid gap-[16px]" style={{ gridTemplateColumns: 'minmax(240px,1fr) 2fr' }}>
-
-                {/* Left: wallet balance + primary actions */}
-                <div className="flex flex-col gap-[12px]">
                   <button onClick={() => setActiveMenu('Accounts')}
-                    className="p-[20px] rounded-[16px] text-left relative overflow-hidden hover:shadow-md transition-shadow"
-                    style={{ background: '#fff', border: '1.5px solid #93b4f7', fontFamily: font }}>
+                    className="rounded-[16px] p-[20px] text-left relative overflow-hidden hover:shadow-lg hover:-translate-y-[1px] transition-all flex-1"
+                    style={{ background: '#fff', border: '1.5px solid #93b4f7', boxShadow: '0 1px 4px rgba(14,27,61,0.06)' }}>
                     <div className="absolute top-[16px] right-[16px] size-[44px] rounded-[12px] flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(160deg,#e8f0fe 0%,#ffffff 90%)', boxShadow: '0 4px 10px rgba(14,27,61,0.10)' }}>
                       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1e40af" strokeWidth="1.8"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 14h4" strokeLinecap="round"/></svg>
                     </div>
                     <div style={{ paddingRight: 56 }}>
-                      <p className="text-[15px] text-[#697498]">Debit Account (Wallet)</p>
-                      <p className="text-[34px] font-extrabold text-[#1e40af] leading-none mt-[10px]" style={{ letterSpacing: '-1px' }}>{fmtBalance(debitTotal)}</p>
+                      <p className="text-[15px] text-[#697498]" style={{ fontFamily: font }}>Debit Account (Wallet)</p>
+                      <p className="text-[24px] font-extrabold text-[#1e40af] leading-none mt-[10px]" style={{ letterSpacing: '-1px' }}>{fmtBalance(debitTotal)}</p>
                     </div>
-                    <div className="flex items-center justify-between mt-[14px] pt-[12px]" style={{ borderTop: '1px solid #e0e8f5' }}>
-                      <span className="text-[13px] text-[#697498]">{DEBIT_ACCOUNTS.length} account{DEBIT_ACCOUNTS.length !== 1 ? 's' : ''}</span>
-                      <span className="text-[14px] text-[#1e40af] font-semibold flex items-center gap-1">
+                    <div className="flex items-center justify-between mt-[14px] pt-[10px]" style={{ borderTop: '1px solid #e0e8f5' }}>
+                      <span className="text-[12px] text-[#697498]" style={{ fontFamily: font }}>{DEBIT_ACCOUNTS.length} account{DEBIT_ACCOUNTS.length !== 1 ? 's' : ''}</span>
+                      <span className="text-[13px] text-[#1e40af] font-semibold flex items-center gap-1">
                         View all <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#1e40af" strokeWidth="2"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       </span>
                     </div>
                   </button>
+                </div>
 
+                {/* Section 3: CDR Limit Utilization — dashed-tick ring gauge */}
+                <button onClick={openCdr}
+                  className="rounded-[16px] p-[20px] text-center flex flex-col hover:shadow-lg hover:-translate-y-[1px] transition-all"
+                  style={{ background: 'linear-gradient(160deg,#ffffff 0%,#dcfce7 100%)', border: '1.5px solid #16a34a', boxShadow: '0 1px 4px rgba(14,27,61,0.06)' }}>
+                  <p className="text-[15px] font-semibold text-[#4b5468] text-left" style={{ fontFamily: font }}>CDR Limit Utilization – Current Month</p>
+                  <div className="relative flex items-center justify-center flex-1 mt-[10px]">
+                    <DashRingGauge pct={cdrUtilPct} size={168} color={cdrZone(cdrUtilPct).color} />
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <span className="text-[28px] font-extrabold leading-none" style={{ color: '#0e1b3d', fontFamily: font }}>{cdrUtilPct}%</span>
+                    </div>
+                  </div>
+                  <p className="text-[16px] font-semibold text-[#0e1b3d] mt-[12px] flex items-center justify-center gap-[4px] flex-wrap" style={{ fontFamily: font }}>
+                    <span className="font-extrabold flex items-center gap-[3px]"><DirhamIcon size={14} color="#0e1b3d" />{cdrUsageAmt.toLocaleString('en-US', { maximumFractionDigits: 0 })}</span>
+                    <span className="text-[#4b5468] flex items-center gap-[3px]">out of <DirhamIcon size={12} color="#4b5468" />{fmtCompact(cdrTotalLimit)}</span>
+                  </p>
+                </button>
+              </div>
+
+              {/* ── Invoices — total available + pending/overdue/due-soon triage ── */}
+              <div>
+                <p className="text-[15px] font-bold text-[#0e1b3d] mb-[10px]" style={{ fontFamily: font }}>Invoices</p>
+                <div className="flex items-stretch gap-[16px]">
                   <button onClick={() => setActiveMenu('Invoices')}
-                    className="p-[20px] rounded-[16px] text-left relative overflow-hidden hover:shadow-md transition-shadow"
-                    style={{ background: '#fff', border: '1.5px solid #93b4f7', fontFamily: font }}>
-                    <div className="absolute top-[16px] right-[16px] size-[44px] rounded-[12px] flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(160deg,#e8f0fe 0%,#ffffff 90%)', boxShadow: '0 4px 10px rgba(14,27,61,0.10)' }}>
-                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1e40af" strokeWidth="1.8"><rect x="2" y="6" width="20" height="13" rx="2" /><path d="M2 10h20" strokeLinecap="round" /></svg>
+                    className="rounded-[16px] p-[20px] text-left relative overflow-hidden hover:shadow-lg hover:-translate-y-[1px] transition-all flex-1"
+                    style={{ background: 'linear-gradient(160deg,#dce9fc 0%,#ffffff 75%)', border: '1.5px solid #b3caff', boxShadow: '0 1px 4px rgba(14,27,61,0.06)' }}>
+                    <div className="absolute top-[16px] right-[16px] size-[44px] rounded-[12px] flex items-center justify-center bg-white flex-shrink-0" style={{ boxShadow: '0 4px 10px rgba(14,27,61,0.10)' }}>
+                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1360d2" strokeWidth="1.8"><rect x="2" y="6" width="20" height="13" rx="2" /><path d="M2 10h20" strokeLinecap="round" /></svg>
                     </div>
                     <div style={{ paddingRight: 56 }}>
-                      <p className="text-[15px] text-[#697498]">Total Invoices Available</p>
-                      <p className="text-[34px] font-extrabold text-[#1e40af] leading-none mt-[10px]" style={{ letterSpacing: '-1px' }}>{INVOICE_ROWS.length}</p>
+                      <span className="text-[15px] font-medium text-[#4b5468]" style={{ fontFamily: font }}>Total Invoices Available</span>
+                      <span className="text-[34px] font-extrabold leading-none block mt-[10px]" style={{ color: '#1360d2', fontFamily: font, letterSpacing: '-1px' }}>{pendingInvCount}</span>
                     </div>
-                    <div className="flex items-center justify-between mt-[14px] pt-[12px]" style={{ borderTop: '1px solid #e0e8f5' }}>
-                      <span className="text-[13px] text-[#697498]">View &amp; pay your invoices</span>
-                      <span className="text-[14px] text-[#1e40af] font-semibold flex items-center gap-1">
-                        View &amp; Pay <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#1e40af" strokeWidth="2"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    <div className="flex items-center justify-between mt-[14px] pt-[10px]" style={{ borderTop: '1px solid #b3caff' }}>
+                      <span className="text-[12px] text-[#697498]" style={{ fontFamily: font }}>View &amp; pay your invoices</span>
+                      <span className="text-[13px] text-[#1360d2] font-semibold flex items-center gap-1">
+                        View &amp; Pay <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#1360d2" strokeWidth="2"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       </span>
                     </div>
                   </button>
 
-                  <button onClick={() => setActiveMenu('Payments')}
-                    className="h-[52px] px-[24px] rounded-[10px] text-[16px] font-semibold text-[#1360d2] bg-white flex items-center gap-[10px] hover:bg-[#f0f4ff] transition-colors"
-                    style={{ border: '1.5px solid #1360d2', fontFamily: font }}>
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 3" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                    View Payment History
-                  </button>
-                </div>
-
-                {/* Right: Recent Activity */}
-                <div className="rounded-[16px] overflow-hidden" style={{ border: '1.5px solid #e0e8f5', boxShadow: '0 2px 12px rgba(19,96,210,0.06)' }}>
-                  <div className="flex items-center justify-between px-[20px] py-[16px]" style={{ borderBottom: '1px solid #eef1f6' }}>
-                    <div>
-                      <p className="text-[17px] font-bold text-[#0e1b3d]" style={{ fontFamily: font }}>Recent Activity</p>
-                      <p className="text-[14px] text-[#697498] mt-[1px]" style={{ fontFamily: font }}>Bill generation and payment activity at a glance</p>
-                    </div>
-                    <div className="inline-flex rounded-[8px] overflow-hidden border border-[#d5ddfb] flex-shrink-0">
-                      {(['today', 7, 30] as const).map(d => (
-                        <button key={d} onClick={() => setRecentPeriodDays(d)}
-                          className="px-[14px] h-[32px] text-[13px] font-semibold transition-colors"
-                          style={{ fontFamily: font, background: recentPeriodDays === d ? '#1360d2' : 'white', color: recentPeriodDays === d ? 'white' : '#697498' }}>
-                          {d === 'today' ? 'Today' : `${d} Days`}
-                        </button>
-                      ))}
+                  {/* Connector — divider line with a right-pointing arrow badge at its center */}
+                  <div className="relative flex-shrink-0" style={{ width: 28 }}>
+                    <div className="absolute left-1/2 top-0 bottom-0" style={{ width: 1, background: '#d5ddfb', transform: 'translateX(-50%)' }} />
+                    <div className="absolute left-1/2 top-1/2 flex items-center justify-center rounded-full bg-white"
+                      style={{ width: 26, height: 26, transform: 'translate(-50%,-50%)', border: '1.5px solid #93b4f7', boxShadow: '0 2px 6px rgba(14,27,61,0.10)' }}>
+                      <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#1360d2" strokeWidth="2"><path d="M5 3l5 5-5 5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                     </div>
                   </div>
 
-                  {(() => {
-                    const periodCounts = ACTIVITY_ROWS.map(r => r.data[period].count);
-                    const rawTotal = periodCounts.reduce((s, n) => s + n, 0);
-                    const total = rawTotal || 1; // guard divide-by-zero for the segment math
-                    let cumulative = 0;
-                    const segments = ACTIVITY_ROWS.map((row, i) => {
-                      const pct = (periodCounts[i] / total) * 100;
-                      const seg = { color: row.color, pct, offset: 25 - cumulative };
-                      cumulative += pct;
-                      return seg;
-                    });
+                  <div className="grid grid-cols-3 gap-[16px] flex-[3]">
+                    {SUMMARY_CARDS.map(({ key, label, count, amt, color, bg, border, icon, onClick }) => (
+                      <button key={key} onClick={onClick}
+                        className="rounded-[16px] p-[20px] text-left relative overflow-hidden hover:shadow-lg hover:-translate-y-[1px] transition-all"
+                        style={{ background: bg, border: `1.5px solid ${border}`, boxShadow: '0 1px 4px rgba(14,27,61,0.06)' }}>
+                        <div className="absolute top-[16px] right-[16px] size-[44px] rounded-[12px] flex items-center justify-center bg-white flex-shrink-0" style={{ boxShadow: '0 4px 10px rgba(14,27,61,0.10)' }}>
+                          {icon}
+                        </div>
+                        <div style={{ paddingRight: 56 }}>
+                          <span className="text-[15px] font-medium text-[#4b5468]" style={{ fontFamily: font }}>{label}</span>
+                          <span className="text-[34px] font-extrabold leading-none block mt-[10px]" style={{ color, fontFamily: font, letterSpacing: '-1px' }}>{count}</span>
+                        </div>
+                        <div className="flex items-center justify-between mt-[14px] pt-[10px]" style={{ borderTop: `1px solid ${border}` }}>
+                          <span className="text-[11px] font-semibold uppercase tracking-wide text-[#8f94ae]" style={{ fontFamily: font }}>Amount</span>
+                          <span className="text-[18px] font-extrabold text-[#0e1b3d] flex items-center gap-[4px]" style={{ fontFamily: font, letterSpacing: '-0.3px' }}>
+                            <DirhamIcon size={14} color="#0e1b3d" />{amt.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
 
-                    return (
-                      <div className="flex items-center gap-[28px] px-[20px] py-[22px] flex-wrap">
-                        {/* Donut chart — composition of activity events for the selected period */}
-                        <div className="relative flex-shrink-0" style={{ width: 168, height: 168 }}>
-                          <svg viewBox="0 0 42 42" width={168} height={168}>
-                            <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#eef1f6" strokeWidth="6" />
-                            {rawTotal > 0 && segments.map((seg, i) => seg.pct > 0 && (
-                              <circle key={i} cx="21" cy="21" r="15.915" fill="transparent"
-                                stroke={seg.color} strokeWidth="6"
-                                strokeDasharray={`${seg.pct} ${100 - seg.pct}`}
-                                strokeDashoffset={seg.offset}
-                                style={{ transition: 'stroke-dasharray 0.3s' }} />
-                            ))}
-                          </svg>
-                          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                            <span className="text-[30px] font-extrabold text-[#0e1b3d] leading-none" style={{ fontFamily: font }}>{rawTotal}</span>
-                            <span className="text-[12px] text-[#8f94ae] mt-[4px]" style={{ fontFamily: font }}>events · {recentPeriodDays === 'today' ? 'today' : `${recentPeriodDays}d`}</span>
+              {/* ── CDR Usage trend + Debit Account Top-ups ─────────────────── */}
+              <div className="grid grid-cols-2 gap-[16px] items-stretch">
+              <div className="rounded-[16px] p-[20px]" style={{ background: '#fff', border: '1.5px solid #e0e8f5', boxShadow: '0 1px 4px rgba(14,27,61,0.06)' }}>
+                <div className="flex items-start justify-between gap-[10px]">
+                  <div>
+                    <p className="text-[16px] font-bold text-[#0e1b3d]" style={{ fontFamily: font }}>CDR Usage</p>
+                    <p className="text-[13px] text-[#8f94ae] mt-[2px]" style={{ fontFamily: font }}>Statistics over the last 6 months</p>
+                  </div>
+                  <div className="relative flex-shrink-0">
+                    <button onClick={() => setCdrChartAccountOpen(o => !o)}
+                      className="flex items-center gap-[6px] h-[32px] px-[10px] rounded-[8px] border text-[13px] font-semibold text-[#0e1b3d] hover:bg-[#f0f4ff] transition-colors"
+                      style={{ fontFamily: font, borderColor: '#d5ddfb' }}>
+                      {cdrChartAccount}
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#697498" strokeWidth="2"
+                        style={{ transform: cdrChartAccountOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
+                        <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </button>
+                    {cdrChartAccountOpen && (
+                      <div className="absolute right-0 z-20 rounded-[8px] bg-white overflow-y-auto" style={{ top: 38, width: 220, maxHeight: 220, border: '1px solid #e0e8f5', boxShadow: '0px 4px 20px rgba(0,0,0,0.14)' }}>
+                        {ACCOUNTS.map(a => (
+                          <button key={a.account} onClick={() => { setCdrChartAccount(a.account); setCdrChartAccountOpen(false); }}
+                            className="w-full text-left px-[12px] py-[9px] text-[13px] hover:bg-[#f0f4ff] transition-colors"
+                            style={{ fontFamily: font, color: a.account === cdrChartAccount ? '#1360d2' : '#0e1b3d', fontWeight: a.account === cdrChartAccount ? 700 : 400 }}>
+                            {a.account}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {(() => {
+                  const W = 960, H = 260;
+                  const x0 = 76, x1 = 930, y0 = 20, y1 = 188, labelY = 214;
+                  const xStep = (x1 - x0) / (CDR_USAGE_TREND.length - 1);
+                  const maxVal = Math.max(...CDR_USAGE_TREND.map(d => d.amt));
+                  const niceMax = maxVal * 1.25;
+                  const px = (i: number) => x0 + i * xStep;
+                  const py = (v: number) => y1 - (v / niceMax) * (y1 - y0);
+                  const pts = CDR_USAGE_TREND.map((d, i) => ({ x: px(i), y: py(d.amt), ...d }));
+
+                  let linePath = `M ${pts[0].x} ${pts[0].y}`;
+                  pts.slice(0, -1).forEach((p, i) => {
+                    const next = pts[i + 1];
+                    const xMid = (p.x + next.x) / 2;
+                    linePath += ` C ${xMid} ${p.y}, ${xMid} ${next.y}, ${next.x} ${next.y}`;
+                  });
+                  const areaPath = `${linePath} L ${pts[pts.length - 1].x} ${y1} L ${pts[0].x} ${y1} Z`;
+
+                  const gridSteps = [0, 0.25, 0.5, 0.75, 1];
+                  const peak = pts[pts.length - 1]; // highlight the current month
+
+                  return (
+                    <div className="mt-[10px] overflow-x-auto">
+                      <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={220} style={{ minWidth: 560 }}>
+                        <defs>
+                          <linearGradient id="cdrUsageFill" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.28" />
+                            <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
+                          </linearGradient>
+                          <linearGradient id="cdrUsageHighlight" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.16" />
+                            <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
+                          </linearGradient>
+                        </defs>
+
+                        {/* Gridlines + Y labels */}
+                        {gridSteps.map(g => {
+                          const gy = y1 - g * (y1 - y0);
+                          return (
+                            <g key={g}>
+                              <line x1={x0} y1={gy} x2={x1} y2={gy} stroke="#eef1f6" strokeWidth="1" strokeDasharray="4 4" />
+                              <text x={x0 - 12} y={gy + 4} textAnchor="end" fontSize="16" fill="#4b5468" style={{ fontFamily: font }}>
+                                {fmtCompact(g * niceMax)}
+                              </text>
+                            </g>
+                          );
+                        })}
+
+                        {/* Highlight column behind the current month */}
+                        <rect x={peak.x - 34} y={y0} width={68} height={y1 - y0} fill="url(#cdrUsageHighlight)" />
+
+                        {/* Area + line */}
+                        <path d={areaPath} fill="url(#cdrUsageFill)" />
+                        <path d={linePath} fill="none" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+
+                        {/* Data points */}
+                        {pts.map((p, i) => (
+                          <circle key={i} cx={p.x} cy={p.y} r={i === pts.length - 1 ? 5 : 3.5}
+                            fill={i === pts.length - 1 ? '#f59e0b' : '#fff'} stroke="#f59e0b" strokeWidth="2.5" />
+                        ))}
+
+                        {/* Peak tooltip pill */}
+                        <g>
+                          <rect x={peak.x - 52} y={peak.y - 44} width="104" height="28" rx="14" fill="#b45309" />
+                          <text x={peak.x} y={peak.y - 25} textAnchor="middle" fontSize="13" fontWeight="700" fill="#fff" style={{ fontFamily: font }}>
+                            Dh{fmtCompact(peak.amt)}
+                          </text>
+                          <line x1={peak.x} y1={peak.y - 16} x2={peak.x} y2={peak.y - 6} stroke="#b45309" strokeWidth="1.5" />
+                        </g>
+
+                        {/* X-axis month labels */}
+                        {pts.map((p, i) => (
+                          <text key={i} x={p.x} y={labelY} textAnchor="middle" fontSize="16" fill="#4b5468" style={{ fontFamily: font }}>
+                            {p.month}
+                          </text>
+                        ))}
+                      </svg>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* Debit Account Top-ups — bar chart, deliberately a different chart type from the
+                  CDR Usage line/area chart so the two read as distinct at a glance. */}
+              <div className="rounded-[16px] p-[20px]" style={{ background: '#fff', border: '1.5px solid #e0e8f5', boxShadow: '0 1px 4px rgba(14,27,61,0.06)' }}>
+                <div className="flex items-start justify-between gap-[10px]">
+                  <div>
+                    <p className="text-[16px] font-bold text-[#0e1b3d]" style={{ fontFamily: font }}>Debit Account Top-ups</p>
+                    <p className="text-[13px] text-[#8f94ae] mt-[2px]" style={{ fontFamily: font }}>Amount added to your wallet over the last 6 months</p>
+                  </div>
+                  <div className="relative flex-shrink-0">
+                    <button onClick={() => setDebitChartAccountOpen(o => !o)}
+                      className="flex items-center gap-[6px] h-[32px] px-[10px] rounded-[8px] border text-[13px] font-semibold text-[#0e1b3d] hover:bg-[#f0f4ff] transition-colors"
+                      style={{ fontFamily: font, borderColor: '#d5ddfb' }}>
+                      {debitChartAccount}
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#697498" strokeWidth="2"
+                        style={{ transform: debitChartAccountOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
+                        <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </button>
+                    {debitChartAccountOpen && (
+                      <div className="absolute right-0 z-20 rounded-[8px] bg-white overflow-y-auto" style={{ top: 38, width: 220, maxHeight: 220, border: '1px solid #e0e8f5', boxShadow: '0px 4px 20px rgba(0,0,0,0.14)' }}>
+                        {DEBIT_ACCOUNTS.map(a => (
+                          <button key={a.account} onClick={() => { setDebitChartAccount(a.account); setDebitChartAccountOpen(false); }}
+                            className="w-full text-left px-[12px] py-[9px] text-[13px] hover:bg-[#f0f4ff] transition-colors"
+                            style={{ fontFamily: font, color: a.account === debitChartAccount ? '#1360d2' : '#0e1b3d', fontWeight: a.account === debitChartAccount ? 700 : 400 }}>
+                            {a.account}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {(() => {
+                  const W = 960, H = 260;
+                  const x0 = 76, x1 = 930, y0 = 20, y1 = 188, labelY = 214;
+                  const n = DEBIT_TOPUP_TREND.length;
+                  const slot = (x1 - x0) / n;
+                  const barW = slot * 0.46;
+                  const maxVal = Math.max(...DEBIT_TOPUP_TREND.map(d => d.amt));
+                  const niceMax = maxVal * 1.25;
+                  const py = (v: number) => y1 - (v / niceMax) * (y1 - y0);
+                  const bars = DEBIT_TOPUP_TREND.map((d, i) => {
+                    const cx = x0 + slot * i + slot / 2;
+                    const y = py(d.amt);
+                    return { ...d, x: cx - barW / 2, y, h: y1 - y, cx };
+                  });
+                  const gridSteps = [0, 0.25, 0.5, 0.75, 1];
+                  const peak = bars[bars.length - 1];
+
+                  return (
+                    <div className="mt-[10px] overflow-x-auto">
+                      <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={220} style={{ minWidth: 560 }}>
+                        <defs>
+                          <linearGradient id="debitTopupFill" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#1360d2" stopOpacity="0.95" />
+                            <stop offset="100%" stopColor="#568BDB" stopOpacity="0.75" />
+                          </linearGradient>
+                        </defs>
+
+                        {/* Y labels (no gridlines — bars carry their own baseline) */}
+                        {gridSteps.map(g => {
+                          const gy = y1 - g * (y1 - y0);
+                          return (
+                            <text key={g} x={x0 - 12} y={gy + 4} textAnchor="end" fontSize="16" fill="#4b5468" style={{ fontFamily: font }}>
+                              {fmtCompact(g * niceMax)}
+                            </text>
+                          );
+                        })}
+
+                        {/* Bars */}
+                        {bars.map((b, i) => (
+                          <rect key={i} x={b.x} y={b.y} width={barW} height={b.h} rx={0}
+                            fill={i === bars.length - 1 ? '#1360d2' : 'url(#debitTopupFill)'} />
+                        ))}
+
+                        {/* Peak tooltip pill — current month */}
+                        <g>
+                          <rect x={peak.cx - 52} y={peak.y - 44} width="104" height="28" rx="14" fill="#1360d2" />
+                          <text x={peak.cx} y={peak.y - 25} textAnchor="middle" fontSize="13" fontWeight="700" fill="#fff" style={{ fontFamily: font }}>
+                            Dh{fmtCompact(peak.amt)}
+                          </text>
+                          <line x1={peak.cx} y1={peak.y - 16} x2={peak.cx} y2={peak.y - 6} stroke="#1360d2" strokeWidth="1.5" />
+                        </g>
+
+                        {/* X-axis month labels */}
+                        {bars.map((b, i) => (
+                          <text key={i} x={b.cx} y={labelY} textAnchor="middle" fontSize="16" fill="#4b5468" style={{ fontFamily: font }}>
+                            {b.month}
+                          </text>
+                        ))}
+                      </svg>
+                    </div>
+                  );
+                })()}
+              </div>
+              </div>
+
+              {/* ── Analytics — Payment Status / Total Due vs Overdue / Recent Activity ── */}
+              <div>
+                <p className="text-[15px] font-bold text-[#0e1b3d] mb-[10px]" style={{ fontFamily: font }}>Analytics</p>
+                <div className="grid grid-cols-3 gap-[16px] items-stretch">
+                  {/* Payment Status */}
+                  <div className="rounded-[16px] p-[18px]" style={{ background: '#fff', border: '1.5px solid #e0e8f5', boxShadow: '0 1px 4px rgba(14,27,61,0.06)' }}>
+                    <div className="flex items-center justify-between gap-[8px] flex-wrap">
+                      <div>
+                        <p className="text-[15px] font-bold text-[#0e1b3d]" style={{ fontFamily: font }}>Payment Status</p>
+                        <p className="text-[12px] text-[#8f94ae] mt-[2px]" style={{ fontFamily: font }}>By count, all transactions</p>
+                      </div>
+                      <div className="inline-flex rounded-[8px] overflow-hidden border border-[#d5ddfb] flex-shrink-0">
+                        {(['today', 7, 30] as const).map(d => (
+                          <button key={d} onClick={() => setRecentPeriodDays(d)}
+                            className="px-[8px] h-[26px] text-[11px] font-semibold transition-colors"
+                            style={{ fontFamily: font, background: recentPeriodDays === d ? '#1360d2' : 'white', color: recentPeriodDays === d ? 'white' : '#697498' }}>
+                            {d === 'today' ? 'Today' : `${d}D`}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {(() => {
+                      const periodBreakdown = PAYMENT_STATUS_BY_PERIOD[period];
+                      const periodTotal = periodBreakdown.reduce((s, r) => s + r.count, 0);
+                      const periodSuccessCount = periodBreakdown.find(s => s.status === 'Success')?.count ?? 0;
+                      const periodSuccessRate = periodTotal > 0 ? (periodSuccessCount / periodTotal) * 100 : 0;
+                      const periodSegs = donutSegments(periodBreakdown.map(s => ({ pct: (s.count / (periodTotal || 1)) * 100, color: s.color })));
+
+                      return (
+                        <div className="flex items-center gap-[16px] mt-[16px]">
+                          <Donut size={130} segments={periodSegs} centerValue={`${periodSuccessRate.toFixed(0)}%`} centerLabel="Success Rate" />
+                          <div className="flex-1 min-w-0 flex flex-col gap-[2px]">
+                            {periodTotal === 0 && <p className="text-[13px] text-[#8f94ae] px-[8px] py-[10px]" style={{ fontFamily: font }}>No transactions in this window</p>}
+                            {periodBreakdown.map(s => legendRow(s.status, s.color, s.status, s.count,
+                              <span className="flex items-center gap-[3px]"><DirhamIcon size={10} color="#4b5468" />{s.amt.toLocaleString('en-US', { maximumFractionDigits: 0 })}</span>,
+                              () => openPaymentStatus(s.status)))}
                           </div>
                         </div>
+                      );
+                    })()}
+                  </div>
 
-                        {/* Legend — each row still drills through to a filtered list */}
-                        <div className="flex-1 min-w-[260px] flex flex-col gap-[4px]">
-                          {ACTIVITY_ROWS.map(({ key, label, desc, data, onClick, color, icon }) => (
-                            <button key={key} onClick={onClick} disabled={data[period].count === 0}
-                              className="flex items-center gap-[12px] py-[10px] px-[10px] rounded-[10px] hover:bg-[#fafbff] transition-colors text-left disabled:cursor-default"
-                              style={{ fontFamily: font }}>
-                              <div className="size-[34px] rounded-[9px] flex items-center justify-center flex-shrink-0" style={{ background: `${color}1a` }}>{icon}</div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-[16px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>{label}</p>
-                                <p className="text-[13px] text-[#8f94ae]" style={{ fontFamily: font }}>{desc}{period !== 'today' ? ` · ${data.today.count} today` : ''}</p>
-                              </div>
-                              <div className="flex flex-col items-end flex-shrink-0">
-                                <span className="text-[24px] font-extrabold leading-none" style={{ color: data[period].count > 0 ? color : '#c0c8e0', letterSpacing: '-0.5px' }}>{data[period].count}</span>
-                                <span className="text-[13px] text-[#8f94ae] flex items-center gap-[3px] mt-[6px]"><DirhamIcon size={11} color="#8f94ae" />{data[period].amt.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-                              </div>
-                            </button>
-                          ))}
+                  {/* Total Due vs Overdue — same ring-gauge design, amounts shown in dirhams */}
+                  {(() => {
+                    const dueTotal = totalDueToDubaiCustoms || 1; // guard divide-by-zero for the ring's % math
+                    const overduePct = (overdueInvAmt / dueTotal) * 100;
+                    const currentPct = 100 - overduePct;
+
+                    return (
+                      <div className="rounded-[16px] p-[18px]" style={{ background: '#fff', border: '1.5px solid #e0e8f5', boxShadow: '0 1px 4px rgba(14,27,61,0.06)' }}>
+                        <p className="text-[15px] font-bold text-[#0e1b3d]" style={{ fontFamily: font }}>Total Due vs Overdue</p>
+                        <p className="text-[12px] text-[#8f94ae] mt-[2px]" style={{ fontFamily: font }}>Share of your total due already overdue</p>
+                        <div className="flex items-center gap-[16px] mt-[16px]">
+                          <RingGauge size={130}
+                            outer={{ pct: currentPct, color: '#1360d2', track: '#dce9fc' }}
+                            inner={{ pct: overduePct, color: '#dc3545', track: '#fde3e3' }} />
+                          <div className="flex-1 min-w-0 flex flex-col gap-[10px]">
+                            <div className="flex flex-col items-start">
+                              <span className="inline-flex items-center gap-[5px] text-[12px] text-[#8f94ae]" style={{ fontFamily: font }}>
+                                <span className="size-[8px] rounded-full flex-shrink-0" style={{ background: '#1360d2' }} />Total Due to Pay
+                              </span>
+                              <span className="text-[15px] font-extrabold text-[#1360d2] mt-[2px] flex items-center gap-[3px]" style={{ fontFamily: font }}>
+                                <DirhamIcon size={12} color="#1360d2" />{totalDueToDubaiCustoms.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                              </span>
+                            </div>
+                            <div className="flex flex-col items-start">
+                              <span className="inline-flex items-center gap-[5px] text-[12px] text-[#8f94ae]" style={{ fontFamily: font }}>
+                                <span className="size-[8px] rounded-full flex-shrink-0" style={{ background: '#dc3545' }} />Overdue to Pay
+                              </span>
+                              <span className="text-[15px] font-extrabold text-[#dc3545] mt-[2px] flex items-center gap-[3px]" style={{ fontFamily: font }}>
+                                <DirhamIcon size={12} color="#dc3545" />{overdueInvAmt.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                              </span>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     );
                   })()}
+
+                  {/* Recent Activity */}
+                  <div className="rounded-[16px] p-[18px] flex flex-col" style={{ background: '#fff', border: '1.5px solid #e0e8f5', boxShadow: '0 1px 4px rgba(14,27,61,0.06)' }}>
+                    <div className="flex items-center justify-between gap-[8px] flex-wrap">
+                      <div>
+                        <p className="text-[15px] font-bold text-[#0e1b3d]" style={{ fontFamily: font }}>Recent Activity</p>
+                        <p className="text-[12px] text-[#8f94ae] mt-[2px]" style={{ fontFamily: font }}>Bill &amp; payment activity</p>
+                      </div>
+                      <div className="inline-flex rounded-[8px] overflow-hidden border border-[#d5ddfb] flex-shrink-0">
+                        {(['today', 7, 30] as const).map(d => (
+                          <button key={d} onClick={() => setRecentPeriodDays(d)}
+                            className="px-[8px] h-[26px] text-[11px] font-semibold transition-colors"
+                            style={{ fontFamily: font, background: recentPeriodDays === d ? '#1360d2' : 'white', color: recentPeriodDays === d ? 'white' : '#697498' }}>
+                            {d === 'today' ? 'Today' : `${d}D`}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {(() => {
+                      const totalActivityCount = ACTIVITY_ROWS.reduce((s, r) => s + r.data[period].count, 0);
+                      const activitySegs = donutSegments(ACTIVITY_ROWS.map(r => ({
+                        pct: totalActivityCount > 0 ? (r.data[period].count / totalActivityCount) * 100 : 0,
+                        color: r.color,
+                      })));
+
+                      return (
+                        <div className="flex items-center gap-[16px] mt-[16px]">
+                          <Donut size={130} segments={activitySegs} centerValue={totalActivityCount} centerLabel="Activities" />
+                          <div className="flex-1 min-w-0 flex flex-col gap-[2px]">
+                            {ACTIVITY_ROWS.map(r => legendRow(r.key, r.color, r.label, r.data[period].count,
+                              <span className="flex items-center gap-[3px]"><DirhamIcon size={10} color="#4b5468" />{r.data[period].amt.toLocaleString('en-US', { maximumFractionDigits: 0 })}</span>,
+                              r.onClick))}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
                 </div>
               </div>
+
             </div>
             );
           })()}
@@ -3251,7 +3779,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                   <label key={val} className="flex items-center gap-3 cursor-pointer p-3 rounded-[8px] border transition-colors"
                     style={{ borderColor: stmtType === val ? '#1360d2' : '#e0e8f5', background: stmtType === val ? '#f0f6ff' : 'white' }}>
                     <input type="radio" name="stmt-type-modal" checked={stmtType === val}
-                      onChange={() => { setStmtType(val); setDownloadFmt(''); }}
+                      onChange={() => { setStmtType(val); setDownloadFmt(''); setStmtRangeError(false); }}
                       className="size-4 accent-[#1360d2]" />
                     <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: stmtType === val ? 600 : 400 }}>{label}</span>
                   </label>
@@ -3261,6 +3789,12 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 <p className="text-[13px] text-[#0e1b3d] mb-4 p-3 bg-[#fff8e6] rounded border border-[#fcd7a0]" style={{ fontFamily: font }}>
                   <strong>Note*</strong> Report available for 30 days only. For more, extract in batches or use monthly option.
                 </p>
+              )}
+              {stmtRangeError && (
+                <div className="flex items-center gap-[8px] rounded-[6px] px-[14px] py-[8px] mb-4" style={{ background: '#fff4f4', border: '1px solid #f5c6cb' }}>
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#dc3545" strokeWidth="2" className="flex-shrink-0"><circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16h.01" strokeLinecap="round" /></svg>
+                  <p className="text-[14px] text-[#dc3545]" style={{ fontFamily: font }}>Reduce the duration to download statement</p>
+                </div>
               )}
               <div className="grid grid-cols-2 gap-4 mb-5">
                 {stmtType !== 'transaction' ? (
@@ -3284,20 +3818,10 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                   </>
                 ) : (
                   <>
-                    <div className="flex flex-col gap-1">
-                      <label className="text-[13px] text-[#697498]" style={{ fontFamily: font }}>From Date *</label>
-                      <input type="text" value={stmtFromDate} onChange={e => setStmtFromDate(e.target.value)}
-                        placeholder="dd-mm-yyyy"
-                        className="w-full h-[42px] border border-[#d5ddfb] rounded-[4px] px-3 text-[16px] text-[#0e1b3d] placeholder-[#8f94ae] focus:outline-none focus:border-[#1360d2]"
-                        style={{ fontFamily: font }} />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <label className="text-[13px] text-[#697498]" style={{ fontFamily: font }}>To Date *</label>
-                      <input type="text" value={stmtToDate} onChange={e => setStmtToDate(e.target.value)}
-                        placeholder="dd-mm-yyyy"
-                        className="w-full h-[42px] border border-[#d5ddfb] rounded-[4px] px-3 text-[16px] text-[#0e1b3d] placeholder-[#8f94ae] focus:outline-none focus:border-[#1360d2]"
-                        style={{ fontFamily: font }} />
-                    </div>
+                    <DateInput label="From Date" required value={stmtFromDate}
+                      onChange={v => { setStmtFromDate(v); setStmtRangeError(false); }} />
+                    <DateInput label="To Date" required value={stmtToDate}
+                      onChange={v => { setStmtToDate(v); setStmtRangeError(false); }} />
                   </>
                 )}
               </div>
@@ -3315,14 +3839,21 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             </div>
             {/* Modal footer */}
             <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#e0e8f5] bg-[#f8fafd]">
-              <button onClick={() => { setShowStmtModal(false); setStmtAccount(''); setStmtAccSearch(''); }}
+              <button onClick={() => { setShowStmtModal(false); setStmtAccount(''); setStmtAccSearch(''); setStmtRangeError(false); }}
                 className="h-[44px] px-6 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white hover:bg-[#f0f4ff]" style={{ fontFamily: font }}>
                 Cancel
               </button>
               <button
                 className="h-[44px] px-6 rounded-[4px] text-[16px] text-white flex items-center gap-2"
                 style={{ background: '#1360d2', fontFamily: font }}
-                onClick={() => setShowStmtModal(false)}
+                onClick={() => {
+                  if (stmtType === 'transaction' && stmtFromDate && stmtToDate) {
+                    const diffDays = (Date.parse(stmtToDate) - Date.parse(stmtFromDate)) / 86400000;
+                    if (diffDays > 30 || diffDays < 0) { setStmtRangeError(true); return; }
+                  }
+                  setStmtRangeError(false);
+                  setShowStmtModal(false);
+                }}
               >
                 <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8">
                   <path d="M10 3v10M5 9l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
