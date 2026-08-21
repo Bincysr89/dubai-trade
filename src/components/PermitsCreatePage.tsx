@@ -41,6 +41,84 @@ const MODE_OPTIONS = [
     icon: (<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="3" width="16" height="14" rx="2"/><path d="M4 11h16M12 3v8M8 17l-2 3m10-3l2 3"/></svg>) },
 ];
 
+/* ── "Find with Assistant" top-level categories (DT Single Window structure) ── */
+const ACTIVITY_OPTIONS = [
+  { key: 'registration', label: 'Registration',     desc: 'Product & consignment registration', color: '#1360d2',
+    icon: (<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 3v2h6V3"/><path d="M9 12l2 2 4-4"/></svg>) },
+  { key: 'vessel',       label: 'Vessel Services',   desc: 'Anchorage, NOC & vessel permits',    color: '#0e56c0',
+    icon: (<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 17l2.5-7h13L21 17"/><path d="M3 17c2 2 4 3 9 3s7-1 9-3"/><path d="M8 10V6l4-2 4 2v4"/><path d="M12 4v2"/></svg>) },
+  { key: 'cargo',        label: 'Cargo Clearance',   desc: 'Import, export & customs permits',   color: '#1670e0',
+    icon: (<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>) },
+  { key: 'other',        label: 'Others',            desc: 'ATA Carnet & other services',        color: '#2a6dcc', mapKey: 'ATA Carnet',
+    icon: (<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>) },
+];
+
+/* Registration → Veterinary Services / Food Services */
+const REGISTRATION_OPTIONS = [
+  { key: 'vet',  label: 'Veterinary Services', desc: 'Animal food label assessment', color: '#0e56c0', mapKey: 'Veterinary Services',
+    icon: (<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>) },
+  { key: 'food', label: 'Food Services',       desc: 'Food registration & label assessment', color: '#1360d2', mapKey: 'Food Services',
+    icon: (<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>) },
+];
+
+/* Vessel Services → DMA / DPA */
+const VESSEL_OPTIONS = [
+  { key: 'dma', label: 'DMA', desc: 'Dubai Maritime Authority services', color: '#0e5fa8', mapKey: 'DMA',
+    icon: (<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="5" r="2"/><path d="M12 7v14M5 12H2a10 10 0 0020 0h-3"/></svg>) },
+  { key: 'dpa', label: 'DPA', desc: 'Dubai Ports Authority services',    color: '#1a4ea8', mapKey: 'DPA',
+    icon: (<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21V10l9-6 9 6v11"/><path d="M3 21h18M9 21v-6h6v6"/></svg>) },
+];
+
+/* Cargo Clearance → activity type (6 options per chart) */
+const CC_TYPE_OPTIONS = [
+  { key: 'import',    label: 'Import',    desc: 'Bringing goods into Dubai',    color: '#1360d2',
+    icon: (<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v13M7 11l5 5 5-5"/><path d="M5 20h14"/></svg>) },
+  { key: 'export',    label: 'Export',    desc: 'Sending goods out of Dubai',   color: '#0e56c0',
+    icon: (<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21V8M7 13l5-5 5 5"/><path d="M5 4h14"/></svg>) },
+  { key: 'reexport',  label: 'Re-Export', desc: 'Transit through Dubai',        color: '#1670e0',
+    icon: (<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 109-9H3"/><path d="M3 7v5h5"/></svg>) },
+  { key: 'transfer',  label: 'Transfer',  desc: 'Between zones or ports',       color: '#0e4cad',
+    icon: (<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>) },
+  { key: 'transit',   label: 'Transit',   desc: 'Passing through Dubai',        color: '#0e5fa8',
+    icon: (<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h9a3 3 0 003-3v-1M16 5H7a3 3 0 00-3 3v1"/></svg>) },
+  { key: 'transport', label: 'Transport', desc: 'Moving cargo within Dubai',    color: '#1458a8',
+    icon: (<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>) },
+];
+
+/* Cargo Clearance → Permits / Certificates */
+const CC_CATEGORY_OPTIONS = [
+  { key: 'permits',      label: 'Permits',                       desc: 'Consumer, Food & Veterinary permits',   color: '#1360d2',
+    icon: (<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>) },
+  { key: 'certificates', label: 'Certificates',                  desc: 'Food, Veterinary, Vessel & Hazardous Cargo certificates', color: '#0e56c0',
+    icon: (<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="6"/><path d="M9 13l-2 8 5-3 5 3-2-8"/></svg>) },
+];
+
+/* Cargo Clearance → Permits → sub-category */
+const CC_PERMITS_SUBCAT = [
+  { key: 'consumer',   label: 'Consumer',   desc: 'Consumer goods permits',   color: '#1670e0', mapKey: 'CC Permits – Consumer',
+    icon: (<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>) },
+  { key: 'food',       label: 'Food',       desc: 'Food consignment permits', color: '#1360d2', mapKey: 'CC Permits – Food',
+    icon: (<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>) },
+  { key: 'veterinary', label: 'Veterinary', desc: 'Veterinary consignment permits', color: '#0e56c0', mapKey: 'CC Permits – Veterinary',
+    icon: (<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>) },
+];
+
+/* Cargo Clearance → Certificates → sub-category */
+const CC_CERT_SUBCAT = [
+  { key: 'food',       label: 'Food',       desc: 'Food export certificates',       color: '#1360d2', mapKey: 'CC Certificates – Food',
+    icon: (<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>) },
+  { key: 'veterinary', label: 'Veterinary', desc: 'Animal health certificates',      color: '#0e56c0', mapKey: 'CC Certificates – Veterinary',
+    icon: (<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>) },
+  { key: 'vessel',     label: 'Vessel',     desc: 'Ship sanitation certificates',    color: '#0e5fa8', mapKey: 'CC Certificates – Vessel',
+    icon: (<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 17l2.5-7h13L21 17"/><path d="M3 17c2 2 4 3 9 3s7-1 9-3"/><path d="M8 10V6l4-2 4 2v4"/><path d="M12 4v2"/></svg>) },
+  { key: 'goods',      label: 'Dangerous Goods',   desc: 'NOCs for dangerous goods',      color: '#c0392b', mapKey: 'CC Dangerous – Dangerous Goods',
+    icon: (<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 20h20L12 2z"/><line x1="12" y1="9" x2="12" y2="14"/><circle cx="12" cy="17" r="0.7" fill="currentColor" stroke="none"/></svg>) },
+  { key: 'firearms',   label: 'Firearms',          desc: 'NOC for firearms & ammunition', color: '#0e4cad', mapKey: 'CC Dangerous – Firearms',
+    icon: (<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12h16M4 12l3-3m-3 3l3 3m10-3v3l2 2"/></svg>) },
+  { key: 'suspicious', label: 'Suspicious Goods',  desc: 'Inspecting suspicious goods',    color: '#a83232', mapKey: 'CC Dangerous – Suspicious Goods',
+    icon: (<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/><path d="M11 8v3M11 14h.01"/></svg>) },
+];
+
 const CARGO_OPTIONS = [
   { key: 'food',      label: 'Food Consignment',        color: '#1360d2', icon: (<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>) },
   { key: 'vet',       label: 'Veterinary Consignments', color: '#0e56c0', icon: (<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>) },
@@ -105,6 +183,80 @@ const PERMITS_MAP: Record<string, { label: string; authority: string; prerequisi
     { label: 'Trade Documentation Check',                                authority: 'Dubai Customs' },
     { label: 'General Trade Clearance',                                  authority: 'Dubai Customs' },
   ],
+
+  /* ── DT Single Window structure — Find with Assistant ── */
+  // Registration → Veterinary Services
+  'Veterinary Services': [
+    { label: 'Animal Food Label Assessment',                             authority: 'Dubai Municipality', prerequisite: true },
+  ],
+  // Registration → Food Services
+  'Food Services': [
+    { label: 'Food Registration',                                        authority: 'Dubai Municipality', prerequisite: true },
+    { label: 'Label Assessment',                                         authority: 'Dubai Municipality' },
+    { label: 'Food Registration & Label Assessment',                     authority: 'Dubai Municipality' },
+  ],
+  // Vessel Services → DMA
+  'DMA': [
+    { label: "Vessel Anchorage Permit in the Emirate's Waters",          authority: 'PCFC', prerequisite: true },
+    { label: 'NOC Certificates',                                         authority: 'PCFC' },
+    { label: 'Provider Registration',                                    authority: 'PCFC' },
+    { label: 'Operating Permit',                                         authority: 'PCFC' },
+  ],
+  // Vessel Services → DPA
+  'DPA': [
+    { label: 'NOC Certificates',                                         authority: 'PCFC', prerequisite: true },
+    { label: 'PAN, PDN, PC',                                             authority: 'PCFC' },
+    { label: 'ePermit',                                                  authority: 'PCFC' },
+    { label: 'License Activity Approval',                                authority: 'PCFC' },
+    { label: 'Prequalification',                                         authority: 'PCFC' },
+  ],
+  // Cargo Clearance → Permits → Consumer
+  'CC Permits – Consumer': [
+    { label: 'Release for Local Market',                                 authority: 'Dubai Municipality', prerequisite: true },
+    { label: 'Transfer From and To Dubai',                               authority: 'Dubai Municipality' },
+    { label: 'Release of Food for Re-Export',                            authority: 'Dubai Municipality' },
+  ],
+  // Cargo Clearance → Permits → Food
+  'CC Permits – Food': [
+    { label: 'Release for Local Market',                                 authority: 'Dubai Municipality', prerequisite: true },
+    { label: 'Transfer From and To Dubai',                               authority: 'Dubai Municipality' },
+    { label: 'Release of Food for Re-Export',                            authority: 'Dubai Municipality' },
+  ],
+  // Cargo Clearance → Permits → Veterinary
+  'CC Permits – Veterinary': [
+    { label: 'Release Veterinary Consignments',                          authority: 'Dubai Municipality', prerequisite: true },
+    { label: 'Admit Animal / Veterinary Consignments',                   authority: 'Dubai Municipality' },
+  ],
+  // Cargo Clearance → Certificates → Food
+  'CC Certificates – Food': [
+    { label: 'Certificate to Export Food',                               authority: 'Dubai Municipality', prerequisite: true },
+  ],
+  // Cargo Clearance → Certificates → Veterinary
+  'CC Certificates – Veterinary': [
+    { label: 'Health Certificate for Animals and Veterinary Products',   authority: 'Dubai Municipality', prerequisite: true },
+  ],
+  // Cargo Clearance → Certificates → Vessel
+  'CC Certificates – Vessel': [
+    { label: 'Ship Sanitation Certificate',                              authority: 'Dubai Municipality', prerequisite: true },
+  ],
+  // Cargo Clearance → Certificates → Dangerous / Hazardous Cargo → Dangerous Goods
+  'CC Dangerous – Dangerous Goods': [
+    { label: 'Dangerous / Hazardous Cargo NOC',                          authority: 'DCAA', prerequisite: true },
+    { label: 'No Objection Certificate to Transport Dangerous Goods by Air', authority: 'DCAA' },
+    { label: 'Hazardous Goods - Chemical Materials - NOC',               authority: 'DCAA' },
+  ],
+  // Cargo Clearance → Certificates → Dangerous / Hazardous Cargo → Firearms
+  'CC Dangerous – Firearms': [
+    { label: 'No Objection Certificate to Transport Firearms and Ammunition', authority: 'DCAA', prerequisite: true },
+  ],
+  // Cargo Clearance → Certificates → Dangerous / Hazardous Cargo → Suspicious Goods
+  'CC Dangerous – Suspicious Goods': [
+    { label: 'Inspecting Suspicious Goods',                              authority: 'DCAA', prerequisite: true },
+  ],
+  // Others → ATA Carnet
+  'ATA Carnet': [
+    { label: 'ATA Carnet',                                               authority: 'Dubai Chambers', prerequisite: true },
+  ],
 };
 
 const FREQUENT_COMBOS = [
@@ -123,13 +275,15 @@ const AUTHORITY_COLORS: Record<string, { bg: string; text: string; border: strin
   'Civil Defence':      { bg: '#fef2f2', text: '#b91c1c', border: '#fca5a5' },
   'Ministry of Economy':{ bg: '#f0f9ff', text: '#0369a1', border: '#bae6fd' },
   'Dubai Customs':      { bg: '#f8faff', text: '#334155', border: '#cbd5e1' },
+  'PCFC':               { bg: '#e6f3fb', text: '#0e6ba8', border: '#a8d4ee' },
 };
 const authorityStyle = (a: string) => AUTHORITY_COLORS[a] ?? { bg: '#eef4ff', text: '#1360d2', border: '#c0d4f8' };
 
 /* Agent codes offered on the "Select Agent Code" gate shown before Start Journey / View Requests. */
 const AGENT_CODES = ['A121324', 'M132432', 'A118765', 'M129981', 'A104532'];
 
-type Step = 'welcome' | 'recent' | 'search' | 'activity' | 'mode' | 'cargo' | 'done' | 'prepare' | 'p-activity' | 'p-mode' | 'p-cargo' | 'p-info' | 'p-steps';
+type Step = 'welcome' | 'recent' | 'search' | 'activity' | 'mode' | 'cargo' | 'done' | 'prepare' | 'p-activity' | 'p-mode' | 'p-cargo' | 'p-info' | 'p-steps'
+  | 'reg-sub' | 'vessel-sub' | 'cc-type' | 'cc-mode' | 'cc-category' | 'cc-subcat';
 const STEP_META: Record<string, { question: string }> = {
   welcome:    { question: "Hi! How would you like to find a permit or certificate today?" },
   recent:     { question: "Here are your recently applied services. Re-apply or start fresh." },
@@ -142,6 +296,12 @@ const STEP_META: Record<string, { question: string }> = {
   'p-mode':     { question: 'How will your cargo travel?' },
   'p-cargo':    { question: 'What type of cargo are you shipping?' },
   'p-info':     { question: 'Here\'s what you\'ll need to prepare in advance.' },
+  'reg-sub':    { question: 'Which registration service do you need?' },
+  'vessel-sub': { question: 'Which authority handles your vessel service?' },
+  'cc-type':    { question: 'What are you looking to do?' },
+  'cc-mode':    { question: 'How will your cargo travel?' },
+  'cc-category':{ question: 'Are you looking for a permit or a certificate?' },
+  'cc-subcat':  { question: 'What type of cargo or consignment?' },
 };
 
 /* ── Animations ── */
@@ -646,9 +806,9 @@ function SearchResults({ q, onSelect }: { q: string; onSelect: (label: string) =
 }
 
 /* ── Unified journey steps: numbered list with prerequisite chips + action buttons ── */
-function DoneWithPrepare({ answers, onRestart, onOpenService }: { answers: Record<string,string>; onRestart: () => void; onOpenService?: (service: string) => void }) {
-  const cargo = answers['cargo'] ?? 'Other Goods';
-  const permits = PERMITS_MAP[cargo] ?? [];
+function DoneWithPrepare({ cargoLabel, cargoKey, onRestart, onOpenService }: { cargoLabel: string; cargoKey: string; onRestart: () => void; onOpenService?: (service: string) => void }) {
+  const cargo = cargoLabel;
+  const permits = PERMITS_MAP[cargoKey] ?? [];
   /* Start Journey / View Requests both gate through an Agent Code selection popup first. */
   const [agentGate, setAgentGate] = useState<{ service: string; action: string } | null>(null);
   const [pickedAgentCode, setPickedAgentCode] = useState('');
@@ -807,6 +967,12 @@ export default function PermitsCreatePage({ onClose, initialStep, prefill, onOpe
   const isInputStep = step === 'cargo' || step === 'search';
   const hasChatted = history.length > 0 || step !== 'welcome';
   const answers: Record<string,string> = Object.fromEntries(history.map(h=>[h.step,h.answer]));
+  /* The permit-lookup key for the current journey — the last-picked option's `mapKey` when set
+     (used by the new category-tree steps whose display label doesn't match its PERMITS_MAP key),
+     falling back to the plain answer label (the old activity→mode→cargo flow's convention). */
+  const lastHist = history[history.length - 1];
+  const cargoLabel = lastHist?.answer ?? 'Other Goods';
+  const cargoKey = lastHist?.opt?.mapKey ?? cargoLabel;
 
   useEffect(() => { setTimeout(()=>setMounted(true), 40); }, []);
   const scrollDown = () => setTimeout(()=>bottomRef.current?.scrollIntoView({behavior:'smooth',block:'end'}), 60);
@@ -839,6 +1005,15 @@ export default function PermitsCreatePage({ onClose, initialStep, prefill, onOpe
     if (next==='done') { setTimeout(()=>{setStep('done'); scrollDown();},400); }
     else showStep(next);
   };
+
+  /* "Find with Assistant" category tree — where an option leads depends on which one was picked. */
+  const nextStepForActivity = (o: any): Step => {
+    if (o.key === 'registration') return 'reg-sub';
+    if (o.key === 'vessel')       return 'vessel-sub';
+    if (o.key === 'cargo')        return 'cc-type';
+    return 'done'; // Others → straight to ATA Carnet
+  };
+  const ccSubOptionsFor = (categoryLabel: string | undefined) => categoryLabel === 'Certificates' ? CC_CERT_SUBCAT : CC_PERMITS_SUBCAT;
 
   const pickWelcome = (key: string, label: string) => {
     setShowOptions(false);
@@ -894,9 +1069,15 @@ export default function PermitsCreatePage({ onClose, initialStep, prefill, onOpe
     switch (histStep) {
       case 'welcome':     return <WelcomeChoiceCards onSelect={(k,l)=>{ setHistory(h=>h.slice(0,histIdx)); pickWelcome(k,l); }} />;
       case 'recent':      return <RecentServicesInChat onQuickStart={c=>{setHistory(h=>h.slice(0,histIdx));quickStart(c);}} onStartNew={()=>{setHistory(h=>h.slice(0,histIdx));startNew();}} />;
-      case 'activity':    return <OptionCards options={TRADE_OPTIONS} onSelect={o=>op('activity','mode',o)} />;
+      case 'activity':    return <OptionCards options={ACTIVITY_OPTIONS} onSelect={o=>op('activity',nextStepForActivity(o),o)} />;
       case 'mode':        return <OptionCards options={MODE_OPTIONS}  onSelect={o=>op('mode','cargo',o)} />;
       case 'cargo':       return <CargoCards onSelect={o=>op('cargo','done',o)} />;
+      case 'reg-sub':     return <OptionCards options={REGISTRATION_OPTIONS} onSelect={o=>op('reg-sub','done',o)} />;
+      case 'vessel-sub':  return <OptionCards options={VESSEL_OPTIONS} onSelect={o=>op('vessel-sub','done',o)} />;
+      case 'cc-type':     return <OptionCards options={CC_TYPE_OPTIONS} onSelect={o=>op('cc-type','cc-mode',o)} />;
+      case 'cc-mode':     return <OptionCards options={MODE_OPTIONS} onSelect={o=>op('cc-mode','cc-category',o)} />;
+      case 'cc-category': return <OptionCards options={CC_CATEGORY_OPTIONS} onSelect={o=>op('cc-category','cc-subcat',o)} />;
+      case 'cc-subcat':   return <OptionCards options={ccSubOptionsFor(history[histIdx-1]?.answer)} onSelect={o=>op('cc-subcat','done',o)} />;
       case 'p-activity':  return <OptionCards options={TRADE_OPTIONS} onSelect={o=>op('p-activity','p-mode',o)} />;
       case 'p-mode':      return <OptionCards options={MODE_OPTIONS}  onSelect={o=>op('p-mode','p-cargo',o)} />;
       case 'p-cargo':     return <CargoCards onSelect={o=>op('p-cargo','p-info',o)} />;
@@ -1005,7 +1186,7 @@ export default function PermitsCreatePage({ onClose, initialStep, prefill, onOpe
                   {step === 'done' ? (
                     searchPermit
                       ? <SearchServiceCard permit={searchPermit} onRestart={restart} />
-                      : <DoneWithPrepare answers={answers} onRestart={restart} onOpenService={onOpenService} />
+                      : <DoneWithPrepare cargoLabel={cargoLabel} cargoKey={cargoKey} onRestart={restart} onOpenService={onOpenService} />
                   ) : isTyping ? (
                     <ThinkingState />
                   ) : (
@@ -1025,9 +1206,15 @@ export default function PermitsCreatePage({ onClose, initialStep, prefill, onOpe
               <div style={{ flexShrink:0, background:'#fff', borderTop:'1px solid #eef0f6', animation:'slideUp 0.32s cubic-bezier(0.34,1.4,0.64,1)', padding:'14px 24px', maxWidth:960, width:'100%', margin:'0 auto', boxSizing:'border-box' }}>
                 {step==='welcome'     && <WelcomeChoiceCards onSelect={pickWelcome} />}
                 {step==='recent'      && <RecentServicesInChat onQuickStart={quickStart} onStartNew={startNew} />}
-                {step==='activity'    && <OptionCards options={TRADE_OPTIONS} onSelect={o=>pick('activity','mode',o)} />}
+                {step==='activity'    && <OptionCards options={ACTIVITY_OPTIONS} onSelect={o=>pick('activity',nextStepForActivity(o),o)} />}
                 {step==='mode'        && <OptionCards options={MODE_OPTIONS}  onSelect={o=>pick('mode','cargo',o)} />}
                 {step==='cargo'       && <CargoCards onSelect={o=>pick('cargo','done',o)} />}
+                {step==='reg-sub'     && <OptionCards options={REGISTRATION_OPTIONS} onSelect={o=>pick('reg-sub','done',o)} />}
+                {step==='vessel-sub'  && <OptionCards options={VESSEL_OPTIONS} onSelect={o=>pick('vessel-sub','done',o)} />}
+                {step==='cc-type'     && <OptionCards options={CC_TYPE_OPTIONS} onSelect={o=>pick('cc-type','cc-mode',o)} />}
+                {step==='cc-mode'     && <OptionCards options={MODE_OPTIONS} onSelect={o=>pick('cc-mode','cc-category',o)} />}
+                {step==='cc-category' && <OptionCards options={CC_CATEGORY_OPTIONS} onSelect={o=>pick('cc-category','cc-subcat',o)} />}
+                {step==='cc-subcat'   && <OptionCards options={ccSubOptionsFor(answers['cc-category'])} onSelect={o=>pick('cc-subcat','done',o)} />}
                 {step==='search'      && <SearchResults q={inputVal} onSelect={pickSearch} />}
                 {step==='p-activity'  && <OptionCards options={TRADE_OPTIONS} onSelect={o=>pick('p-activity','p-mode',o)} />}
                 {step==='p-mode'      && <OptionCards options={MODE_OPTIONS}  onSelect={o=>pick('p-mode','p-cargo',o)} />}
