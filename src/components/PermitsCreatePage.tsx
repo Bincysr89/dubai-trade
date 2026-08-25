@@ -657,27 +657,48 @@ function PrepareInfoPanel({ answers, onKnow, onShowSteps, onStart }: {
 /* ── Recent services in chat ── */
 function RecentServicesInChat({ onQuickStart, onStartNew, readonly }: { onQuickStart: (c: typeof FREQUENT_COMBOS[0]) => void; onStartNew: () => void; readonly?: boolean }) {
   const [hov, setHov] = useState('');
+  const ACTION_BTNS = [
+    { label:'Start Journey', bg:'#1360d2', color:'#fff', border:'none', shadow:'0 2px 8px rgba(19,96,210,0.22)',
+      icon:<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg> },
+    { label:'View Requests', bg:'#fff', color:'#1360d2', border:'1.5px solid #1360d2', shadow:'none',
+      icon:<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg> },
+    { label:'', bg:'#fff', color:'#5a6478', border:'1.5px solid #e2eaf8', shadow:'none',
+      icon:<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#5a6478" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><title>Service Info</title><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M12 12v4"/></svg> },
+  ];
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
       {FREQUENT_COMBOS.map((combo, idx) => {
         const isH = hov === String(idx);
         const permits = PERMITS_MAP[combo.cargo] ?? [];
+        const s = authorityStyle(permits[0]?.authority ?? '');
         return (
           <div key={idx} onMouseEnter={()=>setHov(String(idx))} onMouseLeave={()=>setHov('')}
             style={{ background: isH?'#f8fbff':'#fff', border:`1.5px solid ${isH?'#1360d2':'#eef0f6'}`, borderRadius:14, padding:'14px 18px', transition:'all 0.18s', animation:`chipIn 0.35s cubic-bezier(0.34,1.4,0.64,1) both`, animationDelay:`${idx*70}ms`, boxShadow: isH?'0 4px 16px rgba(19,96,210,0.1)':'0 1px 6px rgba(0,0,0,0.04)', transform: isH?'translateY(-1px)':'none' }}>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
-              <div style={{ flex:1 }}>
-                <p style={{ fontFamily:font, fontSize:15, fontWeight:600, color:'#111838', margin:'0 0 3px' }}>
-                  {permits.length} permit{permits.length!==1?'s':''} — {permits.slice(0,1).map(p=>p.label).join('')}{permits.length>1?` + ${permits.length-1} more`:''}
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, flexWrap:'wrap' }}>
+              <div style={{ flex:1, minWidth:220 }}>
+                <p style={{ fontFamily:font, fontSize:15, fontWeight:600, color:'#111838', margin:'0 0 5px' }}>
+                  {permits[0]?.label}
                 </p>
-                <p style={{ fontFamily:font, fontSize:13, color:'#697498', margin:'0 0 2px' }}>Last applied {combo.lastUsed}</p>
-                <p style={{ fontFamily:font, fontSize:11, color:'#b0bcd4', margin:0 }}></p>
+                <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
+                  <span style={{ display:'inline-flex', alignItems:'center', gap:4, background:s.bg, border:`1px solid ${s.border}`, borderRadius:20, padding:'2px 9px', fontSize:10, fontWeight:700, color:s.text }}>
+                    <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke={s.text} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    {permits[0]?.authority}
+                  </span>
+                  <span style={{ fontFamily:font, fontSize:13, color:'#697498' }}>Last applied {combo.lastUsed}</span>
+                </div>
               </div>
               {!readonly && (
-                <button onClick={() => onQuickStart(combo)}
-                  style={{ flexShrink:0, background: isH?'#1360d2':'#eef4ff', color: isH?'#fff':'#1360d2', border:'none', borderRadius:8, padding:'9px 16px', fontFamily:font, fontSize:13, fontWeight:600, cursor:'pointer', transition:'all 0.18s' }}>
-                  Re-apply
-                </button>
+                <div style={{ display:'flex', gap:6, flexShrink:0 }}>
+                  {ACTION_BTNS.map(a => (
+                    <button key={a.label}
+                      onClick={() => { if (a.label === 'Start Journey') onQuickStart(combo); }}
+                      style={{ display:'flex', alignItems:'center', gap:4, padding:'5px 10px', borderRadius:6, background:a.bg, border:a.border, color:a.color, fontFamily:font, fontSize:11, fontWeight:600, cursor:'pointer', whiteSpace:'nowrap', boxShadow:a.shadow, transition:'opacity 0.15s' }}
+                      onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.opacity='0.8'}
+                      onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.opacity='1'}>
+                      {a.icon}{a.label}
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
           </div>
@@ -876,12 +897,6 @@ function DoneWithPrepare({ cargoLabel, cargoKey, onRestart, onOpenService }: { c
               <div style={{ flex:1, minWidth:0 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap', marginBottom:5 }}>
                   <span onClick={() => onOpenService?.(p.label)} style={{ fontFamily:font, fontSize:13, fontWeight:700, color:'#111838', cursor: onOpenService ? 'pointer' : 'default' }}>{p.label}</span>
-                  {p.prerequisite && (
-                    <span style={{ display:'inline-flex', alignItems:'center', gap:3, background:'#fff8e6', border:'1px solid #f5c842', borderRadius:20, padding:'2px 8px', fontSize:10, fontWeight:700, color:'#a16400', whiteSpace:'nowrap' }}>
-                      <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                      Prerequisite
-                    </span>
-                  )}
                 </div>
                 <span style={{ display:'inline-flex', alignItems:'center', gap:4, background:s.bg, border:`1px solid ${s.border}`, borderRadius:20, padding:'2px 9px', fontSize:10, fontWeight:700, color:s.text }}>
                   <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke={s.text} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
