@@ -4,8 +4,9 @@ import Header from './Header';
 import Pagination from './Pagination';
 import BackToListingBar from './BackToListingBar';
 import ClaimStepper from './ClaimStepper';
-import { DateInput } from './DatePicker';
-import { useTableBehaviors, ScrollArrows, DragDots } from '../hooks/useTableBehaviors';
+import { DateInput, StatusAsOnBadge } from './DatePicker';
+import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
+import ManageColumnsModal, { ColDef } from './ManageColumnsModal';
 import Dh, { DhAmount } from './Dh';
 
 const font = "'Dubai', sans-serif";
@@ -359,12 +360,19 @@ export default function CargoInspectionPage({ onBack }: { onBack: () => void }) 
   const LISTING_HEADERS: { label: string; w: number }[] = [
     { label: 'Booking Ref.No', w: 170 }, { label: 'Declaration No', w: 170 }, { label: 'Request Type', w: 160 },
     { label: 'Initiated Date', w: 130 }, { label: 'Location Type', w: 150 }, { label: 'Mobile No', w: 130 },
-    { label: 'Sub status', w: 170 }, { label: 'Status', w: 140 },
+    { label: 'Sub status', w: 170 },
   ];
-  const [colOrder, setColOrder] = useState<string[]>(() => LISTING_HEADERS.map(h => h.label));
-  const orderedHeaders = colOrder.map(l => LISTING_HEADERS.find(h => h.label === l)).filter(Boolean) as { label: string; w: number }[];
-  const tableMinWidth = LISTING_HEADERS.reduce((s, h) => s + h.w, 0) + 80 + 24;
-  const actionsW = tb.getW('Actions', 80);
+  const BOOKING_COL_DEFS: ColDef[] = LISTING_HEADERS.map(h => ({ key: h.label, label: h.label }));
+  const BOOKING_LOCKED_COLS: ColDef[] = [{ key: 'Status', label: 'Status' }, { key: 'Actions', label: 'Actions' }];
+  const [bookingVisibleCols, setBookingVisibleCols] = useState<string[]>(() => BOOKING_COL_DEFS.map(c => c.key));
+  const [showColModal, setShowColModal] = useState(false);
+  const [showDrafts, setShowDrafts] = useState(false);
+  const [statusFromDate, setStatusFromDate] = useState('2026-08-01');
+  const [statusToDate, setStatusToDate] = useState('2026-08-26');
+  const orderedHeaders = LISTING_HEADERS.filter(h => bookingVisibleCols.includes(h.label));
+  const tableMinWidth = orderedHeaders.reduce((s, h) => s + h.w, 0) + 140 + 80 + 24;
+  const statusW = 140;
+  const actionsW = 80;
 
   const applyFilters = () => { setAppliedFilters({ declNo: afDeclNo, bookingRef: afBookingRef, requestType: afRequestType, locationType: afLocationType, status: afStatus, subStatus: afSubStatus }); setPage(1); };
   const resetFilters = () => {
@@ -373,7 +381,7 @@ export default function CargoInspectionPage({ onBack }: { onBack: () => void }) 
     setPage(1);
   };
 
-  const filteredRows = rows.filter(r => {
+  const filteredRows = rows.filter(r => showDrafts ? r.status === 'Draft' : r.status !== 'Draft').filter(r => {
     if (searchQuery.trim()) {
       const v = searchType === 'bookingRefNo' ? r.bookingRefNo : r.declarationNo;
       if (!v.toLowerCase().includes(searchQuery.trim().toLowerCase())) return false;
@@ -553,13 +561,43 @@ export default function CargoInspectionPage({ onBack }: { onBack: () => void }) 
           </button>
         </div>
 
-        {/* Row 2: record-type toggle */}
-        <div className="bg-white flex items-center gap-[12px] h-[48px] px-[16px] py-[8px] rounded-[6px] flex-shrink-0 w-max" style={{ boxShadow: '0px 4px 10px rgba(0,0,0,0.08)' }}>
-          {(['all', 'epay'] as const).map(t => (
-            <button key={t} onClick={() => { setToolbarTab(t); if (t === 'all') setEpayBookingRef(''); }}
-              className={`h-[40px] px-[16px] rounded-[4px] text-[16px] font-medium transition-colors ${toolbarTab === t ? 'bg-[#1360d2] text-white' : 'bg-[#f7faff] text-[#697498] border border-[#e5efff]'}`}
-              style={{ fontFamily: font }}>{t === 'all' ? 'All Records' : 'E-Payment'}</button>
-          ))}
+        {/* Row 2: record-type toggle + status date range + drafts + columns */}
+        <div className="flex items-center gap-[12px] flex-wrap">
+          <div className="bg-white flex items-center gap-[12px] h-[48px] px-[16px] py-[8px] rounded-[6px] flex-shrink-0" style={{ boxShadow: '0px 4px 10px rgba(0,0,0,0.08)' }}>
+            {(['all', 'epay'] as const).map(t => (
+              <button key={t} onClick={() => { setToolbarTab(t); if (t === 'all') setEpayBookingRef(''); }}
+                className={`h-[40px] px-[16px] rounded-[4px] text-[16px] font-medium transition-colors ${toolbarTab === t ? 'bg-[#1360d2] text-white' : 'bg-[#f7faff] text-[#697498] border border-[#e5efff]'}`}
+                style={{ fontFamily: font }}>{t === 'all' ? 'All Records' : 'E-Payment'}</button>
+            ))}
+          </div>
+
+          <div className="flex-1 flex justify-center">
+            <StatusAsOnBadge fromValue={statusFromDate} toValue={statusToDate}
+              onApply={(from, to) => { setStatusFromDate(from); setStatusToDate(to); }} />
+          </div>
+
+          <div className="flex items-center gap-[8px] flex-shrink-0">
+            <button
+              onClick={() => { setShowDrafts(d => !d); setPage(1); }}
+              className={`relative w-[48px] h-[28px] rounded-full transition-colors ${showDrafts ? 'bg-[#1360d2]' : 'bg-[#e2ebf9]'}`}
+            >
+              <div className={`absolute top-[3px] size-[22px] rounded-full bg-white shadow transition-transform ${showDrafts ? 'translate-x-[22px]' : 'translate-x-[3px]'}`} />
+            </button>
+            <span className="text-[16px] text-[#0e1b3d] font-medium whitespace-nowrap" style={{ fontFamily: font }}>Drafts</span>
+          </div>
+
+          <button
+            onClick={() => setShowColModal(true)}
+            className="flex items-center gap-[6px] h-[40px] px-[14px] rounded-[6px] bg-white border border-[#d5ddfb] text-[#1360d2] text-[16px] font-medium flex-shrink-0"
+            style={{ fontFamily: font, boxShadow: '0px 4px 10px rgba(0,0,0,0.08)' }}
+          >
+            <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#1360d2" strokeWidth="1.6">
+              <rect x="2" y="3" width="4" height="14" rx="1" />
+              <rect x="8" y="3" width="4" height="14" rx="1" />
+              <rect x="14" y="3" width="4" height="14" rx="1" />
+            </svg>
+            Columns
+          </button>
         </div>
 
         {/* Row 3: Advance Filters — fields inline in one grid row, Apply/Reset at the end */}
@@ -589,50 +627,55 @@ export default function CargoInspectionPage({ onBack }: { onBack: () => void }) 
           </div>
         )}
 
-        {/* Table */}
+        {/* Table — Integrated Clearance conventions: Columns-modal configuration, Status
+            and Actions locked as the last two sticky columns, borderSpacing row grouping. */}
         <div style={{ position: 'relative' }}>
-          <ScrollArrows atStart={tb.atScrollStart} atEnd={tb.atScrollEnd} onLeft={tb.scrollToStart} onRight={tb.scrollToEnd} stickyWidth={actionsW} />
-          <div ref={tb.scrollRef} onScroll={tb.handleScroll} className="overflow-x-auto bg-white rounded-[8px]" style={{ position: 'relative', boxShadow: '0px 5px 32px 0px rgba(143,155,186,0.16)' }}>
-            {tb.resizeIndicatorLeft !== null && <div style={{ position: 'absolute', top: 0, bottom: 0, left: tb.resizeIndicatorLeft, width: 3, background: '#1360d2', borderRadius: 2, pointerEvents: 'none', zIndex: 100 }} />}
-            <table ref={tb.tableRef} onMouseMove={tb.handleTableMouseMove} onMouseLeave={tb.handleTableMouseLeave} onMouseDown={tb.handleTableMouseDown}
-              className="w-full" style={{ minWidth: tableMinWidth, borderCollapse: 'collapse', fontFamily: font, cursor: tb.isNearResize ? 'col-resize' : undefined }}>
+          <ScrollArrows atStart={tb.atScrollStart} atEnd={tb.atScrollEnd} onLeft={tb.scrollToStart} onRight={tb.scrollToEnd} stickyWidth={statusW + actionsW} />
+          <div ref={tb.scrollRef} onScroll={tb.handleScroll} className="overflow-x-auto">
+            <table className="w-full" style={{ minWidth: tableMinWidth, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }}>
               <thead>
                 <tr>
-                  {orderedHeaders.map((col, ci) => {
-                    const isLast = ci === orderedHeaders.length - 1;
-                    return (
-                      <th key={col.label} data-col-key={col.label}
-                        style={{ width: tb.getW(col.label, col.w), minWidth: tb.getW(col.label, col.w), padding: '10px 12px', textAlign: 'left', fontWeight: 500, position: 'relative', ...tb.getThStyle(col.label) }}
-                        onDragOver={e => tb.onDragOver(col.label, e)} onDragLeave={tb.onDragLeave} onDrop={e => tb.onDrop(col.label, e, colOrder, setColOrder)}>
-                        <div draggable onDragStart={e => tb.onDragStart(col.label, e)} onDragEnd={tb.onDragEnd} style={{ display: tb.hoveredColKey === col.label ? 'flex' : 'none', position: 'absolute', top: 3, left: '50%', transform: 'translateX(-50%)', cursor: 'grab', zIndex: 4 }}><DragDots /></div>
-                        <span className="text-[16px] text-[#051937] whitespace-nowrap">{col.label}</span>
-                      </th>
-                    );
-                  })}
-                  <th style={{ width: actionsW, minWidth: actionsW, padding: '10px 12px', textAlign: 'center', position: 'sticky', right: 0, zIndex: 2, background: '#a6c2e9', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>
-                    <span className="text-[16px] text-[#051937]" style={{ fontWeight: 500 }}>Actions</span>
+                  {orderedHeaders.map((col, idx) => (
+                    <th key={col.label}
+                      style={{ width: col.w, minWidth: col.w, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, borderRadius: idx === 0 ? '8px 0 0 0' : undefined, paddingLeft: idx === 0 ? 16 : 12 }}>
+                      <span className="text-[16px] font-medium text-[#051937] whitespace-nowrap">{col.label}</span>
+                    </th>
+                  ))}
+                  {/* STICKY: Status */}
+                  <th style={{ position: 'sticky', right: actionsW, width: statusW, minWidth: statusW, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
+                    <span className="text-[16px] font-medium text-[#051937]">Status</span>
+                  </th>
+                  {/* STICKY: Actions */}
+                  <th style={{ position: 'sticky', right: 0, width: actionsW, minWidth: actionsW, background: '#a6c2e9', padding: '10px 12px', textAlign: 'center', fontWeight: 500, zIndex: 2, borderRadius: '0 8px 0 0' }}>
+                    <span className="text-[16px] font-medium text-[#051937]">Actions</span>
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {paginatedRows.length === 0 ? (
-                  <tr><td colSpan={orderedHeaders.length + 1} style={{ padding: '40px 12px', textAlign: 'center' }}><span className="text-[16px] text-[#697498]">No matching inspection requests found.</span></td></tr>
-                ) : paginatedRows.map((row, ri) => {
+                  <tr><td colSpan={orderedHeaders.length + 2} style={{ padding: '40px 12px', textAlign: 'center', background: '#fff' }}><span className="text-[16px] text-[#697498]">No matching inspection requests found.</span></td></tr>
+                ) : paginatedRows.map((row) => {
                   const sc = STATUS_COLORS[row.status] ?? { bg: '#f0f3fa', color: '#5a6282' };
-                  const cell = (content: React.ReactNode, colKey: string, w: number) => (
-                    <td data-col-key={colKey} style={{ background: tb.getTdBg(colKey) ?? '#fff', padding: '12px', width: w, borderTop: '1px solid #f0f4ff', whiteSpace: 'nowrap' }}>{content}</td>
+                  const cell = (content: React.ReactNode, w: number) => (
+                    <td style={{ background: '#fff', padding: '0 12px', height: 52, verticalAlign: 'middle', width: w, whiteSpace: 'nowrap' }}>{content}</td>
                   );
+                  const txt = (v: string) => <span className="text-[16px] text-[#0e1b3d]">{v}</span>;
                   return (
                     <tr key={row.bookingRefNo}>
-                      {orderedHeaders.map(col => {
-                        const w = tb.getW(col.label, col.w);
-                        if (col.label === 'Booking Ref.No') return <React.Fragment key={col.label}>{cell(<button onClick={() => { setViewRow(row); setViewTab('Goods Details'); setStep('view'); }} className="text-[16px] hover:underline" style={{ color: '#1360d2', fontWeight: 500, fontFamily: font }}>{row.bookingRefNo}</button>, col.label, w)}</React.Fragment>;
-                        if (col.label === 'Declaration No') return <React.Fragment key={col.label}>{cell(<button onClick={() => { setDeclarationNoOpen(row.declarationNo); setStep('declaration'); }} className="text-[16px] hover:underline" style={{ color: '#1360d2', fontWeight: 500, fontFamily: font }}>{row.declarationNo}</button>, col.label, w)}</React.Fragment>;
-                        if (col.label === 'Status') return <React.Fragment key={col.label}>{cell(<span className="inline-flex items-center px-[10px] py-[3px] rounded-[4px] text-[15px] font-medium whitespace-nowrap" style={{ background: sc.bg, color: sc.color, fontFamily: font }}>{row.status}</span>, col.label, w)}</React.Fragment>;
-                        const v = col.label === 'Request Type' ? row.requestType : col.label === 'Initiated Date' ? row.initiatedDate : col.label === 'Location Type' ? row.locationType : col.label === 'Mobile No' ? row.mobileNo : col.label === 'Sub status' ? row.subStatus : '';
-                        return <React.Fragment key={col.label}>{cell(<span className="text-[16px] text-[#0e1b3d]">{v}</span>, col.label, w)}</React.Fragment>;
-                      })}
-                      <td style={{ padding: '12px', textAlign: 'center', position: 'sticky', right: 0, background: '#fff', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', borderTop: '1px solid #f0f4ff' }}>
+                      {bookingVisibleCols.includes('Booking Ref.No') && cell(<button onClick={() => { setViewRow(row); setViewTab('Goods Details'); setStep('view'); }} className="text-[16px] hover:underline" style={{ color: '#1360d2', fontWeight: 500, fontFamily: font }}>{row.bookingRefNo}</button>, 170)}
+                      {bookingVisibleCols.includes('Declaration No') && cell(<button onClick={() => { setDeclarationNoOpen(row.declarationNo); setStep('declaration'); }} className="text-[16px] hover:underline" style={{ color: '#1360d2', fontWeight: 500, fontFamily: font }}>{row.declarationNo}</button>, 170)}
+                      {bookingVisibleCols.includes('Request Type') && cell(txt(row.requestType), 160)}
+                      {bookingVisibleCols.includes('Initiated Date') && cell(txt(row.initiatedDate), 130)}
+                      {bookingVisibleCols.includes('Location Type') && cell(txt(row.locationType), 150)}
+                      {bookingVisibleCols.includes('Mobile No') && cell(txt(row.mobileNo), 130)}
+                      {bookingVisibleCols.includes('Sub status') && cell(txt(row.subStatus), 170)}
+
+                      {/* STICKY: Status */}
+                      <td style={{ position: 'sticky', right: actionsW, background: '#fff', padding: '0 12px', height: 52, verticalAlign: 'middle', width: statusW, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: openRowMenu === row.bookingRefNo ? 49 : 1 }}>
+                        <span className="inline-flex items-center px-[10px] py-[3px] rounded-[4px] text-[16px] font-medium whitespace-nowrap" style={{ background: sc.bg, color: sc.color, fontFamily: font }}>{row.status}</span>
+                      </td>
+                      {/* STICKY: Actions */}
+                      <td style={{ position: 'sticky', right: 0, background: '#fff', padding: '0 12px', height: 52, verticalAlign: 'middle', width: actionsW, textAlign: 'center', zIndex: openRowMenu === row.bookingRefNo ? 49 : 1 }}>
                         <div className="relative inline-block">
                           <button onClick={() => setOpenRowMenu(openRowMenu === row.bookingRefNo ? null : row.bookingRefNo)} className="size-[32px] rounded-full flex items-center justify-center hover:bg-[#e2ebf9]">
                             <svg viewBox="0 0 20 20" width="18" height="18" fill="#697498"><circle cx="10" cy="4" r="1.7" /><circle cx="10" cy="10" r="1.7" /><circle cx="10" cy="16" r="1.7" /></svg>
@@ -718,6 +761,16 @@ export default function CargoInspectionPage({ onBack }: { onBack: () => void }) 
             </div>
           </div>
         </div>
+      )}
+
+      {showColModal && (
+        <ManageColumnsModal
+          columns={BOOKING_COL_DEFS}
+          visible={bookingVisibleCols}
+          lockedColumns={BOOKING_LOCKED_COLS}
+          onSave={setBookingVisibleCols}
+          onClose={() => setShowColModal(false)}
+        />
       )}
     </>
   );
