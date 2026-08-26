@@ -3077,8 +3077,6 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             ];
 
             const SUMMARY_CARDS = [
-              { key: 'pending', label: 'Pending Invoices', count: pendingInvCount, amt: pendingInvAmt, color: '#b45309', bg: 'linear-gradient(160deg,#ffedd1 0%,#ffffff 75%)', border: '#fcd7a0', onClick: openPending,
-                icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#b45309" strokeWidth="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5" strokeLinecap="round"/></svg> },
               { key: 'overdue', label: 'Overdue Invoices', count: overdueInvCount, amt: overdueInvAmt, color: '#dc3545', bg: 'linear-gradient(160deg,#fde3e3 0%,#ffffff 75%)', border: '#f5b8b8', onClick: openOverdue,
                 icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#dc3545" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v6" strokeLinecap="round"/><circle cx="12" cy="16.5" r="0.9" fill="#dc3545"/></svg> },
               { key: 'dueSoon', label: 'Current / Due Soon', count: dueSoonInvCount, amt: dueSoonInvAmt, color: '#b45309', bg: 'linear-gradient(160deg,#ffedd1 0%,#ffffff 75%)', border: '#fcd7a0', onClick: openDueSoon,
@@ -3122,30 +3120,6 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                     <span className="text-[12px] text-[#8f94ae] mt-[5px]" style={{ fontFamily: font }}>{centerLabel}</span>
                   </div>
                 </div>
-              );
-            };
-            /* Concentric double-ring gauge — each metric gets its own full-circle track, so a
-               small percentage still reads as a clearly visible arc instead of a sliver of a
-               single shared ring. Values are the true percentages; a minimum sweep keeps a
-               non-zero-but-tiny value from disappearing visually. */
-            const RingGauge = ({ size, outer, inner }: { size: number; outer: { pct: number; color: string; track: string }; inner: { pct: number; color: string; track: string } }) => {
-              const outerVisual = outer.pct > 0 ? Math.max(outer.pct, 4) : 0;
-              const innerVisual = inner.pct > 0 ? Math.max(inner.pct, 4) : 0;
-              return (
-                <svg viewBox="0 0 42 42" width={size} height={size}>
-                  <circle cx="21" cy="21" r="16" fill="transparent" stroke={outer.track} strokeWidth="3" />
-                  {outerVisual > 0 && (
-                    <circle cx="21" cy="21" r="16" fill="transparent" stroke={outer.color} strokeWidth="3" strokeLinecap="round"
-                      pathLength={100} strokeDasharray={`${outerVisual} ${100 - outerVisual}`} strokeDashoffset="25"
-                      style={{ transition: 'stroke-dasharray 0.3s' }} />
-                  )}
-                  <circle cx="21" cy="21" r="10" fill="transparent" stroke={inner.track} strokeWidth="3" />
-                  {innerVisual > 0 && (
-                    <circle cx="21" cy="21" r="10" fill="transparent" stroke={inner.color} strokeWidth="3" strokeLinecap="round"
-                      pathLength={100} strokeDasharray={`${innerVisual} ${100 - innerVisual}`} strokeDashoffset="25"
-                      style={{ transition: 'stroke-dasharray 0.3s' }} />
-                  )}
-                </svg>
               );
             };
             /* Dashed-tick circular utilisation ring — a full circle of short radial dashes,
@@ -3250,9 +3224,9 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                       </p>
                     </div>
                     <div className="flex items-center justify-between mt-[14px] pt-[10px]" style={{ borderTop: '1px solid #fcd7a0' }}>
-                      <span className="text-[12px] text-[#697498]" style={{ fontFamily: font }}>{ACCOUNTS.length} CDR accounts</span>
-                      <span className="text-[13px] text-[#b45309] font-semibold flex items-center gap-1">
-                        View all <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#b45309" strokeWidth="2"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>{ACCOUNTS.length} CDR accounts</span>
+                      <span className="text-[13px] text-white font-semibold flex items-center gap-1 rounded-[6px]" style={{ fontFamily: font, background: '#1360d2', padding: '7px 14px' }}>
+                        Pay Now <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#fff" strokeWidth="2"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       </span>
                     </div>
                   </button>
@@ -3268,9 +3242,9 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                       <p className="text-[24px] font-extrabold text-[#1e40af] leading-none mt-[10px]" style={{ letterSpacing: '-1px' }}>{fmtBalance(debitTotal)}</p>
                     </div>
                     <div className="flex items-center justify-between mt-[14px] pt-[10px]" style={{ borderTop: '1px solid #e0e8f5' }}>
-                      <span className="text-[12px] text-[#697498]" style={{ fontFamily: font }}>{DEBIT_ACCOUNTS.length} account{DEBIT_ACCOUNTS.length !== 1 ? 's' : ''}</span>
-                      <span className="text-[13px] text-[#1e40af] font-semibold flex items-center gap-1">
-                        View all <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#1e40af" strokeWidth="2"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>{DEBIT_ACCOUNTS.length} account{DEBIT_ACCOUNTS.length !== 1 ? 's' : ''}</span>
+                      <span className="text-[13px] text-white font-semibold flex items-center gap-1 rounded-[6px]" style={{ fontFamily: font, background: '#1360d2', padding: '7px 14px' }}>
+                        Topup <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#fff" strokeWidth="2"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       </span>
                     </div>
                   </button>
@@ -3297,124 +3271,78 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               {/* ── Invoices — total available + pending/overdue/due-soon triage ── */}
               <div>
                 <p className="text-[15px] font-bold text-[#0e1b3d] mb-[10px]" style={{ fontFamily: font }}>Invoices</p>
-                <div className="flex items-stretch gap-[16px]">
+                <div className="grid grid-cols-3 gap-[16px] items-stretch">
                   <button onClick={() => setActiveMenu('Invoices')}
-                    className="rounded-[16px] p-[20px] text-left relative overflow-hidden hover:shadow-lg hover:-translate-y-[1px] transition-all flex-1"
+                    className="rounded-[16px] p-[20px] text-left relative overflow-hidden hover:shadow-lg hover:-translate-y-[1px] transition-all flex flex-col"
                     style={{ background: 'linear-gradient(160deg,#dce9fc 0%,#ffffff 75%)', border: '1.5px solid #b3caff', boxShadow: '0 1px 4px rgba(14,27,61,0.06)' }}>
                     <div className="absolute top-[16px] right-[16px] size-[44px] rounded-[12px] flex items-center justify-center bg-white flex-shrink-0" style={{ boxShadow: '0 4px 10px rgba(14,27,61,0.10)' }}>
                       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1360d2" strokeWidth="1.8"><rect x="2" y="6" width="20" height="13" rx="2" /><path d="M2 10h20" strokeLinecap="round" /></svg>
                     </div>
                     <div style={{ paddingRight: 56 }}>
                       <span className="text-[15px] font-medium text-[#4b5468]" style={{ fontFamily: font }}>Total Invoices Available</span>
-                      <span className="text-[34px] font-extrabold leading-none block mt-[10px]" style={{ color: '#1360d2', fontFamily: font, letterSpacing: '-1px' }}>{pendingInvCount}</span>
+                      <span className="text-[24px] font-extrabold leading-none flex items-center gap-[6px] mt-[10px]" style={{ color: '#1360d2', fontFamily: font, letterSpacing: '-1px' }}>
+                        <DirhamIcon size={19} color="#1360d2" />{pendingInvAmt.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      </span>
                     </div>
-                    <div className="flex items-center justify-between mt-[14px] pt-[10px]" style={{ borderTop: '1px solid #b3caff' }}>
-                      <span className="text-[12px] text-[#697498]" style={{ fontFamily: font }}>View &amp; pay your invoices</span>
-                      <span className="text-[13px] text-[#1360d2] font-semibold flex items-center gap-1">
-                        View &amp; Pay <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#1360d2" strokeWidth="2"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    <div className="flex items-center justify-between mt-auto pt-[14px]" style={{ borderTop: '1px solid #b3caff' }}>
+                      <span>
+                        <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>Count</span>
+                        <span className="text-[16px] font-bold text-[#0e1b3d] ml-[8px]" style={{ fontFamily: font }}>{pendingInvCount}</span>
+                      </span>
+                      <span className="text-[13px] text-white font-semibold flex items-center gap-1 rounded-[6px]" style={{ fontFamily: font, background: '#1360d2', padding: '7px 14px' }}>
+                        Pay Now <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#fff" strokeWidth="2"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       </span>
                     </div>
                   </button>
 
-                  {/* Connector — divider line with a right-pointing arrow badge at its center */}
-                  <div className="relative flex-shrink-0" style={{ width: 28 }}>
-                    <div className="absolute left-1/2 top-0 bottom-0" style={{ width: 1, background: '#d5ddfb', transform: 'translateX(-50%)' }} />
-                    <div className="absolute left-1/2 top-1/2 flex items-center justify-center rounded-full bg-white"
-                      style={{ width: 26, height: 26, transform: 'translate(-50%,-50%)', border: '1.5px solid #93b4f7', boxShadow: '0 2px 6px rgba(14,27,61,0.10)' }}>
-                      <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#1360d2" strokeWidth="2"><path d="M5 3l5 5-5 5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-[16px] flex-[3]">
-                    {SUMMARY_CARDS.map(({ key, label, count, amt, color, bg, border, icon, onClick }) => (
-                      <button key={key} onClick={onClick}
-                        className="rounded-[16px] p-[20px] text-left relative overflow-hidden hover:shadow-lg hover:-translate-y-[1px] transition-all"
-                        style={{ background: bg, border: `1.5px solid ${border}`, boxShadow: '0 1px 4px rgba(14,27,61,0.06)' }}>
-                        <div className="absolute top-[16px] right-[16px] size-[44px] rounded-[12px] flex items-center justify-center bg-white flex-shrink-0" style={{ boxShadow: '0 4px 10px rgba(14,27,61,0.10)' }}>
-                          {icon}
-                        </div>
-                        <div style={{ paddingRight: 56 }}>
-                          <span className="text-[15px] font-medium text-[#4b5468]" style={{ fontFamily: font }}>{label}</span>
-                          <span className="text-[34px] font-extrabold leading-none block mt-[10px]" style={{ color, fontFamily: font, letterSpacing: '-1px' }}>{count}</span>
-                        </div>
-                        <div className="flex items-center justify-between mt-[14px] pt-[10px]" style={{ borderTop: `1px solid ${border}` }}>
-                          <span className="text-[11px] font-semibold uppercase tracking-wide text-[#8f94ae]" style={{ fontFamily: font }}>Amount</span>
-                          <span className="text-[18px] font-extrabold text-[#0e1b3d] flex items-center gap-[4px]" style={{ fontFamily: font, letterSpacing: '-0.3px' }}>
-                            <DirhamIcon size={14} color="#0e1b3d" />{amt.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                          </span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
+                  {SUMMARY_CARDS.map(({ key, label, count, amt, color, bg, border, icon, onClick }) => (
+                    <button key={key} onClick={onClick}
+                      className="rounded-[16px] p-[20px] text-left relative overflow-hidden hover:shadow-lg hover:-translate-y-[1px] transition-all flex flex-col"
+                      style={{ background: bg, border: `1.5px solid ${border}`, boxShadow: '0 1px 4px rgba(14,27,61,0.06)' }}>
+                      <div className="absolute top-[16px] right-[16px] size-[44px] rounded-[12px] flex items-center justify-center bg-white flex-shrink-0" style={{ boxShadow: '0 4px 10px rgba(14,27,61,0.10)' }}>
+                        {icon}
+                      </div>
+                      <div style={{ paddingRight: 56 }}>
+                        <span className="text-[15px] font-medium text-[#4b5468]" style={{ fontFamily: font }}>{label}</span>
+                        <span className="text-[24px] font-extrabold leading-none flex items-center gap-[6px] mt-[10px]" style={{ color, fontFamily: font, letterSpacing: '-1px' }}>
+                          <DirhamIcon size={19} color={color} />{amt.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                      <div className="flex items-center mt-auto pt-[14px]" style={{ borderTop: `1px solid ${border}` }}>
+                        <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>Count</span>
+                        <span className="text-[16px] font-bold text-[#0e1b3d] ml-[8px]" style={{ fontFamily: font }}>{count}</span>
+                      </div>
+                    </button>
+                  ))}
                 </div>
               </div>
 
               {/* ── CDR Usage trend + Debit Account Top-ups ─────────────────── */}
               <div className="grid grid-cols-2 gap-[16px] items-stretch">
               <div className="rounded-[16px] p-[20px]" style={{ background: '#fff', border: '1.5px solid #e0e8f5', boxShadow: '0 1px 4px rgba(14,27,61,0.06)' }}>
-                <div className="flex items-start justify-between gap-[10px]">
-                  <div>
-                    <p className="text-[16px] font-bold text-[#0e1b3d]" style={{ fontFamily: font }}>CDR Usage</p>
-                    <p className="text-[13px] text-[#8f94ae] mt-[2px]" style={{ fontFamily: font }}>Statistics over the last 6 months</p>
-                  </div>
-                  <div className="relative flex-shrink-0">
-                    <button onClick={() => setCdrChartAccountOpen(o => !o)}
-                      className="flex items-center gap-[6px] h-[32px] px-[10px] rounded-[8px] border text-[13px] font-semibold text-[#0e1b3d] hover:bg-[#f0f4ff] transition-colors"
-                      style={{ fontFamily: font, borderColor: '#d5ddfb' }}>
-                      {cdrChartAccount}
-                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#697498" strokeWidth="2"
-                        style={{ transform: cdrChartAccountOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
-                        <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </button>
-                    {cdrChartAccountOpen && (
-                      <div className="absolute right-0 z-20 rounded-[8px] bg-white overflow-y-auto" style={{ top: 38, width: 220, maxHeight: 220, border: '1px solid #e0e8f5', boxShadow: '0px 4px 20px rgba(0,0,0,0.14)' }}>
-                        {ACCOUNTS.map(a => (
-                          <button key={a.account} onClick={() => { setCdrChartAccount(a.account); setCdrChartAccountOpen(false); }}
-                            className="w-full text-left px-[12px] py-[9px] text-[13px] hover:bg-[#f0f4ff] transition-colors"
-                            style={{ fontFamily: font, color: a.account === cdrChartAccount ? '#1360d2' : '#0e1b3d', fontWeight: a.account === cdrChartAccount ? 700 : 400 }}>
-                            {a.account}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                <div>
+                  <p className="text-[16px] font-bold text-[#0e1b3d]" style={{ fontFamily: font }}>Total Due vs Overdue</p>
+                  <p className="text-[13px] text-[#8f94ae] mt-[2px]" style={{ fontFamily: font }}>Share of your total due already overdue</p>
                 </div>
                 {(() => {
+                  const bars = [
+                    { label: 'Total Due', amt: totalDueToDubaiCustoms, color: '#1360d2' },
+                    { label: 'Overdue', amt: overdueInvAmt, color: '#dc3545' },
+                  ];
                   const W = 960, H = 260;
                   const x0 = 76, x1 = 930, y0 = 20, y1 = 188, labelY = 214;
-                  const xStep = (x1 - x0) / (CDR_USAGE_TREND.length - 1);
-                  const maxVal = Math.max(...CDR_USAGE_TREND.map(d => d.amt));
-                  const niceMax = maxVal * 1.25;
-                  const px = (i: number) => x0 + i * xStep;
-                  const py = (v: number) => y1 - (v / niceMax) * (y1 - y0);
-                  const pts = CDR_USAGE_TREND.map((d, i) => ({ x: px(i), y: py(d.amt), ...d }));
-
-                  let linePath = `M ${pts[0].x} ${pts[0].y}`;
-                  pts.slice(0, -1).forEach((p, i) => {
-                    const next = pts[i + 1];
-                    const xMid = (p.x + next.x) / 2;
-                    linePath += ` C ${xMid} ${p.y}, ${xMid} ${next.y}, ${next.x} ${next.y}`;
-                  });
-                  const areaPath = `${linePath} L ${pts[pts.length - 1].x} ${y1} L ${pts[0].x} ${y1} Z`;
-
+                  const maxVal = Math.max(...bars.map(b => b.amt));
+                  const niceMax = (maxVal || 1) * 1.25;
                   const gridSteps = [0, 0.25, 0.5, 0.75, 1];
-                  const peak = pts[pts.length - 1]; // highlight the current month
+                  const barW = 160;
+                  const gap = (x1 - x0 - barW * bars.length) / (bars.length + 1);
+                  const barX = (i: number) => x0 + gap * (i + 1) + barW * i;
+                  const minBarH = 10; // keeps a small-but-nonzero value (e.g. Overdue) visible against a much larger bar
+                  const barH = (v: number) => v > 0 ? Math.max((v / niceMax) * (y1 - y0), minBarH) : 0;
 
                   return (
-                    <div className="mt-[10px] overflow-x-auto">
-                      <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={220} style={{ minWidth: 560 }}>
-                        <defs>
-                          <linearGradient id="cdrUsageFill" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.28" />
-                            <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
-                          </linearGradient>
-                          <linearGradient id="cdrUsageHighlight" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.16" />
-                            <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
-                          </linearGradient>
-                        </defs>
-
+                    <div className="mt-[10px]">
+                      <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={220}>
                         {/* Gridlines + Y labels */}
                         {gridSteps.map(g => {
                           const gy = y1 - g * (y1 - y0);
@@ -3428,34 +3356,23 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                           );
                         })}
 
-                        {/* Highlight column behind the current month */}
-                        <rect x={peak.x - 34} y={y0} width={68} height={y1 - y0} fill="url(#cdrUsageHighlight)" />
-
-                        {/* Area + line */}
-                        <path d={areaPath} fill="url(#cdrUsageFill)" />
-                        <path d={linePath} fill="none" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-
-                        {/* Data points */}
-                        {pts.map((p, i) => (
-                          <circle key={i} cx={p.x} cy={p.y} r={i === pts.length - 1 ? 5 : 3.5}
-                            fill={i === pts.length - 1 ? '#f59e0b' : '#fff'} stroke="#f59e0b" strokeWidth="2.5" />
-                        ))}
-
-                        {/* Peak tooltip pill */}
-                        <g>
-                          <rect x={peak.x - 52} y={peak.y - 44} width="104" height="28" rx="14" fill="#b45309" />
-                          <text x={peak.x} y={peak.y - 25} textAnchor="middle" fontSize="13" fontWeight="700" fill="#fff" style={{ fontFamily: font }}>
-                            Dh{fmtCompact(peak.amt)}
-                          </text>
-                          <line x1={peak.x} y1={peak.y - 16} x2={peak.x} y2={peak.y - 6} stroke="#b45309" strokeWidth="1.5" />
-                        </g>
-
-                        {/* X-axis month labels */}
-                        {pts.map((p, i) => (
-                          <text key={i} x={p.x} y={labelY} textAnchor="middle" fontSize="16" fill="#4b5468" style={{ fontFamily: font }}>
-                            {p.month}
-                          </text>
-                        ))}
+                        {/* Bars */}
+                        {bars.map((b, i) => {
+                          const h = barH(b.amt);
+                          const x = barX(i);
+                          const y = y1 - h;
+                          return (
+                            <g key={b.label}>
+                              <rect x={x} y={y} width={barW} height={h} rx={0} fill={b.color} />
+                              <text x={x + barW / 2} y={y - 10} textAnchor="middle" fontSize="14" fontWeight="700" fill={b.color} style={{ fontFamily: font }}>
+                                Dh{fmtCompact(b.amt)}
+                              </text>
+                              <text x={x + barW / 2} y={labelY} textAnchor="middle" fontSize="16" fill="#4b5468" style={{ fontFamily: font }}>
+                                {b.label}
+                              </text>
+                            </g>
+                          );
+                        })}
                       </svg>
                     </div>
                   );
@@ -3463,7 +3380,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               </div>
 
               {/* Debit Account Top-ups — bar chart, deliberately a different chart type from the
-                  CDR Usage line/area chart so the two read as distinct at a glance. */}
+                  Total Due vs Overdue chart so the two read as distinct at a glance. */}
               <div className="rounded-[16px] p-[20px]" style={{ background: '#fff', border: '1.5px solid #e0e8f5', boxShadow: '0 1px 4px rgba(14,27,61,0.06)' }}>
                 <div className="flex items-start justify-between gap-[10px]">
                   <div>
@@ -3558,10 +3475,10 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               </div>
               </div>
 
-              {/* ── Analytics — Payment Status / Total Due vs Overdue / Recent Activity ── */}
+              {/* ── Analytics — Payment Status / Recent Activity ── */}
               <div>
                 <p className="text-[15px] font-bold text-[#0e1b3d] mb-[10px]" style={{ fontFamily: font }}>Analytics</p>
-                <div className="grid grid-cols-3 gap-[16px] items-stretch">
+                <div className="grid grid-cols-2 gap-[16px] items-stretch">
                   {/* Payment Status */}
                   <div className="rounded-[16px] p-[18px]" style={{ background: '#fff', border: '1.5px solid #e0e8f5', boxShadow: '0 1px 4px rgba(14,27,61,0.06)' }}>
                     <div className="flex items-center justify-between gap-[8px] flex-wrap">
@@ -3600,43 +3517,6 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                       );
                     })()}
                   </div>
-
-                  {/* Total Due vs Overdue — same ring-gauge design, amounts shown in dirhams */}
-                  {(() => {
-                    const dueTotal = totalDueToDubaiCustoms || 1; // guard divide-by-zero for the ring's % math
-                    const overduePct = (overdueInvAmt / dueTotal) * 100;
-                    const currentPct = 100 - overduePct;
-
-                    return (
-                      <div className="rounded-[16px] p-[18px]" style={{ background: '#fff', border: '1.5px solid #e0e8f5', boxShadow: '0 1px 4px rgba(14,27,61,0.06)' }}>
-                        <p className="text-[15px] font-bold text-[#0e1b3d]" style={{ fontFamily: font }}>Total Due vs Overdue</p>
-                        <p className="text-[12px] text-[#8f94ae] mt-[2px]" style={{ fontFamily: font }}>Share of your total due already overdue</p>
-                        <div className="flex items-center gap-[16px] mt-[16px]">
-                          <RingGauge size={130}
-                            outer={{ pct: currentPct, color: '#1360d2', track: '#dce9fc' }}
-                            inner={{ pct: overduePct, color: '#dc3545', track: '#fde3e3' }} />
-                          <div className="flex-1 min-w-0 flex flex-col gap-[10px]">
-                            <div className="flex flex-col items-start">
-                              <span className="inline-flex items-center gap-[5px] text-[12px] text-[#8f94ae]" style={{ fontFamily: font }}>
-                                <span className="size-[8px] rounded-full flex-shrink-0" style={{ background: '#1360d2' }} />Total Due to Pay
-                              </span>
-                              <span className="text-[15px] font-extrabold text-[#1360d2] mt-[2px] flex items-center gap-[3px]" style={{ fontFamily: font }}>
-                                <DirhamIcon size={12} color="#1360d2" />{totalDueToDubaiCustoms.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                              </span>
-                            </div>
-                            <div className="flex flex-col items-start">
-                              <span className="inline-flex items-center gap-[5px] text-[12px] text-[#8f94ae]" style={{ fontFamily: font }}>
-                                <span className="size-[8px] rounded-full flex-shrink-0" style={{ background: '#dc3545' }} />Overdue to Pay
-                              </span>
-                              <span className="text-[15px] font-extrabold text-[#dc3545] mt-[2px] flex items-center gap-[3px]" style={{ fontFamily: font }}>
-                                <DirhamIcon size={12} color="#dc3545" />{overdueInvAmt.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })()}
 
                   {/* Recent Activity */}
                   <div className="rounded-[16px] p-[18px] flex flex-col" style={{ background: '#fff', border: '1.5px solid #e0e8f5', boxShadow: '0 1px 4px rgba(14,27,61,0.06)' }}>

@@ -17,6 +17,7 @@ import JoinClientAccreditationPage from './JoinClientAccreditationPage';
 import SubmitVoluntaryDisclosurePage from './SubmitVoluntaryDisclosurePage';
 import GoodsLandingCertPage from './GoodsLandingCertPage';
 import CargoInspectionPage from './CargoInspectionPage';
+import DeclarationListPage from './DeclarationListPage';
 
 type Props = { onClose: () => void };
 
@@ -292,9 +293,9 @@ const DCC_FILTER_FIELDS: AFFieldDef[] = [
   { key: 'dateTo',      label: 'Request Date To',   type: 'date' },
 ];
 
-type PageKey = 'glc' | 'jap' | 'cwl' | 'ctr' | 'rda' | 'pbf' | 'dcc' | 'cargoInspection';
+type PageKey = 'glc' | 'jap' | 'cwl' | 'ctr' | 'rda' | 'pbf' | 'dcc' | 'cargoInspection' | 'integratedClearance';
 
-const PAGE_CONFIGS: Record<Exclude<PageKey, 'pbf' | 'dcc' | 'cargoInspection' | 'ctr' | 'cwl'> | 'ctr' | 'cwl', {
+const PAGE_CONFIGS: Record<Exclude<PageKey, 'pbf' | 'dcc' | 'cargoInspection' | 'integratedClearance' | 'ctr' | 'cwl'> | 'ctr' | 'cwl', {
   title: string; breadcrumb: string; primaryLabel: string;
   searchLabel: string; searchPlaceholder: string; searchFields?: string[];
   advancedFilterFields?: AFFieldDef[];
@@ -359,6 +360,7 @@ const ITEM_PAGE_MAP: Record<string, PageKey> = {
   'Request Duty Account':                 'rda',
   'DC - Service Request':                 'dcc',
   'Cargo Inspection':                     'cargoInspection',
+  'Integrated Clearance':                 'integratedClearance',
 };
 /* ── Generic Form Configs ────────────────────────────────────────────────── */
 const CTR_CONFIG: GenericServiceConfig = {
@@ -418,6 +420,9 @@ export default function SeaDetailModal({ onClose }: Props) {
   }
   if (activePage === 'cargoInspection') {
     return <CargoInspectionPage onBack={() => setActivePage(null)} />;
+  }
+  if (activePage === 'integratedClearance') {
+    return <DeclarationListPage onClose={() => setActivePage(null)} onServiceCatalogue={() => setActivePage(null)} />;
   }
   if (activePage === 'dcc') {
     // Service form pages

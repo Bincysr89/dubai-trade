@@ -168,7 +168,7 @@ type BookingRow = {
   bookingRefNo: string; declarationNo: string; requestType: string; initiatedDate: string;
   inspectionDate?: string; locationType: string; mobileNo: string; subStatus: string; status: string;
 };
-type DeclarationRow = { declarationNo: string; cargoChannel: string; requestType: string; category: typeof DECL_CATEGORIES[number]; remarks: string };
+type DeclarationRow = { declarationNo: string; cargoChannel: string; requestType: string; regimeType: string; category: typeof DECL_CATEGORIES[number]; remarks: string };
 
 const newPreferredDates = (): PreferredDate[] => Array.from({ length: 5 }, () => ({ date: '', slot: '' }));
 
@@ -197,12 +197,12 @@ const SEED_ROWS: BookingRow[] = [
 ];
 
 const ELIGIBLE_DECLS: DeclarationRow[] = [
-  { declarationNo: '1010457637625', cargoChannel: 'Sea', requestType: 'New', category: 'CDM Declarations', remarks: 'Container discharged — pending physical inspection.' },
-  { declarationNo: '1010457637631', cargoChannel: 'Sea', requestType: 'New', category: 'CDM Declarations', remarks: 'Flagged for random inspection by risk engine.' },
-  { declarationNo: '1010457637632', cargoChannel: 'Sea', requestType: 'New', category: 'CDM Declarations', remarks: 'Declared goods description requires verification.' },
-  { declarationNo: '1010457637626', cargoChannel: 'Sea', requestType: 'New', category: 'Cleared Declaration', remarks: 'Cleared — no outstanding remarks.' },
-  { declarationNo: '1010457637633', cargoChannel: 'Sea', requestType: 'New', category: 'Cleared Declaration', remarks: 'Cleared — no outstanding remarks.' },
-  { declarationNo: '1010457637634', cargoChannel: 'Sea', requestType: 'New', category: 'Cleared Declaration', remarks: 'Cleared with condition — see attached certificate.' },
+  { declarationNo: '1010457637625', cargoChannel: 'Sea', requestType: 'New', regimeType: 'Import', category: 'CDM Declarations', remarks: 'Container discharged — pending physical inspection.' },
+  { declarationNo: '1010457637631', cargoChannel: 'Sea', requestType: 'New', regimeType: 'Import', category: 'CDM Declarations', remarks: 'Flagged for random inspection by risk engine.' },
+  { declarationNo: '1010457637632', cargoChannel: 'Sea', requestType: 'New', regimeType: 'Export', category: 'CDM Declarations', remarks: 'Declared goods description requires verification.' },
+  { declarationNo: '1010457637626', cargoChannel: 'Sea', requestType: 'New', regimeType: 'Import', category: 'Cleared Declaration', remarks: 'Cleared — no outstanding remarks.' },
+  { declarationNo: '1010457637633', cargoChannel: 'Sea', requestType: 'New', regimeType: 'Export', category: 'Cleared Declaration', remarks: 'Cleared — no outstanding remarks.' },
+  { declarationNo: '1010457637634', cargoChannel: 'Sea', requestType: 'New', regimeType: 'Import', category: 'Cleared Declaration', remarks: 'Cleared with condition — see attached certificate.' },
 ];
 
 /* Declaration detail — one seeded record, everything else falls back to a plausible default. */
@@ -291,6 +291,7 @@ function historyFor(row: BookingRow): { label: string; date: string }[] {
 }
 
 const CARGO_INSPECTION_STEPS: { id: string; label: string }[] = [
+  { id: 'eligible', label: 'Eligible Declarations' },
   { id: 'details', label: 'Booking Details' },
   { id: 'documents', label: 'Document Upload' },
   { id: 'payment', label: 'Payment' },
@@ -397,7 +398,8 @@ export default function CargoInspectionPage({ onBack }: { onBack: () => void }) 
   const [declSearch, setDeclSearch] = useState('');
   const [selectedDeclNos, setSelectedDeclNos] = useState<Set<string>>(new Set());
   const filteredDecls = ELIGIBLE_DECLS.filter(d => d.category === declCategory && (!declSearch.trim() || d.declarationNo.includes(declSearch.trim())));
-  const toggleDecl = (d: DeclarationRow) => setSelectedDeclNos(s => { const n = new Set(s); n.has(d.declarationNo) ? n.delete(d.declarationNo) : n.add(d.declarationNo); return n; });
+  /* Single-select (radio) — picking a declaration replaces any prior selection. */
+  const toggleDecl = (d: DeclarationRow) => setSelectedDeclNos(s => s.has(d.declarationNo) ? new Set() : new Set([d.declarationNo]));
 
   /* ── Wizard state ── */
   const [wizBookingRef] = useState(() => `2025-BR-${179100 + Math.floor(Math.random() * 800)}`);
@@ -505,15 +507,12 @@ export default function CargoInspectionPage({ onBack }: { onBack: () => void }) 
         <h1 className="text-[28px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>Cargo Inspection</h1>
       </div>
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 pb-[32px] flex flex-col gap-[12px]">
-        {/* Row 1: toolbar */}
+        {/* Row 1: search / filters toolbar */}
         <div className="flex items-center gap-[12px] flex-wrap">
-          <div className="bg-white flex items-center gap-[12px] h-[48px] px-[16px] py-[8px] rounded-[6px] flex-shrink-0" style={{ boxShadow: '0px 4px 10px rgba(0,0,0,0.08)' }}>
-            {(['all', 'epay'] as const).map(t => (
-              <button key={t} onClick={() => { setToolbarTab(t); if (t === 'all') setEpayBookingRef(''); }}
-                className={`h-[40px] px-[16px] rounded-[4px] text-[16px] font-medium transition-colors ${toolbarTab === t ? 'bg-[#1360d2] text-white' : 'bg-[#f7faff] text-[#697498] border border-[#e5efff]'}`}
-                style={{ fontFamily: font }}>{t === 'all' ? 'All Records' : 'E-Payment'}</button>
-            ))}
-          </div>
+          <button type="button" onClick={() => setShowAdvFilters(o => !o)} className={`flex items-center gap-[8px] h-[48px] px-[16px] rounded-[4px] border text-[16px] flex-shrink-0 ${showAdvFilters ? 'bg-[#e2ebf9] border-[#1360d2] text-[#1360d2]' : 'bg-white border-[#d4dcfa] text-[#000]'}`} style={{ fontFamily: font }}>
+            Advance Filters
+            <svg viewBox="0 0 24 24" className="size-[20px]" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M7 12h10M11 18h2" strokeLinecap="round" /></svg>
+          </button>
           <div className="flex items-center bg-white border border-[#d5ddfb] rounded-[4px] h-[48px] flex-1 min-w-[240px] max-w-[440px] relative">
             <button type="button" onClick={() => setSearchTypeOpen(o => !o)} className="flex items-center gap-[6px] border-r border-[#d5ddfb] px-[12px] h-full flex-shrink-0 hover:bg-[#f7faff]">
               <span className="text-[16px] text-[#1360d2] font-medium whitespace-nowrap">{searchType === 'bookingRefNo' ? 'Booking Ref. No' : 'Declaration No'}</span>
@@ -543,10 +542,6 @@ export default function CargoInspectionPage({ onBack }: { onBack: () => void }) 
               </div>
             )}
           </div>
-          <button type="button" onClick={() => setShowAdvFilters(o => !o)} className={`flex items-center gap-[8px] h-[48px] px-[16px] rounded-[4px] border text-[16px] flex-shrink-0 ${showAdvFilters ? 'bg-[#e2ebf9] border-[#1360d2] text-[#1360d2]' : 'bg-white border-[#d4dcfa] text-[#000]'}`} style={{ fontFamily: font }}>
-            Advance Filters
-            <svg viewBox="0 0 24 24" className="size-[20px]" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M7 12h10M11 18h2" strokeLinecap="round" /></svg>
-          </button>
           <button className="flex items-center gap-[6px] text-[16px] text-[#1360d2] flex-shrink-0" style={{ fontFamily: font }}>
             Need Help
             <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#1360d2" strokeWidth="1.7"><circle cx="10" cy="10" r="7.5" /><path d="M10 14v-1" strokeLinecap="round" /><path d="M10 7c0-1.1.9-2 2-2" strokeLinecap="round" /></svg>
@@ -558,7 +553,16 @@ export default function CargoInspectionPage({ onBack }: { onBack: () => void }) 
           </button>
         </div>
 
-        {/* Row 2: Advance Filters — fields inline in one grid row, Apply/Reset at the end */}
+        {/* Row 2: record-type toggle */}
+        <div className="bg-white flex items-center gap-[12px] h-[48px] px-[16px] py-[8px] rounded-[6px] flex-shrink-0 w-max" style={{ boxShadow: '0px 4px 10px rgba(0,0,0,0.08)' }}>
+          {(['all', 'epay'] as const).map(t => (
+            <button key={t} onClick={() => { setToolbarTab(t); if (t === 'all') setEpayBookingRef(''); }}
+              className={`h-[40px] px-[16px] rounded-[4px] text-[16px] font-medium transition-colors ${toolbarTab === t ? 'bg-[#1360d2] text-white' : 'bg-[#f7faff] text-[#697498] border border-[#e5efff]'}`}
+              style={{ fontFamily: font }}>{t === 'all' ? 'All Records' : 'E-Payment'}</button>
+          ))}
+        </div>
+
+        {/* Row 3: Advance Filters — fields inline in one grid row, Apply/Reset at the end */}
         {showAdvFilters && (
           <div className="bg-white rounded-[8px] p-[20px] flex-shrink-0" style={{ boxShadow: '4px 4px 30px 0px rgba(0,0,0,0.12)' }}>
             <div className="flex items-center justify-between mb-[16px]">
@@ -718,59 +722,107 @@ export default function CargoInspectionPage({ onBack }: { onBack: () => void }) 
     </>
   );
 
-  /* ══════════════════════════ Eligible declarations ══════════════════════════ */
-  const renderEligible = () => (
-    <>
-      <Breadcrumb extra="Initiate Inspection" />
-      <div className="flex items-center gap-[10px] px-4 sm:px-10 mb-[16px] flex-shrink-0">
-        <h1 className="text-[28px] text-[#111838]" style={{ fontFamily: font, fontWeight: 500 }}>Initiate Inspection</h1>
-      </div>
-      <div className="flex-1 overflow-y-auto px-4 sm:px-10 pb-[32px] flex flex-col gap-[20px]">
-        <div className="bg-white rounded-[8px] p-[24px] flex flex-col gap-[16px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-          <div className="flex items-center justify-between flex-wrap gap-[12px]">
-            <div className="flex items-center gap-[8px] bg-[#f0f4ff] rounded-[6px] p-[4px] w-max">
-              {DECL_CATEGORIES.map(c => (
-                <button key={c} type="button" onClick={() => setDeclCategory(c)} className="text-[15px] px-[16px] py-[9px] rounded-[4px] transition-colors"
-                  style={c === declCategory ? { background: '#1360d2', color: '#fff', fontWeight: 500, fontFamily: font } : { color: '#5a6282', fontFamily: font }}>
-                  {c === 'CDM Declarations' ? 'List of Eligible Declarations — CDM' : 'List of Eligible Cleared Declarations'}
-                </button>
-              ))}
-            </div>
-            <div className="w-full sm:w-[300px]"><FloatInput label="Search Declaration No" value={declSearch} onChange={setDeclSearch} placeholder="Search and add" /></div>
-          </div>
-          <div className="rounded-[6px] overflow-hidden overflow-x-auto" style={{ border: '1px solid #eef1f6' }}>
-            <table className="w-full" style={{ fontFamily: font, borderCollapse: 'collapse', minWidth: 760 }}>
-              <thead><tr style={{ background: '#e2ebf9' }}>{['', 'Declaration No', 'Cargo Channel', 'Request Type', 'Remarks'].map(h => <th key={h} className="text-left px-[16px] py-[10px] text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{h}</th>)}</tr></thead>
-              <tbody>
-                {filteredDecls.length === 0 ? (
-                  <tr><td colSpan={5} className="text-center py-[28px] text-[15px] text-[#8f94ae]">No eligible declarations found.</td></tr>
-                ) : filteredDecls.map(d => (
-                  <tr key={d.declarationNo} style={{ borderTop: '1px solid #f0f4ff', cursor: 'pointer' }} onClick={() => toggleDecl(d)}>
-                    <td className="px-[16px] py-[10px]"><input type="checkbox" checked={selectedDeclNos.has(d.declarationNo)} onChange={() => toggleDecl(d)} onClick={e => e.stopPropagation()} /></td>
-                    <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{d.declarationNo}</td>
-                    <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{d.cargoChannel}</td>
-                    <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{d.requestType}</td>
-                    <td className="px-[16px] py-[10px] text-[14px] text-[#697498]" style={{ minWidth: 220 }}>{d.remarks}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+  /* ══════════════════════════ Eligible declarations — step 1, master-table styling
+     to match the Refund & Claims "Select Declarations" step (EligibleDeclarationsPage). ══ */
+  const eligibleTableRef = useRef<HTMLDivElement>(null);
+  const scrollToSelectedDecl = () => {
+    const first = eligibleTableRef.current?.querySelector('[data-selected="true"]');
+    first?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+  const renderEligibleStep = () => {
+    return (
+      <div className="flex flex-col gap-[16px]">
+        {/* Tabs */}
+        <div className="flex items-center gap-[8px] bg-[#f0f4ff] rounded-[6px] p-[4px] w-max">
+          {DECL_CATEGORIES.map(c => (
+            <button key={c} type="button" onClick={() => setDeclCategory(c)} className="text-[16px] px-[16px] py-[9px] rounded-[4px] transition-colors"
+              style={c === declCategory ? { background: '#1360d2', color: '#fff', fontWeight: 500, fontFamily: font } : { color: '#5a6282', fontFamily: font }}>
+              {c === 'CDM Declarations' ? 'List of Eligible Declarations — CDM' : 'List of Eligible Cleared Declarations'}
+            </button>
+          ))}
+        </div>
+
+        {/* Search — its own row, below the tabs */}
+        <div className="relative flex-shrink-0" style={{ width: '100%', maxWidth: 380 }}>
+          <div className="flex items-center bg-white rounded-[4px] h-[48px]" style={{ border: '1px solid #d5ddfb' }}>
+            <input value={declSearch} onChange={e => setDeclSearch(e.target.value)} placeholder="Search Declaration No"
+              className="flex-1 px-[14px] text-[16px] text-[#0e1b3d] placeholder:text-[#697498] focus:outline-none bg-transparent" style={{ fontFamily: font }} />
+            {declSearch && (
+              <button type="button" onClick={() => setDeclSearch('')} className="mr-[6px] size-[22px] inline-flex items-center justify-center rounded-full text-[#697498] hover:bg-[#f0f4ff] flex-shrink-0">
+                <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4l8 8M12 4l-8 8" strokeLinecap="round" /></svg>
+              </button>
+            )}
+            <span className="pr-[12px] text-[#8f94ae] flex-shrink-0 pointer-events-none">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path fillRule="evenodd" clipRule="evenodd" d="M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z" fill="#0E1B3D" /></svg>
+            </span>
           </div>
         </div>
+
+        {/* Available / Selected / View Selected / Clear Selection */}
+        <div className="flex items-center gap-[16px] flex-wrap">
+          <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>
+            Available: <span style={{ color: '#0e1b3d', fontWeight: 600 }}>{filteredDecls.length}</span>
+          </span>
+          {selectedDeclNos.size > 0 && (
+            <>
+              <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>
+                Selected: <span style={{ color: '#1360d2', fontWeight: 600 }}>{selectedDeclNos.size}</span>
+              </span>
+              <button type="button" onClick={scrollToSelectedDecl} className="h-[32px] px-[14px] rounded-[4px] text-[14px] bg-white hover:bg-[#f0f4ff] transition-colors"
+                style={{ border: '1.5px solid #1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>
+                View Selected
+              </button>
+              <button type="button" onClick={() => setSelectedDeclNos(new Set())} className="h-[32px] px-[14px] rounded-[4px] text-[14px] bg-white hover:bg-[#f0f4ff] transition-colors"
+                style={{ border: '1.5px solid #d5ddfb', color: '#455174', fontWeight: 500, fontFamily: font }}>
+                Clear Selection
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Master table — single-select via radio button, matching EligibleDeclarationsPage styling */}
+        <div ref={eligibleTableRef} className="rounded-[8px] overflow-hidden overflow-x-auto bg-white" style={{ boxShadow: '0px 5px 32px 0px rgba(143,155,186,0.16)' }}>
+          <table className="w-full" style={{ fontFamily: font, borderCollapse: 'separate', borderSpacing: '0 8px', minWidth: 820 }}>
+            <thead>
+              <tr>
+                <th style={{ width: 48, background: '#a6c2e9', padding: '10px 16px', textAlign: 'left', borderTopLeftRadius: 8, borderBottomLeftRadius: 8 }} />
+                {['Declaration No', 'Cargo Channel', 'Request Type', 'Regime Type', 'Remarks'].map((h, i) => (
+                  <th key={h} className="text-left px-[16px] py-[10px] text-[16px] text-[#051937]" style={{ fontWeight: 500, background: '#a6c2e9', borderTopRightRadius: i === 4 ? 8 : undefined, borderBottomRightRadius: i === 4 ? 8 : undefined }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filteredDecls.length === 0 ? (
+                <tr><td colSpan={6} className="text-center py-[28px] text-[16px] text-[#8f94ae]">No eligible declarations found.</td></tr>
+              ) : filteredDecls.map(d => {
+                const isSelected = selectedDeclNos.has(d.declarationNo);
+                return (
+                  <tr key={d.declarationNo} data-selected={isSelected} style={{ cursor: 'pointer' }} onClick={() => toggleDecl(d)} className={isSelected ? 'bg-[#f6f9fe]' : 'bg-white hover:bg-[#f6f9fe]'}>
+                    <td style={{ padding: '0 16px', height: 54, verticalAlign: 'middle' }}>
+                      <button type="button" onClick={e => { e.stopPropagation(); toggleDecl(d); }} role="radio" aria-checked={isSelected}
+                        className="size-[20px] rounded-full inline-flex items-center justify-center" style={{ border: `1.5px solid ${isSelected ? '#1360d2' : '#a7abb2'}`, background: '#fff' }}>
+                        {isSelected && <span className="size-[10px] rounded-full" style={{ background: '#1360d2' }} />}
+                      </button>
+                    </td>
+                    <td style={{ padding: '0 16px', height: 54, verticalAlign: 'middle' }}><span className="text-[16px] text-[#0e1b3d]">{d.declarationNo}</span></td>
+                    <td style={{ padding: '0 16px', height: 54, verticalAlign: 'middle' }}><span className="text-[16px] text-[#0e1b3d]">{d.cargoChannel}</span></td>
+                    <td style={{ padding: '0 16px', height: 54, verticalAlign: 'middle' }}><span className="text-[16px] text-[#0e1b3d]">{d.requestType}</span></td>
+                    <td style={{ padding: '0 16px', height: 54, verticalAlign: 'middle' }}><span className="text-[16px] text-[#0e1b3d]">{d.regimeType}</span></td>
+                    <td style={{ padding: '0 16px', height: 54, verticalAlign: 'middle', minWidth: 220 }}><span className="text-[15px] text-[#455174]">{d.remarks}</span></td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
-      <BackToListingBar onBack={backToListing} rightContent={
-        <button onClick={() => setStep('details')} disabled={selectedDeclNos.size === 0} className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white"
-          style={{ background: selectedDeclNos.size > 0 ? '#1360d2' : '#a7c3eb', cursor: selectedDeclNos.size > 0 ? 'pointer' : 'default', fontFamily: font, fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
-          Proceed
-        </button>
-      } />
-    </>
-  );
+    );
+  };
 
   /* ══════════════════════════ Wizard ══════════════════════════ */
   const wizardStepIndex = CARGO_INSPECTION_STEPS.findIndex(s => s.id === step);
   const goNext = () => { const i = wizardStepIndex; if (i >= 0 && i < CARGO_INSPECTION_STEPS.length - 1) setStep(CARGO_INSPECTION_STEPS[i + 1].id as Step); };
-  const goPrev = () => { const i = wizardStepIndex; if (i === 0) setStep('eligible'); else if (i > 0) setStep(CARGO_INSPECTION_STEPS[i - 1].id as Step); };
+  const goPrev = () => { const i = wizardStepIndex; if (i === 0) backToListing(); else if (i > 0) setStep(CARGO_INSPECTION_STEPS[i - 1].id as Step); };
 
   const renderDetails = () => (
     <>
@@ -811,12 +863,15 @@ export default function CargoInspectionPage({ onBack }: { onBack: () => void }) 
         </div>
       </div>
 
-      <Section title="Contact Details">
-        <div style={{ flex: '1 0 220px', minWidth: 200 }}><FloatInput label="Contact Email" value={contactEmail} onChange={setContactEmail} required placeholder="Enter email address" /></div>
-        <div style={{ flex: '1 0 220px', minWidth: 200 }}><FloatInput label="Representative Name" value={repName} onChange={setRepName} required placeholder="Enter representative name" /></div>
-        <div style={{ flex: '1 0 220px', minWidth: 200 }}><FloatInput label="Contact Number" value={contactNumber} onChange={setContactNumber} placeholder="country-area-number" /></div>
-        <div style={{ flex: '1 0 220px', minWidth: 200 }}><FloatInput label="Mobile Number" value={mobileNumber} onChange={setMobileNumber} required placeholder="country-area-number" /></div>
-      </Section>
+      <div className="flex flex-col gap-[16px]">
+        <p className="text-[18px]" style={{ fontFamily: font, fontWeight: 700, color: '#0e1b3d' }}>Contact Details</p>
+        <div className="bg-white rounded-[8px] p-[24px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+          <FloatInput label="Contact Email" value={contactEmail} onChange={setContactEmail} required placeholder="Enter email address" />
+          <FloatInput label="Representative Name" value={repName} onChange={setRepName} required placeholder="Enter representative name" />
+          <FloatInput label="Contact Number" value={contactNumber} onChange={setContactNumber} placeholder="country-area-number" />
+          <FloatInput label="Mobile Number" value={mobileNumber} onChange={setMobileNumber} required placeholder="country-area-number" />
+        </div>
+      </div>
 
       <div className="flex flex-col gap-[16px]">
         <Checkbox label="Follow up Inspection" checked={followUpRequired} onChange={() => setFollowUpRequired(v => !v)} bold />
@@ -1123,6 +1178,7 @@ export default function CargoInspectionPage({ onBack }: { onBack: () => void }) 
       </div>
       <div className="px-4 sm:px-10 pb-[20px] flex-shrink-0"><ClaimStepper activeIndex={Math.max(0, wizardStepIndex)} steps={CARGO_INSPECTION_STEPS} /></div>
       <div className="flex-1 overflow-y-auto px-4 sm:px-10 pb-[24px] flex flex-col gap-[20px]">
+        {step === 'eligible' && renderEligibleStep()}
         {step === 'details' && renderDetails()}
         {step === 'documents' && renderDocuments()}
         {step === 'payment' && renderPayment()}
@@ -1131,6 +1187,11 @@ export default function CargoInspectionPage({ onBack }: { onBack: () => void }) 
       <BackToListingBar onBack={goPrev} rightContent={
         step === 'review' ? (
           <button onClick={submitBooking} className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white" style={{ background: '#1360d2', fontFamily: font, fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>Submit</button>
+        ) : step === 'eligible' ? (
+          <button onClick={goNext} disabled={selectedDeclNos.size === 0} className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white"
+            style={{ background: selectedDeclNos.size > 0 ? '#1360d2' : '#a7c3eb', cursor: selectedDeclNos.size > 0 ? 'pointer' : 'default', fontFamily: font, fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
+            Proceed
+          </button>
         ) : (
           <button onClick={goNext} className="h-[48px] px-[28px] rounded-[4px] text-[16px] text-white" style={{ background: '#1360d2', fontFamily: font, fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
             {step === 'payment' ? 'Pay & Continue' : 'Next'}
@@ -1500,8 +1561,7 @@ export default function CargoInspectionPage({ onBack }: { onBack: () => void }) 
     <div className="fixed inset-0 z-50 flex flex-col bg-[#f8fafd]">
       <div className="flex-shrink-0"><Header onServiceCatalogue={onBack} onHome={handleHome} /></div>
       {step === 'list' && renderList()}
-      {step === 'eligible' && renderEligible()}
-      {(step === 'details' || step === 'documents' || step === 'payment' || step === 'review') && renderWizard()}
+      {(step === 'eligible' || step === 'details' || step === 'documents' || step === 'payment' || step === 'review') && renderWizard()}
       {step === 'success' && renderSuccess()}
       {step === 'paymentPending' && renderPaymentPending()}
       {step === 'paymentProcessing' && renderPaymentProcessing()}
