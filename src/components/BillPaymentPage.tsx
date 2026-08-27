@@ -86,16 +86,16 @@ const PAYMENT_ROWS = [
 
 /* ── Account data ───────────────────────────────────────────────────────────── */
 const ACCOUNTS = [
-  { type: 'Credit Account', account: '1222683 - AEOUAT1', totalLimit: '10,000,000,000.00', amountDue: '6,643.00',    currentLimit: '9,999,993,357.00', availableLimit: '9,999,993,357.00' },
-  { type: 'Credit Account', account: '1222685 - AEOUAT1', totalLimit: '985,000,000.00',    amountDue: '6,510.00',    currentLimit: '984,993,490.00',   availableLimit: '984,993,490.00'   },
-  { type: 'Credit Account', account: '1222839 - AEOUAT1', totalLimit: '8,570,000,000.00',  amountDue: '192,834.00',  currentLimit: '8,569,807,166.00', availableLimit: '8,569,807,166.00' },
-  { type: 'Credit Account', account: '1222840 - AEOUAT1', totalLimit: '8,957,000,000.00',  amountDue: '159,588.00',  currentLimit: '8,956,840,412.00', availableLimit: '8,956,840,412.00' },
-  { type: 'Credit Account', account: '1222843 - AEOUAT1', totalLimit: '897,000,000.00',    amountDue: '416,486.00',  currentLimit: '896,583,514.00',   availableLimit: '896,583,514.00'   },
-  { type: 'Credit Account', account: '1222844 - AEOUAT1', totalLimit: '8,957,000,000.00',  amountDue: '194,563.00',  currentLimit: '8,956,805,437.00', availableLimit: '8,956,805,437.00' },
-  { type: 'Credit Account', account: '1222889 - AEOUAT1', totalLimit: '31,500,000.00',     amountDue: '280,709.38',  currentLimit: '31,219,290.62',    availableLimit: '31,219,290.62'    },
-  { type: 'Credit Account', account: '1222890 - AEOUAT1', totalLimit: '3,500,000.00',      amountDue: '43,029.00',   currentLimit: '3,456,971.00',     availableLimit: '3,456,971.00'     },
-  { type: 'Credit Account', account: '1222964 - AEOUAT1', totalLimit: '100,000.00',        amountDue: '20,049.00',   currentLimit: '79,951.00',        availableLimit: '79,951.00'        },
-  { type: 'Credit Account', account: '1222966 - AEOUAT1', totalLimit: '300,000.00',        amountDue: '49,140.00',   currentLimit: '250,860.00',       availableLimit: '250,860.00'       },
+  { type: 'Credit Account', account: '1222683 - AEOUAT1', totalLimit: '10,000,000,000.00', amountDue: '6,643.00',    dueDate: '05-Jun-26', currentLimit: '9,999,993,357.00', availableLimit: '9,999,993,357.00' },
+  { type: 'Credit Account', account: '1222685 - AEOUAT1', totalLimit: '985,000,000.00',    amountDue: '6,510.00',    dueDate: '08-Jun-26', currentLimit: '984,993,490.00',   availableLimit: '984,993,490.00'   },
+  { type: 'Credit Account', account: '1222839 - AEOUAT1', totalLimit: '8,570,000,000.00',  amountDue: '192,834.00',  dueDate: '15-Jun-26', currentLimit: '8,569,807,166.00', availableLimit: '8,569,807,166.00' },
+  { type: 'Credit Account', account: '1222840 - AEOUAT1', totalLimit: '8,957,000,000.00',  amountDue: '159,588.00',  dueDate: '20-Jun-26', currentLimit: '8,956,840,412.00', availableLimit: '8,956,840,412.00' },
+  { type: 'Credit Account', account: '1222843 - AEOUAT1', totalLimit: '897,000,000.00',    amountDue: '416,486.00',  dueDate: '03-Jun-26', currentLimit: '896,583,514.00',   availableLimit: '896,583,514.00'   },
+  { type: 'Credit Account', account: '1222844 - AEOUAT1', totalLimit: '8,957,000,000.00',  amountDue: '194,563.00',  dueDate: '25-Jun-26', currentLimit: '8,956,805,437.00', availableLimit: '8,956,805,437.00' },
+  { type: 'Credit Account', account: '1222889 - AEOUAT1', totalLimit: '31,500,000.00',     amountDue: '280,709.38',  dueDate: '30-Jun-26', currentLimit: '31,219,290.62',    availableLimit: '31,219,290.62'    },
+  { type: 'Credit Account', account: '1222890 - AEOUAT1', totalLimit: '3,500,000.00',      amountDue: '43,029.00',   dueDate: '07-Jun-26', currentLimit: '3,456,971.00',     availableLimit: '3,456,971.00'     },
+  { type: 'Credit Account', account: '1222964 - AEOUAT1', totalLimit: '100,000.00',        amountDue: '20,049.00',   dueDate: '18-Jun-26', currentLimit: '79,951.00',        availableLimit: '79,951.00'        },
+  { type: 'Credit Account', account: '1222966 - AEOUAT1', totalLimit: '300,000.00',        amountDue: '49,140.00',   dueDate: '22-Jun-26', currentLimit: '250,860.00',       availableLimit: '250,860.00'       },
 ];
 
 const DEBIT_ACCOUNTS = [
@@ -143,6 +143,13 @@ const cdrTotalLimit  = ACCOUNTS.reduce((s, a) => s + parseFloat(a.totalLimit.rep
 const cdrAvailable   = ACCOUNTS.reduce((s, a) => s + parseFloat(a.availableLimit.replace(/,/g, '')), 0);
 const cdrTotalToPay = cdrDueAmt;
 const totalDueToDubaiCustoms = cdrTotalToPay + pendingInvAmt;
+
+const cdrOverdueAccounts = ACCOUNTS.filter(a => parseInvDate(a.dueDate) < DASHBOARD_TODAY_ORD);
+const cdrDueSoonAccounts = ACCOUNTS.filter(a => parseInvDate(a.dueDate) >= DASHBOARD_TODAY_ORD);
+const cdrOverdueCount = cdrOverdueAccounts.length;
+const cdrOverdueAmt   = cdrOverdueAccounts.reduce((s, a) => s + parseFloat(a.amountDue.replace(/,/g, '')), 0);
+const cdrDueSoonCount = cdrDueSoonAccounts.length;
+const cdrDueSoonAmt   = cdrDueSoonAccounts.reduce((s, a) => s + parseFloat(a.amountDue.replace(/,/g, '')), 0);
 
 /* CDR Usage trend — last 6 months, trailing up to the current month's real usage figure. */
 const CDR_USAGE_TREND = [
@@ -3083,6 +3090,13 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#b45309" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3" strokeLinecap="round" strokeLinejoin="round"/></svg> },
             ];
 
+            const CDR_SUMMARY_CARDS = [
+              { key: 'cdrOverdue', label: 'Overdue Amount to Pay', count: cdrOverdueCount, amt: cdrOverdueAmt, color: '#dc3545', bg: 'linear-gradient(160deg,#fde3e3 0%,#ffffff 75%)', border: '#f5b8b8', onClick: openCdr,
+                icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#dc3545" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v6" strokeLinecap="round"/><circle cx="12" cy="16.5" r="0.9" fill="#dc3545"/></svg> },
+              { key: 'cdrDueSoon', label: 'Current / Due Soon to Pay', count: cdrDueSoonCount, amt: cdrDueSoonAmt, color: '#b45309', bg: 'linear-gradient(160deg,#ffedd1 0%,#ffffff 75%)', border: '#fcd7a0', onClick: openCdr,
+                icon: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#b45309" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3" strokeLinecap="round" strokeLinejoin="round"/></svg> },
+            ];
+
             /* Total Due to Dubai Customs — CDR Total Amount to Pay + Pending Invoices, with a mini
                donut breaking out how much of that total is already overdue. */
             const dueOverduePct = totalDueToDubaiCustoms > 0 ? (overdueInvAmt / totalDueToDubaiCustoms) * 100 : 0;
@@ -3266,6 +3280,55 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                     <span className="text-[#4b5468] flex items-center gap-[3px]">out of <DirhamIcon size={12} color="#4b5468" />{fmtCompact(cdrTotalLimit)}</span>
                   </p>
                 </button>
+              </div>
+
+              {/* ── CDR — total due + overdue/due-soon triage, styled like the Invoices row ── */}
+              <div>
+                <p className="text-[15px] font-bold text-[#0e1b3d] mb-[10px]" style={{ fontFamily: font }}>CDR</p>
+                <div className="grid grid-cols-3 gap-[16px] items-stretch">
+                  <button onClick={openCdr}
+                    className="rounded-[16px] p-[20px] text-left relative overflow-hidden hover:shadow-lg hover:-translate-y-[1px] transition-all flex flex-col"
+                    style={{ background: 'linear-gradient(160deg,#dce9fc 0%,#ffffff 75%)', border: '1.5px solid #b3caff', boxShadow: '0 1px 4px rgba(14,27,61,0.06)' }}>
+                    <div className="absolute top-[16px] right-[16px] size-[44px] rounded-[12px] flex items-center justify-center bg-white flex-shrink-0" style={{ boxShadow: '0 4px 10px rgba(14,27,61,0.10)' }}>
+                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1360d2" strokeWidth="1.8"><rect x="2" y="6" width="20" height="13" rx="2" /><path d="M2 10h20" strokeLinecap="round" /></svg>
+                    </div>
+                    <div style={{ paddingRight: 56 }}>
+                      <span className="text-[15px] font-medium text-[#4b5468]" style={{ fontFamily: font }}>Total Amount Due to Pay</span>
+                      <span className="text-[24px] font-extrabold leading-none flex items-center gap-[6px] mt-[10px]" style={{ color: '#1360d2', fontFamily: font, letterSpacing: '-1px' }}>
+                        <DirhamIcon size={19} color="#1360d2" />{cdrDueAmt.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between mt-auto pt-[14px]" style={{ borderTop: '1px solid #b3caff' }}>
+                      <span>
+                        <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>Count</span>
+                        <span className="text-[16px] font-bold text-[#0e1b3d] ml-[8px]" style={{ fontFamily: font }}>{ACCOUNTS.length}</span>
+                      </span>
+                      <span className="text-[13px] text-white font-semibold flex items-center gap-1 rounded-[6px]" style={{ fontFamily: font, background: '#1360d2', padding: '7px 14px' }}>
+                        Pay Now <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#fff" strokeWidth="2"><path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      </span>
+                    </div>
+                  </button>
+
+                  {CDR_SUMMARY_CARDS.map(({ key, label, count, amt, color, bg, border, icon, onClick }) => (
+                    <button key={key} onClick={onClick}
+                      className="rounded-[16px] p-[20px] text-left relative overflow-hidden hover:shadow-lg hover:-translate-y-[1px] transition-all flex flex-col"
+                      style={{ background: bg, border: `1.5px solid ${border}`, boxShadow: '0 1px 4px rgba(14,27,61,0.06)' }}>
+                      <div className="absolute top-[16px] right-[16px] size-[44px] rounded-[12px] flex items-center justify-center bg-white flex-shrink-0" style={{ boxShadow: '0 4px 10px rgba(14,27,61,0.10)' }}>
+                        {icon}
+                      </div>
+                      <div style={{ paddingRight: 56 }}>
+                        <span className="text-[15px] font-medium text-[#4b5468]" style={{ fontFamily: font }}>{label}</span>
+                        <span className="text-[24px] font-extrabold leading-none flex items-center gap-[6px] mt-[10px]" style={{ color, fontFamily: font, letterSpacing: '-1px' }}>
+                          <DirhamIcon size={19} color={color} />{amt.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                      <div className="flex items-center mt-auto pt-[14px]" style={{ borderTop: `1px solid ${border}` }}>
+                        <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>Count</span>
+                        <span className="text-[16px] font-bold text-[#0e1b3d] ml-[8px]" style={{ fontFamily: font }}>{count}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* ── Invoices — total available + pending/overdue/due-soon triage ── */}
