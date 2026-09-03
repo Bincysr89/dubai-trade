@@ -18,6 +18,8 @@ import SubmitVoluntaryDisclosurePage from './SubmitVoluntaryDisclosurePage';
 import GoodsLandingCertPage from './GoodsLandingCertPage';
 import CargoInspectionPage from './CargoInspectionPage';
 import DeclarationListPage from './DeclarationListPage';
+import CargoReconciliationPage from './discrepancy/CargoReconciliationPage';
+import CargoTrackingContainer from './cargotracking/CargoTrackingContainer';
 
 type Props = { onClose: () => void };
 
@@ -101,8 +103,8 @@ const SEA_COLUMNS: { title: string; items: string[] }[] = [
       'Cargo Inspection',
       'DC - landing Certificate', 'DC - Letter & Certificates', 'DM Permits',
       'DP World Work Permits', 'e-Certificates', 'IMDG NOC Management',
-      'Marine NOC', 'Master Declaration', 'DC - Cargo Reconcilation',
-      'DC - Cargo Tracking', 'DC - Export Manifest',
+      'Marine NOC', 'Master Declaration', 'Cargo Reconciliation',
+      'Cargo Tracking', 'DC - Export Manifest',
       'DC - Smart Workspace', 'Declaration Services', 'Digital Certificate',
       'Cargo Transfer Services', 'M1- Bill Clearance', 'VCC Services',
     ],
@@ -293,9 +295,9 @@ const DCC_FILTER_FIELDS: AFFieldDef[] = [
   { key: 'dateTo',      label: 'Request Date To',   type: 'date' },
 ];
 
-type PageKey = 'glc' | 'jap' | 'cwl' | 'ctr' | 'rda' | 'pbf' | 'dcc' | 'cargoInspection' | 'integratedClearance';
+type PageKey = 'glc' | 'jap' | 'cwl' | 'ctr' | 'rda' | 'pbf' | 'dcc' | 'cargoInspection' | 'integratedClearance' | 'cargoReconciliation' | 'tracking';
 
-const PAGE_CONFIGS: Record<Exclude<PageKey, 'pbf' | 'dcc' | 'cargoInspection' | 'integratedClearance' | 'ctr' | 'cwl'> | 'ctr' | 'cwl', {
+const PAGE_CONFIGS: Record<Exclude<PageKey, 'pbf' | 'dcc' | 'cargoInspection' | 'integratedClearance' | 'cargoReconciliation' | 'tracking' | 'ctr' | 'cwl'> | 'ctr' | 'cwl', {
   title: string; breadcrumb: string; primaryLabel: string;
   searchLabel: string; searchPlaceholder: string; searchFields?: string[];
   advancedFilterFields?: AFFieldDef[];
@@ -361,6 +363,8 @@ const ITEM_PAGE_MAP: Record<string, PageKey> = {
   'DC - Service Request':                 'dcc',
   'Cargo Inspection':                     'cargoInspection',
   'Integrated Clearance':                 'integratedClearance',
+  'Cargo Reconciliation':                 'cargoReconciliation',
+  'Cargo Tracking':                       'tracking',
 };
 /* ── Generic Form Configs ────────────────────────────────────────────────── */
 const CTR_CONFIG: GenericServiceConfig = {
@@ -423,6 +427,12 @@ export default function SeaDetailModal({ onClose }: Props) {
   }
   if (activePage === 'integratedClearance') {
     return <DeclarationListPage onClose={() => setActivePage(null)} onServiceCatalogue={() => setActivePage(null)} />;
+  }
+  if (activePage === 'cargoReconciliation') {
+    return <CargoReconciliationPage onBack={() => setActivePage(null)} />;
+  }
+  if (activePage === 'tracking') {
+    return <CargoTrackingContainer onBack={() => setActivePage(null)} />;
   }
   if (activePage === 'dcc') {
     // Service form pages
@@ -714,6 +724,8 @@ export default function SeaDetailModal({ onClose }: Props) {
                         'Request Customs Warehouse License',
                         'DC - Service Request',
                         'Cargo Inspection',
+                        'Cargo Reconciliation',
+                        'Cargo Tracking',
                       ]);
                       const TALL_ITEMS = new Set([
                         'Request Goods Landing Certificate',

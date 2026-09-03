@@ -38,12 +38,26 @@ function MenuIcon({ menu }: { menu: MenuKey }) {
 }
 
 const SIDEBAR_ITEMS: { key: MenuKey; label: string }[] = [
-  { key: 'carrierMovement',   label: 'Carrier Movement' },
+  { key: 'carrierMovement',   label: 'Carrier Movement (AIR/Courier)' },
   { key: 'flightManifest',    label: 'Flight Manifest' },
-  { key: 'houseManifest',     label: 'House Manifest' },
+  { key: 'houseManifest',     label: 'Air House Manifest' },
   { key: 'seaExportManifest', label: 'Sea Export Manifest' },
   { key: 'deliveryAdvice',    label: 'Delivery Advice' },
 ];
+
+/* ─── Row action flyout icons — shared across every listing's Action menu.
+       Selector mirrors the reference: exact "Delete"/"Continue" first, then
+       substring match on History/Cancel/Amend/View (in that priority order). ── */
+function flyoutIconFor(label: string) {
+  const common = { width: 16, height: 16, viewBox: '0 0 20 20', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
+  if (label === 'Delete') return <svg {...common}><path d="M3 5.5h14M8 5.5V3.5h4v2M15.5 5.5l-.8 11a1.5 1.5 0 0 1-1.5 1.4H6.8a1.5 1.5 0 0 1-1.5-1.4l-.8-11" /><path d="M8.3 9v5M11.7 9v5" /></svg>;
+  if (label === 'Continue') return <svg {...common} fill="currentColor" stroke="none"><path d="M4 3.5l12 6.5-12 6.5z" /></svg>;
+  if (label.includes('History')) return <svg {...common}><circle cx="10" cy="10" r="7.5" /><path d="M10 6v4l3 2" /></svg>;
+  if (label.includes('Cancel')) return <svg {...common}><circle cx="10" cy="10" r="7.5" /><path d="M7.5 7.5l5 5M12.5 7.5l-5 5" /></svg>;
+  if (label.includes('Amend') || label === 'Complete Draft') return <svg {...common}><path d="M14.2 2.8a1.7 1.7 0 0 1 2.4 2.4L6 15.8l-3.4.8.8-3.4L14.2 2.8z" /></svg>;
+  if (label.includes('View')) return <svg {...common}><path d="M1 10s3-6 9-6 9 6 9 6-3 6-9 6-9-6-9-6z" /><circle cx="10" cy="10" r="2.5" /></svg>;
+  return null;
+}
 
 /* ─── Generic listing config — every sidebar section supplies one of these,
        so all 5 listings (and their detail pages) render off the same template. ── */
@@ -106,8 +120,8 @@ const CARRIER_MOVEMENT: ListingConfig = {
   statuses: ['Active'],
   searchKeys: ['flightNo'],
   advancedFilterKeys: ['flightNo', 'arrDep', 'aircraftType', 'airportLoading', 'scheduleDate', 'eta'],
-  flyoutItems: ['View Request', 'Amend', 'Cancel'],
-  primaryLabel: 'New Request',
+  flyoutItems: ['View', 'Amend', 'Cancel'],
+  primaryLabel: 'New Carrier Movement',
   refKey: 'flightNo',
   detailSections: [
     { title: 'Flight Information', fields: [{ key: 'arrDep', label: 'Arrival/Departure' }, { key: 'scheduleDate', label: 'Schedule Date of Arrival' }, { key: 'eta', label: 'Estimated Time of Arrival' }, { key: 'ata', label: 'Actual Time of Arrival' }] },
@@ -139,10 +153,9 @@ const FLIGHT_MANIFEST: ListingConfig = {
     { key: 'actions', label: 'Actions' },
   ],
   lockedStatusStyles: { status: MANIFEST_STATUS_STYLE },
-  statuses: ['Submitted', 'Cancelled'],
+  statuses: ['Submitted', 'Draft', 'Cancelled'],
   searchKeys: ['flightNo', 'uploadRefNo'],
   advancedFilterKeys: ['flightNo', 'airportLoading', 'scheduleDate', 'createdDate'],
-  flyoutItems: ['View Manifest Request', 'View Manifest', 'Amend', 'Cancel', 'Upload Manifest', 'View Error Details'],
   primaryLabel: 'New Manifest',
   refKey: 'flightNo',
   detailSections: [
@@ -156,6 +169,7 @@ const FLIGHT_MANIFEST: ListingConfig = {
     { flightNo: 'E123456', scheduleDate: '02/07/2025 10:15', airportLoading: 'DXB', manifestType: 'FWB',             createdDate: '02/07/2025', uploadRefNo: 'MNF-E123456', uploadedFiles: '1', filesSuccessful: '1', filesFailed: '0', manifestStatus: 'Cancelled', uploadStatus: 'Successful', status: 'Cancelled' },
     { flightNo: 'G123456', scheduleDate: '02/07/2025 10:15', airportLoading: 'DXB', manifestType: 'FFM',             createdDate: '02/07/2025', uploadRefNo: 'MNF-G123456', uploadedFiles: '3', filesSuccessful: '3', filesFailed: '0', manifestStatus: 'Submitted', uploadStatus: 'Successful', status: 'Submitted' },
     { flightNo: 'H123456', scheduleDate: '02/07/2025 10:15', airportLoading: 'DXB', manifestType: 'FWB',             createdDate: '02/07/2025', uploadRefNo: 'MNF-H123456', uploadedFiles: '1', filesSuccessful: '1', filesFailed: '0', manifestStatus: 'Submitted', uploadStatus: 'Successful', status: 'Submitted' },
+    { flightNo: 'FM-DRAFT01', scheduleDate: '05/08/2025 09:00', airportLoading: 'DXB', manifestType: 'FFM',          createdDate: '—',          uploadRefNo: '—',           uploadedFiles: '0', filesSuccessful: '0', filesFailed: '0', manifestStatus: 'Draft',     uploadStatus: 'Successful', status: 'Draft' },
   ],
 };
 
@@ -194,38 +208,49 @@ const FLIGHT_MANIFEST_UPLOADS: FlightManifestUploadRecord[] = [
 ];
 
 /* ─── House Manifest ────────────────────────────────────────────── */
+const HOUSE_MANIFEST_STATUS_STYLE: Record<string, { bg: string; color: string }> = {
+  'Draft':                 { bg: 'rgba(105,116,152,0.10)', color: '#697498' },
+  'New':                   { bg: 'rgba(19,96,210,0.10)',   color: '#1360d2' },
+  'Cancel':                { bg: 'rgba(192,57,43,0.10)',   color: '#c0392b' },
+  'Submitted error':       { bg: 'rgba(220,53,69,0.10)',   color: '#dc3545' },
+  'Submitted in progress': { bg: 'rgba(255,169,26,0.16)',  color: '#b45309' },
+};
+const HOUSE_MANIFEST_TYPE_OPTIONS = ['Air cargo manifest', 'Courier manifest'];
+const HOUSE_MANIFEST_SUBTYPE_OPTIONS = ['Air House Manifest', 'Sub House Manifest'];
+
 const HOUSE_MANIFEST: ListingConfig = {
   columns: [
-    { key: 'mawbNo',          label: 'Master Airway Bill No.', w: 200 },
-    { key: 'manifestType',    label: 'House Manifest Type',    w: 190 },
-    { key: 'weight',          label: 'Weight & Unit',          w: 160 },
-    { key: 'createdDate',     label: 'Created Date',           w: 160 },
-    { key: 'transactionType', label: 'Transaction Type',       w: 170 },
+    { key: 'mawbNo',            label: 'MAWB No',             w: 190 },
+    { key: 'hawbCount',         label: 'No of HAWB',          w: 130 },
+    { key: 'manifestType',      label: 'Manifest Type',       w: 180 },
+    { key: 'houseManifestType', label: 'House Manifest Type', w: 190 },
+    { key: 'weight',            label: 'Weight & Unit',       w: 160 },
+    { key: 'createdDate',       label: 'Created Date',        w: 160 },
   ],
-  lockedColumns: [{ key: 'status', label: 'Status' }, { key: 'actions', label: 'Actions' }],
-  statuses: COMMON_STATUSES,
-  searchKeys: ['mawbNo'],
+  lockedColumns: [{ key: 'status', label: 'Status', w: 170 }, { key: 'actions', label: 'Actions' }],
+  lockedStatusStyles: { status: HOUSE_MANIFEST_STATUS_STYLE },
+  statuses: ['Draft', 'New', 'Cancel', 'Submitted error', 'Submitted in progress'],
+  searchKeys: ['mawbNo', 'hawbNo', 'subConsoleAwbNo'],
+  searchKeyLabels: { mawbNo: 'MAWB No', hawbNo: 'HAWB No', subConsoleAwbNo: 'Sub console AWB No' },
   noScrollArrows: true,
-  primaryLabel: 'New Manifest',
+  primaryLabel: 'New House Manifest',
   refKey: 'mawbNo',
   detailSections: [
-    { title: 'Manifest Details', fields: [{ key: 'manifestType', label: 'House Manifest Type' }, { key: 'weight', label: 'Weight & Unit' }, { key: 'transactionType', label: 'Transaction Type' }] },
+    { title: 'Manifest Details', fields: [{ key: 'manifestType', label: 'Manifest Type' }, { key: 'houseManifestType', label: 'House Manifest Type' }, { key: 'weight', label: 'Weight & Unit' }] },
     { title: 'Request Information', fields: [{ key: 'createdDate', label: 'Created Date' }] },
   ],
   rows: [
-    { mawbNo: 'AWB-176-88213456', manifestType: 'Consolidated', weight: '620.50 KG', createdDate: '14/07/2025', transactionType: 'Import', status: 'Approved' },
-    { mawbNo: 'AWB-176-88213457', manifestType: 'Direct',       weight: '310.00 KG', createdDate: '14/07/2025', transactionType: 'Import', status: 'Submitted' },
-    { mawbNo: 'AWB-176-88213458', manifestType: 'Consolidated', weight: '95.80 KG',  createdDate: '16/07/2025', transactionType: 'Import', status: 'Under Processing' },
-    { mawbNo: 'AWB-176-88213459', manifestType: 'Direct',       weight: '48.20 KG',  createdDate: '17/07/2025', transactionType: 'Export', status: 'Rejected' },
-    { mawbNo: 'AWB-176-88213460', manifestType: 'Consolidated', weight: '1240.00 KG', createdDate: '18/07/2025', transactionType: 'Import', status: 'Approved' },
-    { mawbNo: 'AWB-176-88213461', manifestType: 'Direct',       weight: '85.00 KG',  createdDate: '19/07/2025', transactionType: 'Export', status: 'Cancelled' },
-    { mawbNo: 'AWB-176-DRAFT01',  manifestType: 'Consolidated', weight: '620.50 KG', createdDate: '—',          transactionType: 'Import', status: 'Submitted', isDraft: true },
+    { mawbNo: 'AWB-176-88213456', hawbNo: 'HAWB-88213456-01', subConsoleAwbNo: 'SC-88213456', hawbCount: '3', manifestType: 'Air cargo manifest', houseManifestType: 'Air House Manifest', weight: '620.50 KG',  createdDate: '14/07/2025', status: 'New' },
+    { mawbNo: 'AWB-176-88213457', hawbNo: 'HAWB-88213457-01', subConsoleAwbNo: 'SC-88213457', hawbCount: '1', manifestType: 'Courier manifest',   houseManifestType: 'Sub House Manifest', weight: '310.00 KG',  createdDate: '14/07/2025', status: 'Submitted in progress' },
+    { mawbNo: 'AWB-176-88213458', hawbNo: 'HAWB-88213458-01', subConsoleAwbNo: 'SC-88213458', hawbCount: '5', manifestType: 'Air cargo manifest', houseManifestType: 'Air House Manifest', weight: '95.80 KG',   createdDate: '16/07/2025', status: 'Submitted in progress' },
+    { mawbNo: 'AWB-176-88213459', hawbNo: 'HAWB-88213459-01', subConsoleAwbNo: 'SC-88213459', hawbCount: '2', manifestType: 'Courier manifest',   houseManifestType: 'Sub House Manifest', weight: '48.20 KG',   createdDate: '17/07/2025', status: 'Submitted error' },
+    { mawbNo: 'AWB-176-88213460', hawbNo: 'HAWB-88213460-01', subConsoleAwbNo: 'SC-88213460', hawbCount: '8', manifestType: 'Air cargo manifest', houseManifestType: 'Air House Manifest', weight: '1240.00 KG', createdDate: '18/07/2025', status: 'New' },
+    { mawbNo: 'AWB-176-88213461', hawbNo: 'HAWB-88213461-01', subConsoleAwbNo: 'SC-88213461', hawbCount: '1', manifestType: 'Courier manifest',   houseManifestType: 'Sub House Manifest', weight: '85.00 KG',   createdDate: '19/07/2025', status: 'Cancel' },
+    { mawbNo: 'AWB-176-DRAFT01',  hawbNo: 'HAWB-DRAFT01-01',  subConsoleAwbNo: 'SC-DRAFT01',  hawbCount: '3', manifestType: 'Air cargo manifest', houseManifestType: 'Air House Manifest', weight: '620.50 KG',  createdDate: '—',          status: 'Draft' },
   ],
 };
 
 /* ─── Sea Export Manifest ───────────────────────────────────────── */
-const CARGO_TYPES = ['BULK LIQUID', 'BULK SOLID', 'EMPTY CONTAINER', 'FCL CONTAINER', 'GENERAL CARGO (BREAK BULK)', 'LCL CONTAINER', 'Live Stock', 'RO-RO UNIT'];
-
 const SEA_EXPORT_MANIFEST: ListingConfig = {
   columns: [
     { key: 'bolNumber',         label: 'BOL Number',            w: 150 },
@@ -242,7 +267,7 @@ const SEA_EXPORT_MANIFEST: ListingConfig = {
   noScrollArrows: true,
   advancedFilterKeys: ['bolNumber', 'rotationNumber', 'cargoType', 'lastModifiedDate'],
   flyoutItems: ['View Manifest Request', 'Amend', 'Audit History', 'Delete'],
-  primaryLabel: 'New Request',
+  primaryLabel: 'New BOL',
   refKey: 'bolNumber',
   detailSections: [
     { title: 'BOL Information', fields: [{ key: 'rotationNumber', label: 'Rotation Number' }, { key: 'cargoType', label: 'Cargo Type' }, { key: 'lastModifiedDate', label: 'Last Modified Date' }] },
@@ -263,29 +288,29 @@ const SEA_EXPORT_MANIFEST: ListingConfig = {
 /* ─── Delivery Advice ───────────────────────────────────────────── */
 const DELIVERY_ADVICE: ListingConfig = {
   columns: [
-    { key: 'daNumber',        label: 'Delivery Advice Number', w: 190 },
-    { key: 'hawbNumber',      label: 'HAWB Number',            w: 160 },
-    { key: 'daDate',          label: 'DA Date',                w: 150 },
-    { key: 'daRemarks',       label: 'DA Remarks',             w: 190 },
-    { key: 'transactionType', label: 'Transaction Type',       w: 170 },
+    { key: 'daNumber',   label: 'DA No.',   w: 170 },
+    { key: 'hawbNumber', label: 'HAWB No.', w: 160 },
+    { key: 'daDate',     label: 'DA Date',  w: 150 },
+    { key: 'daRemarks',  label: 'DA Remarks', w: 190 },
   ],
   lockedColumns: [{ key: 'status', label: 'Status' }, { key: 'actions', label: 'Actions' }],
   statuses: COMMON_STATUSES,
   searchKeys: ['daNumber', 'hawbNumber'],
   noScrollArrows: true,
-  primaryLabel: 'New Request',
+  advancedFilterKeys: ['hawbNumber', 'daDate'],
+  primaryLabel: 'Generate Delivery Advice',
   refKey: 'daNumber',
   detailSections: [
-    { title: 'Delivery Advice Details', fields: [{ key: 'hawbNumber', label: 'HAWB Number' }, { key: 'daRemarks', label: 'DA Remarks' }, { key: 'transactionType', label: 'Transaction Type' }] },
+    { title: 'Delivery Advice Details', fields: [{ key: 'hawbNumber', label: 'HAWB No.' }, { key: 'daRemarks', label: 'DA Remarks' }] },
     { title: 'Request Information', fields: [{ key: 'daDate', label: 'DA Date' }] },
   ],
   rows: [
-    { daNumber: '202635696', hawbNumber: 'HAWB101', daDate: '01/06/2025', daRemarks: 'Release to consignee', transactionType: 'Import', status: 'Approved' },
-    { daNumber: '202635697', hawbNumber: 'HAWB102', daDate: '02/06/2025', daRemarks: '—', transactionType: 'Import', status: 'Submitted' },
-    { daNumber: '202635698', hawbNumber: 'HAWB103', daDate: '03/06/2025', daRemarks: '—', transactionType: 'Import', status: 'Under Processing' },
-    { daNumber: '202635699', hawbNumber: 'HAWB104', daDate: '04/06/2025', daRemarks: '—', transactionType: 'Export', status: 'Rejected' },
-    { daNumber: '202635700', hawbNumber: 'HAWB105', daDate: '05/06/2025', daRemarks: '—', transactionType: 'Import', status: 'Cancelled' },
-    { daNumber: 'DA-DRAFT01', hawbNumber: 'HAWB101', daDate: '—', daRemarks: '—', transactionType: 'Import', status: 'Submitted', isDraft: true },
+    { daNumber: '202635696', hawbNumber: 'HAWB101', daDate: '01/06/2025', daRemarks: 'Release to consignee', status: 'Approved' },
+    { daNumber: '202635697', hawbNumber: 'HAWB102', daDate: '02/06/2025', daRemarks: '—', status: 'Submitted' },
+    { daNumber: '202635698', hawbNumber: 'HAWB103', daDate: '03/06/2025', daRemarks: '—', status: 'Under Processing' },
+    { daNumber: '202635699', hawbNumber: 'HAWB104', daDate: '04/06/2025', daRemarks: '—', status: 'Rejected' },
+    { daNumber: '202635700', hawbNumber: 'HAWB105', daDate: '05/06/2025', daRemarks: '—', status: 'Cancelled' },
+    { daNumber: 'DA-DRAFT01', hawbNumber: 'HAWB101', daDate: '—', daRemarks: '—', status: 'Submitted', isDraft: true },
   ],
 };
 
@@ -400,6 +425,13 @@ function FilterMultiSelect({ label, selected, options, onChange }: { label: stri
 
 const SEM_CARGO_TYPE_OPTIONS = ['FCL CONTAINER', 'LCL CONTAINER', 'GENERAL CARGO (BREAK BULK)', 'BULK LIQUID', 'BULK SOLID', 'RO-RO UNIT', 'EMPTY CONTAINER'];
 
+/* Advance Filters — column keys that render as a dropdown instead of a free-text field, matching the reference's field widgets. */
+const ADVANCED_FILTER_DROPDOWNS: Record<string, string[]> = {
+  arrDep: ['Arrival', 'Departure'],
+  aircraftType: ['Passenger', 'Cargo only', 'Combi', 'Surface Flights', 'Truck'],
+  airportLoading: ['DXB', 'MAA', 'LHR', 'JFK', 'SIN', 'AUH'],
+};
+
 type Props = { onBack: () => void; onHome?: () => void };
 
 export default function CargoInformationPage({ onBack, onHome }: Props) {
@@ -413,9 +445,9 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
   const [showFilters, setShowFilters]         = useState(false);
   const [afValues, setAfValues]               = useState<Record<string, string>>({});
   const [afCargoTypes, setAfCargoTypes]       = useState<string[]>([]);
-  const [afStatusType, setAfStatusType]       = useState('');
-  const [afDateFrom, setAfDateFrom]           = useState('');
-  const [afDateTo, setAfDateTo]               = useState('');
+  const [afHmManifestType, setAfHmManifestType]           = useState('');
+  const [afHmHouseManifestType, setAfHmHouseManifestType] = useState('');
+  const [afHmStatuses, setAfHmStatuses]                   = useState<string[]>([]);
   const [searchKey, setSearchKey]             = useState(config.searchKeys[0]);
   const [searchTypeOpen, setSearchTypeOpen]   = useState(false);
   const [searchValue, setSearchValue]         = useState('');
@@ -489,7 +521,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
     setActiveMenu(key);
     const next = MENU_CONFIGS[key];
     setPage(1); setSearchValue(''); setSearchQuery(''); setSearchKey(next.searchKeys[0]); setToolbarStatus(null);
-    setShowDrafts(false); setShowFilters(false); setAfValues({}); setAfCargoTypes([]); setAfStatusType(''); setAfDateFrom(''); setAfDateTo(''); setViewRow(null);
+    setShowDrafts(false); setShowFilters(false); setAfValues({}); setAfCargoTypes([]); setAfHmManifestType(''); setAfHmHouseManifestType(''); setAfHmStatuses([]); setViewRow(null);
     setFileDetailsRow(null); setSemPrefill(null); setSemRequestKind('new');
     setVisibleCols(next.columns.map(c => c.key));
     setColOrder(next.columns.map(c => c.key));
@@ -511,14 +543,33 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
     ? config.lockedColumns.filter(c => c.key !== 'status')
     : config.lockedColumns;
 
+  /* "DD/MM/YYYY[ HH:mm[:ss]]" mock date → "YYYY-MM-DD" so it can be lexicographically compared against a DateInput's ISO value. */
+  const toIsoDate = (ddmmyyyy: string): string => {
+    const datePart = ddmmyyyy.split(' ')[0];
+    const [d, m, y] = datePart.split('/');
+    return d && m && y ? `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}` : '';
+  };
+
   const filteredRows = config.rows.filter(r => {
     if (deletedRowKeys.has(str(r[config.refKey]))) return false;
     if (showDrafts !== !!r.isDraft) return false;
     if (toolbarStatus && r.status !== toolbarStatus) return false;
     if (searchValue.trim() && !str(r[searchKey]).toLowerCase().includes(searchValue.trim().toLowerCase())) return false;
     if (activeMenu === 'seaExportManifest' && afCargoTypes.length > 0 && !afCargoTypes.includes(str(r.cargoType))) return false;
+    if (activeMenu === 'houseManifest') {
+      if (afHmManifestType && str(r.manifestType) !== afHmManifestType) return false;
+      if (afHmHouseManifestType && str(r.houseManifestType) !== afHmHouseManifestType) return false;
+      if (afHmStatuses.length > 0 && !afHmStatuses.includes(r.status)) return false;
+    }
     for (const [k, v] of Object.entries(afValues)) {
-      if (v.trim() && !str(r[k]).toLowerCase().includes(v.trim().toLowerCase())) return false;
+      if (!v.trim()) continue;
+      if (k.endsWith('From') || k.endsWith('To')) {
+        const baseKey = k.endsWith('From') ? k.slice(0, -4) : k.slice(0, -2);
+        const rowIso = toIsoDate(str(r[baseKey]));
+        if (!rowIso) return false;
+        if (k.endsWith('From') && rowIso < v) return false;
+        if (k.endsWith('To') && rowIso > v) return false;
+      } else if (!str(r[k]).toLowerCase().includes(v.trim().toLowerCase())) return false;
     }
     return true;
   });
@@ -582,12 +633,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
   })() : [];
   const visibleBolLines = bolLines.filter(l => !deletedBolLineKeys.has(l.bolNo));
 
-  /* Flight Manifest — View/Amend prefill: convert the listing's "DD/MM/YYYY HH:mm" mock date to the ISO date the wizard's DatePicker expects, and synthesize a plausible pre-filled Airport of Unloading row */
-  const toIsoDate = (ddmmyyyy: string): string => {
-    const datePart = ddmmyyyy.split(' ')[0];
-    const [d, m, y] = datePart.split('/');
-    return d && m && y ? `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}` : '';
-  };
+  /* Flight Manifest — View/Amend prefill: synthesize a plausible pre-filled Airport of Unloading row */
   const AIRPORT_NAMES: Record<string, string> = { DXB: 'Dubai International Airport', JFK: 'John F. Kennedy International Airport' };
   const fmInitialUnloadingRows = fmPrefill ? [{
     id: 'ul-mock-1', airportCode: 'JFK', airportName: AIRPORT_NAMES.JFK, nilCargo: 'No',
@@ -865,7 +911,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                 </h1>
                 <span
                   className="inline-flex items-center px-[12px] py-[4px] rounded-[4px] text-[16px] font-medium whitespace-nowrap"
-                  style={{ ...(STATUS_STYLE[viewRow.status] ?? { bg: 'rgba(105,116,152,0.10)', color: '#697498' }), fontFamily: font }}
+                  style={{ ...((config.lockedStatusStyles?.status ?? STATUS_STYLE)[viewRow.status] ?? { bg: 'rgba(105,116,152,0.10)', color: '#697498' }), fontFamily: font }}
                 >
                   {viewRow.status}
                 </span>
@@ -1032,7 +1078,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                     onApply={(from, to) => { setStatusFromDate(from); setStatusToDate(to); }} />
                 </div>
                 <div className="flex items-center gap-[16px] flex-shrink-0">
-                  {activeMenu !== 'flightManifest' && (
+                  {activeMenu !== 'flightManifest' && activeMenu !== 'houseManifest' && (
                     <div className="flex items-center gap-[8px]">
                       <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>Drafts</span>
                       <button onClick={() => { setShowDrafts(d => !d); setPage(1); setSelectedRowKeys(new Set()); }}
@@ -1066,22 +1112,37 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                         <FilterInput label="BOL Number" value={afValues.bolNumber ?? ''} onChange={v => setAfValues(p => ({ ...p, bolNumber: v }))} />
                         <FilterInput label="Rotation Number" value={afValues.rotationNumber ?? ''} onChange={v => setAfValues(p => ({ ...p, rotationNumber: v }))} />
                         <FilterMultiSelect label="Cargo Type" selected={afCargoTypes} options={SEM_CARGO_TYPE_OPTIONS} onChange={setAfCargoTypes} />
-                        <FilterSelect label="Status Type" value={afStatusType} onChange={setAfStatusType} options={['Upload Status', 'BOL Status']} />
-                        {afStatusType !== '' && (
-                          <>
-                            <DateInput label="Date From" value={afDateFrom} onChange={setAfDateFrom} />
-                            <DateInput label="Date To" value={afDateTo} onChange={setAfDateTo} />
-                          </>
-                        )}
+                        <DateInput label="Submission From Date" value={afValues.submissionDateFrom ?? ''} onChange={v => setAfValues(p => ({ ...p, submissionDateFrom: v }))} />
+                        <DateInput label="Submission To Date" value={afValues.submissionDateTo ?? ''} onChange={v => setAfValues(p => ({ ...p, submissionDateTo: v }))} />
                         <DateInput label="Last Modified Date From" value={afValues.lastModifiedDateFrom ?? ''} onChange={v => setAfValues(p => ({ ...p, lastModifiedDateFrom: v }))} />
                         <DateInput label="Last Modified Date To" value={afValues.lastModifiedDateTo ?? ''} onChange={v => setAfValues(p => ({ ...p, lastModifiedDateTo: v }))} />
                         <div className="flex items-end gap-[10px]">
-                          <button onClick={() => { setAfValues({}); setAfCargoTypes([]); setAfStatusType(''); setAfDateFrom(''); setAfDateTo(''); setPage(1); }}
+                          <button onClick={() => setPage(1)} className="h-[44px] px-5 rounded-[4px] text-[15px] text-white flex-shrink-0" style={{ background: '#1360d2', fontFamily: font }}>
+                            Apply
+                          </button>
+                          <button onClick={() => { setAfValues({}); setAfCargoTypes([]); setPage(1); }}
                             className="h-[44px] px-5 rounded-[4px] border border-[#1360d2] text-[15px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] flex-shrink-0" style={{ fontFamily: font }}>
                             Reset
                           </button>
+                        </div>
+                      </>
+                    ) : activeMenu === 'houseManifest' ? (
+                      <>
+                        <FilterInput label="MAWB No" value={afValues.mawbNo ?? ''} onChange={v => setAfValues(p => ({ ...p, mawbNo: v }))} />
+                        <FilterInput label="Sub console AWB No" value={afValues.subConsoleAwbNo ?? ''} onChange={v => setAfValues(p => ({ ...p, subConsoleAwbNo: v }))} />
+                        <FilterInput label="HAWB No" value={afValues.hawbNo ?? ''} onChange={v => setAfValues(p => ({ ...p, hawbNo: v }))} />
+                        <FilterSelect label="Manifest Type" value={afHmManifestType} onChange={setAfHmManifestType} options={HOUSE_MANIFEST_TYPE_OPTIONS} />
+                        <FilterSelect label="House Manifest Type" value={afHmHouseManifestType} onChange={setAfHmHouseManifestType} options={HOUSE_MANIFEST_SUBTYPE_OPTIONS} />
+                        <FilterMultiSelect label="Status" selected={afHmStatuses} options={HOUSE_MANIFEST.statuses} onChange={setAfHmStatuses} />
+                        <DateInput label="From Date" value={afValues.createdDateFrom ?? ''} onChange={v => setAfValues(p => ({ ...p, createdDateFrom: v }))} />
+                        <DateInput label="To Date" value={afValues.createdDateTo ?? ''} onChange={v => setAfValues(p => ({ ...p, createdDateTo: v }))} />
+                        <div className="flex items-end gap-[10px]">
                           <button onClick={() => setPage(1)} className="h-[44px] px-5 rounded-[4px] text-[15px] text-white flex-shrink-0" style={{ background: '#1360d2', fontFamily: font }}>
                             Apply
+                          </button>
+                          <button onClick={() => { setAfValues({}); setAfHmManifestType(''); setAfHmHouseManifestType(''); setAfHmStatuses([]); setPage(1); }}
+                            className="h-[44px] px-5 rounded-[4px] border border-[#1360d2] text-[15px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] flex-shrink-0" style={{ fontFamily: font }}>
+                            Reset
                           </button>
                         </div>
                       </>
@@ -1091,10 +1152,15 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                           const col = config.columns.find(c => c.key === key);
                           if (!col) return [];
                           const isDate = col.key.toLowerCase().includes('date') || col.key === 'eta' || col.key === 'etd' || col.key === 'ata';
-                          return isDate ? [
+                          const dropdownOptions = ADVANCED_FILTER_DROPDOWNS[col.key];
+                          if (isDate) return [
                             <DateInput key={`${col.key}From`} label={`${col.label} From`} value={afValues[`${col.key}From`] ?? ''} onChange={v => setAfValues(p => ({ ...p, [`${col.key}From`]: v }))} />,
                             <DateInput key={`${col.key}To`} label={`${col.label} To`} value={afValues[`${col.key}To`] ?? ''} onChange={v => setAfValues(p => ({ ...p, [`${col.key}To`]: v }))} />,
-                          ] : [
+                          ];
+                          if (dropdownOptions) return [
+                            <FilterSelect key={col.key} label={col.label} value={afValues[col.key] ?? ''} onChange={v => setAfValues(p => ({ ...p, [col.key]: v }))} options={dropdownOptions} />,
+                          ];
+                          return [
                             <FilterInput key={col.key} label={col.label} value={afValues[col.key] ?? ''} onChange={v => setAfValues(p => ({ ...p, [col.key]: v }))} />,
                           ];
                         })}
@@ -1102,7 +1168,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                           <button onClick={() => setPage(1)} className="h-[44px] px-5 rounded-[4px] text-[15px] text-white flex-shrink-0" style={{ background: '#1360d2', fontFamily: font }}>
                             Apply
                           </button>
-                          <button onClick={() => { setAfValues({}); setAfStatusType(''); setAfDateFrom(''); setAfDateTo(''); setPage(1); }}
+                          <button onClick={() => { setAfValues({}); setPage(1); }}
                             className="h-[44px] px-5 rounded-[4px] border border-[#1360d2] text-[15px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] flex-shrink-0" style={{ fontFamily: font }}>
                             Reset
                           </button>
@@ -1145,7 +1211,6 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                               <tr><td colSpan={10} style={{ padding: '40px 12px', textAlign: 'center' }}><span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>No matching upload records found.</span></td></tr>
                             ) : fmuPaginated.map((row, i) => {
                               const st = row.uploadStatus === 'Failure' ? UPLOAD_STATUS_STYLE.Failure : UPLOAD_STATUS_STYLE.Successful;
-                              const isFwb = row.manifestFileType === 'FWB';
                               return (
                               <tr key={i} style={{ borderTop: '1px solid #f0f4ff' }}>
                                 <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap', background: '#fff' }}>{row.uploadRefNo}</td>
@@ -1166,13 +1231,14 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                                     </button>
                                     {openFlyout === i && (
                                       <div className="absolute z-[100] right-0 bg-white rounded-[8px] py-[4px] overflow-hidden" style={{ top: 36, width: 200, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
-                                        {(isFwb ? [{ key: 'error', label: 'View Error Details' }] : [{ key: 'view', label: 'View File Details' }, { key: 'error', label: 'View Error Details' }]).map(opt => (
-                                          <button key={opt.key} className="group w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
+                                        {(row.uploadStatus === 'Failure' ? [{ key: 'error', label: 'View Error Details' }] : [{ key: 'view', label: 'View File Details' }]).map(opt => (
+                                          <button key={opt.key} className="group w-full px-[14px] py-[10px] flex items-center gap-[10px] text-left hover:bg-[#1360d2] transition-colors"
                                             onClick={() => {
                                               setOpenFlyout(null);
                                               setFmuDetailRow(row);
                                               setOpenErrorFileIds(opt.key === 'error' ? new Set(row.files.filter(f => f.status === 'Failure').map(f => f.id)) : new Set());
                                             }}>
+                                            <span className="text-[#1360d2] group-hover:text-white flex-shrink-0 flex items-center">{flyoutIconFor(opt.label)}</span>
                                             <span className="text-[15px] text-[#111838] group-hover:text-white" style={{ fontFamily: font }}>{opt.label}</span>
                                           </button>
                                         ))}
@@ -1407,33 +1473,40 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                                     </button>
                                     {openFlyout === i && (
                                       <div className="absolute z-[100] right-0 bg-white rounded-[8px] py-[4px] overflow-hidden" style={{ top: 36, width: 208, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
-                                        {(row.isDraft ? ['Continue', 'Delete'] : (config.flyoutItems ?? ['View Request', 'Amend Request', 'Cancel Request'])).map(label => (
-                                          <button key={label} className="group w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
+                                        {(row.isDraft ? ['Continue', 'Delete']
+                                          : activeMenu === 'flightManifest' ? (
+                                              row.status === 'Draft' ? ['View', 'Complete Draft', 'Cancel']
+                                              : row.status === 'Cancelled' ? ['View']
+                                              : ['View', 'Amend', 'Cancel']
+                                            )
+                                          : activeMenu === 'houseManifest' ? (
+                                              row.status === 'Submitted error' ? ['View', 'View Error Files', 'Amend', 'Cancel', 'History']
+                                              : ['View', 'Amend', 'Cancel', 'History']
+                                            )
+                                          : (config.flyoutItems ?? ['View Request', 'Amend Request', 'Cancel Request'])
+                                        ).map(label => (
+                                          <button key={label} className="group w-full px-[14px] py-[10px] flex items-center gap-[10px] text-left hover:bg-[#1360d2] transition-colors"
                                             onClick={() => {
                                               setOpenFlyout(null);
                                               if (label === 'Delete') { setDeleteRow(row); }
                                               else if (activeMenu === 'carrierMovement') {
-                                                if (label === 'View Request' || label === 'Cancel') { setCmSelectedRow(row); setCmView('view'); }
+                                                if (label === 'View' || label === 'Cancel') { setCmSelectedRow(row); setCmView('view'); }
                                                 else setShowNewRequest(true); // Amend — no design provided yet
                                               } else if (activeMenu === 'flightManifest') {
-                                                if (label === 'Upload Manifest') { setFmSelectedRow(row); setFmView('upload'); }
-                                                else if (label === 'View Manifest') { setFmSelectedRow(row); setFmView('view'); }
-                                                else if (label === 'View Manifest Request') {
+                                                if (label === 'View') { setFmSelectedRow(row); setFmView('view'); }
+                                                else if (label === 'Complete Draft') {
                                                   setFmPrefill({ flightNo: str(row.flightNo), scheduleDate: str(row.scheduleDate), airportLoadingCode: str(row.airportLoading) });
-                                                  setFmRequestKind('view'); setFmView('new');
+                                                  setFmRequestKind('new'); setFmView('new');
                                                 }
                                                 else if (label === 'Amend') {
                                                   setFmPrefill({ flightNo: str(row.flightNo), scheduleDate: str(row.scheduleDate), airportLoadingCode: str(row.airportLoading) });
                                                   setFmRequestKind('amend'); setFmView('new');
                                                 }
-                                                else if (label === 'View Error Details') {
-                                                  const uploadMatch = FLIGHT_MANIFEST_UPLOADS.find(u => u.flightNo === str(row.flightNo));
-                                                  if (uploadMatch) {
-                                                    setFmuDetailRow(uploadMatch);
-                                                    setOpenErrorFileIds(new Set(uploadMatch.files.filter(f => f.status === 'Failure').map(f => f.id)));
-                                                  }
-                                                }
                                                 else setShowNewRequest(true); // Cancel — no design provided yet
+                                              } else if (activeMenu === 'houseManifest') {
+                                                if (label === 'View') setViewRow(row);
+                                                else if (label === 'History') setAuditHistoryRow(row);
+                                                else setShowNewRequest(true); // Amend / Cancel / View Error Files — no design provided yet
                                               } else if (activeMenu === 'seaExportManifest') {
                                                 if (label === 'View Manifest Request') {
                                                   setSemPrefill({ bolNumber: str(row.bolNumber), rotationNumber: str(row.rotationNumber), cargoCode: str(row.cargoType), requestId: str(row.requestId) });
@@ -1453,6 +1526,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                                                 setViewRow(row);
                                               }
                                             }}>
+                                            <span className="text-[#1360d2] group-hover:text-white flex-shrink-0 flex items-center">{flyoutIconFor(label)}</span>
                                             <span className="text-[16px] text-[#111838] group-hover:text-white" style={{ fontFamily: font }}>{label}</span>
                                           </button>
                                         ))}

@@ -211,7 +211,7 @@ const COMMODITY_HITS: CommodityHit[] = [
   { code: '19019020', description: 'Malted milk.' },
 ];
 
-const CARGO_TYPES = ['BULK LIQUID', 'BULK SOLID', 'EMPTY CONTAINER', 'FCL CONTAINER', 'GENERAL CARGO (BREAK BULK)', 'LCL CONTAINER', 'Live Stock', 'RO-RO UNIT'];
+const CARGO_TYPES = ['FCL CONTAINER', 'LCL CONTAINER', 'GENERAL CARGO (BREAK BULK)', 'BULK LIQUID', 'BULK SOLID', 'RO-RO UNIT', 'EMPTY CONTAINER'];
 const INCO_TERMS = ['EXW', 'FCA', 'FOB', 'CFR', 'CIF', 'CPT', 'DAP', 'DDP'];
 
 /* ─── Stepper ───────────────────────────────────────────────────── */
