@@ -605,13 +605,10 @@ export default function VccSearchResultPage({ onBack, onSubmit, onCreditDebitFai
               <button
                 onClick={() => { if (count > 0) setStep('payment'); }}
                 disabled={count === 0}
-                className="h-[48px] px-[24px] rounded-[4px] text-[16px] text-white disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-[8px]"
+                className="h-[48px] px-[24px] rounded-[4px] text-[16px] text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ background: '#1360d2', fontFamily: "'Dubai', sans-serif", fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}
               >
                 Proceed to Payment
-                <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M8 4l6 6-6 6" />
-                </svg>
               </button>
             </div>
           }
