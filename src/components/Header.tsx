@@ -51,9 +51,9 @@ export default function Header({ onServiceCatalogue, onHome, catalogueClosesOnCl
 
   return (
     <header className="bg-[#0e1b3d] w-full shadow-[0_2px_32px_0_rgba(0,0,0,0.08)] sticky top-0 z-40">
-      <div className="w-full h-[88px] px-4 sm:px-8 lg:px-[60px] flex items-center justify-between gap-6">
-        <Link to="/customer-type" className="flex-shrink-0">
-          <Logo height={48} white />
+      <div className="w-full h-[88px] px-3 sm:px-8 lg:px-[60px] flex items-center justify-between gap-3 sm:gap-6 min-w-0">
+        <Link to="/customer-type" className="flex-shrink-0 min-w-0">
+          <Logo height={48} white className="!h-[34px] sm:!h-[48px] w-auto" />
         </Link>
 
         <nav className="hidden lg:flex items-center gap-[20px] text-white text-[15px]">
@@ -69,7 +69,7 @@ export default function Header({ onServiceCatalogue, onHome, catalogueClosesOnCl
           <button className="hover:opacity-80">Knowledge Hub</button>
         </nav>
 
-        <div className="flex items-center gap-[10px]">
+        <div className="flex items-center gap-[6px] sm:gap-[10px] flex-shrink-0">
           {/* Hamburger — mobile only */}
           <button
             onClick={() => setMobileOpen(v => !v)}
@@ -81,7 +81,7 @@ export default function Header({ onServiceCatalogue, onHome, catalogueClosesOnCl
               <path d="M3 6h18M3 12h18M3 18h18" />
             </svg>
           </button>
-          <button className="size-[40px] rounded-full border border-[rgba(213,221,251,0.4)] flex items-center justify-center text-white hover:bg-white/10">
+          <button className="size-[40px] rounded-full border border-[rgba(213,221,251,0.4)] hidden sm:flex items-center justify-center text-white hover:bg-white/10">
             <svg viewBox="0 0 18 18" width="18" height="18" fill="none"><path fillRule="evenodd" clipRule="evenodd" d="M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z" fill="#0E1B3D"/></svg>
           </button>
           <div className="relative">
@@ -90,7 +90,7 @@ export default function Header({ onServiceCatalogue, onHome, catalogueClosesOnCl
             </button>
             <span className="absolute -top-1 -right-1 bg-[#dc3545] border-2 border-[#051937] rounded-full size-[20px] text-white text-[10px] font-medium flex items-center justify-center">5</span>
           </div>
-          <button className="size-[40px] rounded-full border border-[rgba(213,221,251,0.4)] flex items-center justify-center text-white hover:bg-white/10">
+          <button className="size-[40px] rounded-full border border-[rgba(213,221,251,0.4)] hidden sm:flex items-center justify-center text-white hover:bg-white/10">
             <svg viewBox="0 0 24 24" className="size-[18px]" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="4" r="2" /><path d="M19 13l-2-2-5 1-5-1-2 2 4 2v8h2v-5h2v5h2v-8z" /></svg>
           </button>
           <div className="relative" ref={profileRef}>

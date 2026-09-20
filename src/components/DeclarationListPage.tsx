@@ -1823,7 +1823,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
           </div>
 
           {/* Right-side group: pushes to end */}
-          <div className="flex items-center gap-[12px] md:ml-auto flex-wrap">
+          <div className="contents md:flex md:items-center md:gap-[12px] md:ml-auto md:flex-wrap">
             {/* Need Help */}
             <button className="flex items-center gap-[4px] h-[48px] px-[2px] flex-shrink-0">
               <span className="text-[16px] text-[#2950e5] font-medium" style={{ fontFamily: "'Dubai', sans-serif" }}>Need Help</span>

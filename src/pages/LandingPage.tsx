@@ -310,7 +310,7 @@ export default function LandingPage() {
           </div>
 
           {/* Journey */}
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <h3 className="text-[#051937] text-[24px] font-medium mb-2">{journeyTitle}</h3>
             <div className="w-[40px] h-[3px] bg-[#ea2428] mb-6" />
 
@@ -357,10 +357,10 @@ export default function LandingPage() {
             <div className="border-t border-[#dde3ee] mb-8" />
 
             {/* Journey cards — icon circle + expanding card on hover */}
-            <div className="relative flex flex-wrap sm:flex-nowrap items-start w-full gap-3">
+            <div className="relative flex flex-wrap lg:flex-nowrap items-start w-full gap-3">
               {/* Connector line through centre of circles */}
               {activeCards.length > 1 && (
-                <div className="absolute top-[32px] left-[60px] right-[60px] z-[1] pointer-events-none hidden sm:block" style={{ height: '1.5px', backgroundImage: 'repeating-linear-gradient(to right, #0e1b3d 0px, #0e1b3d 10px, transparent 10px, transparent 20px)' }} />
+                <div className="absolute top-[32px] left-[60px] right-[60px] z-[1] pointer-events-none hidden lg:block" style={{ height: '1.5px', backgroundImage: 'repeating-linear-gradient(to right, #0e1b3d 0px, #0e1b3d 10px, transparent 10px, transparent 20px)' }} />
               )}
 
               {activeCards.map((card) => (
