@@ -1465,7 +1465,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
             <button
               key={action.label}
               onClick={() => setActiveMenu(action.label)}
-              className="flex items-center w-full text-left transition-all hover:opacity-80"
+              className="flex items-center w-full text-left transition-all hover:opacity-80 max-md:!gap-0 max-md:!px-3 max-md:!justify-center"
               style={{
                 gap: panelCollapsed ? 0 : 10,
                 padding: panelCollapsed ? '12px 12px' : '12px 14px',
@@ -1484,7 +1484,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
               </div>
               {!panelCollapsed && (
                 <span
-                  className="text-[16px] text-[#0e1b3d] leading-tight flex-1 min-w-0"
+                  className="hidden md:block text-[16px] text-[#0e1b3d] leading-tight flex-1 min-w-0"
                   style={{ fontFamily: "'Dubai', sans-serif", fontWeight: isActive ? 700 : 400, wordBreak: 'break-word' }}
                 >
                   {action.label}
