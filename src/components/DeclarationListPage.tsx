@@ -2606,7 +2606,9 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
           {/* Date range pill — hidden on ePayment listings unless Payment Status is Success */}
           <div className="flex-1 flex justify-center">
             {showDateRangeCard && (
-              <StatusAsOnBadge fromValue={statusFromDate} toValue={statusToDate}
+              <StatusAsOnBadge
+                label={activeMenu === 'Refund & Claims' && activeTab !== 'epay' ? 'Claim Status' : 'Status'}
+                fromValue={statusFromDate} toValue={statusToDate}
                 onApply={(from, to) => { setStatusFromDate(from); setStatusToDate(to); }} />
             )}
           </div>
