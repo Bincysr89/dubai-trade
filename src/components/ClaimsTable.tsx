@@ -134,7 +134,7 @@ const CLAIM_ROWS: ClaimRow[] = [
     declarations: [
       { declNo: '105-01426431-24', date: '09/10/2024', category: 'Import for Re Export', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '04/03/2025', exportExpiry: '03/08/2025' },
     ],
-    depositType: 'Alternative Duty Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/01/2024', status: 'Under Processing', requestStatus: 'Registered', remark: '1 sub claim Settled / Approved',
+    depositType: 'Alternative Duty Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/01/2024', status: 'Under Processing', requestStatus: 'Under Processing', remark: '1 sub claim Settled / Approved',
   },
   {
     reqNo: '4701751', claimNo: '3842003', ver: '1', claimType: 'Refund of Deposits',
@@ -148,7 +148,7 @@ const CLAIM_ROWS: ClaimRow[] = [
     declarations: [
       { declNo: '202-08812205-24', date: '08/14/2024', category: 'CDM Deposit', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '06/15/2025', exportExpiry: 'N/A' },
     ],
-    depositType: 'CDM Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/06/2024', status: 'Under Processing', requestStatus: 'Registered', remark: '—',
+    depositType: 'CDM Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/06/2024', status: 'Under Processing', requestStatus: 'Under Processing', remark: '—',
   },
   {
     reqNo: '4701770', claimNo: '3842091', ver: '1', claimType: 'Refund of Deposits',
@@ -171,7 +171,7 @@ const CLAIM_ROWS: ClaimRow[] = [
     declarations: [
       { declNo: '510-03318821-24', date: '06/22/2024', category: 'Declaration Cancellation - Deposit', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '06/30/2025', exportExpiry: 'N/A' },
     ],
-    depositType: 'Declaration Cancellation - Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/10/2024', status: 'Payment Pending', requestStatus: 'Registered', remark: '—',
+    depositType: 'Declaration Cancellation - Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/10/2024', status: 'Payment Pending', requestStatus: 'Under Processing', remark: '—',
   },
   {
     reqNo: '231626', claimNo: '—', ver: '1', claimType: 'Claim Time Validity Extension',
@@ -209,7 +209,7 @@ const CLAIM_ROWS: ClaimRow[] = [
       { declNo: 'LOT-000112', date: '14/03/2025', category: 'AUC-2025-0041', ownerCode: 'AE-9106286 - SW LOGISTICS LLC', claimExpiry: 'N/A', exportExpiry: 'N/A' },
       { declNo: 'LOT-000113', date: '14/03/2025', category: 'AUC-2025-0041', ownerCode: 'AE-9106286 - SW LOGISTICS LLC', claimExpiry: 'N/A', exportExpiry: 'N/A' },
     ],
-    depositType: 'Refund on Auction Proceed', claimantName: 'SW LOGISTICS LLC', claimantCode: 'AE-9106286', submissionDate: '29/06/2026', status: 'Under Processing', requestStatus: 'Registered', remark: '—',
+    depositType: 'Refund on Auction Proceed', claimantName: 'SW LOGISTICS LLC', claimantCode: 'AE-9106286', submissionDate: '29/06/2026', status: 'Under Processing', requestStatus: 'Under Processing', remark: '—',
   },
 ];
 
@@ -494,6 +494,13 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
   // Rendered via a fixed-position portal (not inline `absolute`) so it can never be clipped by
   // the table's scroll container — `overflow-x-auto` also computes overflow-y to `auto`, which
   // was cutting the flyout off above the pagination bar for rows near the bottom of the table.
+  const flyoutItemsFor = (row: ClaimRow): FlyoutId[] =>
+    hasRejectedSubClaim(row.remark)
+      ? (row.transactionType ? ['viewRequest', 'createFromRejected'] : ['view', 'history', 'createFromRejected'])
+      : row.transactionType
+      ? ['viewRequest', 'suspensionResponse']
+      : getFlyoutItems(row.status, showDrafts, row.claimType === 'Non Remittance');
+
   const renderFlyout = (i: number, row: ClaimRow) => (
     <div className="relative inline-block">
       <button
@@ -502,7 +509,10 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
         onClick={(e) => {
           if (openFlyout === i) { setOpenFlyout(null); return; }
           const r = e.currentTarget.getBoundingClientRect();
-          setFlyoutPos({ top: r.top, left: r.left - FLYOUT_W - 6 });
+          // Keep the menu inside the viewport for rows near the bottom of the table.
+          const menuH = flyoutItemsFor(row).length * 40 + 8;
+          const top = Math.max(8, Math.min(r.top, window.innerHeight - menuH - 8));
+          setFlyoutPos({ top, left: r.left - FLYOUT_W - 6 });
           setOpenFlyout(i);
         }}
       >
@@ -512,12 +522,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
       </button>
       {openFlyout === i && flyoutPos && createPortal(
         <div ref={flyoutRef} className="fixed z-[1000] bg-white rounded-[8px] py-[4px] overflow-hidden" style={{ top: flyoutPos.top, left: flyoutPos.left, width: FLYOUT_W, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
-          {(hasRejectedSubClaim(row.remark)
-            ? (row.transactionType ? (['viewRequest', 'createFromRejected'] as FlyoutId[]) : (['view', 'history', 'createFromRejected'] as FlyoutId[]))
-            : row.transactionType
-            ? (['viewRequest', 'suspensionResponse'] as FlyoutId[])
-            : getFlyoutItems(row.status, showDrafts, row.claimType === 'Non Remittance')
-          ).map((id) => (
+          {flyoutItemsFor(row).map((id) => (
             <button
               key={id}
               className="group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
@@ -555,18 +560,23 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
      Status ahead of both. */
   const STICKY_STATUS_W = 160;
   const STICKY_ACTION_W = 79;
+  /* Only the leftmost static column casts a shadow — it marks the boundary with the scrolling
+     area. The remaining static columns (and Action) sit flush so the group reads as one block. */
+  const STICKY_SHADOW = '-3px 0 6px rgba(0,0,0,0.06)';
   const dualStatus = declSearchActive;
-  const showClaimStatus = !showRequestCols;
+  const showClaimStatus = !showRequestCols && !showDrafts;
   const reqStatusLabel = showDrafts ? 'Claim Request Status' : 'Request Status';
   const claimStatusRight = STICKY_ACTION_W;
   const reqStatusRight = STICKY_ACTION_W + (showClaimStatus ? STICKY_STATUS_W : 0);
   const subStatusRight = reqStatusRight + STICKY_STATUS_W;
   const stickyWidth = subStatusRight + (dualStatus ? STICKY_STATUS_W : 0);
+  const subStatusShadow = dualStatus ? STICKY_SHADOW : undefined;
+  const reqStatusShadow = dualStatus ? undefined : STICKY_SHADOW;
 
   const renderSubClaimStatusCell = (status: Status, i: number) => {
     const st = STATUS_STYLE[status];
     return (
-      <td style={{ position: 'sticky', right: subStatusRight, background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: STICKY_STATUS_W, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', borderBottom: '1px solid #f8f8f8', zIndex: openFlyout === i ? 49 : 1 }}>
+      <td style={{ position: 'sticky', right: subStatusRight, background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: STICKY_STATUS_W, boxShadow: subStatusShadow, borderBottom: '1px solid #f8f8f8', zIndex: openFlyout === i ? 49 : 1 }}>
         <span className="text-[16px] whitespace-nowrap inline-flex items-center justify-center" style={{ background: st.bg, color: st.color, padding: '4px 12px', borderRadius: 4, lineHeight: '20px', fontWeight: 500, fontFamily: font }}>
           {status}
         </span>
@@ -574,10 +584,10 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
     );
   };
 
-  const renderStatusCell = (status: Status, i: number, right: number = claimStatusRight) => {
+  const renderStatusCell = (status: Status, i: number, right: number = claimStatusRight, boxShadow?: string) => {
     const st = STATUS_STYLE[status];
     return (
-      <td style={{ position: 'sticky', right, background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: STICKY_STATUS_W, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', borderBottom: '1px solid #f8f8f8', zIndex: openFlyout === i ? 49 : 1 }}>
+      <td style={{ position: 'sticky', right, background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: STICKY_STATUS_W, boxShadow, borderBottom: '1px solid #f8f8f8', zIndex: openFlyout === i ? 49 : 1 }}>
         <span className="text-[16px] whitespace-nowrap inline-flex items-center justify-center" style={{ background: st.bg, color: st.color, padding: '4px 12px', borderRadius: 4, lineHeight: '20px', fontWeight: 500, fontFamily: font }}>
           {status}
         </span>
@@ -649,11 +659,11 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
                 </th>
               ))}
               {dualStatus && (
-                <th style={{ position: 'sticky', right: subStatusRight, width: STICKY_STATUS_W, minWidth: STICKY_STATUS_W, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
+                <th style={{ position: 'sticky', right: subStatusRight, width: STICKY_STATUS_W, minWidth: STICKY_STATUS_W, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: subStatusShadow, zIndex: 2 }}>
                   <span className="text-[16px] text-[#051937]">Sub Claim Status</span>
                 </th>
               )}
-              <th style={{ position: 'sticky', right: reqStatusRight, width: STICKY_STATUS_W, minWidth: STICKY_STATUS_W, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
+              <th style={{ position: 'sticky', right: reqStatusRight, width: STICKY_STATUS_W, minWidth: STICKY_STATUS_W, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: reqStatusShadow, zIndex: 2 }}>
                 {showClaimStatus ? (
                   <span className="text-[16px] text-[#051937]">{reqStatusLabel}</span>
                 ) : (
@@ -667,7 +677,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
                 )}
               </th>
               {showClaimStatus && (
-                <th style={{ position: 'sticky', right: claimStatusRight, width: STICKY_STATUS_W, minWidth: STICKY_STATUS_W, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
+                <th style={{ position: 'sticky', right: claimStatusRight, width: STICKY_STATUS_W, minWidth: STICKY_STATUS_W, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, zIndex: 2 }}>
                   <StatusFilterHeader
                     label="Claim Status"
                     options={CLAIM_STATUS_OPTIONS}
@@ -711,7 +721,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
                 <tr key={i}>
                   {visibleHeaders.map((col) => <React.Fragment key={col.key}>{renderCellByKey(col.key)}</React.Fragment>)}
                   {dualStatus && renderSubClaimStatusCell(row.status, i)}
-                  {renderStatusCell(row.requestStatus, i, reqStatusRight)}
+                  {renderStatusCell(row.requestStatus, i, reqStatusRight, reqStatusShadow)}
                   {showClaimStatus && renderStatusCell(row.status, i, claimStatusRight)}
                   {renderActionCell(i, row)}
                 </tr>

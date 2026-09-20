@@ -405,7 +405,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
     'Refund & Claims':   ['Submitted', 'Registered', 'Under Processing', 'Rejected', 'Completed'],
     'Claim Time Validity Extension': ['Submitted', 'Registered', 'Under Processing', 'Rejected', 'Completed'],
     'Cargo Transfer':    ['Completed', 'Submitted', 'Cancelled'],
-    'E-Payment':         ['Pending', 'Success', 'Failed'],
+    'E-Payment':         ['Success', 'Payment Pending', 'Failed'],
   };
   // The toolbar status dropdown is named for what it filters in each module.
   const isEPayView = activeMenu === 'E-Payment' || activeTab === 'epay';

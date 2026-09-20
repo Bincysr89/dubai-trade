@@ -1,4 +1,5 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Pagination from './Pagination';
 import ManageColumnsModal, { ColDef } from './ManageColumnsModal';
 import { useTableBehaviors, DragDots, ScrollArrows } from '../hooks/useTableBehaviors';
@@ -18,13 +19,13 @@ function DirhamIcon({ size = 14, color = '#0e1b3d' }: { size?: number; color?: s
   );
 }
 
-type EPayStatus = 'Pending' | 'Success' | 'Failed';
+type EPayStatus = 'Success' | 'Payment Pending' | 'Failed';
 type EPayModule = 'Declaration' | 'VCC' | 'Cargo Transfer' | 'Refund & Claims' | 'Acknowledgement';
 
 const STATUS_STYLE: Record<EPayStatus, { bg: string; color: string }> = {
-  'Pending': { bg: 'rgba(255,169,26,0.16)', color: '#b45309' },
-  'Success': { bg: 'rgba(40,167,69,0.10)',  color: '#28a745' },
-  'Failed':  { bg: 'rgba(192,57,43,0.10)',  color: '#c0392b' },
+  'Success':         { bg: 'rgba(40,167,69,0.10)',  color: '#28a745' },
+  'Payment Pending': { bg: 'rgba(255,169,26,0.16)', color: '#b45309' },
+  'Failed':          { bg: 'rgba(192,57,43,0.10)',  color: '#c0392b' },
 };
 
 const MODULE_STYLE: Record<EPayModule, { bg: string; color: string }> = {
@@ -51,25 +52,25 @@ type EPayRow = {
 
 const ROWS: EPayRow[] = [
   /* Declaration */
-  { module: 'Declaration',     reqDate: '05-Feb-26', declNo: '1080000003626', approvalDate: '2026-02-05T14:15:48', reqNo: '1101545031', reqType: 'New Declaration',    claimType: '—', clientDecRef: 'sreevani',     amount: '93.00',  status: 'Pending'   },
-  { module: 'Declaration',     reqDate: '05-Feb-26', declNo: '1080000003526', approvalDate: '2026-02-05T14:12:17', reqNo: '1101545029', reqType: 'New Declaration',    claimType: '—', clientDecRef: 'SREEVANI',     amount: '93.00',  status: 'Pending'   },
+  { module: 'Declaration',     reqDate: '05-Feb-26', declNo: '1080000003626', approvalDate: '2026-02-05T14:15:48', reqNo: '1101545031', reqType: 'New Declaration',    claimType: '—', clientDecRef: 'sreevani',     amount: '93.00',  status: 'Payment Pending'   },
+  { module: 'Declaration',     reqDate: '05-Feb-26', declNo: '1080000003526', approvalDate: '2026-02-05T14:12:17', reqNo: '1101545029', reqType: 'New Declaration',    claimType: '—', clientDecRef: 'SREEVANI',     amount: '93.00',  status: 'Payment Pending'   },
   { module: 'Declaration',     reqDate: '04-Feb-26', declNo: '1080000003412', approvalDate: '2026-02-04T09:30:00', reqNo: '1101544987', reqType: 'Amendment',          claimType: '—', clientDecRef: 'JOB-20240205', amount: '115.00', status: 'Success'   },
   { module: 'Declaration',     reqDate: '03-Feb-26', declNo: '1080000003301', approvalDate: '2026-02-03T11:45:22', reqNo: '1101544856', reqType: 'New Declaration',    claimType: '—', clientDecRef: 'REF-450123',   amount: '93.00',  status: 'Failed'    },
-  { module: 'Declaration',     reqDate: '03-Feb-26', declNo: '1080000003298', approvalDate: '2026-02-03T08:20:11', reqNo: '1101544812', reqType: 'Amendment',          claimType: '—', clientDecRef: 'PGH-658916',   amount: '78.00',  status: 'Pending'   },
+  { module: 'Declaration',     reqDate: '03-Feb-26', declNo: '1080000003298', approvalDate: '2026-02-03T08:20:11', reqNo: '1101544812', reqType: 'Amendment',          claimType: '—', clientDecRef: 'PGH-658916',   amount: '78.00',  status: 'Payment Pending'   },
   /* VCC */
-  { module: 'VCC',             reqDate: '02-Feb-26', declNo: '1080000003201', approvalDate: '2026-02-02T10:05:33', reqNo: '1101544750', reqType: 'VCC Request',        claimType: '—', clientDecRef: '25365',        amount: '155.00', status: 'Pending'   },
+  { module: 'VCC',             reqDate: '02-Feb-26', declNo: '1080000003201', approvalDate: '2026-02-02T10:05:33', reqNo: '1101544750', reqType: 'VCC Request',        claimType: '—', clientDecRef: '25365',        amount: '155.00', status: 'Payment Pending'   },
   { module: 'VCC',             reqDate: '01-Feb-26', declNo: '1080000003178', approvalDate: '2026-02-01T13:40:00', reqNo: '1101544698', reqType: 'VCC Request',        claimType: '—', clientDecRef: '25366',        amount: '155.00', status: 'Success'   },
   { module: 'VCC',             reqDate: '30-Jan-26', declNo: '1080000003054', approvalDate: '2026-01-30T09:00:00', reqNo: '1101544600', reqType: 'VCC Amendment',      claimType: '—', clientDecRef: '25370',        amount: '80.00',  status: 'Failed'    },
   /* Cargo Transfer */
-  { module: 'Cargo Transfer',  reqDate: '06-Feb-26', declNo: '601001745352',  approvalDate: '2026-02-06T08:30:00', reqNo: '1201600411', reqType: 'New Cargo Transfer', claimType: '—', clientDecRef: 'CT-2024-00112', amount: '220.00', status: 'Pending'   },
+  { module: 'Cargo Transfer',  reqDate: '06-Feb-26', declNo: '601001745352',  approvalDate: '2026-02-06T08:30:00', reqNo: '1201600411', reqType: 'New Cargo Transfer', claimType: '—', clientDecRef: 'CT-2024-00112', amount: '220.00', status: 'Payment Pending'   },
   { module: 'Cargo Transfer',  reqDate: '04-Feb-26', declNo: '601001745200',  approvalDate: '2026-02-04T11:20:00', reqNo: '1201600380', reqType: 'New Cargo Transfer', claimType: '—', clientDecRef: 'CT-2024-00099', amount: '220.00', status: 'Success'   },
   { module: 'Cargo Transfer',  reqDate: '02-Feb-26', declNo: '601001745051',  approvalDate: '2026-02-02T14:55:00', reqNo: '1201600342', reqType: 'Amend Transfer',     claimType: '—', clientDecRef: 'CT-2024-00087', amount: '110.00', status: 'Failed'    },
   /* Refund & Claims */
-  { module: 'Refund & Claims', reqDate: '07-Feb-26', declNo: '1080000003700', approvalDate: '2026-02-07T10:10:00', reqNo: '1301700200', reqType: 'Refund Request',     claimType: 'Refund of Deposits', clientDecRef: 'RF-2024-0881',  amount: '450.00', status: 'Pending'   },
+  { module: 'Refund & Claims', reqDate: '07-Feb-26', declNo: '1080000003700', approvalDate: '2026-02-07T10:10:00', reqNo: '1301700200', reqType: 'Refund Request',     claimType: 'Refund of Deposits', clientDecRef: 'RF-2024-0881',  amount: '450.00', status: 'Payment Pending'   },
   { module: 'Refund & Claims', reqDate: '05-Feb-26', declNo: '1080000003650', approvalDate: '2026-02-05T09:45:00', reqNo: '1301700185', reqType: 'Deposit Claim',      claimType: 'Non Remittance', clientDecRef: 'RF-2024-0874',  amount: '1200.00',status: 'Success'   },
   { module: 'Refund & Claims', reqDate: '03-Feb-26', declNo: '1080000003580', approvalDate: '2026-02-03T13:30:00', reqNo: '1301700160', reqType: 'Refund Request',     claimType: 'Refund of Deposits', clientDecRef: 'RF-2024-0862',  amount: '330.00', status: 'Failed'    },
   /* Acknowledgement */
-  { module: 'Acknowledgement', reqDate: '08-Feb-26', declNo: '1080000003750', approvalDate: '2026-02-08T08:00:00', reqNo: '1401800050', reqType: 'Ack. Fee',           claimType: '—', clientDecRef: 'ACK-2024-0091', amount: '50.00',  status: 'Pending'   },
+  { module: 'Acknowledgement', reqDate: '08-Feb-26', declNo: '1080000003750', approvalDate: '2026-02-08T08:00:00', reqNo: '1401800050', reqType: 'Ack. Fee',           claimType: '—', clientDecRef: 'ACK-2024-0091', amount: '50.00',  status: 'Payment Pending'   },
   { module: 'Acknowledgement', reqDate: '06-Feb-26', declNo: '1080000003690', approvalDate: '2026-02-06T10:30:00', reqNo: '1401800039', reqType: 'Ack. Fee',           claimType: '—', clientDecRef: 'ACK-2024-0088', amount: '50.00',  status: 'Success'   },
 ];
 
@@ -82,6 +83,8 @@ const SCROLL_COLUMNS: (ColDef & { w: number })[] = [
 ];
 
 /* Every ePayment row exposes the same action set. */
+const FLYOUT_W = 230;
+
 const EPAY_ACTIONS: { label: string; icon: React.ReactNode }[] = [
   { label: 'Make Payment',           icon: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="16" height="12" rx="2"/><path d="M2 9h16"/><path d="M6 13h2"/><path d="M10 13h4"/></svg> },
   { label: 'Recheck Payment Status', icon: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M17 10a7 7 0 1 1-2.05-4.95"/><path d="M17 3v4h-4"/></svg> },
@@ -113,7 +116,25 @@ export default function EPaymentsTable({
   const [page, setPage]           = useState(1);
   const [pageSize, setPageSize]   = useState(8);
   const [openFlyout, setOpenFlyout] = useState<number | null>(null);
+  const [flyoutPos, setFlyoutPos] = useState<{ top: number; left: number } | null>(null);
   const flyoutRef = useRef<HTMLDivElement>(null);
+
+  /* The flyout is a fixed-position portal rather than an inline `absolute` box: the table's
+     `overflow-x-auto` wrapper also computes overflow-y to `auto`, which clipped the menu
+     against the pagination bar for rows near the bottom. */
+  useEffect(() => {
+    if (openFlyout === null) return;
+    const onDoc = (e: MouseEvent) => {
+      if (flyoutRef.current && !flyoutRef.current.contains(e.target as Node)) setOpenFlyout(null);
+    };
+    const onScroll = () => setOpenFlyout(null);
+    document.addEventListener('mousedown', onDoc);
+    window.addEventListener('scroll', onScroll, true);
+    return () => {
+      document.removeEventListener('mousedown', onDoc);
+      window.removeEventListener('scroll', onScroll, true);
+    };
+  }, [openFlyout]);
   const [visibleCols, setVisibleCols] = useState<string[]>(SCROLL_COLUMNS.map((c) => c.key));
   const vis = (key: string) => visibleCols.includes(key);
   const visibleHeaders = visibleCols.map((k) => SCROLL_COLUMNS.find((c) => c.key === k)!).filter(Boolean);
@@ -250,9 +271,17 @@ export default function EPaymentsTable({
                 </td>
                 {/* Sticky: Actions */}
                 <td style={{ position: 'sticky', right: 0, background: '#fff', padding: '0 12px', height: 54, verticalAlign: 'middle', width: 80, borderBottom: '1px solid #f0f4ff', textAlign: 'center', zIndex: openFlyout === i ? 50 : 1 }}>
-                  <div className="relative inline-block" ref={openFlyout === i ? flyoutRef : undefined}>
+                  <div className="relative inline-block">
                     <button
-                      onClick={() => setOpenFlyout(openFlyout === i ? null : i)}
+                      onClick={(e) => {
+                        if (openFlyout === i) { setOpenFlyout(null); return; }
+                        const r = e.currentTarget.getBoundingClientRect();
+                        // Keep the menu inside the viewport for rows near the bottom of the table.
+                        const menuH = EPAY_ACTIONS.length * 40 + 8;
+                        const top = Math.max(8, Math.min(r.top, window.innerHeight - menuH - 8));
+                        setFlyoutPos({ top, left: r.left - FLYOUT_W - 6 });
+                        setOpenFlyout(i);
+                      }}
                       className="size-[32px] rounded-full flex items-center justify-center hover:bg-[#e2ebf9] transition-colors"
                     >
                       <svg viewBox="0 0 20 20" width="18" height="18" fill="#697498">
@@ -262,10 +291,11 @@ export default function EPaymentsTable({
                       </svg>
                     </button>
 
-                    {openFlyout === i && (
+                    {openFlyout === i && flyoutPos && createPortal(
                       <div
-                        className="absolute z-[100] right-0 bg-white rounded-[8px] py-[4px] overflow-hidden"
-                        style={{ top: 36, width: 230, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}
+                        ref={flyoutRef}
+                        className="fixed z-[1000] bg-white rounded-[8px] py-[4px] overflow-hidden"
+                        style={{ top: flyoutPos.top, left: flyoutPos.left, width: FLYOUT_W, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}
                       >
                         {EPAY_ACTIONS.map((item) => (
                           <button
@@ -277,7 +307,8 @@ export default function EPaymentsTable({
                             <span className="text-[16px] text-[#111838] group-hover:text-white" style={{ fontFamily: font }}>{item.label}</span>
                           </button>
                         ))}
-                      </div>
+                      </div>,
+                      document.body
                     )}
                   </div>
                 </td>
