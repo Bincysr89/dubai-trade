@@ -139,7 +139,7 @@ function TwoFieldSearchPopup<T extends Record<string, string>>({
         </div>
         <div className="flex gap-[10px] mt-[14px]">
           <button type="button" onClick={() => { setQ1(''); setQ2(''); }}
-            className="h-[44px] px-[20px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Reset</button>
+            data-secondary-btn className="h-[44px] px-[20px] rounded-[4px] border text-[16px] bg-white" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Reset</button>
         </div>
       </div>
       <div>

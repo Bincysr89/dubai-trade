@@ -220,7 +220,7 @@ function BusinessCodeModal({ open, onClose, onSelect, title }: {
               className="flex-1 text-[16px] text-[#0e1b3d] outline-none bg-transparent"
               style={{ fontFamily: "'Dubai', sans-serif", opacity: query ? 1 : 0.5 }} />
           </div>
-          <button className="border border-[#1360d2] rounded-[4px] px-[32px] py-[12px] text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors flex-shrink-0"
+          <button data-secondary-btn className="border border-[#1360d2] rounded-[4px] px-[32px] py-[12px] text-[16px] text-[#1360d2] transition-colors flex-shrink-0"
             style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
             Search
           </button>
@@ -342,7 +342,7 @@ function PremisesCodeModal({ open, onClose, onSelect, title }: {
               className="flex-1 text-[16px] text-[#0e1b3d] outline-none bg-transparent"
               style={{ fontFamily: "'Dubai', sans-serif", opacity: query ? 1 : 0.5 }} />
           </div>
-          <button className="border border-[#1360d2] rounded-[4px] px-[32px] py-[12px] text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors flex-shrink-0"
+          <button data-secondary-btn className="border border-[#1360d2] rounded-[4px] px-[32px] py-[12px] text-[16px] text-[#1360d2] transition-colors flex-shrink-0"
             style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
             Search
           </button>

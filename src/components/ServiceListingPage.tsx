@@ -344,7 +344,7 @@ export default function ServiceListingPage({
                   Search
                 </button>
                 <button onClick={resetAF}
-                  className="h-[44px] px-5 rounded-[4px] border border-[#1360d2] text-[15px] text-[#1360d2] bg-white hover:bg-[#f0f4ff]"
+                  data-secondary-btn className="h-[44px] px-5 rounded-[4px] border border-[#1360d2] text-[15px] text-[#1360d2] bg-white"
                   style={{ fontFamily: font }}>
                   Reset
                 </button>

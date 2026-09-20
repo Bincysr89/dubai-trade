@@ -1317,7 +1317,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             style={{ height: 68, boxShadow: '0px -4px 12px rgba(0,0,0,0.08)' }}>
             <button
               onClick={() => setStep('list')}
-              className="h-[44px] px-8 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] transition-colors flex items-center gap-2"
+              data-secondary-btn className="h-[44px] px-8 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white transition-colors flex items-center gap-2"
               style={{ fontFamily: font }}
             >
               <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5l-5 5 5 5" strokeLinecap="round" /></svg>
@@ -1430,9 +1430,9 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               >
                 View &amp; Print Receipt
               </button>
-              <button
+              <button data-secondary-btn
                 onClick={() => { setStep('list'); setSelectedRows(new Set()); }}
-                className="h-[44px] px-8 rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors"
+                className="h-[44px] px-8 rounded-[4px] border text-[16px] bg-white transition-colors"
                 style={{ border: '1px solid #1360d2', color: '#1360d2', fontFamily: font }}
               >
                 Back to Listing
@@ -1613,7 +1613,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             style={{ height: 68, boxShadow: '0px -4px 12px rgba(0,0,0,0.08)' }}>
             <button
               onClick={() => setAccView('list')}
-              className="h-[44px] px-8 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] transition-colors flex items-center gap-2"
+              data-secondary-btn className="h-[44px] px-8 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white transition-colors flex items-center gap-2"
               style={{ fontFamily: font }}
             >
               <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5l-5 5 5 5" strokeLinecap="round" /></svg>
@@ -1662,7 +1662,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               </p>
               <div className="flex gap-[12px] w-full">
                 <button onClick={() => setShowAccInsufficient(false)}
-                  className="flex-1 h-[44px] rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] transition-colors"
+                  data-secondary-btn className="flex-1 h-[44px] rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white transition-colors"
                   style={{ fontFamily: font }}>Go Back</button>
                 <button onClick={() => setShowAccInsufficient(false)}
                   className="flex-1 h-[44px] rounded-[4px] text-[16px] text-white hover:opacity-90 transition-opacity"
@@ -1795,7 +1795,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             style={{ height: 68, boxShadow: '0px -4px 12px rgba(0,0,0,0.08)' }}>
             <button
               onClick={() => { setAccView('list'); setSelectedAccs(new Set()); setAccPayAmounts({}); }}
-              className="h-[44px] px-8 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] transition-colors flex items-center gap-2"
+              data-secondary-btn className="h-[44px] px-8 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white transition-colors flex items-center gap-2"
               style={{ fontFamily: font }}
             >
               <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5l-5 5 5 5" strokeLinecap="round" /></svg>
@@ -1931,7 +1931,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                   </button>
                   <button
                     onClick={() => setShowAccReceipt(false)}
-                    className="h-[44px] px-8 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] transition-colors flex items-center gap-2"
+                    data-secondary-btn className="h-[44px] px-8 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white transition-colors flex items-center gap-2"
                     style={{ fontFamily: font }}
                   >
                     ✕ Close
@@ -2107,7 +2107,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             </div>
             <button className="h-[56px] px-6 rounded-[4px] text-[16px] text-white flex-shrink-0" style={{ background: '#1360d2', fontFamily: font }}>Search</button>
             <button onClick={() => { setFFromDate(''); setFToDate(''); setFSource(''); setFInvType(''); setFInvNumber(''); setFStatuses(new Set()); setFDueFilter(''); }}
-              className="h-[56px] px-6 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] flex-shrink-0" style={{ fontFamily: font }}>Reset</button>
+              data-secondary-btn className="h-[56px] px-6 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white flex-shrink-0" style={{ fontFamily: font }}>Reset</button>
           </div>
         </div>
       )}
@@ -2365,7 +2365,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
         <div className="relative flex-shrink-0" ref={payExportRef}>
           <button
             onClick={() => setPayExportOpen(o => !o)}
-            className="h-[48px] px-[16px] flex items-center gap-2 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] transition-colors"
+            data-secondary-btn className="h-[48px] px-[16px] flex items-center gap-2 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white transition-colors"
             style={{ fontFamily: font }}
           >
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -2434,7 +2434,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             </div>
             <button className="h-[56px] px-6 rounded-[4px] text-[16px] text-white flex-shrink-0" style={{ background: '#1360d2', fontFamily: font }}>Search</button>
             <button onClick={() => { setPayFromDate('2026-06-09'); setPayToDate('2026-06-10'); setPayDateFilterType(''); setPayStatusFilter(''); setPaySearchValue(''); }}
-              className="h-[56px] px-6 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] flex-shrink-0" style={{ fontFamily: font }}>Reset</button>
+              data-secondary-btn className="h-[56px] px-6 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white flex-shrink-0" style={{ fontFamily: font }}>Reset</button>
           </div>
         </div>
       )}
@@ -3786,7 +3786,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             {/* Modal footer */}
             <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#e0e8f5] bg-[#f8fafd]">
               <button onClick={() => { setShowStmtModal(false); setStmtAccount(''); setStmtAccSearch(''); setStmtRangeError(false); }}
-                className="h-[44px] px-6 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white hover:bg-[#f0f4ff]" style={{ fontFamily: font }}>
+                data-secondary-btn className="h-[44px] px-6 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white" style={{ fontFamily: font }}>
                 Cancel
               </button>
               <button

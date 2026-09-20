@@ -161,8 +161,8 @@ export default function AuctionClaimDetailsPage({ rows, onBack, onBackToListing,
         rightContent={
           <div className="flex items-center gap-[12px]">
             {!hideSaveExit && (
-              <button onClick={() => setShowSaveModal(true)}
-                className="h-[48px] px-[28px] rounded-[4px] border bg-white text-[16px] hover:bg-[#f0f4ff] transition-colors"
+              <button data-secondary-btn onClick={() => setShowSaveModal(true)}
+                className="h-[48px] px-[28px] rounded-[4px] border bg-white text-[16px] transition-colors"
                 style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
                 Save &amp; Exit
               </button>

@@ -142,8 +142,8 @@ export default function CarrierMovementViewPage({ row, onBack, onBackToListing }
               <p className="text-[16px] text-[#455174]" style={{ lineHeight: 1.4 }}>Flight Number: {str(row.flightNo)}</p>
             </div>
             <div className="flex gap-[12px]">
-              <button onClick={() => setConfirmOpen(false)}
-                className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors"
+              <button data-secondary-btn onClick={() => setConfirmOpen(false)}
+                className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white transition-colors"
                 style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>
                 Back
               </button>

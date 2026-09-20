@@ -298,9 +298,9 @@ export default function ManageColumnsModal({ columns, visible, lockedColumns = [
             Reset to default
           </button>
           <div className="flex items-center gap-[12px]">
-            <button
+            <button data-secondary-btn
               onClick={onClose}
-              className="hover:bg-[#f0f4ff] transition-colors"
+              className="transition-colors"
               style={{ height: 44, padding: '0 24px', borderRadius: 4, border: '1.5px solid #1360D2', background: '#fff', color: '#1360D2', fontFamily: font, fontSize: 16, fontWeight: 500, cursor: 'pointer' }}
             >
               Cancel

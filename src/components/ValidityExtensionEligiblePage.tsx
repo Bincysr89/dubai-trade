@@ -311,9 +311,9 @@ export default function ValidityExtensionEligiblePage({ onBack, onBackToListing,
       </div>
 
       <div className="flex-shrink-0 bg-white px-4 sm:px-10 py-[16px] flex items-center justify-between gap-[12px]" style={{ boxShadow: '0px -2px 8px rgba(0,0,0,0.08)' }}>
-        <button
+        <button data-secondary-btn
           onClick={onBackToListing}
-          className="h-[48px] px-[28px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
+          className="h-[48px] px-[28px] rounded-[4px] border text-[16px] transition-colors"
           style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
         >
           Back To Listing

@@ -431,7 +431,7 @@ export default function PermitsCertificatesPage({ onClose, createPrefill }: Prop
                 <AFDate     label="To Date"              value={afDateTo}    onChange={setAfDateTo} />
                 <div className="flex gap-2 self-end">
                   <button onClick={resetAF}
-                    className="h-[44px] px-5 rounded-[4px] border border-[#1360d2] text-[15px] text-[#1360d2] bg-white hover:bg-[#f0f4ff]"
+                    data-secondary-btn className="h-[44px] px-5 rounded-[4px] border border-[#1360d2] text-[15px] text-[#1360d2] bg-white"
                     style={{ fontFamily: font }}>Reset</button>
                   <button className="h-[44px] px-5 rounded-[4px] text-[15px] text-white"
                     style={{ background: '#1360d2', fontFamily: font }}>Apply</button>

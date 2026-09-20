@@ -149,7 +149,7 @@ function ListStep({ config, onClose, onStart }: { config: PermitServiceConfig; o
               {config.filters.map((f) => (<Field key={f.label} label={f.label} type={f.type ?? 'select'} onChange={() => {}} value="" />))}
             </div>
             <div className="flex items-center justify-end gap-[12px]">
-              <button className="h-[44px] px-[26px] rounded-[4px] border text-[15px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Reset</button>
+              <button data-secondary-btn className="h-[44px] px-[26px] rounded-[4px] border text-[15px] bg-white" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Reset</button>
               <button className="h-[44px] px-[30px] rounded-[4px] text-[15px] text-white hover:bg-[#0f4fb5]" style={{ background: '#1360d2', fontWeight: 500 }}>Apply</button>
             </div>
           </Card>
@@ -215,7 +215,7 @@ function ListStep({ config, onClose, onStart }: { config: PermitServiceConfig; o
       </div>
 
       <div className="flex-shrink-0 bg-white px-4 md:px-10 py-[16px]" style={{ boxShadow: '0px -2px 8px rgba(0,0,0,0.06)' }}>
-        <button onClick={onClose} className="h-[46px] px-[28px] rounded-[4px] border text-[15px] hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Back</button>
+        <button onClick={onClose} data-secondary-btn className="h-[46px] px-[28px] rounded-[4px] border text-[15px]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Back</button>
       </div>
     </>
   );
@@ -281,7 +281,7 @@ function FormStep({ config, onBack, onProceed }: { config: PermitServiceConfig; 
       </div>
 
       <div className="flex-shrink-0 bg-white px-4 md:px-10 py-[16px]" style={{ boxShadow: '0px -2px 8px rgba(0,0,0,0.06)' }}>
-        <button onClick={onBack} className="h-[46px] px-[28px] rounded-[4px] border text-[15px] hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Back</button>
+        <button onClick={onBack} data-secondary-btn className="h-[46px] px-[28px] rounded-[4px] border text-[15px]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Back</button>
       </div>
     </>
   );
@@ -327,9 +327,9 @@ function ProceedStep({ config, onBack, onSubmit }: { config: PermitServiceConfig
       </div>
 
       <div className="flex-shrink-0 bg-white px-4 md:px-10 py-[16px] flex items-center justify-between gap-[12px]" style={{ boxShadow: '0px -2px 8px rgba(0,0,0,0.06)' }}>
-        <button onClick={onBack} className="h-[46px] px-[28px] rounded-[4px] border text-[15px] hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Back to Listing</button>
+        <button onClick={onBack} data-secondary-btn className="h-[46px] px-[28px] rounded-[4px] border text-[15px]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Back to Listing</button>
         <div className="flex items-center gap-[12px]">
-          <button className="h-[46px] px-[24px] rounded-[4px] border text-[15px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Save as Drafts</button>
+          <button data-secondary-btn className="h-[46px] px-[24px] rounded-[4px] border text-[15px] bg-white" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Save as Drafts</button>
           <button onClick={onSubmit} className="h-[46px] px-[36px] rounded-[4px] text-[15px] text-white hover:bg-[#0f4fb5]" style={{ background: '#1360d2', fontWeight: 500 }}>Submit</button>
         </div>
       </div>
@@ -364,13 +364,13 @@ function SuccessStep({ config, onBackToPermits, onBackToListing, onBack }: { con
             <span className="border border-[#ebebeb] rounded-[6px] px-[16px] py-[9px] text-[14px] text-[#5a6282]">DT Reference number: <span className="text-[#1360d2] font-medium">12345678</span></span>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-[14px] mt-[6px]">
-            <button onClick={onBackToPermits} className="h-[48px] px-[28px] rounded-[4px] border text-[15px] hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Back To Permits</button>
+            <button onClick={onBackToPermits} data-secondary-btn className="h-[48px] px-[28px] rounded-[4px] border text-[15px]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Back To Permits</button>
             <button onClick={onBackToListing} className="h-[48px] px-[32px] rounded-[4px] text-[15px] text-white hover:bg-[#0f4fb5]" style={{ background: '#1360d2', fontWeight: 500 }}>Back To Listing</button>
           </div>
         </Card>
       </div>
       <div className="flex-shrink-0 bg-white px-4 md:px-10 py-[16px]" style={{ boxShadow: '0px -2px 8px rgba(0,0,0,0.06)' }}>
-        <button onClick={onBack} className="h-[46px] px-[28px] rounded-[4px] border text-[15px] hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Back</button>
+        <button onClick={onBack} data-secondary-btn className="h-[46px] px-[28px] rounded-[4px] border text-[15px]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Back</button>
       </div>
     </>
   );

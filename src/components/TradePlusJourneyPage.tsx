@@ -240,7 +240,7 @@ function RequestStep({ onClose, onStart }: { onClose: () => void; onStart: () =>
         </div>
       </div>
       <div className="flex-shrink-0 bg-white px-4 md:px-10 py-[16px]" style={{ boxShadow: '0px -2px 8px rgba(0,0,0,0.06)' }}>
-        <button onClick={onClose} className="h-[46px] px-[28px] rounded-[4px] border text-[15px] hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Back To Listing</button>
+        <button onClick={onClose} data-secondary-btn className="h-[46px] px-[28px] rounded-[4px] border text-[15px]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Back To Listing</button>
       </div>
     </>
   );
@@ -285,11 +285,11 @@ function FormStep({ onBack, onSubmit }: { onBack: () => void; onSubmit: () => vo
       </div>
       <div className="flex-shrink-0 bg-white px-4 md:px-10 py-[16px] flex items-center justify-between gap-[12px]" style={{ boxShadow: '0px -2px 8px rgba(0,0,0,0.06)' }}>
         <div className="flex items-center gap-[16px]">
-          <button onClick={onBack} className="h-[46px] px-[28px] rounded-[4px] border text-[15px] hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Back</button>
+          <button onClick={onBack} data-secondary-btn className="h-[46px] px-[28px] rounded-[4px] border text-[15px]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Back</button>
           <label className="flex items-center gap-[8px] text-[14px] text-[#0e1b3d] cursor-pointer"><span className="size-[18px] rounded-[4px] border border-[#c3cbe0]" />Accept <span className="text-[#1360d2] underline">Terms & Conditions</span></label>
         </div>
         <div className="flex items-center gap-[12px]">
-          <button className="h-[46px] px-[24px] rounded-[4px] border text-[15px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Save &amp; Exit</button>
+          <button data-secondary-btn className="h-[46px] px-[24px] rounded-[4px] border text-[15px] bg-white" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Save &amp; Exit</button>
           <button onClick={onSubmit} className="h-[46px] px-[36px] rounded-[4px] text-[15px] text-white hover:bg-[#0f4fb5]" style={{ background: '#1360d2', fontWeight: 500 }}>Submit</button>
         </div>
       </div>
@@ -311,13 +311,13 @@ function SuccessStep({ onBackToListing, onContinue }: { onBackToListing: () => v
           <p className="text-[17px] text-[#0e1b3d]" style={{ fontWeight: 600 }}>AEJEA - 2402- B23017</p>
         </div>
         <div className="flex items-center gap-[14px]">
-          <button className="h-[44px] px-[24px] rounded-[4px] border text-[15px] flex items-center gap-[8px] hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Download <svg viewBox="0 0 24 24" className="size-[16px]" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 3v12M7 10l5 5 5-5M5 21h14" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
-          <button className="h-[44px] px-[24px] rounded-[4px] border text-[15px] flex items-center gap-[8px] hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Share <svg viewBox="0 0 24 24" className="size-[16px]" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" /></svg></button>
+          <button data-secondary-btn className="h-[44px] px-[24px] rounded-[4px] border text-[15px] flex items-center gap-[8px]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Download <svg viewBox="0 0 24 24" className="size-[16px]" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 3v12M7 10l5 5 5-5M5 21h14" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
+          <button data-secondary-btn className="h-[44px] px-[24px] rounded-[4px] border text-[15px] flex items-center gap-[8px]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Share <svg viewBox="0 0 24 24" className="size-[16px]" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" /></svg></button>
         </div>
       </Card>
 
       <div className="flex items-center justify-between gap-[12px] bg-white px-4 md:px-6 py-[16px] rounded-[8px] mt-[16px]" style={{ boxShadow: '0px -2px 8px rgba(0,0,0,0.06)' }}>
-        <button onClick={onBackToListing} className="h-[46px] px-[28px] rounded-[4px] border text-[15px] hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Back To Listing</button>
+        <button onClick={onBackToListing} data-secondary-btn className="h-[46px] px-[28px] rounded-[4px] border text-[15px]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Back To Listing</button>
         <button onClick={onContinue} className="h-[46px] px-[28px] rounded-[4px] text-[15px] text-white hover:bg-[#0f4fb5]" style={{ background: '#1360d2', fontWeight: 500 }}>Continue To Integrated Clearance</button>
       </div>
     </div>

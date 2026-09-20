@@ -620,7 +620,7 @@ export default function CargoInspectionPage({ onBack }: { onBack: () => void }) 
               <DateInput label="From date" value={afFromDate} onChange={setAfFromDate} />
               <DateInput label="To date" value={afToDate} onChange={setAfToDate} />
               <div className="flex items-center gap-[10px]">
-                <button onClick={resetFilters} className="h-[56px] px-5 rounded-[4px] border border-[#1360d2] text-[15px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] flex-shrink-0" style={{ fontFamily: font }}>Reset</button>
+                <button onClick={resetFilters} data-secondary-btn className="h-[56px] px-5 rounded-[4px] border border-[#1360d2] text-[15px] text-[#1360d2] bg-white flex-shrink-0" style={{ fontFamily: font }}>Reset</button>
                 <button onClick={applyFilters} className="h-[56px] px-5 rounded-[4px] text-[15px] text-white flex-shrink-0" style={{ background: '#1360d2', fontFamily: font }}>Apply</button>
               </div>
             </div>
@@ -724,7 +724,7 @@ export default function CargoInspectionPage({ onBack }: { onBack: () => void }) 
               <p className="text-[16px] text-[#455174]" style={{ lineHeight: 1.4 }}>Booking Ref. No {cancelTarget.bookingRefNo} will be marked as Cancelled.</p>
             </div>
             <div className="flex gap-[12px]">
-              <button onClick={() => setCancelTarget(null)} className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Keep Request</button>
+              <button onClick={() => setCancelTarget(null)} data-secondary-btn className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Keep Request</button>
               <button onClick={() => { setRows(rs => rs.map(r => r.bookingRefNo === cancelTarget.bookingRefNo ? { ...r, status: 'Cancelled', subStatus: 'Rejected' } : r)); setCancelTarget(null); }}
                 className="h-[48px] px-[36px] rounded-[4px] text-[16px] text-white" style={{ background: '#1360d2', fontWeight: 500 }}>Yes, Cancel</button>
             </div>
@@ -821,7 +821,7 @@ export default function CargoInspectionPage({ onBack }: { onBack: () => void }) 
               <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>
                 Selected: <span style={{ color: '#1360d2', fontWeight: 600 }}>{selectedDeclNos.size}</span>
               </span>
-              <button type="button" onClick={scrollToSelectedDecl} className="h-[32px] px-[14px] rounded-[4px] text-[14px] bg-white hover:bg-[#f0f4ff] transition-colors"
+              <button data-secondary-btn type="button" onClick={scrollToSelectedDecl} className="h-[32px] px-[14px] rounded-[4px] text-[14px] bg-white transition-colors"
                 style={{ border: '1.5px solid #1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>
                 View Selected
               </button>

@@ -275,15 +275,15 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
 
       {/* Bottom bar */}
       <div className="flex-shrink-0 bg-white px-4 sm:px-10 py-[16px] flex items-center justify-between gap-[12px]" style={{ boxShadow: '0px -2px 8px rgba(0,0,0,0.08)' }}>
-        <button onClick={onBack}
-          className="h-[48px] px-[28px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
+        <button data-secondary-btn onClick={onBack}
+          className="h-[48px] px-[28px] rounded-[4px] border text-[16px] transition-colors"
           style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
           Back
         </button>
         <div className="flex items-center gap-[12px]">
           {!hideSaveExit && (
-            <button onClick={() => setShowSaveModal(true)}
-              className="h-[48px] px-[28px] rounded-[4px] border bg-white text-[16px] hover:bg-[#f0f4ff] transition-colors"
+            <button data-secondary-btn onClick={() => setShowSaveModal(true)}
+              className="h-[48px] px-[28px] rounded-[4px] border bg-white text-[16px] transition-colors"
               style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
               Save &amp; Exit
             </button>
@@ -316,8 +316,8 @@ export default function NonRemittanceChargesPage({ onBack, onBackToListing, onCo
               </p>
             </div>
             <div className="flex gap-[12px]">
-              <button onClick={() => { setInsufficientOpen(false); setPaymentRef(''); }}
-                className="h-[48px] px-[28px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors"
+              <button data-secondary-btn onClick={() => { setInsufficientOpen(false); setPaymentRef(''); }}
+                className="h-[48px] px-[28px] rounded-[4px] border text-[16px] bg-white transition-colors"
                 style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>
                 Go Back
               </button>

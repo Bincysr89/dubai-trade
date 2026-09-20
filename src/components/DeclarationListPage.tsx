@@ -1818,7 +1818,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
             {activeMenu === 'Cargo Transfer' && activeTab !== 'epay' && (
               <button
                 onClick={() => setCargoStep('receiptRelease')}
-                className="h-[48px] px-[22px] rounded-[4px] text-[16px] flex-shrink-0 border border-[#1360d2] text-[#1360d2] bg-white hover:bg-[#f0f4ff] transition-colors"
+                data-secondary-btn className="h-[48px] px-[22px] rounded-[4px] text-[16px] flex-shrink-0 border border-[#1360d2] text-[#1360d2] bg-white transition-colors"
                 style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}
               >
                 Cargo Release/Receipt
@@ -1829,7 +1829,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
             {activeMenu === 'Refund & Claims' && (
               <button
                 onClick={() => setClaimStep('declStatusExpiry')}
-                className="h-[48px] px-[22px] rounded-[4px] text-[16px] flex-shrink-0 border border-[#1360d2] text-[#1360d2] bg-white hover:bg-[#f0f4ff] transition-colors"
+                data-secondary-btn className="h-[48px] px-[22px] rounded-[4px] text-[16px] flex-shrink-0 border border-[#1360d2] text-[#1360d2] bg-white transition-colors"
                 style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}
               >
                 Declaration Status Expiry
@@ -2556,8 +2556,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
 
               {/* Reset + Apply — inline in the grid, immediately after the last filter field */}
               <div className="flex items-center gap-[12px] h-[56px]">
-                <button
-                  className="h-[48px] flex-1 rounded-[4px] text-[16px] font-medium transition-colors hover:bg-[#f0f4ff]"
+                <button data-secondary-btn
+                  className="h-[48px] flex-1 rounded-[4px] text-[16px] font-medium transition-colors"
                   style={{ border: '1.5px solid #2950e5', color: '#2950e5', fontFamily: "'Dubai', sans-serif" }}
                 >
                   Reset

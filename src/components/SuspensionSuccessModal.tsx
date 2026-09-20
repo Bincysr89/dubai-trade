@@ -46,7 +46,7 @@ export default function SuspensionSuccessModal({ onClose, onBackToListing }: Pro
         <div className="flex items-center gap-[20px]">
           <button
             onClick={onClose}
-            className="h-[48px] px-[20px] rounded-[4px] text-[16px] uppercase text-[#1360d2] border border-[#1360d2] hover:bg-[#f0f4ff] transition-colors"
+            data-secondary-btn className="h-[48px] px-[20px] rounded-[4px] text-[16px] uppercase text-[#1360d2] border border-[#1360d2] transition-colors"
             style={{ fontFamily: font, minWidth: 128 }}
           >
             Close

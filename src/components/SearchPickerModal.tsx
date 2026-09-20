@@ -67,7 +67,7 @@ export default function SearchPickerModal({
           </div>
           <button
             onClick={() => { setHasSearched(true); setPage(1); }}
-            className="border border-[#1360d2] rounded-[4px] px-[32px] text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors"
+            data-secondary-btn className="border border-[#1360d2] rounded-[4px] px-[32px] text-[16px] text-[#1360d2] transition-colors"
             style={{ height: 48, fontFamily: "'Dubai', sans-serif", fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}
           >
             Search

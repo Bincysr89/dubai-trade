@@ -112,9 +112,9 @@ const SaveExitBtn = ({ onBackToListing }: { onBackToListing?: () => void }) => {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <button
+      <button data-secondary-btn
         onClick={() => setOpen(true)}
-        className="h-[48px] px-[28px] rounded-[4px] text-[16px] bg-white transition-colors hover:bg-[#f0f4ff]"
+        className="h-[48px] px-[28px] rounded-[4px] text-[16px] bg-white transition-colors"
         style={{ border: '1.5px solid #1360d2', color: '#1360d2', fontWeight: 500, fontFamily: "'Dubai', sans-serif" }}
       >
         Save &amp; Exit
@@ -1578,8 +1578,8 @@ function OutboundModal({
 
         {/* Footer */}
         <div className="flex items-center justify-end gap-[12px] px-[24px] py-[16px] flex-shrink-0" style={{ borderTop: '1px solid #eef1f6' }}>
-          <button type="button" onClick={onClose}
-            className="h-[40px] px-[20px] rounded-[4px] border text-[15px] hover:bg-[#f0f4ff] transition-colors"
+          <button data-secondary-btn type="button" onClick={onClose}
+            className="h-[40px] px-[20px] rounded-[4px] border text-[15px] transition-colors"
             style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
             Close
           </button>
@@ -2376,9 +2376,9 @@ export function RDReviewPage({
             <h1 className="text-[32px] text-[#111838]" style={{ fontWeight: 500 }}>Raise New Claim - Refund of Deposits</h1>
             <span className="text-[14px] px-[10px] py-[3px] rounded-[4px]" style={{ background: 'rgba(19,96,210,0.10)', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap' }}>Refund of Deposits</span>
           </div>
-          <button
+          <button data-secondary-btn
             onClick={() => onViewClaim?.()}
-            className="h-[40px] px-[20px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
+            className="h-[40px] px-[20px] rounded-[4px] border text-[16px] transition-colors"
             style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}
           >
             View Claim

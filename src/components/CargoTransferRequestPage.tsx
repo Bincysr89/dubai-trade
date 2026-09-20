@@ -282,7 +282,7 @@ function AddPackageModal({
         </div>
 
         <div className="flex gap-[8px] justify-end">
-          <button onClick={onClose} className="flex-1 border border-[#1360d2] rounded-[4px] py-[12px] text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>Cancel</button>
+          <button onClick={onClose} data-secondary-btn className="flex-1 border border-[#1360d2] rounded-[4px] py-[12px] text-[16px] text-[#1360d2] transition-colors" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>Cancel</button>
           <button
             onClick={() => { if (count && type) { onAdd({ count, type, marks }); setCount(''); setType(''); setMarks(''); onClose(); } }}
             disabled={!count || !type}
@@ -402,7 +402,7 @@ function ContainerPackageDetails({ containers, setContainers, packages, setPacka
           <div style={{ width: 280 }}>
             <FloatingField label="Enter Container No." required placeholder="Container No." value={containerInput} onChange={setContainerInput} />
           </div>
-          <button onClick={addContainer} className="border border-[#1360d2] rounded-[3px] px-[12px] py-[10px] inline-flex items-center gap-[4px] text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, height: 56 }}>
+          <button onClick={addContainer} data-secondary-btn className="border border-[#1360d2] rounded-[3px] px-[12px] py-[10px] inline-flex items-center gap-[4px] text-[16px] text-[#1360d2] transition-colors" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, height: 56 }}>
             <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M10 4v12M4 10h12" /></svg>
             Add
           </button>
@@ -432,7 +432,7 @@ function ContainerPackageDetails({ containers, setContainers, packages, setPacka
       <div className="bg-white rounded-[8px] p-[20px] flex flex-col gap-[16px]" style={{ boxShadow: '1px 2px 12px rgba(0,0,0,0.06)' }}>
         <div className="flex items-center justify-between">
           <p className="text-[18px] text-[#051937]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Package Details</p>
-          <button onClick={() => setShowPackageModal(true)} className="border border-[#1360d2] rounded-[4px] px-[16px] py-[8px] inline-flex items-center gap-[8px] text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
+          <button onClick={() => setShowPackageModal(true)} data-secondary-btn className="border border-[#1360d2] rounded-[4px] px-[16px] py-[8px] inline-flex items-center gap-[8px] text-[16px] text-[#1360d2] transition-colors" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>
             <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M10 4v12M4 10h12" /></svg>
             Add Package Details
           </button>
@@ -681,7 +681,7 @@ function SubmitSummaryModal({ open, onClose, onConfirm }: { open: boolean; onClo
           </div>
         </div>
         <div className="bg-white px-[24px] py-[16px] flex justify-end gap-[12px]" style={{ borderTop: '1px solid #e2ebf9' }}>
-          <button onClick={onClose} className="h-[48px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#f0f4ff]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Back</button>
+          <button onClick={onClose} data-secondary-btn className="h-[48px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Back</button>
           <button onClick={onConfirm} className="h-[48px] px-[40px] rounded-[4px] bg-[#1360d2] text-white text-[16px] hover:bg-[#0E4DB8]" style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}>Submit</button>
         </div>
       </div>
@@ -752,7 +752,7 @@ export default function CargoTransferRequestPage({ onBack, onSubmit, mode = 'cre
       <div className="bg-white px-4 sm:px-10 py-[20px] flex items-center justify-between flex-shrink-0" style={{ boxShadow: '0px -1px 20px rgba(0,0,0,0.08)', position: 'sticky', bottom: 0, zIndex: 10 }}>
         <button
           onClick={() => stepIdx === 0 ? onBack() : setStepIdx((i) => i - 1)}
-          className="h-[48px] px-[20px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#f0f4ff]"
+          data-secondary-btn className="h-[48px] px-[20px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2]"
           style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}
         >
           Back

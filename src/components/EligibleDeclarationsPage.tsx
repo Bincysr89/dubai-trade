@@ -118,7 +118,7 @@ function OutboundDeclarationModal({
         <div className="border-t border-[#eef1f6] px-[28px] py-[16px] flex items-center justify-end gap-[12px]">
           <button
             onClick={onClose}
-            className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors"
+            data-secondary-btn className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] transition-colors"
             style={{ fontWeight: 500 }}
           >
             Cancel
@@ -249,7 +249,7 @@ function MissingDocDepositModal({
           </div>
         </div>
         <div className="border-t border-[#eef1f6] px-[28px] py-[16px] flex items-center justify-end gap-[12px]">
-          <button onClick={onClose} className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#f0f4ff]" style={{ fontWeight: 500 }}>Cancel</button>
+          <button onClick={onClose} data-secondary-btn className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2]" style={{ fontWeight: 500 }}>Cancel</button>
           <button
             onClick={() => onSubmit({ refundAmount, currency, depositMethod: depositMethod as DepositMethod, remarks })}
             className="h-[44px] px-[24px] rounded-[4px] text-[16px] text-white"
@@ -418,7 +418,7 @@ function PartialExportInvoiceModal({
           </div>
         </div>
         <div className="border-t border-[#eef1f6] px-[28px] py-[16px] flex items-center justify-end gap-[12px]">
-          <button onClick={onClose} className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#f0f4ff]" style={{ fontWeight: 500 }}>Cancel</button>
+          <button onClick={onClose} data-secondary-btn className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2]" style={{ fontWeight: 500 }}>Cancel</button>
           <button
             onClick={() => {
               onSubmit({
@@ -477,7 +477,7 @@ function RefundTypeModal({ open, onClose, onContinue }: { open: boolean; onClose
             })}
           </div>
           <div className="flex items-center justify-end gap-[12px] pt-[8px]">
-            <button onClick={onClose} className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors" style={{ fontWeight: 500 }}>Cancel</button>
+            <button onClick={onClose} data-secondary-btn className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] transition-colors" style={{ fontWeight: 500 }}>Cancel</button>
             <button
               onClick={() => onContinue(selected as RefundType)}
               className="h-[44px] px-[24px] rounded-[4px] text-[16px] text-white transition-colors"
@@ -999,10 +999,10 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
                     <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#6d707e" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" /></svg>
                   </div>
                   <p className="text-[15px] text-[#6d707e]" style={{ fontFamily: "'Dubai', sans-serif" }}>Drag and drop or</p>
-                  <button
+                  <button data-secondary-btn
                     type="button"
                     onClick={() => acceptUpload('declarations.txt')}
-                    className="h-[42px] px-[22px] rounded-[4px] border text-[15px] bg-white hover:bg-[#f0f4ff] transition-colors"
+                    className="h-[42px] px-[22px] rounded-[4px] border text-[15px] bg-white transition-colors"
                     style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: "'Dubai', sans-serif" }}
                   >
                     Upload File
@@ -1025,10 +1025,10 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
                     {filtered.length} declaration{filtered.length === 1 ? '' : 's'} found — select the ones to add
                   </span>
                 </div>
-                <button
+                <button data-secondary-btn
                   type="button"
                   onClick={() => setUploaderOpen(true)}
-                  className="ml-auto h-[38px] px-[16px] rounded-[4px] border text-[14px] bg-white hover:bg-[#f0f4ff] transition-colors flex-shrink-0"
+                  className="ml-auto h-[38px] px-[16px] rounded-[4px] border text-[14px] bg-white transition-colors flex-shrink-0"
                   style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: "'Dubai', sans-serif" }}
                 >
                   Upload Another File
@@ -1332,10 +1332,10 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
                         <span className="text-[16px] text-[#697498]" style={{ fontFamily: "'Dubai', sans-serif" }}>
                           Selected: <span style={{ color: '#1360d2', fontWeight: 600 }}>{selectedDecls.size}</span>
                         </span>
-                        <button
+                        <button data-secondary-btn
                           type="button"
                           onClick={scrollToSelected}
-                          className="h-[32px] px-[14px] rounded-[4px] text-[14px] bg-white hover:bg-[#f0f4ff] transition-colors"
+                          className="h-[32px] px-[14px] rounded-[4px] text-[14px] bg-white transition-colors"
                           style={{ border: '1.5px solid #1360d2', color: '#1360d2', fontWeight: 500, fontFamily: "'Dubai', sans-serif", cursor: 'pointer' }}
                         >
                           View Selected
@@ -1640,8 +1640,8 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
                 <p className="text-[16px] text-[#697498]" style={{ lineHeight: 1.4 }}>This declaration will be removed from your selected list.</p>
               </div>
               <div className="flex gap-[12px]">
-                <button onClick={() => setConfirmRemoveDecl(null)}
-                  className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors"
+                <button data-secondary-btn onClick={() => setConfirmRemoveDecl(null)}
+                  className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white transition-colors"
                   style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>
                   No
                 </button>
@@ -1675,9 +1675,9 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
                   {selectedRows.length} declaration{selectedRows.length !== 1 ? 's' : ''} selected
                 </span>
               )}
-              <button
+              <button data-secondary-btn
                 onClick={() => setShowSaveModal(true)}
-                className="h-[48px] px-[28px] rounded-[4px] text-[16px] bg-white transition-colors hover:bg-[#f0f4ff]"
+                className="h-[48px] px-[28px] rounded-[4px] text-[16px] bg-white transition-colors"
                 style={{ border: '1.5px solid #1360d2', color: '#1360d2', fontWeight: 500, fontFamily: "'Dubai', sans-serif" }}
               >
                 Save &amp; Exit

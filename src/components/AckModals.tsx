@@ -44,7 +44,7 @@ export const AckAcceptConfirmModal: React.FC<AcceptProps> = ({ open, count, onCl
           <span className="text-[16px] text-[#455174]" style={{ lineHeight: 1.4 }}>I/We hereby confirm the transfer of goods as described in the selected declaration's</span>
         </label>
         <div className="flex items-center gap-[12px]">
-          <button onClick={onClose} className="h-[44px] px-[28px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors" style={{ fontWeight: 500 }}>Cancel</button>
+          <button onClick={onClose} data-secondary-btn className="h-[44px] px-[28px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] transition-colors" style={{ fontWeight: 500 }}>Cancel</button>
           <button onClick={onConfirm} className="h-[44px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors" style={{ background: '#1360d2', fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>Accept</button>
         </div>
       </div>
@@ -175,7 +175,7 @@ export const AckDeclineReasonModal: React.FC<DeclineReasonProps> = ({ open, onCl
             })()}
           </div>
           <div className="flex items-center justify-center gap-[12px]">
-            <button onClick={onClose} className="h-[44px] px-[28px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors" style={{ fontWeight: 500 }}>Close</button>
+            <button onClick={onClose} data-secondary-btn className="h-[44px] px-[28px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] transition-colors" style={{ fontWeight: 500 }}>Close</button>
             <button onClick={() => onDecline(reason, other)} className="h-[44px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors hover:bg-[#0E4DB8]" style={{ background: '#1360d2', fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>Decline</button>
           </div>
         </div>
@@ -201,7 +201,7 @@ export const AckDeclineConfirmModal: React.FC<DeclineConfirmProps> = ({ open, on
           <p>you want to Decline the Acknowledgement?</p>
         </div>
         <div className="flex items-center gap-[12px]">
-          <button onClick={onClose} className="h-[44px] px-[28px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors" style={{ fontWeight: 500 }}>Cancel</button>
+          <button onClick={onClose} data-secondary-btn className="h-[44px] px-[28px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] transition-colors" style={{ fontWeight: 500 }}>Cancel</button>
           <button onClick={onConfirm} className="h-[44px] px-[28px] rounded-[4px] text-[16px] text-white transition-colors hover:bg-[#0E4DB8]" style={{ background: '#1360d2', fontWeight: 500, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>Decline</button>
         </div>
       </div>
@@ -252,15 +252,15 @@ export const AckSuccessPage: React.FC<SuccessProps> = ({ mode, count, declaratio
 
           {mode === 'accept' && (
             <div className="flex items-center gap-[12px]">
-              <button className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors inline-flex items-center gap-[8px]" style={{ fontWeight: 500 }}>
+              <button data-secondary-btn className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] transition-colors inline-flex items-center gap-[8px]" style={{ fontWeight: 500 }}>
                 <span>Download</span>
                 <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M10 3v11M5 10l5 5 5-5M3 17h14" /></svg>
               </button>
-              <button className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors inline-flex items-center gap-[8px]" style={{ fontWeight: 500 }}>
+              <button data-secondary-btn className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] transition-colors inline-flex items-center gap-[8px]" style={{ fontWeight: 500 }}>
                 <span>Share</span>
                 <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="5" cy="10" r="2.2" /><circle cx="15" cy="5" r="2.2" /><circle cx="15" cy="15" r="2.2" /><path d="M7 9l6-3M7 11l6 3" /></svg>
               </button>
-              <button className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors" style={{ fontWeight: 500 }}>
+              <button data-secondary-btn className="h-[44px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] transition-colors" style={{ fontWeight: 500 }}>
                 View Declaration
               </button>
             </div>

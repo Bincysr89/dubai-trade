@@ -100,9 +100,9 @@ function Card({ children, className = '' }: { children: React.ReactNode; classNa
 
 function OutlineBtn({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) {
   return (
-    <button
+    <button data-secondary-btn
       onClick={onClick}
-      className="h-[48px] px-[20px] rounded-[4px] flex items-center justify-center text-[16px] hover:bg-[#f0f4ff] transition-colors"
+      className="h-[48px] px-[20px] rounded-[4px] flex items-center justify-center text-[16px] transition-colors"
       style={{ border: '1px solid #1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
     >
       {children}
@@ -656,8 +656,8 @@ function Step4({ onBack, onSubmit, onViewClaim, reason, reasonDesc, claimTitle, 
               <p className="text-[16px] text-[#697498]" style={{ lineHeight: 1.4 }}>Please note, the registration charges paid for this claim will not be refunded.</p>
             </div>
             <div className="flex gap-[12px]">
-              <button onClick={() => setConfirmCancel(false)}
-                className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors"
+              <button data-secondary-btn onClick={() => setConfirmCancel(false)}
+                className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white transition-colors"
                 style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>
                 No
               </button>

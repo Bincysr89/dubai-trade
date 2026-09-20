@@ -69,17 +69,17 @@ export default function NRPaymentSuccessPage({
           </div>
 
           <div className="flex flex-wrap gap-[14px] justify-center pt-[8px]">
-            <button
+            <button data-secondary-btn
               onClick={onBackToListing}
-              className="h-[52px] px-[28px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
+              className="h-[52px] px-[28px] rounded-[4px] border text-[16px] transition-colors"
               style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
             >
               Back to Listing
             </button>
             {onDownloadAck && (
-              <button
+              <button data-secondary-btn
                 onClick={onDownloadAck}
-                className="h-[52px] px-[28px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
+                className="h-[52px] px-[28px] rounded-[4px] border text-[16px] transition-colors"
                 style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
               >
                 Download Acknowledgment Receipt

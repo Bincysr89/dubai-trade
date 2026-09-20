@@ -141,8 +141,8 @@ export default function DeclarationStatusExpiryPage({ onBack }: Props) {
                 style={{ background: '#1360d2', fontFamily: font, fontWeight: 500 }}>
                 Search
               </button>
-              <button type="button" onClick={handleReset}
-                className="h-[48px] px-[28px] rounded-[4px] text-[16px] border hover:bg-[#f0f4ff] transition-colors"
+              <button data-secondary-btn type="button" onClick={handleReset}
+                className="h-[48px] px-[28px] rounded-[4px] text-[16px] border transition-colors"
                 style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
                 Reset
               </button>
@@ -156,16 +156,16 @@ export default function DeclarationStatusExpiryPage({ onBack }: Props) {
             <div className="flex items-center justify-between mb-[12px]">
               <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Declaration Details</p>
               <div className="flex items-center gap-[10px]">
-                <button type="button"
-                  className="h-[40px] px-[18px] rounded-[4px] text-[16px] border flex items-center gap-[8px] bg-white hover:bg-[#f0f4ff] transition-colors"
+                <button data-secondary-btn type="button"
+                  className="h-[40px] px-[18px] rounded-[4px] text-[16px] border flex items-center gap-[8px] bg-white transition-colors"
                   style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
                   <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M5 8V3h10v5M5 14h10v3H5z" /><path d="M4 8h12a1 1 0 0 1 1 1v5h-3M3 14v-5a1 1 0 0 1 1-1" />
                   </svg>
                   Print
                 </button>
-                <button type="button"
-                  className="h-[40px] px-[18px] rounded-[4px] text-[16px] border flex items-center gap-[8px] bg-white hover:bg-[#f0f4ff] transition-colors"
+                <button data-secondary-btn type="button"
+                  className="h-[40px] px-[18px] rounded-[4px] text-[16px] border flex items-center gap-[8px] bg-white transition-colors"
                   style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
                   <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M10 3v9M6.5 9l3.5 3.5L13.5 9" strokeLinecap="round" strokeLinejoin="round" /><path d="M4 15h12v2H4z" />
@@ -248,7 +248,7 @@ export default function DeclarationStatusExpiryPage({ onBack }: Props) {
         <div className="h-full flex items-center px-[40px]">
           <button
             onClick={onBack}
-            className="h-[48px] px-[20px] rounded-[4px] text-[16px] text-[#1360d2] border border-[#1360d2] hover:bg-[#f0f4ff] transition-colors"
+            data-secondary-btn className="h-[48px] px-[20px] rounded-[4px] text-[16px] text-[#1360d2] border border-[#1360d2] transition-colors"
             style={{ fontFamily: font }}
           >
             Back

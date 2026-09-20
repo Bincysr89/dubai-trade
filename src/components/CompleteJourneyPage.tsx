@@ -64,7 +64,7 @@ function SuccessBody({ heading, lines, rows, refNo }: { heading: string; lines: 
 }
 
 const OutlineBtn = ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => (
-  <button onClick={onClick} className="h-[46px] px-[26px] rounded-[4px] border text-[15px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>{children}</button>
+  <button onClick={onClick} data-secondary-btn className="h-[46px] px-[26px] rounded-[4px] border text-[15px] bg-white" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>{children}</button>
 );
 const FillBtn = ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => (
   <button onClick={onClick} className="h-[46px] px-[26px] rounded-[4px] text-[15px] text-white hover:bg-[#0f4fb5]" style={{ background: '#1360d2', fontWeight: 500 }}>{children}</button>

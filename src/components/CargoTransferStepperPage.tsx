@@ -722,22 +722,22 @@ function NavBar({ onBack, backLabel = 'Back', onNext, nextLabel = 'Next', center
   return (
     <div className="flex-shrink-0 bg-white px-4 sm:px-10 py-[16px] flex items-center justify-between gap-[12px]"
       style={{ boxShadow: '0px -2px 8px rgba(0,0,0,0.08)' }}>
-      <button onClick={onBack}
-        className="h-[48px] px-[28px] rounded-[4px] text-[16px] border hover:bg-[#f0f4ff] transition-colors"
+      <button data-secondary-btn onClick={onBack}
+        className="h-[48px] px-[28px] rounded-[4px] text-[16px] border transition-colors"
         style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
         {backLabel}
       </button>
       <div className="flex items-center gap-[12px]">
         {onSaveExit && (
-          <button onClick={onSaveExit}
-            className="h-[48px] px-[28px] rounded-[4px] text-[16px] border hover:bg-[#f0f4ff] transition-colors"
+          <button data-secondary-btn onClick={onSaveExit}
+            className="h-[48px] px-[28px] rounded-[4px] text-[16px] border transition-colors"
             style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
             Save and Exit
           </button>
         )}
         {centerLabel && (
-          <button onClick={onCenter}
-            className="h-[48px] px-[20px] rounded-[4px] text-[16px] border hover:bg-[#f0f4ff] transition-colors"
+          <button data-secondary-btn onClick={onCenter}
+            className="h-[48px] px-[20px] rounded-[4px] text-[16px] border transition-colors"
             style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
             {centerLabel}
           </button>
@@ -799,8 +799,8 @@ function AddPackageModal({ onClose }: { onClose: () => void }) {
             }}>Shipping Marks</label>
           </div>
           <div className="flex items-center justify-end gap-[12px] pt-[4px]">
-            <button onClick={onClose}
-              className="h-[40px] px-[24px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
+            <button data-secondary-btn onClick={onClose}
+              className="h-[40px] px-[24px] rounded-[4px] border text-[16px] transition-colors"
               style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
               Reset
             </button>
@@ -836,8 +836,8 @@ function AddContainerModal({ onClose }: { onClose: () => void }) {
             <FloatInput label="Seal Number" value={sealNo} onChange={setSealNo} readOnly />
           </div>
           <div className="flex items-center justify-end gap-[12px] pt-[4px]">
-            <button onClick={onClose}
-              className="h-[40px] px-[24px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
+            <button data-secondary-btn onClick={onClose}
+              className="h-[40px] px-[24px] rounded-[4px] border text-[16px] transition-colors"
               style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
               Reset
             </button>
@@ -1214,7 +1214,7 @@ function BulkUploadModal({ onClose }: { onClose: () => void }) {
             </div>
             <p className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>{file || 'Drag and drop your file here or'}</p>
             {!file ? (
-              <label className="border border-[#1360d2] rounded-[4px] px-[20px] py-[8px] text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors cursor-pointer" style={{ fontFamily: font }}>
+              <label data-secondary-btn className="border border-[#1360d2] rounded-[4px] px-[20px] py-[8px] text-[16px] text-[#1360d2] transition-colors cursor-pointer" style={{ fontFamily: font }}>
                 Choose File
                 <input type="file" accept=".xlsx,.csv" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) setFile(f.name); }} />
               </label>
@@ -1223,8 +1223,8 @@ function BulkUploadModal({ onClose }: { onClose: () => void }) {
             )}
           </div>
           <div className="flex items-center justify-end gap-[12px] pt-[4px]">
-            <button onClick={onClose}
-              className="h-[40px] px-[24px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff]"
+            <button data-secondary-btn onClick={onClose}
+              className="h-[40px] px-[24px] rounded-[4px] border text-[16px]"
               style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
               Cancel
             </button>
@@ -1505,7 +1505,7 @@ function Step3({ onBack, onNext, shippingSummary, onEditShipping, title, stepper
                     </div>
                     <p className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>{uploadedFile || 'Drag and Drop or'}</p>
                     {!uploadedFile && (
-                      <label className="border border-[#1360d2] rounded-[4px] px-[20px] py-[8px] text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] cursor-pointer" style={{ fontFamily: font }}>
+                      <label data-secondary-btn className="border border-[#1360d2] rounded-[4px] px-[20px] py-[8px] text-[16px] text-[#1360d2] cursor-pointer" style={{ fontFamily: font }}>
                         Choose File
                         <input type="file" accept=".txt" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) setUploadedFile(f.name); }} />
                       </label>
@@ -1666,7 +1666,7 @@ function Step4({ onBack, onNext, shippingSummary, onEditShipping, title, stepper
                   <img src="https://www.figma.com/api/mcp/asset/9b3444cd-50cf-433e-8a19-fe7a4183e5f5" alt="" style={{ width: 32, height: 30 }} />
                 </div>
                 <p className="text-[16px] text-[#6d707e]" style={{ fontFamily: font }}>Drag and drop or</p>
-                <button className="bg-white border border-[#1360d2] rounded-[4px] text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] capitalize"
+                <button data-secondary-btn className="bg-white border border-[#1360d2] rounded-[4px] text-[16px] text-[#1360d2] capitalize"
                   style={{ width: 120, height: 48, fontFamily: font, fontWeight: 500 }}>
                   Choose File
                 </button>

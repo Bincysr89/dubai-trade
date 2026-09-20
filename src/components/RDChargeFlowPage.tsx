@@ -667,8 +667,8 @@ function OutboundModal({ ctx, existing, targetCount, previousOutbounds = [], onS
             Reset
           </button>
           <div style={{ flex: 1 }} />
-          <button onClick={handleSaveAnother}
-            className="h-[48px] px-[20px] rounded-[4px] text-[16px] bg-white hover:bg-[#f0f4ff]"
+          <button data-secondary-btn onClick={handleSaveAnother}
+            className="h-[48px] px-[20px] rounded-[4px] text-[16px] bg-white"
             style={{ border: '1.5px solid #1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500, cursor: 'pointer' }}>
             Save &amp; Add Another
           </button>
@@ -1162,8 +1162,8 @@ function DeclRow({ d, idx, obs, invOpen, hsEdits, onPatchHs, onRefund, onAmount,
                   <FInput label="Reference No." value={d.refNo ?? ''} onChange={v => onRefField(idx, { refNo: v })} req />
                 </div>
                 <div className="flex items-center gap-[10px]" style={{ height: 56 }}>
-                  <button type="button" onClick={() => onRefField(idx, { refType: '', refCode: '', refNo: '' })}
-                    className="h-[48px] px-[24px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors"
+                  <button data-secondary-btn type="button" onClick={() => onRefField(idx, { refType: '', refCode: '', refNo: '' })}
+                    className="h-[48px] px-[24px] rounded-[4px] border text-[16px] bg-white transition-colors"
                     style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
                     Reset
                   </button>
@@ -1625,8 +1625,8 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
         rightContent={
           <div className="flex gap-[12px] items-center">
             {!hideSaveExit && (
-              <button onClick={() => setSaveModal(true)}
-                className="h-[48px] px-[28px] rounded-[4px] text-[16px] bg-white hover:bg-[#f0f4ff]"
+              <button data-secondary-btn onClick={() => setSaveModal(true)}
+                className="h-[48px] px-[28px] rounded-[4px] text-[16px] bg-white"
                 style={{ border: '1.5px solid #1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500, cursor: 'pointer' }}>
                 Save &amp; Exit
               </button>
@@ -1685,8 +1685,8 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
               <p className="text-[16px] text-[#697498]" style={{ lineHeight: 1.4 }}>This declaration record will be removed from the claim.</p>
             </div>
             <div className="flex gap-[12px]">
-              <button onClick={() => setDeleteIdx(null)}
-                className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors"
+              <button data-secondary-btn onClick={() => setDeleteIdx(null)}
+                className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white transition-colors"
                 style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>
                 No
               </button>
@@ -1719,8 +1719,8 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
               </p>
             </div>
             <div className="flex gap-[12px]">
-              <button onClick={cancelNoRefund}
-                className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors"
+              <button data-secondary-btn onClick={cancelNoRefund}
+                className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white transition-colors"
                 style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>
                 No
               </button>
@@ -1751,8 +1751,8 @@ export function RDChargeFlowPage({ rows, onBack, onBackToListing, onContinue, ti
               <p className="text-[16px] text-[#697498]" style={{ lineHeight: 1.4 }}>This declaration subclaim record will be removed this claim.</p>
             </div>
             <div className="flex gap-[12px]">
-              <button onClick={() => setDeleteOb(null)}
-                className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors"
+              <button data-secondary-btn onClick={() => setDeleteOb(null)}
+                className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white transition-colors"
                 style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>
                 No
               </button>

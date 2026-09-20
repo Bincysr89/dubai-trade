@@ -34,7 +34,7 @@ function Field({ label, value = '', type = 'text', onChange, options }: { label:
   );
 }
 
-const Out = ({ children, onClick }: any) => <button onClick={onClick} className="h-[46px] px-[26px] rounded-[4px] border text-[15px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>{children}</button>;
+const Out = ({ children, onClick }: any) => <button onClick={onClick} data-secondary-btn className="h-[46px] px-[26px] rounded-[4px] border text-[15px] bg-white" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>{children}</button>;
 const Fill = ({ children, onClick }: any) => <button onClick={onClick} className="h-[46px] px-[30px] rounded-[4px] text-[15px] text-white hover:bg-[#0f4fb5]" style={{ background: '#1360d2', fontWeight: 500 }}>{children}</button>;
 
 const TITLE = 'Hazardous Goods - Chemical Materials - Import NOC Request';

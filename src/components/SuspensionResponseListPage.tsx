@@ -127,7 +127,7 @@ export default function SuspensionResponseListPage({ title = 'Suspension Respons
         <div className="h-full flex items-center px-[40px]">
           <button
             onClick={onBack}
-            className="h-[48px] px-[20px] rounded-[4px] text-[16px] text-[#1360d2] border border-[#1360d2] hover:bg-[#f0f4ff] transition-colors"
+            data-secondary-btn className="h-[48px] px-[20px] rounded-[4px] text-[16px] text-[#1360d2] border border-[#1360d2] transition-colors"
             style={{ fontFamily: font }}
           >
             Back

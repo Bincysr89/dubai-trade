@@ -85,9 +85,9 @@ export function ColumnFilter({ label, labelClass = 'text-[16px] font-medium text
 
           {/* Buttons */}
           <div className="flex items-center gap-[12px] px-[16px] pb-[16px]">
-            <button
+            <button data-secondary-btn
               onClick={() => { setSearch(''); setSort('newest'); }}
-              className="flex-1 h-[44px] text-[16px] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors"
+              className="flex-1 h-[44px] text-[16px] text-[#1360d2] transition-colors"
               style={{ fontFamily: font, border: '1.5px solid #1360d2', borderRadius: 8 }}
             >
               Reset

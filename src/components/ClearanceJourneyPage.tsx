@@ -216,7 +216,7 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
 
       {/* Bottom bar */}
       <div className="flex-shrink-0 bg-white px-4 md:px-10 py-[16px] flex items-center justify-between gap-[12px]" style={{ boxShadow: '0px -2px 8px rgba(0,0,0,0.06)' }}>
-        <button
+        <button data-secondary-btn
           onClick={() => {
             if (addLineItem) { setAddLineItem(false); return; }
             if (step === 'carrier') setStep('start');
@@ -225,13 +225,13 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
             else if (step === 'documents') setStep('invoiceList');
             else onClose();
           }}
-          className="h-[48px] px-[28px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
+          className="h-[48px] px-[28px] rounded-[4px] border text-[16px] transition-colors"
           style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}
         >Back</button>
 
         <div className="flex items-center gap-[12px]">
           {addLineItem && (<>
-            <button onClick={() => setAddLineItem(false)} className="h-[48px] px-[28px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Cancel</button>
+            <button onClick={() => setAddLineItem(false)} data-secondary-btn className="h-[48px] px-[28px] rounded-[4px] border text-[16px] bg-white transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Cancel</button>
             <button onClick={() => { setAddLineItem(false); if (step === 'invoice') setStep('invoiceList'); }} className="h-[48px] px-[36px] rounded-[4px] text-[16px] text-white hover:bg-[#0f4fb5] transition-colors" style={{ background: '#1360d2', fontWeight: 500 }}>Save</button>
           </>)}
           {!addLineItem && (step === 'start' || step === 'carrier') && (
@@ -250,8 +250,8 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
           )}
           {!addLineItem && step === 'documents' && (
             <>
-              <button
-                className="h-[48px] px-[24px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors"
+              <button data-secondary-btn
+                className="h-[48px] px-[24px] rounded-[4px] border text-[16px] bg-white transition-colors"
                 style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}
               >Proceed To Review &amp; Submit Declaration</button>
               <button
@@ -404,7 +404,7 @@ function CarrierStep() {
             <svg viewBox="0 0 24 24" className="size-[18px]" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M7 12h10M11 18h2" strokeLinecap="round" /></svg>
             Advance Search
           </div>
-          <button className="mt-[28px] h-[44px] px-[18px] rounded-[4px] border text-[15px] hover:bg-[#f0f4ff] transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Add New Personal Customer</button>
+          <button data-secondary-btn className="mt-[28px] h-[44px] px-[18px] rounded-[4px] border text-[15px] transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Add New Personal Customer</button>
         </div>
       </Card>
     </>
@@ -453,7 +453,7 @@ function InvoiceStep({ tab, setTab, dragging, setDragging, onUpload, onAddLineIt
               <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#6d707e" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" /></svg>
             </div>
             <p className="text-[15px] text-[#6d707e]">Drag and drop or</p>
-            <button onClick={onUpload} className="h-[42px] px-[22px] rounded-[4px] border text-[15px] bg-white hover:bg-[#f0f4ff] transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Upload File</button>
+            <button onClick={onUpload} data-secondary-btn className="h-[42px] px-[22px] rounded-[4px] border text-[15px] bg-white transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Upload File</button>
           </div>
         </Card>
       )}
@@ -487,9 +487,9 @@ function ManualInvoice({ onSave, onAddLineItem }: { onSave: () => void; onAddLin
       <div className="flex items-center justify-between flex-wrap gap-[12px] pt-[8px]">
         <p className="text-[15px] text-[#0e1b3d]" style={{ fontWeight: 600 }}>CIF Value</p>
         <div className="flex items-center gap-[12px] flex-wrap">
-          <button className="h-[44px] px-[22px] rounded-[4px] border text-[15px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Close</button>
-          <button onClick={onAddLineItem} className="h-[44px] px-[22px] rounded-[4px] border text-[15px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Save &amp; Add Line Item</button>
-          <button className="h-[44px] px-[22px] rounded-[4px] border text-[15px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Save &amp; Add Another Invoice</button>
+          <button data-secondary-btn className="h-[44px] px-[22px] rounded-[4px] border text-[15px] bg-white" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Close</button>
+          <button onClick={onAddLineItem} data-secondary-btn className="h-[44px] px-[22px] rounded-[4px] border text-[15px] bg-white" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Save &amp; Add Line Item</button>
+          <button data-secondary-btn className="h-[44px] px-[22px] rounded-[4px] border text-[15px] bg-white" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Save &amp; Add Another Invoice</button>
           <button onClick={onSave} className="h-[44px] px-[30px] rounded-[4px] text-[15px] text-white hover:bg-[#0f4fb5]" style={{ background: '#1360d2', fontWeight: 500 }}>Save</button>
         </div>
       </div>
@@ -620,7 +620,7 @@ function DocumentsStep() {
             <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#8a93a6" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" /></svg>
           </div>
           <p className="text-[15px] text-[#5a6282] text-center max-w-[360px]">PDF/excel/JPEG/PNG/ formats can be uploaded. Maximum file size limit 50Mb</p>
-          <button className="h-[44px] px-[22px] rounded-[6px] border text-[15px] bg-white hover:bg-[#f0f4ff] transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Drag And Drop Or Upload File</button>
+          <button data-secondary-btn className="h-[44px] px-[22px] rounded-[6px] border text-[15px] bg-white transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Drag And Drop Or Upload File</button>
         </div>
       </div>
     </>
@@ -657,7 +657,7 @@ function InvoiceListStep({ onAddLineItem }: { onAddLineItem: () => void }) {
             <svg viewBox="0 0 24 24" className="size-[22px] text-[#1360d2]" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="4" y="3" width="16" height="18" rx="2" /><path d="M8 8h8M8 12h8M8 16h5" strokeLinecap="round" /></svg>
             <span className="text-[17px] text-[#0e1b3d]" style={{ fontWeight: 700 }}>Invoice 1</span>
           </div>
-          <button onClick={onAddLineItem} className="h-[38px] px-[16px] rounded-[4px] border text-[14px] bg-white hover:bg-[#f0f4ff] transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Add Line Item</button>
+          <button onClick={onAddLineItem} data-secondary-btn className="h-[38px] px-[16px] rounded-[4px] border text-[14px] bg-white transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Add Line Item</button>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-y-[14px] gap-x-[16px] mb-[8px]">

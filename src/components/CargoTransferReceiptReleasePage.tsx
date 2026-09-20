@@ -312,7 +312,7 @@ function ConfirmPopup({ type, onConfirm, onClose }: { type: Tab; onConfirm: () =
         </div>
         <div className="flex items-center justify-center gap-[12px] px-[28px] pb-[28px]">
           <button onClick={onClose}
-            className="h-[44px] px-[28px] rounded-[4px] text-[16px] border border-[#1360d2] text-[#1360d2] bg-white hover:bg-[#f0f4ff]"
+            data-secondary-btn className="h-[44px] px-[28px] rounded-[4px] text-[16px] border border-[#1360d2] text-[#1360d2] bg-white"
             style={{ fontFamily: font, fontWeight: 500 }}>Cancel</button>
           <button onClick={() => { onConfirm(); onClose(); }}
             className="h-[44px] px-[28px] rounded-[4px] text-[16px] text-white hover:opacity-90"
@@ -635,7 +635,7 @@ export default function CargoTransferReceiptReleasePage({ onBack }: Props) {
                     Search
                   </button>
                   <button onClick={resetAF}
-                    className="h-[44px] px-[22px] rounded-[4px] border border-[#1360d2] text-[15px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] whitespace-nowrap"
+                    data-secondary-btn className="h-[44px] px-[22px] rounded-[4px] border border-[#1360d2] text-[15px] text-[#1360d2] bg-white whitespace-nowrap"
                     style={{ fontFamily: font, fontWeight: 500 }}>
                     Reset
                   </button>
@@ -895,7 +895,7 @@ export default function CargoTransferReceiptReleasePage({ onBack }: Props) {
         <div className="bg-white flex-shrink-0" style={{ boxShadow: '0px -4px 12px rgba(0,0,0,0.08)', height: 80 }}>
           <div className="h-full flex items-center px-[40px]">
             <button onClick={onBack}
-              className="h-[48px] px-[28px] rounded-[4px] text-[16px] border border-[#1360d2] text-[#1360d2] hover:bg-[#f0f4ff] transition-colors"
+              data-secondary-btn className="h-[48px] px-[28px] rounded-[4px] text-[16px] border border-[#1360d2] text-[#1360d2] transition-colors"
               style={{ fontFamily: font, fontWeight: 500 }}>Back</button>
           </div>
         </div>

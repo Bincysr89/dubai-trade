@@ -9,7 +9,7 @@ type Step = 'form' | 'application' | 'shipments' | 'success';
 const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
   <div className={`bg-white rounded-[8px] ${className}`} style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.10)' }}>{children}</div>
 );
-const Out = ({ children, onClick }: any) => <button onClick={onClick} className="h-[46px] px-[26px] rounded-[4px] border text-[15px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>{children}</button>;
+const Out = ({ children, onClick }: any) => <button onClick={onClick} data-secondary-btn className="h-[46px] px-[26px] rounded-[4px] border text-[15px] bg-white" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>{children}</button>;
 const Fill = ({ children, onClick }: any) => <button onClick={onClick} className="h-[46px] px-[30px] rounded-[4px] text-[15px] text-white hover:bg-[#0f4fb5]" style={{ background: '#1360d2', fontWeight: 500 }}>{children}</button>;
 
 function Field({ label, value = '', type = 'text', onChange, options, unit, placeholder }: { label: string; value?: string; type?: 'text' | 'select' | 'search' | 'date'; onChange?: (v: string) => void; options?: string[]; unit?: string; placeholder?: string }) {

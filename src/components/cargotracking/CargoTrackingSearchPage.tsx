@@ -103,9 +103,9 @@ export default function CargoTrackingSearchPage({
                 <SearchIcon />
                 Search
               </button>
-              <button
+              <button data-secondary-btn
                 onClick={onReset}
-                className="h-[56px] px-[28px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] inline-flex items-center gap-[8px] transition-colors flex-shrink-0"
+                className="h-[56px] px-[28px] rounded-[4px] border text-[16px] bg-white inline-flex items-center gap-[8px] transition-colors flex-shrink-0"
                 style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
               >
                 <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" /></svg>
@@ -171,9 +171,9 @@ export default function CargoTrackingSearchPage({
                   <SearchIcon />
                   Search
                 </button>
-                <button
+                <button data-secondary-btn
                   onClick={onReset}
-                  className="h-[56px] px-[28px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] inline-flex items-center gap-[8px] transition-colors flex-shrink-0"
+                  className="h-[56px] px-[28px] rounded-[4px] border text-[16px] bg-white inline-flex items-center gap-[8px] transition-colors flex-shrink-0"
                   style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
                 >
                   <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" /></svg>

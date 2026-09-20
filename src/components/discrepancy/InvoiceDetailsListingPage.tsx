@@ -223,7 +223,7 @@ export default function InvoiceDetailsListingPage({ onBack, sidebar }: Props) {
                   <DateInputOutlined label="From date" value={dfFromDate} onChange={setDfFromDate} />
                   <DateInputOutlined label="To date" value={dfToDate} onChange={setDfToDate} />
                   <div className="flex items-end gap-[10px]">
-                    <button onClick={resetFilters} className="h-[44px] px-5 rounded-[4px] border border-[#1360d2] text-[15px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] flex-shrink-0" style={{ fontFamily: font }}>Reset</button>
+                    <button onClick={resetFilters} data-secondary-btn className="h-[44px] px-5 rounded-[4px] border border-[#1360d2] text-[15px] text-[#1360d2] bg-white flex-shrink-0" style={{ fontFamily: font }}>Reset</button>
                     <button onClick={applyFilters} className="h-[44px] px-5 rounded-[4px] text-[15px] text-white flex-shrink-0" style={{ background: '#1360d2', fontFamily: font }}>Apply</button>
                   </div>
                 </div>

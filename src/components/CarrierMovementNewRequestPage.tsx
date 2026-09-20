@@ -296,8 +296,8 @@ export default function CarrierMovementNewRequestPage({ onBack, onBackToListing,
           onBack={() => setStep('start')}
           rightContent={
             <div className="flex items-center gap-[12px]">
-              <button onClick={() => setForm(f => ({ ...BLANK, movementType: f.movementType, flightNo: f.flightNo, arrDepDate: f.arrDepDate, scheduleDate: f.scheduleDate }))}
-                className="h-[48px] px-[24px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
+              <button data-secondary-btn onClick={() => setForm(f => ({ ...BLANK, movementType: f.movementType, flightNo: f.flightNo, arrDepDate: f.arrDepDate, scheduleDate: f.scheduleDate }))}
+                className="h-[48px] px-[24px] rounded-[4px] border text-[16px] transition-colors"
                 style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
                 Reset
               </button>

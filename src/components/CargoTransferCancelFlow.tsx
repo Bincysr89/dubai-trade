@@ -83,9 +83,9 @@ function Card({ children, className = '' }: { children: React.ReactNode; classNa
 
 function OutlineBtn({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) {
   return (
-    <button
+    <button data-secondary-btn
       onClick={onClick}
-      className="h-[48px] px-[20px] rounded-[4px] flex items-center justify-center text-[16px] hover:bg-[#f0f4ff] transition-colors"
+      className="h-[48px] px-[20px] rounded-[4px] flex items-center justify-center text-[16px] transition-colors"
       style={{ border: '1px solid #1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
     >
       {children}
@@ -327,8 +327,8 @@ function Step2({ onBack, onProceed }: { onBack: () => void; onProceed: () => voi
                     </svg>
                   </div>
                   <p className="text-[16px]" style={{ fontFamily: font, color: '#6d707e' }}>Drag and drop or</p>
-                  <button
-                    className="h-[48px] px-[20px] rounded-[4px] text-[16px] hover:bg-[#f0f4ff] transition-colors"
+                  <button data-secondary-btn
+                    className="h-[48px] px-[20px] rounded-[4px] text-[16px] transition-colors"
                     style={{ border: '1px solid #1360d2', color: '#1360d2', fontFamily: font }}
                   >
                     Choose File

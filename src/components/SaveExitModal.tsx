@@ -62,8 +62,8 @@ export default function SaveExitModal({ onCancel, onBackToListing, requestNumber
         </div>
 
         <div className="flex gap-[12px] w-full">
-          <button onClick={onCancel}
-            className="flex-1 h-[48px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors"
+          <button data-secondary-btn onClick={onCancel}
+            className="flex-1 h-[48px] rounded-[4px] border text-[16px] bg-white transition-colors"
             style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>
             No
           </button>

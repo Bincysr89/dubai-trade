@@ -157,18 +157,18 @@ export default function NonRemittanceAckPage({ onBack, selectedRows }: Props) {
 
       {/* Bottom bar */}
       <div className="flex-shrink-0 bg-white px-4 sm:px-10 py-[20px] flex items-center justify-between gap-[12px]" style={{ boxShadow: '0px -1px 20px rgba(0,0,0,0.08)' }}>
-        <button
+        <button data-secondary-btn
           onClick={onBack}
-          className="h-[48px] px-[24px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
+          className="h-[48px] px-[24px] rounded-[4px] border text-[16px] transition-colors"
           style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
         >
           Back
         </button>
         <div className="flex items-center gap-[12px]">
           {[{ label: 'Print', icon: <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M5 7V3h10v4M5 14H3a1 1 0 01-1-1V8a1 1 0 011-1h14a1 1 0 011 1v5a1 1 0 01-1 1h-2" strokeLinecap="round"/><rect x="5" y="12" width="10" height="6" rx="1" /></svg> }, { label: 'E-mail', icon: <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="4" width="16" height="12" rx="2"/><path d="M2 7l8 5 8-5" strokeLinecap="round"/></svg> }].map((btn) => (
-            <button
+            <button data-secondary-btn
               key={btn.label}
-              className="h-[48px] px-[24px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors flex items-center gap-[8px]"
+              className="h-[48px] px-[24px] rounded-[4px] border text-[16px] transition-colors flex items-center gap-[8px]"
               style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
             >
               {btn.icon}

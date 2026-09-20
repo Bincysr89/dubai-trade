@@ -117,10 +117,10 @@ export default function ValidityExtensionDetailsPage({ rows, onBack, onBackToLis
               <div className="flex items-center justify-between flex-wrap gap-[10px]">
                 <h2 className="text-[24px] font-medium text-[#051937]" style={{ fontFamily: font }}>Declaration Details — {row.declarationNo}</h2>
                 {onDeclarationOpen && (
-                  <button
+                  <button data-secondary-btn
                     type="button"
                     onClick={() => onDeclarationOpen(row.declarationNo)}
-                    className="h-[38px] px-[16px] rounded-[4px] border text-[15px] hover:bg-[#f0f4ff] transition-colors"
+                    className="h-[38px] px-[16px] rounded-[4px] border text-[15px] transition-colors"
                     style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
                   >
                     View Declaration
@@ -315,7 +315,7 @@ export default function ValidityExtensionDetailsPage({ rows, onBack, onBackToLis
         <div className="h-full flex items-center justify-between px-[40px]">
           <button
             onClick={onBack}
-            className="h-[48px] px-[20px] rounded-[4px] text-[16px] text-[#1360d2] border border-[#1360d2] hover:bg-[#f0f4ff] transition-colors"
+            data-secondary-btn className="h-[48px] px-[20px] rounded-[4px] text-[16px] text-[#1360d2] border border-[#1360d2] transition-colors"
             style={{ fontFamily: font }}
           >
             Back

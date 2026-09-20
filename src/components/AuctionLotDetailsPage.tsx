@@ -186,8 +186,8 @@ export default function AuctionLotDetailsPage({ onBack, onBackToListing, onProce
                     <span className="text-[16px] text-[#697498]">
                       Selected: <span style={{ color: '#1360d2', fontWeight: 600 }}>{selected.size}</span>
                     </span>
-                    <button type="button" onClick={scrollToSelected}
-                      className="h-[32px] px-[14px] rounded-[4px] text-[14px] bg-white hover:bg-[#f0f4ff] transition-colors"
+                    <button data-secondary-btn type="button" onClick={scrollToSelected}
+                      className="h-[32px] px-[14px] rounded-[4px] text-[14px] bg-white transition-colors"
                       style={{ border: '1.5px solid #1360d2', color: '#1360d2', fontWeight: 500, cursor: 'pointer' }}>
                       View Selected
                     </button>
@@ -301,8 +301,8 @@ export default function AuctionLotDetailsPage({ onBack, onBackToListing, onProce
             {selected.size > 0 && (
               <span className="text-[16px] text-[#455174]">{selected.size} lot{selected.size !== 1 ? 's' : ''} selected</span>
             )}
-            <button onClick={() => setShowSaveModal(true)}
-              className="h-[48px] px-[28px] rounded-[4px] border bg-white text-[16px] hover:bg-[#f0f4ff] transition-colors"
+            <button data-secondary-btn onClick={() => setShowSaveModal(true)}
+              className="h-[48px] px-[28px] rounded-[4px] border bg-white text-[16px] transition-colors"
               style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
               Save &amp; Exit
             </button>
@@ -335,8 +335,8 @@ export default function AuctionLotDetailsPage({ onBack, onBackToListing, onProce
               <p className="text-[16px] text-[#697498]" style={{ lineHeight: 1.4 }}>This auction lot will be removed from your selected list.</p>
             </div>
             <div className="flex gap-[12px]">
-              <button onClick={() => setConfirmRemove(null)}
-                className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors"
+              <button data-secondary-btn onClick={() => setConfirmRemove(null)}
+                className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white transition-colors"
                 style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>
                 No
               </button>

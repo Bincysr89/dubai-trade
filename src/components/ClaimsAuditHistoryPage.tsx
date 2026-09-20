@@ -151,9 +151,9 @@ export default function ClaimsAuditHistoryPage({ onBack }: Props) {
 
       {/* Bottom bar */}
       <div className="bg-white flex-shrink-0 px-4 sm:px-10 py-[20px]" style={{ boxShadow: '0px -4px 12px rgba(0,0,0,0.08)' }}>
-        <button
+        <button data-secondary-btn
           onClick={onBack}
-          className="h-[48px] px-[28px] rounded-[4px] text-[16px] border hover:bg-[#f0f4ff] transition-colors"
+          className="h-[48px] px-[28px] rounded-[4px] text-[16px] border transition-colors"
           style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}
         >
           Back

@@ -66,9 +66,9 @@ export default function ClaimSubmittedSuccessPage({
 
         {/* Action buttons */}
         <div className="flex items-center gap-[12px] flex-wrap pt-[8px]">
-          <button
+          <button data-secondary-btn
             onClick={onCreateAnother ?? onBack}
-            className="h-[48px] px-[28px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors"
+            className="h-[48px] px-[28px] rounded-[4px] border text-[16px] transition-colors"
             style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}
           >
             Create New

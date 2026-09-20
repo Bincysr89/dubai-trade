@@ -137,7 +137,7 @@ function FlightSearchPopup({ onSelect, onClose }: { onSelect: (f: FlightHit) => 
         </div>
         <div className="flex gap-[10px] mt-[14px]">
           <button type="button" onClick={() => { setFlightNo(''); setArrDep('All'); setScheduleDateFrom(''); setScheduleDateTo(''); }}
-            className="h-[44px] px-[20px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Reset</button>
+            data-secondary-btn className="h-[44px] px-[20px] rounded-[4px] border text-[16px] bg-white" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Reset</button>
         </div>
       </div>
       <div>
@@ -384,11 +384,11 @@ function AddUnloadingPage({ existing, initialEditingLineId, onBack, onSave }: {
                 <div className="flex gap-[10px]">
                   {viewingLineId ? (
                     <button type="button" onClick={closeView}
-                      className="h-[44px] px-[20px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>Close</button>
+                      data-secondary-btn className="h-[44px] px-[20px] rounded-[4px] border text-[16px] bg-white" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>Close</button>
                   ) : (
                     <>
                       <button type="button" onClick={() => { setAwb(BLANK_AWB); setEditingLineId(null); setEditingOriginalAwbNo(null); }}
-                        className="h-[44px] px-[20px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>Reset</button>
+                        data-secondary-btn className="h-[44px] px-[20px] rounded-[4px] border text-[16px] bg-white" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>Reset</button>
                       <button type="button" onClick={addOrUpdateLine} disabled={!canAddLine}
                         className="h-[44px] px-[20px] rounded-[4px] text-[16px] text-white" style={{ background: canAddLine ? '#1360d2' : '#a7c3eb', cursor: canAddLine ? 'pointer' : 'not-allowed', fontWeight: 500, fontFamily: font }}>
                         {editingLineId ? 'Update' : '+ Add'}
@@ -473,7 +473,7 @@ function AddUnloadingPage({ existing, initialEditingLineId, onBack, onSave }: {
             <p className="text-[15px] text-[#697498]">A new AWB will be added as a new line item to the table.</p>
             <div className="flex justify-end gap-[10px]">
               <button type="button" onClick={() => setConfirmAwbChange(false)}
-                className="h-[44px] px-[20px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>Cancel</button>
+                data-secondary-btn className="h-[44px] px-[20px] rounded-[4px] border text-[16px] bg-white" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>Cancel</button>
               <button type="button" onClick={appendAsNewLine}
                 className="h-[44px] px-[20px] rounded-[4px] text-[16px] text-white" style={{ background: '#1360d2', fontWeight: 500, fontFamily: font, boxShadow: '0px 0px 8px rgba(28,72,191,0.16)' }}>Update</button>
             </div>
@@ -947,7 +947,7 @@ export default function FlightManifestNewRequestPage({
           rightContent={
             viewOnly ? undefined : (
               <div className="flex items-center gap-[12px]">
-                <button className="h-[48px] px-[24px] rounded-[4px] border text-[16px] hover:bg-[#f0f4ff] transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
+                <button data-secondary-btn className="h-[48px] px-[24px] rounded-[4px] border text-[16px] transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
                   Save As Draft
                 </button>
                 <button
@@ -986,7 +986,7 @@ export default function FlightManifestNewRequestPage({
             </div>
             <div className="flex justify-end">
               <button type="button" onClick={() => setViewingAwbLine(null)}
-                className="h-[44px] px-[20px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>Close</button>
+                data-secondary-btn className="h-[44px] px-[20px] rounded-[4px] border text-[16px] bg-white" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>Close</button>
             </div>
           </div>
         </div>
@@ -1012,7 +1012,7 @@ export default function FlightManifestNewRequestPage({
             </div>
             <div className="flex justify-end gap-[10px]">
               <button type="button" onClick={() => setEditingAwbPopup(null)}
-                className="h-[44px] px-[20px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>Cancel</button>
+                data-secondary-btn className="h-[44px] px-[20px] rounded-[4px] border text-[16px] bg-white" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>Cancel</button>
               <button type="button" onClick={() => {
                   setUnloadingRows(p => p.map(r => r.id !== editingAwbPopupRowId ? r : { ...r, lines: r.lines.map(l => l.id === editingAwbPopup.id ? editingAwbPopup : l) }));
                   setEditingAwbPopup(null);
@@ -1037,7 +1037,7 @@ export default function FlightManifestNewRequestPage({
             </div>
             <div className="flex gap-[12px]">
               <button type="button" onClick={() => setConfirmDeleteUnloadingId(null)}
-                className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>
+                data-secondary-btn className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>
                 Cancel
               </button>
               <button type="button" onClick={() => {

@@ -1121,7 +1121,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                             Apply
                           </button>
                           <button onClick={() => { setAfValues({}); setAfCargoTypes([]); setPage(1); }}
-                            className="h-[44px] px-5 rounded-[4px] border border-[#1360d2] text-[15px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] flex-shrink-0" style={{ fontFamily: font }}>
+                            data-secondary-btn className="h-[44px] px-5 rounded-[4px] border border-[#1360d2] text-[15px] text-[#1360d2] bg-white flex-shrink-0" style={{ fontFamily: font }}>
                             Reset
                           </button>
                         </div>
@@ -1141,7 +1141,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                             Apply
                           </button>
                           <button onClick={() => { setAfValues({}); setAfHmManifestType(''); setAfHmHouseManifestType(''); setAfHmStatuses([]); setPage(1); }}
-                            className="h-[44px] px-5 rounded-[4px] border border-[#1360d2] text-[15px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] flex-shrink-0" style={{ fontFamily: font }}>
+                            data-secondary-btn className="h-[44px] px-5 rounded-[4px] border border-[#1360d2] text-[15px] text-[#1360d2] bg-white flex-shrink-0" style={{ fontFamily: font }}>
                             Reset
                           </button>
                         </div>
@@ -1169,7 +1169,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                             Apply
                           </button>
                           <button onClick={() => { setAfValues({}); setPage(1); }}
-                            className="h-[44px] px-5 rounded-[4px] border border-[#1360d2] text-[15px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] flex-shrink-0" style={{ fontFamily: font }}>
+                            data-secondary-btn className="h-[44px] px-5 rounded-[4px] border border-[#1360d2] text-[15px] text-[#1360d2] bg-white flex-shrink-0" style={{ fontFamily: font }}>
                             Reset
                           </button>
                         </div>
@@ -1647,7 +1647,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
             </div>
             <div className="flex gap-[12px]">
               <button type="button" onClick={() => setDeleteRow(null)}
-                className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>
+                data-secondary-btn className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>
                 Cancel
               </button>
               <button type="button" onClick={() => {
@@ -1676,7 +1676,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
             </div>
             <div className="flex gap-[12px]">
               <button type="button" onClick={() => setDeleteBolLine(null)}
-                className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff] transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>
+                data-secondary-btn className="h-[48px] px-[36px] rounded-[4px] border text-[16px] bg-white transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>
                 Cancel
               </button>
               <button type="button" onClick={() => {

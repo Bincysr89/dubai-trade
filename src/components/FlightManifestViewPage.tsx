@@ -207,7 +207,7 @@ export default function FlightManifestViewPage({ row, onBack, onBackToListing }:
             </div>
             <div className="flex justify-end">
               <button type="button" onClick={() => setViewingAwb(null)}
-                className="h-[44px] px-[20px] rounded-[4px] border text-[16px] bg-white hover:bg-[#f0f4ff]" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>Close</button>
+                data-secondary-btn className="h-[44px] px-[20px] rounded-[4px] border text-[16px] bg-white" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: font }}>Close</button>
             </div>
           </div>
         </div>
