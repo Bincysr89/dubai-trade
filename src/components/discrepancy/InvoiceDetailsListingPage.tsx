@@ -3,6 +3,7 @@ import Header from '../Header';
 import DTSelect from '../DTSelect';
 import { DateInputOutlined, StatusAsOnBadge } from '../DatePicker';
 import Pagination from '../Pagination';
+import { DhAmount } from '../Dh';
 import {
   CHARGE_INVOICES, INVOICE_TYPE_OPTIONS, INVOICE_TYPE_TITLES, INVOICE_STATUS_OPTIONS, INVOICE_STATUS_COLORS,
   INVOICE_DATE_TYPE_OPTIONS, INVOICE_SEARCH_TYPE_LABELS, amountInWords,
@@ -119,10 +120,9 @@ export default function InvoiceDetailsListingPage({ onBack, sidebar }: Props) {
     <div className="fixed inset-0 z-50 flex flex-col bg-[#f8fafd]">
       <div className="flex-shrink-0"><Header onServiceCatalogue={onBack} /></div>
 
-      <div className="flex-1 overflow-y-auto flex px-4 sm:px-10 pt-[14px] pb-[20px] gap-[12px]">
-        {sidebar}
-        <div className="flex-1 min-w-0 flex flex-col">
-          {/* Breadcrumb + agent banner */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Breadcrumb + agent banner + title — full width, above the sidebar/content split */}
+        <div className="px-4 sm:px-10 pt-[14px] flex-shrink-0">
           <div className="flex items-center justify-between pb-[10px] flex-wrap gap-y-[6px] flex-shrink-0">
             <div className="flex items-center gap-[6px]">
               <button onClick={onBack} className="text-[16px] text-[#8f94ae] hover:underline" style={{ fontFamily: font }}>Home</button>
@@ -137,7 +137,13 @@ export default function InvoiceDetailsListingPage({ onBack, sidebar }: Props) {
           </div>
 
           <h1 className="text-[28px] text-[#111838] mb-[16px] flex-shrink-0" style={{ fontFamily: font, fontWeight: 500 }}>View Invoice Details</h1>
+        </div>
 
+        {/* Sidebar + content */}
+        <div className="flex flex-1 overflow-hidden px-4 sm:px-10 pb-[20px] gap-[12px]">
+          {sidebar}
+          <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto">
           <div className="flex flex-col gap-[12px]">
             {/* Toolbar row 1 */}
             <div className="flex items-center gap-[12px] flex-wrap flex-shrink-0">
@@ -224,36 +230,36 @@ export default function InvoiceDetailsListingPage({ onBack, sidebar }: Props) {
               </div>
             )}
 
-            {/* Table */}
-            <div className="bg-white rounded-[8px] overflow-x-auto" style={{ boxShadow: '0px 5px 32px 0px rgba(143,155,186,0.16)' }}>
-              <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 1140 }}>
+            {/* Table — master listing template: row-gap grouping, sticky Actions column */}
+            <div className="overflow-x-auto">
+              <table className="w-full" style={{ borderCollapse: 'separate', borderSpacing: '0 8px', minWidth: 1140 }}>
                 <thead>
-                  <tr style={{ background: '#a6c2e9' }}>
-                    {['Invoice No', 'Rotation No', 'Invoice Type', 'Created Date', 'Payment Due Date', 'Payment Amount (AED)', 'Status'].map(h => (
-                      <th key={h} className="text-left text-[16px] text-[#051937]" style={{ padding: '10px 12px', fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
+                  <tr>
+                    {['Invoice No', 'Rotation No', 'Invoice Type', 'Created Date', 'Payment Due Date', 'Payment Amount (AED)', 'Status'].map((h, i) => (
+                      <th key={h} className="text-left text-[16px] text-[#051937]" style={{ padding: '10px 12px', paddingLeft: i === 0 ? 16 : 12, fontWeight: 500, whiteSpace: 'nowrap', background: '#a6c2e9', borderRadius: i === 0 ? '8px 0 0 8px' : undefined }}>{h}</th>
                     ))}
-                    <th className="text-left text-[16px] text-[#051937]" style={{ padding: '10px 12px', fontWeight: 500 }}>Actions</th>
+                    <th className="text-left text-[16px] text-[#051937]" style={{ padding: '10px 12px', fontWeight: 500, background: '#a6c2e9', position: 'sticky', right: 0, borderRadius: '0 8px 8px 0', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {pageRows.length === 0 ? (
-                    <tr><td colSpan={8} style={{ padding: '40px 12px', textAlign: 'center' }}><span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>No invoices found for the given search criteria.</span></td></tr>
+                    <tr><td colSpan={8} style={{ padding: '40px 12px', textAlign: 'center', background: '#fff' }}><span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>No invoices found for the given search criteria.</span></td></tr>
                   ) : pageRows.map((inv, idx) => {
                     const st = INVOICE_STATUS_COLORS[inv.status];
                     return (
-                      <tr key={`${inv.invoiceNo}-${inv.rotationNo}-${idx}`} style={{ borderTop: '1px solid #f0f4ff' }}>
-                        <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>
+                      <tr key={`${inv.invoiceNo}-${inv.rotationNo}-${idx}`} style={{ boxShadow: '0px 2px 8px rgba(143,155,186,0.14)' }}>
+                        <td style={{ padding: '14px 12px', paddingLeft: 16, whiteSpace: 'nowrap', background: '#fff', borderRadius: '8px 0 0 8px' }}>
                           <button onClick={() => setViewInvoice(inv)} className="text-[16px] hover:underline" style={{ color: '#1360d2', fontWeight: 500, fontFamily: font }}>{inv.invoiceNo}</button>
                         </td>
-                        <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{inv.rotationNo}</td>
-                        <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{inv.invoiceType}</td>
-                        <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{inv.createdDate}</td>
-                        <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{inv.paymentDueDate}</td>
-                        <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{inv.paymentAmount.toFixed(2)}</td>
-                        <td style={{ padding: '12px' }}>
+                        <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '14px 12px', whiteSpace: 'nowrap', background: '#fff' }}>{inv.rotationNo}</td>
+                        <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '14px 12px', whiteSpace: 'nowrap', background: '#fff' }}>{inv.invoiceType}</td>
+                        <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '14px 12px', whiteSpace: 'nowrap', background: '#fff' }}>{inv.createdDate}</td>
+                        <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '14px 12px', whiteSpace: 'nowrap', background: '#fff' }}>{inv.paymentDueDate}</td>
+                        <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '14px 12px', whiteSpace: 'nowrap', background: '#fff' }}><DhAmount value={inv.paymentAmount.toFixed(2)} /></td>
+                        <td style={{ padding: '14px 12px', background: '#fff' }}>
                           <span className="inline-flex items-center px-[10px] py-[3px] rounded-[4px] text-[15px] font-medium whitespace-nowrap" style={{ background: st.bg, color: st.color, fontFamily: font }}>{inv.status}</span>
                         </td>
-                        <td style={{ padding: '12px' }}>
+                        <td style={{ padding: '14px 12px', background: '#fff', position: 'sticky', right: 0, borderRadius: '0 8px 8px 0', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: openRowMenu === idx ? 49 : 1 }}>
                           <div className="relative inline-block">
                             <button onClick={() => setOpenRowMenu(openRowMenu === idx ? null : idx)} className="size-[32px] rounded-full flex items-center justify-center hover:bg-[#e2ebf9] transition-colors">
                               <svg viewBox="0 0 20 20" width="18" height="18" fill="#697498"><circle cx="10" cy="4" r="1.7" /><circle cx="10" cy="10" r="1.7" /><circle cx="10" cy="16" r="1.7" /></svg>
@@ -287,6 +293,8 @@ export default function InvoiceDetailsListingPage({ onBack, sidebar }: Props) {
                 onPageChange={setPage} onPageSizeChange={n => { setPageSize(n); setPage(1); }} />
             )}
           </div>
+          </div>
+          </div>
         </div>
       </div>
 
@@ -301,7 +309,7 @@ export default function InvoiceDetailsListingPage({ onBack, sidebar }: Props) {
               </button>
             </div>
             <div className="overflow-y-auto px-[24px] py-[20px] flex flex-col gap-[20px]">
-              <p className="text-[18px]" style={{ color: '#dc3545', fontWeight: 700 }}>Invoice Details</p>
+              <p className="text-[18px]" style={{ color: '#1360d2', fontWeight: 700 }}>Invoice Details</p>
               <div className="rounded-[6px] p-[16px] grid grid-cols-1 sm:grid-cols-2 gap-y-[10px] gap-x-[24px]" style={{ background: '#f8fafd', border: '1px solid #eef1f6' }}>
                 <KeyValue label="Agent Business Code" value={viewInvoice.agentBusinessCode} />
                 <KeyValue label="Rotation Number" value={viewInvoice.rotationNo} />
@@ -314,7 +322,7 @@ export default function InvoiceDetailsListingPage({ onBack, sidebar }: Props) {
               <div className="rounded-[6px] overflow-hidden" style={{ border: '1px solid #eef1f6' }}>
                 <table className="w-full" style={{ borderCollapse: 'collapse' }}>
                   <thead>
-                    <tr style={{ background: '#e2ebf9' }}>
+                    <tr style={{ background: '#a6c2e9' }}>
                       {['S.No', 'Description', 'Amount (AED)'].map(h => (
                         <th key={h} className="text-left px-[16px] py-[10px] text-[14px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{h}</th>
                       ))}
@@ -325,7 +333,7 @@ export default function InvoiceDetailsListingPage({ onBack, sidebar }: Props) {
                       <tr key={li.description} style={{ borderTop: '1px solid #f0f4ff' }}>
                         <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{i + 1}</td>
                         <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{li.description}</td>
-                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]">{li.amount.toFixed(2)}</td>
+                        <td className="px-[16px] py-[10px] text-[15px] text-[#0e1b3d]"><DhAmount value={li.amount.toFixed(2)} /></td>
                       </tr>
                     ))}
                   </tbody>
@@ -333,11 +341,11 @@ export default function InvoiceDetailsListingPage({ onBack, sidebar }: Props) {
               </div>
               <div className="rounded-[6px] overflow-hidden" style={{ border: '1px solid #eef1f6' }}>
                 <div className="flex items-center justify-between px-[16px] py-[10px]" style={{ background: '#f8fafd' }}>
-                  <span className="text-[15px]" style={{ fontWeight: 700, color: '#dc3545' }}>Total Amount to be Paid</span>
-                  <span className="text-[15px] text-[#0e1b3d]" style={{ fontWeight: 700 }}>{viewInvoice.paymentAmount.toFixed(2)}</span>
+                  <span className="text-[15px]" style={{ fontWeight: 700, color: '#1360d2' }}>Total Amount to be Paid</span>
+                  <span className="text-[15px] text-[#0e1b3d]" style={{ fontWeight: 700 }}><DhAmount value={viewInvoice.paymentAmount.toFixed(2)} /></span>
                 </div>
                 <div className="flex items-center justify-between px-[16px] py-[10px]" style={{ borderTop: '1px solid #eef1f6' }}>
-                  <span className="text-[15px]" style={{ fontWeight: 700, color: '#dc3545' }}>Total Amount in Words</span>
+                  <span className="text-[15px]" style={{ fontWeight: 700, color: '#1360d2' }}>Total Amount in Words</span>
                   <span className="text-[15px] text-[#1360d2]" style={{ fontWeight: 500 }}>{amountInWords(viewInvoice.paymentAmount)}</span>
                 </div>
               </div>

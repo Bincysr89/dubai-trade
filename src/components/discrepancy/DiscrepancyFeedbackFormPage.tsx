@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import Header from '../Header';
 import BackToListingBar from '../BackToListingBar';
+import { ColumnFilter } from '../ColumnFilter';
 import { columnLabelsFor, type DiscrepancyRow } from './discrepancyData';
 
 const font = "'Dubai', sans-serif";
@@ -8,18 +9,41 @@ const MAX_COMMENT = 255;
 const MAX_ATTACHMENTS = 15;
 const MAX_SIZE_BYTES = 1024 * 1024; // 1 MB
 const ALLOWED_EXT = ['txt', 'png', 'pptx', 'doc', 'docx', 'xls', 'jpg', 'ppt', 'bmp', 'pdf', 'xlsx'];
+const DOC_TABLE_COLS = ['Document Name', 'Document Type', 'Uploaded size', 'Uploaded on', 'Action'];
 
-type Attachment = { id: string; name: string; sizeKb: string };
+type Attachment = { id: string; name: string; sizeKb: string; type: string; uploadedOn: string };
 
 function extOf(name: string) {
   return name.split('.').pop()?.toLowerCase() ?? '';
 }
 
+const DOC_TYPE_LABELS: Record<string, string> = {
+  pdf: 'PDF Document', doc: 'Word Document', docx: 'Word Document',
+  xls: 'Excel Document', xlsx: 'Excel Document', ppt: 'Presentation', pptx: 'Presentation',
+  png: 'Image', jpg: 'Image', bmp: 'Image', txt: 'Text File',
+};
+
+function docTypeLabel(ext: string) {
+  return DOC_TYPE_LABELS[ext] ?? 'Document';
+}
+
+function formatUploadedOn(d: Date) {
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = d.toLocaleString('en-US', { month: 'short' });
+  const year = String(d.getFullYear()).slice(-2);
+  return `${day}-${month}-${year}`;
+}
+
 const DeleteIcon = () => (
-  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" strokeLinecap="round" strokeLinejoin="round" /></svg>
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#dc3545" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" /></svg>
 );
 
-/* ── Attachments — dropzone + rules notice (left) and a flat filename list (no table) ── */
+const DownloadIcon = () => (
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1360d2" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v13M7 11l5 5 5-5" /><path d="M3 20h18" /></svg>
+);
+
+/* ── Attachments — half-width dropzone card, then a separate "Documents Uploaded" table
+     below (master-listing convention), matching the pattern used in other modules. ── */
 function AttachmentsSection({ attachments, onAdd, onRemove }: {
   attachments: Attachment[];
   onAdd: (a: Attachment) => void;
@@ -44,61 +68,97 @@ function AttachmentsSection({ attachments, onAdd, onRemove }: {
       setError(`Maximum of ${MAX_ATTACHMENTS} attachments allowed.`);
       return;
     }
-    onAdd({ id: `att-${Date.now()}-${attachments.length}`, name: file.name, sizeKb: (file.size / 1024).toFixed(1) });
+    onAdd({
+      id: `att-${Date.now()}-${attachments.length}`,
+      name: file.name,
+      sizeKb: (file.size / 1024).toFixed(1),
+      type: docTypeLabel(extOf(file.name)),
+      uploadedOn: formatUploadedOn(new Date()),
+    });
   };
 
   return (
-    <div className="bg-white rounded-[8px] p-[24px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
-      <p className="text-[18px] text-[#0e1b3d] mb-[16px]" style={{ fontFamily: font, fontWeight: 700 }}>Upload File</p>
+    <div className="flex flex-col gap-[20px]">
+      <div className="bg-white rounded-[8px] p-[24px] w-full lg:max-w-[50%]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+        <p className="text-[18px] text-[#0e1b3d] mb-[16px]" style={{ fontFamily: font, fontWeight: 700 }}>Upload File</p>
 
-      <div className="rounded-[8px] px-[18px] py-[14px] mb-[16px]" style={{ background: '#e2ebf9', border: '1px solid #c7d9f7' }}>
-        <ul className="text-[14px] text-[#455174] flex flex-col gap-[3px]" style={{ fontFamily: font }}>
-          <li>Allowed Attachment Type : <b style={{ color: '#0e1b3d' }}>{ALLOWED_EXT.join(' / ')}</b></li>
-          <li>Maximum size of each attachment : <b style={{ color: '#0e1b3d' }}>1 MB</b></li>
-          <li>No. of Attachments allowed : <b style={{ color: '#0e1b3d' }}>{MAX_ATTACHMENTS}</b></li>
-          <li>No. of Attachments : <b style={{ color: '#0e1b3d' }}>{attachments.length}</b></li>
-        </ul>
+        <div className="rounded-[8px] px-[18px] py-[14px] mb-[16px]" style={{ background: '#e2ebf9', border: '1px solid #c7d9f7' }}>
+          <ul className="text-[14px] text-[#455174] flex flex-col gap-[3px]" style={{ fontFamily: font }}>
+            <li>Allowed Attachment Type : <b style={{ color: '#0e1b3d' }}>{ALLOWED_EXT.join(' / ')}</b></li>
+            <li>Maximum size of each attachment : <b style={{ color: '#0e1b3d' }}>1 MB</b></li>
+            <li>No. of Attachments allowed : <b style={{ color: '#0e1b3d' }}>{MAX_ATTACHMENTS}</b></li>
+            <li>No. of Attachments : <b style={{ color: '#0e1b3d' }}>{attachments.length}</b></li>
+          </ul>
+        </div>
+
+        <div
+          onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={e => { e.preventDefault(); setDragOver(false); tryAdd(e.dataTransfer.files?.[0]); }}
+          className="rounded-[8px] flex flex-col items-center justify-center gap-[10px] py-[40px] transition-colors"
+          style={{ border: `1.5px dashed ${dragOver ? '#1360d2' : '#d5ddfb'}`, background: dragOver ? '#f0f4ff' : '#fff' }}
+        >
+          <div className="size-[40px] rounded-full flex items-center justify-center" style={{ background: '#e2ebf9' }}>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1360d2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 16V4M8 8l4-4 4 4" /><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3" />
+            </svg>
+          </div>
+          <p className="text-[15px] text-[#697498]" style={{ fontFamily: font }}>Drag and drop or</p>
+          <button type="button" onClick={() => inputRef.current?.click()} disabled={attachments.length >= MAX_ATTACHMENTS}
+            className="h-[42px] px-[18px] rounded-[4px] text-[15px] border transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ fontFamily: font, fontWeight: 500, borderColor: '#1360d2', color: '#1360d2', background: '#fff' }}>
+            Choose File
+          </button>
+          <input ref={inputRef} type="file" className="hidden" onChange={e => { tryAdd(e.target.files?.[0]); e.target.value = ''; }} />
+        </div>
+        {error && <p className="text-[13px] text-[#dc3545] mt-[10px]" style={{ fontFamily: font }}>{error}</p>}
       </div>
 
-      <div
-        onDragOver={e => { e.preventDefault(); setDragOver(true); }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={e => { e.preventDefault(); setDragOver(false); tryAdd(e.dataTransfer.files?.[0]); }}
-        className="rounded-[8px] flex flex-col items-center justify-center gap-[10px] py-[40px] transition-colors"
-        style={{ border: `1.5px dashed ${dragOver ? '#1360d2' : '#d5ddfb'}`, background: dragOver ? '#f0f4ff' : '#fff' }}
-      >
-        <div className="size-[40px] rounded-full flex items-center justify-center" style={{ background: '#e2ebf9' }}>
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1360d2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 16V4M8 8l4-4 4 4" /><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3" />
-          </svg>
-        </div>
-        <p className="text-[15px] text-[#697498]" style={{ fontFamily: font }}>Drag and drop or</p>
-        <button type="button" onClick={() => inputRef.current?.click()} disabled={attachments.length >= MAX_ATTACHMENTS}
-          className="h-[42px] px-[18px] rounded-[4px] text-[15px] border transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{ fontFamily: font, fontWeight: 500, borderColor: '#1360d2', color: '#1360d2', background: '#fff' }}>
-          Choose File
-        </button>
-        <input ref={inputRef} type="file" className="hidden" onChange={e => { tryAdd(e.target.files?.[0]); e.target.value = ''; }} />
+      <div className="bg-white rounded-[8px] p-[24px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+        <p className="text-[18px] text-[#0e1b3d] mb-[16px]" style={{ fontFamily: font, fontWeight: 700 }}>Documents Uploaded</p>
+        {attachments.length === 0 ? (
+          <p className="text-[14px] text-[#8f94ae]" style={{ fontFamily: font }}>No attachments added yet.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 6px' }}>
+              <thead>
+                <tr>
+                  {DOC_TABLE_COLS.map((col, idx) => (
+                    <th key={col} style={{ background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, borderRadius: idx === 0 ? '8px 0 0 0' : idx === DOC_TABLE_COLS.length - 1 ? '0 8px 0 0' : undefined, paddingLeft: idx === 0 ? 16 : 12 }}>
+                      {col === 'Action' ? (
+                        <span className="text-[16px] text-[#051937] font-semibold whitespace-nowrap" style={{ fontFamily: font }}>{col}</span>
+                      ) : (
+                        <ColumnFilter label={col} labelClass="text-[16px] font-medium text-[#051937]" />
+                      )}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {attachments.map(a => (
+                  <tr key={a.id}>
+                    {[a.name, a.type, `${a.sizeKb} KB`, a.uploadedOn].map((val, j) => (
+                      <td key={j} style={{ background: '#fff', padding: j === 0 ? '10px 12px 10px 16px' : '10px 12px', borderBottom: '1px solid #f0f4ff' }}>
+                        <span className="text-[16px] text-[#0e1b3d]" style={{ fontFamily: font }}>{val}</span>
+                      </td>
+                    ))}
+                    <td style={{ background: '#fff', padding: '10px 12px', borderBottom: '1px solid #f0f4ff' }}>
+                      <div className="flex items-center gap-[16px]">
+                        <button type="button" onClick={() => onRemove(a.id)} className="size-[32px] flex items-center justify-center rounded hover:bg-[#fdf2f3] transition-colors" title="Delete">
+                          <DeleteIcon />
+                        </button>
+                        <button type="button" className="size-[32px] flex items-center justify-center rounded hover:bg-[#f0f4ff] transition-colors" title="Download">
+                          <DownloadIcon />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
-      {error && <p className="text-[13px] text-[#dc3545] mt-[10px]" style={{ fontFamily: font }}>{error}</p>}
-
-      <p className="text-[16px] text-[#0e1b3d] mt-[24px] mb-[10px]" style={{ fontFamily: font, fontWeight: 700 }}>Attachments</p>
-      {attachments.length === 0 ? (
-        <p className="text-[14px] text-[#8f94ae]" style={{ fontFamily: font }}>No attachments added yet.</p>
-      ) : (
-        <div className="rounded-[6px] overflow-hidden" style={{ border: '1px solid #eef1f6' }}>
-          {attachments.map((a, i) => (
-            <div key={a.id} className="flex items-center justify-between px-[14px] py-[9px]" style={{ borderTop: i === 0 ? 'none' : '1px solid #f0f4ff' }}>
-              <span className="text-[14px] text-[#0e1b3d] truncate" style={{ fontFamily: font }}>
-                {a.name} <span className="text-[#8f94ae]">({a.sizeKb} KB)</span>
-              </span>
-              <button type="button" onClick={() => onRemove(a.id)} className="text-[#c0392b] hover:opacity-70 flex-shrink-0 ml-[10px]" aria-label="Delete">
-                <DeleteIcon />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
@@ -117,12 +177,13 @@ function DetailsTable({ rows }: { rows: DiscrepancyRow[] }) {
   ] as const;
 
   return (
-    <div className="rounded-[6px] overflow-x-auto" style={{ border: '1px solid #eef1f6' }}>
-      <table style={{ width: '100%', minWidth: 900, borderCollapse: 'collapse', fontFamily: font }}>
+    <div className="overflow-x-auto">
+      <table style={{ width: '100%', minWidth: 900, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }}>
         <thead>
-          <tr style={{ background: '#e2ebf9' }}>
-            {cols.map(c => (
-              <th key={c.key} className="text-left px-[14px] py-[10px] text-[13px] text-[#0e1b3d] whitespace-nowrap" style={{ fontWeight: 500 }}>
+          <tr>
+            {cols.map((c, i) => (
+              <th key={c.key} className="text-left px-[14px] py-[10px] text-[16px] text-[#051937] whitespace-nowrap"
+                style={{ fontWeight: 500, background: '#a6c2e9', paddingLeft: i === 0 ? 16 : 14, borderRadius: i === 0 ? '8px 0 0 8px' : i === cols.length - 1 ? '0 8px 8px 0' : undefined }}>
                 {c.label}
               </th>
             ))}
@@ -130,9 +191,10 @@ function DetailsTable({ rows }: { rows: DiscrepancyRow[] }) {
         </thead>
         <tbody>
           {rows.map(r => (
-            <tr key={r.id} style={{ borderTop: '1px solid #f0f4ff' }}>
-              {cols.map(c => (
-                <td key={c.key} className="px-[14px] py-[10px] text-[14px] text-[#0e1b3d]" style={{ maxWidth: c.key === 'description' ? 260 : undefined, whiteSpace: c.key === 'description' ? 'normal' : 'nowrap' }}>
+            <tr key={r.id} style={{ boxShadow: '0px 2px 8px rgba(143,155,186,0.14)' }}>
+              {cols.map((c, i) => (
+                <td key={c.key} className="px-[14px] py-[12px] text-[16px] text-[#0e1b3d]"
+                  style={{ background: '#fff', paddingLeft: i === 0 ? 16 : 14, maxWidth: c.key === 'description' ? 260 : undefined, whiteSpace: c.key === 'description' ? 'normal' : 'nowrap', borderRadius: i === 0 ? '8px 0 0 8px' : i === cols.length - 1 ? '0 8px 8px 0' : undefined }}>
                   {(r[c.key as keyof DiscrepancyRow] as string) || ''}
                 </td>
               ))}
@@ -240,21 +302,21 @@ export default function DiscrepancyFeedbackFormPage({ mode, rows, onBack, onSubm
           {mode === 'single' && single && single.conversation.length > 0 && (
             <div className="bg-white rounded-[8px] p-[24px]" style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
               <p className="text-[18px] text-[#0e1b3d] mb-[14px]" style={{ fontFamily: font, fontWeight: 700 }}>Conversation History</p>
-              <div className="rounded-[6px] overflow-hidden" style={{ border: '1px solid #eef1f6' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: font }}>
+              <div className="overflow-x-auto">
+                <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }}>
                   <thead>
-                    <tr style={{ background: '#f8fafd' }}>
-                      <th className="text-left px-[16px] py-[9px] text-[12px] text-[#8f94ae]" style={{ fontWeight: 500, letterSpacing: '0.3px' }}>CREATED BY</th>
-                      <th className="text-left px-[16px] py-[9px] text-[12px] text-[#8f94ae]" style={{ fontWeight: 500, letterSpacing: '0.3px' }}>CREATED DATE</th>
-                      <th className="text-left px-[16px] py-[9px] text-[12px] text-[#8f94ae]" style={{ fontWeight: 500, letterSpacing: '0.3px' }}>COMMENT</th>
+                    <tr>
+                      <th className="text-left px-[16px] py-[10px] text-[16px] text-[#051937] whitespace-nowrap" style={{ fontWeight: 500, background: '#a6c2e9', borderRadius: '8px 0 0 8px' }}>Created By</th>
+                      <th className="text-left px-[16px] py-[10px] text-[16px] text-[#051937] whitespace-nowrap" style={{ fontWeight: 500, background: '#a6c2e9' }}>Created Date</th>
+                      <th className="text-left px-[16px] py-[10px] text-[16px] text-[#051937]" style={{ fontWeight: 500, background: '#a6c2e9', borderRadius: '0 8px 8px 0' }}>Comment</th>
                     </tr>
                   </thead>
                   <tbody>
                     {single.conversation.map((c, i) => (
-                      <tr key={i} style={{ borderTop: '1px solid #f0f4ff' }}>
-                        <td className="px-[16px] py-[10px] text-[14px] text-[#0e1b3d] whitespace-nowrap" style={{ fontWeight: 600 }}>{c.createdBy}</td>
-                        <td className="px-[16px] py-[10px] text-[14px] text-[#0e1b3d] whitespace-nowrap">{c.createdDate}</td>
-                        <td className="px-[16px] py-[10px] text-[14px] text-[#0e1b3d]">{c.comment}</td>
+                      <tr key={i} style={{ boxShadow: '0px 2px 8px rgba(143,155,186,0.14)' }}>
+                        <td className="px-[16px] py-[12px] text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ background: '#fff', fontWeight: 600, borderRadius: '8px 0 0 8px' }}>{c.createdBy}</td>
+                        <td className="px-[16px] py-[12px] text-[16px] text-[#0e1b3d] whitespace-nowrap" style={{ background: '#fff' }}>{c.createdDate}</td>
+                        <td className="px-[16px] py-[12px] text-[16px] text-[#0e1b3d]" style={{ background: '#fff', borderRadius: '0 8px 8px 0' }}>{c.comment}</td>
                       </tr>
                     ))}
                   </tbody>

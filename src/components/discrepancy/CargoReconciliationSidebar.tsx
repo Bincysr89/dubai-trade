@@ -33,8 +33,8 @@ export default function CargoReconciliationSidebar({ active, onSelect, collapsed
   onToggleCollapsed: () => void;
 }) {
   return (
-    <div className="flex-shrink-0 rounded-[12px] overflow-hidden flex flex-col transition-all duration-300"
-      style={{ width: collapsed ? 64 : 240, background: '#e4efff', border: '1px solid #a6c2e9' }}>
+    <div className="flex-shrink-0 rounded-[12px] overflow-hidden flex flex-col transition-all duration-300 max-md:!w-16"
+      style={{ width: collapsed ? 64 : 180, background: '#e4efff', border: '1px solid #a6c2e9' }}>
       <button onClick={onToggleCollapsed} className="flex items-center justify-center py-[12px] border-b border-[#a6c2e9] w-full flex-shrink-0" title={collapsed ? 'Expand panel' : 'Collapse panel'}>
         <span className="size-[32px] rounded-full flex items-center justify-center bg-white transition-colors hover:bg-[#eef4ff]" style={{ border: '1.5px solid #a6c2e9' }}>
           <svg viewBox="0 0 20 20" className="size-[16px] transition-transform duration-300" style={{ transform: collapsed ? 'rotate(180deg)' : 'none' }} fill="none" stroke="#1360d2" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -57,7 +57,7 @@ export default function CargoReconciliationSidebar({ active, onSelect, collapsed
               <MenuIcon menu={item.key} />
             </div>
             {!collapsed && (
-              <span className="text-[16px] text-[#0e1b3d] leading-tight whitespace-nowrap overflow-hidden" style={{ fontFamily: font, fontWeight: isActive ? 700 : 400 }}>
+              <span className="text-[16px] text-[#0e1b3d] leading-tight flex-1 min-w-0" style={{ fontFamily: font, fontWeight: isActive ? 700 : 400, wordBreak: 'break-word' }}>
                 {item.label}
               </span>
             )}

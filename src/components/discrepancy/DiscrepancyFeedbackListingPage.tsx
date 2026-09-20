@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import Header from '../Header';
 import DTSelect from '../DTSelect';
 import FloatingField from '../FloatingField';
@@ -11,6 +11,7 @@ import {
 } from './discrepancyData';
 
 const font = "'Dubai', sans-serif";
+const COMMENT_COL_W = 160;
 
 const LOCKED_COLUMNS: ColDef[] = [{ key: 'status', label: 'Action Status' }];
 
@@ -32,23 +33,15 @@ const SearchIcon = () => (
   </svg>
 );
 
-/* ── Reconciliation-type tab button — bordered, fills solid blue when active ── */
+/* ── Reconciliation-type tab button — matches the master listing template's
+     All Records / E-Payment pill (white container, light inactive tint) ── */
 function TypeTab({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button type="button" onClick={onClick}
-      className="h-[48px] px-[20px] flex items-center justify-center rounded-[4px] border text-[16px] transition-colors"
-      style={{ fontFamily: font, borderColor: active ? '#1360d2' : '#d5ddfb', background: active ? '#1360d2' : '#fff', color: active ? '#fff' : '#0e1b3d', fontWeight: active ? 500 : 400 }}>
+      className={`h-[40px] px-[16px] rounded-[4px] text-[16px] font-medium transition-colors ${active ? 'bg-[#1360d2] text-white' : 'bg-[#f7faff] text-[#697498] border border-[#e5efff]'}`}
+      style={{ fontFamily: font }}>
       {children}
     </button>
-  );
-}
-
-/* ── Small uppercase section divider label used inside the Advance Filters panel ── */
-function FilterSectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="col-span-full text-[12px] text-[#8f94ae] uppercase mt-[4px]" style={{ fontFamily: font, fontWeight: 600, letterSpacing: '0.6px' }}>
-      {children}
-    </p>
   );
 }
 
@@ -57,7 +50,7 @@ type Props = { onBack: () => void; sidebar?: ReactNode };
 export default function DiscrepancyFeedbackListingPage({ onBack, sidebar }: Props) {
   const [groups, setGroups] = useState<RotationGroup[]>(ROTATION_GROUPS);
   const [reconType, setReconType] = useState<ReconciliationType>('Export');
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set(ROTATION_GROUPS.map(g => g.rotationNo)));
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const [searchText, setSearchText] = useState('');
@@ -93,6 +86,18 @@ export default function DiscrepancyFeedbackListingPage({ onBack, sidebar }: Prop
   const orderedVisibleCols = COLUMNS.filter(c => visibleCols.includes(c.key));
 
   const [feedbackTarget, setFeedbackTarget] = useState<DiscrepancyRow[] | null>(null);
+
+  const commentColRef = useRef<HTMLTableCellElement | null>(null);
+  const [commentColW, setCommentColW] = useState(COMMENT_COL_W);
+  useEffect(() => {
+    const el = commentColRef.current;
+    if (!el) return;
+    const measure = () => setCommentColW(el.offsetWidth);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [groups, reconType]);
 
   const switchTab = (t: ReconciliationType) => {
     setReconType(t);
@@ -187,27 +192,32 @@ export default function DiscrepancyFeedbackListingPage({ onBack, sidebar }: Prop
     <div className="fixed inset-0 z-50 bg-[#f8fafd] flex flex-col overflow-hidden">
       <div className="flex-shrink-0"><Header onServiceCatalogue={onBack} /></div>
 
-      <div className="flex-1 overflow-y-auto flex px-4 sm:px-10 pb-8 gap-[12px]">
-        {sidebar}
-        <div className="flex-1 min-w-0">
-        {/* Breadcrumb + agent banner */}
-        <div className="flex items-center justify-between mt-[16px] mb-[8px] flex-wrap gap-[10px]">
-          <div className="flex items-center gap-[4px] text-[16px]" style={{ fontFamily: font }}>
-            <span className="text-[#8f94ae] cursor-pointer hover:text-[#1360d2] transition-colors" onClick={onBack}>Home</span>
-            <span className="text-[#dc3545] px-[4px]">/</span>
-            <span className="text-[#8f94ae] cursor-pointer hover:text-[#1360d2] transition-colors" onClick={onBack}>Service Catalog</span>
-            <span className="text-[#dc3545] px-[4px]">/</span>
-            <span className="text-[#111838] font-medium">Cargo Reconciliation</span>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Breadcrumb + agent banner + title — full width, above the sidebar/content split */}
+        <div className="px-4 sm:px-10 flex-shrink-0">
+          <div className="flex items-center justify-between mt-[16px] mb-[8px] flex-wrap gap-[10px]">
+            <div className="flex items-center gap-[4px] text-[16px]" style={{ fontFamily: font }}>
+              <span className="text-[#8f94ae] cursor-pointer hover:text-[#1360d2] transition-colors" onClick={onBack}>Home</span>
+              <span className="text-[#dc3545] px-[4px]">/</span>
+              <span className="text-[#8f94ae] cursor-pointer hover:text-[#1360d2] transition-colors" onClick={onBack}>Service Catalog</span>
+              <span className="text-[#dc3545] px-[4px]">/</span>
+              <span className="text-[#111838] font-medium">Cargo Reconciliation</span>
+            </div>
+            <div className="px-[16px] py-[5px] rounded-[4px] text-[16px] text-[#0e1b3d]" style={{ background: '#e2ebf9', fontFamily: font }}>
+              AE-1019056- Dubai Customs - Test LLC
+            </div>
           </div>
-          <div className="px-[16px] py-[5px] rounded-[4px] text-[16px] text-[#0e1b3d]" style={{ background: '#e2ebf9', fontFamily: font }}>
-            AE-1019056- Dubai Customs - Test LLC
-          </div>
+
+          <h1 className="text-[28px] font-bold text-[#0e1b3d] mb-[16px]" style={{ fontFamily: font }}>
+            Provide Discrepancy Feedback
+          </h1>
         </div>
 
-        <h1 className="text-[28px] font-bold text-[#0e1b3d] mb-[16px]" style={{ fontFamily: font }}>
-          Provide Discrepancy Feedback
-        </h1>
-
+        {/* Sidebar + content */}
+        <div className="flex flex-1 overflow-hidden px-4 sm:px-10 pb-8 gap-[12px]">
+          {sidebar}
+          <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+          <div className="flex-1 overflow-y-auto pb-4">
         {/* Toolbar row 1 — Advance Filters, plain rotation-number search, Need Help, primary action */}
         <div className="flex items-center gap-[10px] mb-[16px] flex-wrap">
           <button
@@ -260,50 +270,45 @@ export default function DiscrepancyFeedbackListingPage({ onBack, sidebar }: Prop
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" /></svg>
             </button>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
               <DTSelect label="Discrepancy Type" value={dfAttribute} onChange={setDfAttribute} options={DISCREPANCY_ATTRIBUTE_OPTIONS.map(a => ({ value: a, label: a }))} />
               <DTSelect label="Discrepancy Status" value={dfStatus} onChange={setDfStatus} options={DISCREPANCY_STATUS_OPTIONS.map(s => ({ value: s, label: ACTION_STATUS_LABELS[s] }))} />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-              <FilterSectionLabel>Reference Numbers</FilterSectionLabel>
               <FloatingField label={labels.bol} placeholder="e.g. BOL900131" value={dfBol} onChange={setDfBol} />
               <FloatingField label="MRN" placeholder="e.g. 1900131" value={dfMrn} onChange={setDfMrn} />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-              <FilterSectionLabel>Date Range</FilterSectionLabel>
               <DateInputOutlined label="From Date" value={dfDateFrom} onChange={setDfDateFrom} />
               <DateInputOutlined label="To Date" value={dfDateTo} onChange={setDfDateTo} />
-            </div>
-
-            <div className="flex gap-2 mt-5 pt-4" style={{ borderTop: '1px solid #eef1f6' }}>
-              <button onClick={applyFilters} className="h-[44px] px-5 rounded-[4px] text-[15px] text-white" style={{ background: '#1360d2', fontFamily: font }}>Search</button>
-              <button onClick={resetFilters} className="h-[44px] px-5 rounded-[4px] border border-[#1360d2] text-[15px] text-[#1360d2] bg-white hover:bg-[#f0f4ff]" style={{ fontFamily: font }}>Reset</button>
+              <div className="flex items-center gap-[10px]">
+                <button onClick={resetFilters} className="h-[56px] px-5 rounded-[4px] border border-[#1360d2] text-[15px] text-[#1360d2] bg-white hover:bg-[#f0f4ff] flex-shrink-0" style={{ fontFamily: font }}>Reset</button>
+                <button onClick={applyFilters} className="h-[56px] px-5 rounded-[4px] text-[15px] text-white flex-shrink-0" style={{ background: '#1360d2', fontFamily: font }}>Apply</button>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Toolbar row 2 — Discrepancy-as-on date badge (centered) + Columns (right) */}
-        <div className="flex items-center gap-[10px] mb-[16px]">
+        {/* Toolbar row 2 — reconciliation-type tabs (left) + Discrepancy-as-on date badge (centered) + Columns (right), one row, mirrors the master listing template */}
+        <div className="flex items-center gap-[12px] mb-[16px] flex-wrap">
+          <div className="bg-white flex items-center gap-[12px] h-[48px] px-[16px] py-[8px] rounded-[6px] flex-shrink-0" style={{ boxShadow: '0px 4px 10px rgba(0,0,0,0.08)' }}>
+            <TypeTab active={reconType === 'Export'} onClick={() => switchTab('Export')}>{RECON_TYPE_LABELS.Export}</TypeTab>
+            <TypeTab active={reconType === 'Import'} onClick={() => switchTab('Import')}>{RECON_TYPE_LABELS.Import}</TypeTab>
+          </div>
+
           <div className="flex-1 flex justify-center">
             <StatusAsOnBadge label="Discrepancy" fromValue={dateFrom} toValue={dateTo}
               onApply={(f, t) => { setDateFrom(f); setDateTo(t); setDfDateFrom(f); setDfDateTo(t); }} />
           </div>
+
           <button
             onClick={() => setManageColsOpen(true)}
-            className="h-[48px] px-[14px] flex items-center gap-[6px] rounded-[4px] border border-[#d5ddfb] bg-white text-[16px] text-[#0e1b3d] hover:bg-[#f0f4ff] transition-colors"
-            style={{ fontFamily: font }}
+            className="flex items-center gap-[6px] h-[40px] px-[14px] rounded-[6px] bg-white border border-[#d5ddfb] text-[#1360d2] text-[16px] font-medium flex-shrink-0"
+            style={{ fontFamily: font, boxShadow: '0px 4px 10px rgba(0,0,0,0.08)' }}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M10 18H14V16H10V18ZM3 6V8H21V6H3ZM6 13H18V11H6V13Z" fill="#0E1B3D" /></svg>
+            <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#1360d2" strokeWidth="1.6">
+              <rect x="2" y="3" width="4" height="14" rx="1" />
+              <rect x="8" y="3" width="4" height="14" rx="1" />
+              <rect x="14" y="3" width="4" height="14" rx="1" />
+            </svg>
             Columns
           </button>
-        </div>
-
-        {/* Reconciliation type tabs */}
-        <div className="flex items-center gap-[12px] mb-[16px]">
-          <TypeTab active={reconType === 'Export'} onClick={() => switchTab('Export')}>{RECON_TYPE_LABELS.Export}</TypeTab>
-          <TypeTab active={reconType === 'Import'} onClick={() => switchTab('Import')}>{RECON_TYPE_LABELS.Import}</TypeTab>
         </div>
 
         {/* Rotation count */}
@@ -349,7 +354,7 @@ export default function DiscrepancyFeedbackListingPage({ onBack, sidebar }: Prop
                     className="h-[36px] px-[14px] flex items-center gap-[6px] rounded-[4px] border border-[#d5ddfb] bg-white text-[14px] text-[#0e1b3d] hover:bg-[#f0f4ff] transition-colors flex-shrink-0"
                     style={{ fontFamily: font }}
                   >
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v12M7 8l5-5 5 5" strokeLinecap="round" strokeLinejoin="round" /><path d="M4 17v3h16v-3" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v12M7 10l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" /><path d="M4 17v3h16v-3" strokeLinecap="round" strokeLinejoin="round" /></svg>
                     Download
                   </button>
                   <button onClick={() => toggleExpand(g.rotationNo)} className="flex-shrink-0 p-[4px]" aria-label={isOpen ? 'Collapse' : 'Expand'}>
@@ -360,43 +365,49 @@ export default function DiscrepancyFeedbackListingPage({ onBack, sidebar }: Prop
                 </div>
 
                 {isOpen && (
-                  <div className="overflow-x-auto" style={{ borderTop: '1px solid #eef1f6' }}>
-                    <table style={{ width: '100%', minWidth: 1100, borderCollapse: 'collapse', fontFamily: font }}>
+                  <div className="overflow-x-auto px-[16px] pt-[12px] pb-[16px]" style={{ borderTop: '1px solid #eef1f6' }}>
+                    <table style={{ width: '100%', minWidth: 1100, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }}>
                       <thead>
-                        <tr style={{ background: '#e2ebf9' }}>
-                          <th className="px-[16px] py-[10px]" style={{ width: 40 }}>
+                        <tr>
+                          <th className="px-[16px] py-[10px]" style={{ width: 40, background: '#a6c2e9', borderRadius: '8px 0 0 8px' }}>
                             <input type="checkbox" checked={groupAllSelected} onChange={() => toggleGroupSelectAll(g)} className="size-[16px] cursor-pointer" />
                           </th>
                           {orderedVisibleCols.map(c => (
-                            <th key={c.key} className="text-left px-[12px] py-[10px] text-[14px] text-[#0e1b3d] whitespace-nowrap" style={{ fontWeight: 500 }}>
+                            <th key={c.key} className="text-left px-[12px] py-[10px] text-[16px] text-[#051937] whitespace-nowrap" style={{ fontWeight: 500, background: '#a6c2e9' }}>
                               {c.label}
                             </th>
                           ))}
-                          <th className="text-left px-[12px] py-[10px] text-[14px] text-[#0e1b3d] whitespace-nowrap" style={{ fontWeight: 500 }}>Action Status</th>
-                          <th className="text-center px-[12px] py-[10px] text-[14px] text-[#0e1b3d] whitespace-nowrap" style={{ fontWeight: 500 }}>Comment</th>
+                          <th className="text-left px-[12px] py-[10px] text-[16px] text-[#051937] whitespace-nowrap"
+                            style={{ fontWeight: 500, background: '#a6c2e9', position: 'sticky', right: commentColW, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>
+                            Action Status
+                          </th>
+                          <th ref={commentColRef} className="text-center px-[12px] py-[10px] text-[16px] text-[#051937] whitespace-nowrap"
+                            style={{ fontWeight: 500, background: '#a6c2e9', position: 'sticky', right: 0, width: COMMENT_COL_W, borderRadius: '0 8px 8px 0' }}>
+                            Comment
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
                         {g.rows.map(r => {
                           const st = ACTION_STATUS_COLORS[r.status];
                           return (
-                            <tr key={r.id} style={{ borderTop: '1px solid #f0f4ff' }}>
-                              <td className="px-[16px] py-[12px]">
+                            <tr key={r.id} style={{ boxShadow: '0px 2px 8px rgba(143,155,186,0.14)' }}>
+                              <td className="px-[16px] py-[12px]" style={{ background: '#fff', borderRadius: '8px 0 0 8px' }}>
                                 <input type="checkbox" checked={selectedIds.has(r.id)} onChange={() => toggleRow(r.id)} className="size-[16px] cursor-pointer" />
                               </td>
                               {orderedVisibleCols.map(c => (
-                                <td key={c.key} className="px-[12px] py-[12px] text-[14px] text-[#0e1b3d]" style={{ maxWidth: c.key === 'description' ? 240 : undefined, whiteSpace: c.key === 'description' ? 'normal' : 'nowrap' }}>
+                                <td key={c.key} className="px-[12px] py-[12px] text-[16px] text-[#0e1b3d]" style={{ background: '#fff', maxWidth: c.key === 'description' ? 240 : undefined, whiteSpace: c.key === 'description' ? 'normal' : 'nowrap' }}>
                                   {(r as unknown as Record<string, string>)[c.key] ?? ''}
                                 </td>
                               ))}
-                              <td className="px-[12px] py-[12px]">
-                                <span className="inline-flex items-center gap-[5px] px-[10px] py-[3px] rounded-[4px] text-[13px] font-medium whitespace-nowrap" style={{ background: st.bg, color: st.color, fontFamily: font }}>
+                              <td className="px-[12px] py-[12px]" style={{ background: '#fff', position: 'sticky', right: commentColW, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>
+                                <span className="inline-flex items-center gap-[5px] px-[10px] py-[3px] rounded-[4px] text-[15px] font-medium whitespace-nowrap" style={{ background: st.bg, color: st.color, fontFamily: font }}>
                                   {(r.status === 'Info Requested' || r.status === 'Action Required') && <WarningIcon color={st.color} />}
                                   {ACTION_STATUS_LABELS[r.status]}
                                 </span>
                               </td>
-                              <td className="px-[12px] py-[12px] text-center">
-                                <button onClick={() => setFeedbackTarget([r])} className="inline-flex items-center gap-[5px] text-[14px] text-[#1360d2] hover:underline whitespace-nowrap" style={{ fontFamily: font, fontWeight: 500 }}>
+                              <td className="px-[12px] py-[12px] text-center" style={{ background: '#fff', position: 'sticky', right: 0, width: COMMENT_COL_W, borderRadius: '0 8px 8px 0' }}>
+                                <button onClick={() => setFeedbackTarget([r])} className="inline-flex items-center gap-[5px] text-[15px] text-[#1360d2] hover:underline whitespace-nowrap" style={{ fontFamily: font, fontWeight: 500 }}>
                                   <CommentIcon />
                                   Add Comment
                                 </button>
@@ -412,6 +423,8 @@ export default function DiscrepancyFeedbackListingPage({ onBack, sidebar }: Prop
             );
           })}
         </div>
+          </div>
+          </div>
         </div>
       </div>
 

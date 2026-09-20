@@ -3,10 +3,11 @@
   "configurations": [
     {
       "name": "dubai-trade",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["vite", "--port", "5184"],
       "cwd": "/Users/rogerbincy/dubai-trade",
-      "port": 5183
+      "port": 5184,
+      "autoPort": true
     }
   ]
 }
