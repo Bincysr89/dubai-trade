@@ -1650,7 +1650,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
           )}
 
           {/* Center: search bar */}
-          <div className="flex items-center bg-white border border-[#d5ddfb] rounded-[4px] h-[48px] flex-1 min-w-[180px] max-w-[420px] relative">
+          <div className="flex items-center bg-white border border-[#d5ddfb] rounded-[4px] h-[48px] flex-1 min-w-[320px] max-w-[420px] relative">
             {/* Type dropdown */}
             <button
               type="button"
@@ -1688,7 +1688,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
               </div>
             )}
             {/* Input */}
-            <div className="flex items-center flex-1 px-[12px] relative">
+            <div className="flex items-center flex-1 min-w-0 px-[12px] relative">
               <input
                 type="text"
                 value={searchValue}
@@ -1701,7 +1701,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                     ? 'Enter request number'
                     : `${searchType.toLowerCase()}`
                 }
-                className="flex-1 text-[16px] text-[#0e1b3d] focus:outline-none bg-transparent placeholder:text-[#697498]"
+                className="flex-1 min-w-0 text-[16px] text-[#0e1b3d] focus:outline-none bg-transparent placeholder:text-[#697498]"
                 style={{ fontFamily: "'Dubai', sans-serif" }}
               />
               {searchValue !== '' && (
@@ -2604,7 +2604,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
           )}
 
           {/* Date range pill — hidden on ePayment listings unless Payment Status is Success */}
-          <div className="flex-1 flex justify-center">
+          <div className="flex justify-center basis-full lg:basis-auto lg:flex-1">
             {showDateRangeCard && (
               <StatusAsOnBadge
                 label={activeMenu === 'Refund & Claims' && activeTab !== 'epay' ? 'Claim Status' : 'Status'}

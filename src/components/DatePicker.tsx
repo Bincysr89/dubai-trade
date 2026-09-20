@@ -691,14 +691,17 @@ export function StatusAsOnBadge({
   }, [open]);
 
   return (
-    <div ref={wrapRef} style={{ position: 'relative', display: 'inline-flex' }}>
-      <div className="inline-flex items-center gap-[8px] h-[40px] px-[20px] rounded-[8px] border border-[#d5ddfb] bg-white text-[16px] text-[#0e1b3d]" style={{ fontFamily: FONT }}>
-        <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="#1360d2" strokeWidth="1.6">
+    /* flexShrink:0 keeps the pill at its natural width so neighbouring controls wrap to the
+       next line before it is squeezed; maxWidth caps it on very narrow screens, where the
+       card grows in height (min-h, not a fixed h) so the text always stays inside it. */
+    <div ref={wrapRef} style={{ position: 'relative', display: 'inline-flex', flexShrink: 0, maxWidth: '100%' }}>
+      <div className="inline-flex items-center gap-[8px] min-h-[40px] py-[6px] px-[20px] rounded-[8px] border border-[#d5ddfb] bg-white text-[16px] text-[#0e1b3d]" style={{ fontFamily: FONT }}>
+        <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="#1360d2" strokeWidth="1.6" style={{ flexShrink: 0 }}>
           <rect x="3" y="4" width="14" height="13" rx="2" /><path d="M3 8h14M7 2v4M13 2v4" />
         </svg>
         <span>{label} As On {fmtDate(fromValue)} To {fmtDate(toValue)}</span>
         <button type="button" onClick={() => setOpen(o => !o)}
-          className="text-[#1360d2] font-medium hover:opacity-70 flex items-center gap-1">
+          className="text-[#1360d2] font-medium hover:opacity-70 flex items-center gap-1 flex-shrink-0 whitespace-nowrap">
           Modify
           <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#1360d2" strokeWidth="1.6">
             <path d="M14 3l3 3-10 10H4v-3L14 3z" strokeLinejoin="round" />

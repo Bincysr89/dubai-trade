@@ -227,10 +227,10 @@ export default function ServiceListingPage({
           </button>
 
           {/* Search bar */}
-          <div className="flex h-[48px] rounded-[4px] border border-[#d5ddfb] bg-white overflow-visible relative">
+          <div className="flex h-[48px] rounded-[4px] border border-[#d5ddfb] bg-white overflow-visible relative flex-1 min-w-[320px] max-w-full">
             {/* Left label / field selector */}
             <div
-              className="flex items-center gap-[6px] px-[12px] border-r border-[#d5ddfb] select-none min-w-[180px]"
+              className="flex items-center gap-[6px] px-[12px] border-r border-[#d5ddfb] select-none flex-shrink-0"
               style={{ cursor: searchFields ? 'pointer' : 'default' }}
               onClick={() => searchFields && setFieldDropOpen(o => !o)}
             >
@@ -259,13 +259,13 @@ export default function ServiceListingPage({
                 </div>
               )}
             </div>
-            <div className="flex items-center px-[12px] gap-[8px]">
+            <div className="flex items-center px-[12px] gap-[8px] flex-1 min-w-0">
               <input
                 type="text"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder={searchPlaceholder}
-                className="w-[180px] text-[16px] text-[#0e1b3d] placeholder-[#8f94ae] bg-transparent focus:outline-none"
+                className="w-full min-w-0 text-[16px] text-[#0e1b3d] placeholder-[#8f94ae] bg-transparent focus:outline-none"
                 style={{ fontFamily: font }}
               />
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -355,7 +355,7 @@ export default function ServiceListingPage({
 
         {/* Date filter row */}
         <div className="flex items-center justify-between mb-[16px]">
-          <div className="flex-1 flex justify-center">
+          <div className="flex justify-center basis-full lg:basis-auto lg:flex-1">
             <StatusAsOnBadge fromValue={statusFromDate} toValue={statusToDate}
               onApply={(from, to) => { setStatusFromDate(from); setStatusToDate(to); }} />
           </div>

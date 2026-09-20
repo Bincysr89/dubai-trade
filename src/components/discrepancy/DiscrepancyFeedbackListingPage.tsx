@@ -292,7 +292,7 @@ export default function DiscrepancyFeedbackListingPage({ onBack, sidebar }: Prop
             <TypeTab active={reconType === 'Import'} onClick={() => switchTab('Import')}>{RECON_TYPE_LABELS.Import}</TypeTab>
           </div>
 
-          <div className="flex-1 flex justify-center">
+          <div className="flex justify-center basis-full lg:basis-auto lg:flex-1">
             <StatusAsOnBadge label="Discrepancy" fromValue={dateFrom} toValue={dateTo}
               onApply={(f, t) => { setDateFrom(f); setDateTo(t); setDfDateFrom(f); setDfDateTo(t); }} />
           </div>

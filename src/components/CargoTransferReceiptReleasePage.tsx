@@ -664,7 +664,7 @@ export default function CargoTransferReceiptReleasePage({ onBack }: Props) {
             </div>
 
             {/* Status As On — centered */}
-            <div className="flex-1 flex justify-center">
+            <div className="flex justify-center basis-full lg:basis-auto lg:flex-1">
               <StatusAsOnBadge fromValue={statusFromDate} toValue={statusToDate}
                 onApply={(from, to) => { setStatusFromDate(from); setStatusToDate(to); }} />
             </div>
