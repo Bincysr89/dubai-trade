@@ -205,11 +205,7 @@ export default function CWLPaymentPage({
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '14px 40px',
       }}>
-        <button type="button" className="dc-btn dc-btn--outline" onClick={onBack}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="m19 12H5m7-7-7 7 7 7" />
-          </svg>
+        <button type="button" className="dc-btn dc-btn--outline" onClick={onBack}>
           Back
         </button>
         <button

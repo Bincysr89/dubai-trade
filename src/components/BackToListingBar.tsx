@@ -32,12 +32,9 @@ export default function BackToListingBar({ onBack, onBackToListing, rightContent
         {onBack && (
           <button
             onClick={onBack}
-            className="h-[48px] px-[20px] py-[10px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#1360d2] hover:text-white inline-flex items-center gap-[8px] transition-colors"
+            className="h-[48px] px-[20px] py-[10px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
             style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}
           >
-            <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 4l-6 6 6 6" />
-            </svg>
             Back
           </button>
         )}

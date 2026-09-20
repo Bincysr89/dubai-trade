@@ -571,12 +571,10 @@ function MakePaymentView({ service, serviceType, charges, reqNo, onBack, onCompl
         padding: '14px 40px',
       }}>
         <button type="button" onClick={onBack} style={{
-          display: 'inline-flex', alignItems: 'center', gap: 8,
           height: 44, padding: '0 20px', borderRadius: 6,
           border: '1.5px solid #d5ddfb', background: '#fff',
           fontFamily: font, fontSize: 16, color: '#0e1b3d', cursor: 'pointer',
         }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m19 12H5m7-7-7 7 7 7"/></svg>
           Back
         </button>
         <button type="button" className="dc-btn dc-btn--blue" style={{ height: 44, padding: '0 36px' }}
