@@ -93,9 +93,9 @@ export default function CargoTransferSuccessPage({ onBack, requestNumber = '1234
           </div>
 
           <div className="flex items-center gap-[16px]">
-            <button
+            <button data-secondary-btn
               onClick={onBack}
-              className="h-[52px] px-[40px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
+              className="h-[52px] px-[40px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] transition-colors"
               style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, textTransform: 'capitalize' }}
             >
               Back to Listing

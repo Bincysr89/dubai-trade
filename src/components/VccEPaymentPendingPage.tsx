@@ -87,16 +87,16 @@ export default function VccEPaymentPendingPage({
               </svg>
               Make e-Payment
             </button>
-            <button
+            <button data-secondary-btn
               onClick={onChangePaymentMode ?? onBackToListing}
-              className="h-[48px] px-[20px] rounded-[4px] border border-[#1360d2] bg-white text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
+              className="h-[48px] px-[20px] rounded-[4px] border border-[#1360d2] bg-white text-[#1360d2] transition-colors"
               style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, fontSize: 16, minWidth: 180 }}
             >
               Change Payment Mode
             </button>
-            <button
+            <button data-secondary-btn
               onClick={onBackToListing}
-              className="h-[48px] px-[20px] rounded-[4px] border border-[#1360d2] bg-white text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
+              className="h-[48px] px-[20px] rounded-[4px] border border-[#1360d2] bg-white text-[#1360d2] transition-colors"
               style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, fontSize: 16, minWidth: 160 }}
             >
               Back to Listing

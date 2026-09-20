@@ -77,9 +77,9 @@ export default function NRPaymentProcessingPage({
                 </svg>
                 Check e-Payment Status
               </button>
-              <button
+              <button data-secondary-btn
                 onClick={onBackToListing}
-                className="h-[48px] px-[20px] rounded-[4px] border border-[#1360d2] bg-white text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
+                className="h-[48px] px-[20px] rounded-[4px] border border-[#1360d2] bg-white text-[#1360d2] transition-colors"
                 style={{ fontFamily: font, fontWeight: 500, fontSize: 16, minWidth: 160 }}
               >
                 Back to Listing

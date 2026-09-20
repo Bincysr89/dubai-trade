@@ -129,10 +129,10 @@ export default function VccAuditHistoryPage({ onBack, requestNumber = '25365' }:
             <p className="text-[16px] text-[#455174]">Activity log for Request #{requestNumber}</p>
           </div>
           <div className="flex items-center gap-[8px]">
-            <button
+            <button data-secondary-btn
               onClick={expandAll}
               disabled={allOpen}
-              className="h-[36px] px-[14px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-[6px]"
+              className="h-[36px] px-[14px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] transition-colors disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-[6px]"
               style={{ fontWeight: 500 }}
             >
               <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -141,10 +141,10 @@ export default function VccAuditHistoryPage({ onBack, requestNumber = '25365' }:
               </svg>
               Expand All
             </button>
-            <button
+            <button data-secondary-btn
               onClick={collapseAll}
               disabled={allClosed}
-              className="h-[36px] px-[14px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-[6px]"
+              className="h-[36px] px-[14px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] transition-colors disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-[6px]"
               style={{ fontWeight: 500 }}
             >
               <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

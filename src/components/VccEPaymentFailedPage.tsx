@@ -84,9 +84,9 @@ export default function VccEPaymentFailedPage({
             >
               {retryLabel}
             </button>
-            <button
+            <button data-secondary-btn
               onClick={onBackToListing}
-              className="h-[48px] px-[20px] inline-flex items-center justify-center gap-[8px] rounded-[4px] border border-[#1360d2] bg-white text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
+              className="h-[48px] px-[20px] inline-flex items-center justify-center gap-[8px] rounded-[4px] border border-[#1360d2] bg-white text-[#1360d2] transition-colors"
               style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, fontSize: 16, minWidth: 160 }}
             >
               Back to Listing

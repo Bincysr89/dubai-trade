@@ -466,23 +466,23 @@ function SuccessPage({ onBackToListing, onViewClaim, onViewDocs }: { onBackToLis
           </div>
 
           <div className="flex items-center gap-[16px] flex-wrap justify-center">
-            <button
+            <button data-secondary-btn
               onClick={onBackToListing}
-              className="h-[52px] px-[40px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
+              className="h-[52px] px-[40px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] transition-colors"
               style={{ fontFamily: font, fontWeight: 500 }}
             >
               Back to Listing
             </button>
-            <button
+            <button data-secondary-btn
               onClick={() => window.print()}
-              className="h-[52px] px-[40px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
+              className="h-[52px] px-[40px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] transition-colors"
               style={{ fontFamily: font, fontWeight: 500 }}
             >
               Print Acknowledgement Receipt
             </button>
-            <button
+            <button data-secondary-btn
               onClick={onViewDocs}
-              className="h-[52px] px-[40px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
+              className="h-[52px] px-[40px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] transition-colors"
               style={{ fontFamily: font, fontWeight: 500 }}
             >
               View Documents to be Submitted

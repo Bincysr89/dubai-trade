@@ -106,28 +106,16 @@ label {
 }
 
 /* ── Secondary buttons ───────────────────────────────────────────────────────
-   Outlined blue at rest, solid blue with white text on hover — one definition
-   for the whole app, so the hover never drifts back to a pale tint.
+   Outlined at rest; on hover they fill with a light blue tint and keep their own
+   border and text colour — one definition for the whole app.
 
    Marked with a `data-secondary-btn` attribute rather than a utility class, and
-   `!important` is required: many call sites set their resting border/text colour
-   through inline `style`, which would otherwise win over the hover state. */
+   `!important` is required: many call sites set their resting colours through
+   inline `style`, which would otherwise win over the hover state. Only the
+   background is set, so each button keeps whichever blue it already uses. */
 [data-secondary-btn] {
   transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
 }
 [data-secondary-btn]:hover:not(:disabled) {
-  background-color: #1360d2 !important;
-  border-color: #1360d2 !important;
-  color: #ffffff !important;
-}
-/* Icons inside the button follow the label colour. Icons drawn with
-   `fill="none"`/`stroke="currentColor"` already inherit; these rules cover the
-   ones that hard-code a blue stroke or fill. */
-[data-secondary-btn]:hover:not(:disabled) svg[stroke]:not([stroke="none"]),
-[data-secondary-btn]:hover:not(:disabled) svg *[stroke]:not([stroke="none"]) {
-  stroke: #ffffff !important;
-}
-[data-secondary-btn]:hover:not(:disabled) svg[fill]:not([fill="none"]),
-[data-secondary-btn]:hover:not(:disabled) svg *[fill]:not([fill="none"]) {
-  fill: #ffffff !important;
+  background-color: #e2ebf9 !important;
 }

@@ -148,9 +148,9 @@ export default function VccDetailsModal({ open, details, onClose, onDownload }: 
           className="bg-white px-[24px] py-[16px] flex justify-end gap-[12px] flex-shrink-0"
           style={{ borderTop: '1px solid #e2ebf9' }}
         >
-          <button
+          <button data-secondary-btn
             onClick={onClose}
-            className="h-[48px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
+            className="h-[48px] px-[24px] rounded-[4px] border border-[#1360d2] bg-white text-[#1360d2] transition-colors"
             style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, fontSize: 16 }}
           >
             Close

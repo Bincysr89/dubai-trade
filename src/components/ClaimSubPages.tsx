@@ -278,9 +278,9 @@ export function RefundTypePage({
             </div>
             {onViewDeclaration && (
               <div className="mt-[20px]">
-                <button
+                <button data-secondary-btn
                   onClick={onViewDeclaration}
-                  className="h-[40px] px-[18px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors inline-flex items-center gap-[8px]"
+                  className="h-[40px] px-[18px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] transition-colors inline-flex items-center gap-[8px]"
                   style={{ fontWeight: 500 }}
                 >
                   <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">

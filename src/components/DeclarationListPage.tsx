@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import ManageColumnsModal, { ColDef } from './ManageColumnsModal';
 import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
 import Header from './Header';
@@ -268,6 +269,9 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
     return () => document.removeEventListener('mousedown', onDoc);
   }, [toolbarStatusOpen]);
 
+  /* Below md the search bar collapses to an icon; tapping it opens this flyout. */
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+
   // "Claim Requested Date" dropdown inside the Refund & Claims advance filters.
   const [rcReqDateOpen, setRcReqDateOpen] = useState(false);
   const rcReqDateRef = useRef<HTMLDivElement>(null);
@@ -409,6 +413,18 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
   };
   // The toolbar status dropdown is named for what it filters in each module.
   const isEPayView = activeMenu === 'E-Payment' || activeTab === 'epay';
+  const searchTypeOptions =
+    (activeMenu === 'E-Payment' || activeTab === 'epay')
+      ? ['Declaration Number', 'Request Number']
+      : activeMenu === 'VCC'
+      ? ['Request Number', 'VCC Number', 'Chasis Number', 'Declaration Number']
+      : activeMenu === 'Refund & Claims'
+      ? ['Declaration Number', 'Claim Number', 'Request Number']
+      : activeMenu === 'Claim Time Validity Extension'
+      ? ['Request Number']
+      : activeMenu === 'Cargo Transfer'
+      ? ['Cargo Transfer No.', 'Request Number', 'Client Reference Number', 'Container Number', 'MAWB/MBOL']
+      : ['Declaration', 'Request No.', 'Client Ref.', 'MAWB/MBOL'];
   const statusDropdownLabel = isEPayView
     ? 'Payment Status'
     : activeMenu === 'Refund & Claims' || activeMenu === 'Claim Time Validity Extension'
@@ -1650,7 +1666,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
           )}
 
           {/* Center: search bar */}
-          <div className="flex items-center bg-white border border-[#d5ddfb] rounded-[4px] h-[48px] flex-1 min-w-[320px] max-w-[420px] relative">
+          <div className="hidden md:flex items-center bg-white border border-[#d5ddfb] rounded-[4px] h-[48px] flex-1 min-w-[320px] max-w-[420px] relative">
             {/* Type dropdown */}
             <button
               type="button"
@@ -1666,18 +1682,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
             </button>
             {searchTypeOpen && (
               <div className="absolute z-[80] top-[52px] left-0 bg-white rounded-[8px] py-[4px] overflow-hidden" style={{ minWidth: 180, boxShadow: '0px 2px 16px 0px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
-                {(activeMenu === 'E-Payment' || activeTab === 'epay'
-                  ? ['Declaration Number', 'Request Number']
-                  : activeMenu === 'VCC'
-                  ? ['Request Number', 'VCC Number', 'Chasis Number', 'Declaration Number']
-                  : activeMenu === 'Refund & Claims'
-                  ? ['Declaration Number', 'Claim Number', 'Request Number']
-                  : activeMenu === 'Claim Time Validity Extension'
-                  ? ['Request Number']
-                  : activeMenu === 'Cargo Transfer'
-                  ? ['Cargo Transfer No.', 'Request Number', 'Client Reference Number', 'Container Number', 'MAWB/MBOL']
-                  : ['Declaration', 'Request No.', 'Client Ref.', 'MAWB/MBOL']
-                ).map(opt => (
+                {searchTypeOptions.map(opt => (
                   <button
                     key={opt}
                     onClick={() => { setSearchType(opt); setSearchTypeOpen(false); setSearchValue(''); setSearchQuery(''); setEPayReqType(''); setEPayReqTypeOpen(false); }}
@@ -1729,6 +1734,93 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
               </button>
             </div>
           </div>
+
+          {/* Search — collapsed to an icon below md; opens the flyout below */}
+          <button
+            type="button"
+            onClick={() => setMobileSearchOpen(true)}
+            aria-label="Search"
+            className="md:hidden flex items-center justify-center h-[48px] w-[48px] rounded-[4px] border border-[#d4dcfa] bg-white flex-shrink-0"
+          >
+            <svg width="20" height="20" viewBox="0 0 18 18" fill="none">
+              <path fillRule="evenodd" clipRule="evenodd" d="M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z" fill="#0E1B3D" />
+            </svg>
+          </button>
+
+          {mobileSearchOpen && createPortal(
+            <div
+              className="md:hidden fixed top-0 left-0 z-[900] bg-white flex flex-col"
+              style={{ fontFamily: "'Dubai', sans-serif", width: '100vw', height: '100vh' }}
+            >
+              <div className="flex items-center justify-end px-[16px] pt-[16px]">
+                <button
+                  type="button"
+                  onClick={() => { setMobileSearchOpen(false); setSearchTypeOpen(false); }}
+                  aria-label="Close search"
+                  className="size-[32px] inline-flex items-center justify-center rounded-full text-[#0e1b3d] hover:bg-[#f0f4ff] transition-colors"
+                >
+                  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                    <circle cx="12" cy="12" r="10" /><path d="M9 9l6 6M15 9l-6 6" strokeLinecap="round" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="px-[20px] pt-[12px] flex flex-col gap-[20px]">
+                {/* Which field to search — same options as the desktop bar */}
+                <div className="flex flex-wrap gap-[8px]">
+                  {searchTypeOptions.map(opt => (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => { setSearchType(opt); setSearchValue(''); setSearchQuery(''); }}
+                      className="h-[36px] px-[14px] rounded-[18px] text-[14px] border transition-colors"
+                      style={opt === searchType
+                        ? { background: '#1360d2', borderColor: '#1360d2', color: '#fff', fontWeight: 500 }
+                        : { background: '#fff', borderColor: '#d5ddfb', color: '#0e1b3d' }}
+                    >{opt}</button>
+                  ))}
+                </div>
+
+                <div className="flex items-center h-[56px] rounded-[4px] border border-[#d5ddfb] bg-white px-[16px] gap-[12px]">
+                  <input
+                    autoFocus
+                    type="text"
+                    value={searchValue}
+                    onChange={e => { setSearchValue(e.target.value); if (searchQuery && e.target.value.trim() === '') setSearchQuery(''); }}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitSearch(); setMobileSearchOpen(false); } }}
+                    placeholder="Search"
+                    className="flex-1 min-w-0 text-[18px] text-[#0e1b3d] placeholder:text-[#8f94ae] bg-transparent focus:outline-none"
+                  />
+                  {searchValue !== '' && (
+                    <button
+                      type="button"
+                      onClick={() => { setSearchValue(''); setSearchQuery(''); }}
+                      aria-label="Clear search"
+                      className="flex-shrink-0 size-[24px] inline-flex items-center justify-center rounded-full text-[#697498] hover:bg-[#f0f4ff]"
+                    >
+                      <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M5 5l10 10M15 5l-10 10" /></svg>
+                    </button>
+                  )}
+                  <svg width="22" height="22" viewBox="0 0 18 18" fill="none" className="flex-shrink-0">
+                    <path fillRule="evenodd" clipRule="evenodd" d="M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z" fill="#0E1B3D" />
+                  </svg>
+                </div>
+
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => { submitSearch(); setMobileSearchOpen(false); }}
+                    disabled={searchValue.trim() === ''}
+                    className="h-[48px] px-[48px] rounded-[4px] text-[16px] text-white disabled:opacity-40 disabled:cursor-not-allowed"
+                    style={{ background: '#1360d2', fontWeight: 500 }}
+                  >
+                    Search
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body
+          )}
 
           {/* Request Type secondary dropdown — only for standalone ePayments + Request Number */}
           {activeMenu === 'E-Payment' && searchType === 'Request Number' && (

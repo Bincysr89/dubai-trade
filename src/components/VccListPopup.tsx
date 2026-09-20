@@ -107,9 +107,9 @@ export default function VccListPopup({ row, onClose }: Props) {
         </div>
 
         <div className="flex justify-end px-[24px] py-[16px]" style={{ borderTop: '1px solid #e2ebf9' }}>
-          <button
+          <button data-secondary-btn
             onClick={onClose}
-            className="h-[44px] px-[22px] rounded-[4px] border border-[#1360d2] bg-white text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
+            className="h-[44px] px-[22px] rounded-[4px] border border-[#1360d2] bg-white text-[#1360d2] transition-colors"
             style={{ fontWeight: 500, fontSize: 14 }}
           >
             Close

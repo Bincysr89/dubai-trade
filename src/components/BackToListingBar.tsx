@@ -21,18 +21,18 @@ export default function BackToListingBar({ onBack, onBackToListing, rightContent
     >
       <div className="flex items-center gap-[12px]">
         {onBackToListing && (
-          <button
+          <button data-secondary-btn
             onClick={onBackToListing}
-            className="h-[48px] px-[20px] py-[10px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
+            className="h-[48px] px-[20px] py-[10px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] transition-colors"
             style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, textTransform: 'capitalize' }}
           >
             Back to Listing
           </button>
         )}
         {onBack && (
-          <button
+          <button data-secondary-btn
             onClick={onBack}
-            className="h-[48px] px-[20px] py-[10px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] hover:bg-[#1360d2] hover:text-white transition-colors"
+            className="h-[48px] px-[20px] py-[10px] rounded-[4px] border border-[#1360d2] bg-white text-[16px] text-[#1360d2] transition-colors"
             style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500 }}
           >
             Back

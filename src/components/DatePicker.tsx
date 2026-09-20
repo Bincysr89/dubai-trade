@@ -695,16 +695,16 @@ export function StatusAsOnBadge({
        next line before it is squeezed; maxWidth caps it on very narrow screens, where the
        card grows in height (min-h, not a fixed h) so the text always stays inside it. */
     <div ref={wrapRef} style={{ position: 'relative', display: 'inline-flex', flexShrink: 0, maxWidth: '100%' }}>
-      <div className="inline-flex items-center gap-[8px] min-h-[40px] py-[6px] px-[20px] rounded-[8px] border border-[#d5ddfb] bg-white text-[16px] text-[#0e1b3d]" style={{ fontFamily: FONT }}>
-        <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="#1360d2" strokeWidth="1.6" style={{ flexShrink: 0 }}>
-          <rect x="3" y="4" width="14" height="13" rx="2" /><path d="M3 8h14M7 2v4M13 2v4" />
-        </svg>
-        <span>{label} As On {fmtDate(fromValue)} To {fmtDate(toValue)}</span>
+      <div className="inline-flex items-center justify-center gap-[12px] min-h-[44px] py-[8px] px-[28px] rounded-[10px] border border-[#e2e8f5] bg-white text-[16px] text-[#0e1b3d]" style={{ fontFamily: FONT }}>
+        <span style={{ fontWeight: 500 }}>{label} As On {fmtDate(fromValue)} To {fmtDate(toValue)}</span>
         <button type="button" onClick={() => setOpen(o => !o)}
-          className="text-[#1360d2] font-medium hover:opacity-70 flex items-center gap-1 flex-shrink-0 whitespace-nowrap">
+          className="text-[#1360d2] font-medium hover:opacity-70 flex items-center gap-[8px] flex-shrink-0 whitespace-nowrap">
           Modify
-          <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#1360d2" strokeWidth="1.6">
-            <path d="M14 3l3 3-10 10H4v-3L14 3z" strokeLinejoin="round" />
+          {/* Calendar — trailing the label, in place of the old pencil. */}
+          <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#5b8def" strokeWidth="1.7" style={{ flexShrink: 0 }}>
+            <rect x="2.5" y="4" width="15" height="13.5" rx="2.5" />
+            <path d="M2.5 8.5h15M6.5 2v3.5M13.5 2v3.5" strokeLinecap="round" />
+            <rect x="12" y="12" width="3" height="3" rx="0.6" fill="#5b8def" stroke="none" />
           </svg>
         </button>
       </div>

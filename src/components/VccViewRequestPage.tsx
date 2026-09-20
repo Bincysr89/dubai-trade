@@ -204,10 +204,10 @@ export default function VccViewRequestPage({ onBack, requestNumber = '25365', st
             <SectionHeading>VCC / Vehicle Details</SectionHeading>
             {canDownload && (
             <div className="flex items-center gap-[12px] flex-wrap">
-              <button
+              <button data-secondary-btn
                 onClick={downloadSelected}
                 disabled={selected.size === 0}
-                className="h-[40px] px-[16px] inline-flex items-center gap-[8px] rounded-[4px] border border-[#1360d2] bg-white text-[#1360d2] hover:bg-[#1360d2] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-[#1360d2] transition-colors"
+                className="h-[40px] px-[16px] inline-flex items-center gap-[8px] rounded-[4px] border border-[#1360d2] bg-white text-[#1360d2] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-[#1360d2] transition-colors"
                 style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 500, fontSize: 14 }}
               >
                 <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
