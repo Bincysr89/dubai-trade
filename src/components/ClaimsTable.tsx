@@ -8,7 +8,7 @@ import { useTableBehaviors, DragDots, ScrollArrows } from '../hooks/useTableBeha
 
 const font = "'Dubai', sans-serif";
 
-type Status = 'Under Processing' | 'Completed' | 'Suspended' | 'Draft' | 'Submitted' | 'Payment Pending';
+type Status = 'Under Processing' | 'Completed' | 'Suspended' | 'Draft' | 'Submitted' | 'Payment Pending' | 'Registered' | 'Rejected';
 type FlyoutId = 'view' | 'amend' | 'cancel' | 'print' | 'viewDocs' | 'history' | 'uploadDoc' | 'printReceipt' | 'continue' | 'suspensionResponse' | 'viewRequest' | 'createFromRejected' | 'makePayment';
 
 const STATUS_STYLE: Record<Status, { bg: string; color: string }> = {
@@ -18,7 +18,13 @@ const STATUS_STYLE: Record<Status, { bg: string; color: string }> = {
   'Draft':            { bg: 'rgba(105,116,152,0.10)', color: '#697498' },
   'Submitted':        { bg: 'rgba(19,96,210,0.10)',   color: '#1360d2' },
   'Payment Pending':  { bg: 'rgba(255,169,26,0.16)',  color: '#b45309' },
+  'Registered':       { bg: 'rgba(124,58,237,0.10)',  color: '#7c3aed' },
+  'Rejected':         { bg: 'rgba(220,53,69,0.10)',   color: '#dc3545' },
 };
+
+/* The Claim Status / Request Status dropdowns are restricted to the claim lifecycle values —
+   Suspended / Payment Pending / Draft remain valid row states but aren't filter options. */
+export const CLAIM_STATUS_OPTIONS: Status[] = ['Submitted', 'Registered', 'Under Processing', 'Rejected', 'Completed'];
 
 const ICONS: Record<FlyoutId, React.ReactNode> = {
   view:         <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z" /><circle cx="10" cy="10" r="2.5" /></svg>,
@@ -93,6 +99,9 @@ export type ClaimRow = {
   claimantCode: string;
   submissionDate: string;
   status: Status;
+  /** Status of the claim *request* itself — tracked separately from the claim status and
+      rendered as its own static column ahead of Claim Status. */
+  requestStatus: Status;
   remark: string;
   // Generic "request" fields — only populated for non-claim requests (e.g. Claim Time Validity Extension)
   // surfaced via a Request Number search on the main listing.
@@ -118,28 +127,28 @@ const CLAIM_ROWS: ClaimRow[] = [
       { declNo: '305-08812346-24', date: '11/14/2024', category: 'Freezone Export', ownerCode: 'A180 - IMPORTER SONY GULF UAE', claimExpiry: '07/14/2025', exportExpiry: '06/14/2025' },
       { declNo: '305-08812347-24', date: '11/20/2024', category: 'Freezone Export', ownerCode: 'A180 - IMPORTER SONY GULF UAE', claimExpiry: '07/20/2025', exportExpiry: '06/20/2025' },
     ],
-    depositType: 'Non Remittance Claim', claimantName: 'SW Logistics LLC', claimantCode: 'AE-9106286', submissionDate: '29/06/2026', status: 'Submitted', remark: '—',
+    depositType: 'Non Remittance Claim', claimantName: 'SW Logistics LLC', claimantCode: 'AE-9106286', submissionDate: '29/06/2026', status: 'Submitted', requestStatus: 'Submitted', remark: '—',
   },
   {
     reqNo: '4701740', claimNo: '3842063', ver: '1', claimType: 'Refund of Deposits',
     declarations: [
       { declNo: '105-01426431-24', date: '09/10/2024', category: 'Import for Re Export', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '04/03/2025', exportExpiry: '03/08/2025' },
     ],
-    depositType: 'Alternative Duty Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/01/2024', status: 'Under Processing', remark: '1 sub claim Settled / Approved',
+    depositType: 'Alternative Duty Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/01/2024', status: 'Under Processing', requestStatus: 'Registered', remark: '1 sub claim Settled / Approved',
   },
   {
     reqNo: '4701751', claimNo: '3842003', ver: '1', claimType: 'Refund of Deposits',
     declarations: [
       { declNo: '101-04498436-24', date: '12/05/2024', category: 'Missing Document Deposit', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '04/03/2025', exportExpiry: 'N/A' },
     ],
-    depositType: 'Missing Document Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/04/2024', status: 'Submitted', remark: '1 sub claim Settled / Approved',
+    depositType: 'Missing Document Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/04/2024', status: 'Submitted', requestStatus: 'Submitted', remark: '1 sub claim Settled / Approved',
   },
   {
     reqNo: '4701762', claimNo: '3842082', ver: '1', claimType: 'Refund of Deposits',
     declarations: [
       { declNo: '202-08812205-24', date: '08/14/2024', category: 'CDM Deposit', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '06/15/2025', exportExpiry: 'N/A' },
     ],
-    depositType: 'CDM Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/06/2024', status: 'Under Processing', remark: '—',
+    depositType: 'CDM Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/06/2024', status: 'Under Processing', requestStatus: 'Registered', remark: '—',
   },
   {
     reqNo: '4701770', claimNo: '3842091', ver: '1', claimType: 'Refund of Deposits',
@@ -148,28 +157,28 @@ const CLAIM_ROWS: ClaimRow[] = [
       { declNo: '302-04490111-24', date: '11/02/2024', category: 'Cargo Transfer from CH to CH',  ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '06/01/2025', exportExpiry: 'N/A' },
       { declNo: '303-07731209-24', date: '09/18/2024', category: 'Bonded Movement',                ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '05/20/2025', exportExpiry: 'N/A' },
     ],
-    depositType: 'Cargo Transfer Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/02/2024', status: 'Completed', remark: '1 sub claim Settled / Approved',
+    depositType: 'Cargo Transfer Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/02/2024', status: 'Completed', requestStatus: 'Completed', remark: '1 sub claim Settled / Approved',
   },
   {
     reqNo: '4701781', claimNo: '3842105', ver: '1', claimType: 'Refund of Deposits',
     declarations: [
       { declNo: '410-09912044-24', date: '07/15/2024', category: 'Declaration Amendment - Deposit', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '07/01/2025', exportExpiry: 'N/A' },
     ],
-    depositType: 'Declaration Amendment - Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/08/2024', status: 'Suspended', remark: '—',
+    depositType: 'Declaration Amendment - Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/08/2024', status: 'Suspended', requestStatus: 'Under Processing', remark: '—',
   },
   {
     reqNo: '4701799', claimNo: '3842118', ver: '1', claimType: 'Refund of Deposits',
     declarations: [
       { declNo: '510-03318821-24', date: '06/22/2024', category: 'Declaration Cancellation - Deposit', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '06/30/2025', exportExpiry: 'N/A' },
     ],
-    depositType: 'Declaration Cancellation - Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/10/2024', status: 'Payment Pending', remark: '—',
+    depositType: 'Declaration Cancellation - Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '12/10/2024', status: 'Payment Pending', requestStatus: 'Registered', remark: '—',
   },
   {
     reqNo: '231626', claimNo: '—', ver: '1', claimType: 'Claim Time Validity Extension',
     declarations: [
       { declNo: '4010001887026', date: '03/08/2026', category: 'Temporary Admission from ROW to Local', ownerCode: "AE-8122451 - M&M's special holding private company", claimExpiry: '29/04/2027', exportExpiry: '29/01/2027' },
     ],
-    depositType: 'Deposit Alternative duty rate', claimantName: "M&M's special holding private company associated with 1900 Waverly Co United arab emirates L.L.C", claimantCode: 'AE-8122451', submissionDate: '03/08/2026', status: 'Under Processing', remark: '—',
+    depositType: 'Deposit Alternative duty rate', claimantName: "M&M's special holding private company associated with 1900 Waverly Co United arab emirates L.L.C", claimantCode: 'AE-8122451', submissionDate: '03/08/2026', status: 'Under Processing', requestStatus: 'Under Processing', remark: '—',
     transactionType: 'Claim Time Validity Extension', requestedFor: 'AE-8122451',
     registrationNo: '547', declarationOwnerName: "M&M's special holding private company associated with 1900 Waverly Co United arab emirates L.L.C ( Business )", declarationType: 'Temporary Admission from ROW to Local', customsBroker: 'AE-8122451', extReason: 'extension request',
     extDaysRequested: '100', extDaysApproved: '0', extChargeType: 'Deposit Alternative duty rate', extAmount: '2,000.00',
@@ -182,7 +191,7 @@ const CLAIM_ROWS: ClaimRow[] = [
       { declNo: '105-01426502-24', date: '16/10/2024', category: 'Import for Re Export', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '12/03/2025', exportExpiry: '11/08/2025' },
       { declNo: '105-01426503-24', date: '18/10/2024', category: 'Import for Re Export', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '14/03/2025', exportExpiry: '13/08/2025' },
     ],
-    depositType: 'Alternative Duty Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '18/12/2024', status: 'Completed', remark: '1 sub claim rejected',
+    depositType: 'Alternative Duty Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '18/12/2024', status: 'Completed', requestStatus: 'Completed', remark: '1 sub claim rejected',
     transactionType: 'New Claim', requestedFor: 'AE-1019056',
   },
   {
@@ -192,7 +201,7 @@ const CLAIM_ROWS: ClaimRow[] = [
       { declNo: '105-01426602-24', date: '22/10/2024', category: 'Import for Re Export', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '18/03/2025', exportExpiry: '17/08/2025' },
       { declNo: '105-01426603-24', date: '24/10/2024', category: 'Import for Re Export', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '20/03/2025', exportExpiry: '19/08/2025' },
     ],
-    depositType: 'Alternative Duty Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '24/12/2024', status: 'Completed', remark: '2 sub claim rejected',
+    depositType: 'Alternative Duty Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '24/12/2024', status: 'Completed', requestStatus: 'Rejected', remark: '2 sub claim rejected',
   },
   {
     reqNo: '4701850', claimNo: '3842200', ver: '1', claimType: 'Refund on Auction Proceed',
@@ -200,7 +209,7 @@ const CLAIM_ROWS: ClaimRow[] = [
       { declNo: 'LOT-000112', date: '14/03/2025', category: 'AUC-2025-0041', ownerCode: 'AE-9106286 - SW LOGISTICS LLC', claimExpiry: 'N/A', exportExpiry: 'N/A' },
       { declNo: 'LOT-000113', date: '14/03/2025', category: 'AUC-2025-0041', ownerCode: 'AE-9106286 - SW LOGISTICS LLC', claimExpiry: 'N/A', exportExpiry: 'N/A' },
     ],
-    depositType: 'Refund on Auction Proceed', claimantName: 'SW LOGISTICS LLC', claimantCode: 'AE-9106286', submissionDate: '29/06/2026', status: 'Under Processing', remark: '—',
+    depositType: 'Refund on Auction Proceed', claimantName: 'SW LOGISTICS LLC', claimantCode: 'AE-9106286', submissionDate: '29/06/2026', status: 'Under Processing', requestStatus: 'Registered', remark: '—',
   },
 ];
 
@@ -211,14 +220,14 @@ const DRAFT_ROWS: ClaimRow[] = [
       { declNo: '105-09977250-24', date: '09/10/2024', category: 'Import for Re Export', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '04/03/2025', exportExpiry: '03/08/2025' },
       { declNo: '105-09977251-24', date: '09/15/2024', category: 'Import',               ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '05/15/2025', exportExpiry: 'N/A'         },
     ],
-    depositType: 'Deposit Alternative Duty Rate', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '—', status: 'Draft', remark: '—',
+    depositType: 'Deposit Alternative Duty Rate', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '—', status: 'Draft', requestStatus: 'Draft', remark: '—',
   },
   {
     reqNo: '231699', claimNo: '—', ver: '1', claimType: 'Claim Time Validity Extension',
     declarations: [
       { declNo: '4010001887099', date: '15/03/2026', category: 'Import for Re Export', ownerCode: 'AE-1019056 - CONSOLIDATED SHIPPING SERVICES L.L.C', claimExpiry: '20/05/2026', exportExpiry: '18/02/2026' },
     ],
-    depositType: 'Alternative Duty Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '—', status: 'Draft', remark: '—',
+    depositType: 'Alternative Duty Deposit', claimantName: 'CONSOLIDATED SHIPPING SERVICES L.L.C', claimantCode: 'AE-1019056', submissionDate: '—', status: 'Draft', requestStatus: 'Draft', remark: '—',
     transactionType: 'Claim Time Validity Extension', requestedFor: 'AE-1019056',
   },
 ];
@@ -256,10 +265,10 @@ function DeclarationsModal({ declarations, chargeType, subClaimStatus, onClose, 
           <div className="border border-[#eef1f6] rounded-[8px]" style={{ position: 'relative' }}>
             <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={STATUS_W + ACTION_W} />
             <div ref={scrollRef} onScroll={handleScroll} className="overflow-x-auto">
-              <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 1000, fontFamily: font }}>
+              <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 820, fontFamily: font }}>
                 <thead>
                   <tr style={{ background: '#a6c2e9' }}>
-                    {['#', 'Declaration No.', 'Date', 'Declaration Type', 'Charge Type', 'Owner Code', 'Claim Expiry', 'Export Expiry'].map((h, i) => (
+                    {['#', 'Declaration No.', 'Declaration Clearance Date', 'Declaration Type', 'Charge Type', 'Owner Details'].map((h, i) => (
                       <th key={h} className="text-left text-[16px] text-[#000]" style={{ padding: '12px', fontWeight: 500, whiteSpace: 'nowrap', width: i === 0 ? 44 : undefined }}>
                         {h}
                       </th>
@@ -289,8 +298,6 @@ function DeclarationsModal({ declarations, chargeType, subClaimStatus, onClose, 
                       <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'normal', lineHeight: 1.3 }}>{d.category}</td>
                       <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{chargeType}</td>
                       <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'normal', lineHeight: 1.3, maxWidth: 200 }}>{d.ownerCode}</td>
-                      <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{d.claimExpiry}</td>
-                      <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{d.exportExpiry}</td>
                       <td style={{ position: 'sticky', right: ACTION_W, width: STATUS_W, minWidth: STATUS_W, background: '#fff', padding: '12px 8px', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>
                         <span className="text-[14px] whitespace-nowrap inline-flex items-center justify-center" style={{ background: st.bg, color: st.color, padding: '4px 10px', borderRadius: 4, fontWeight: 500, fontFamily: font }}>
                           {subClaimStatus}
@@ -370,6 +377,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
 
   const STATUS_COLOR: Record<Status, string> = {
     'Under Processing': '#b45309', 'Completed': '#28a745', 'Suspended': '#dc3545', 'Draft': '#697498', 'Submitted': '#1360d2', 'Payment Pending': '#b45309',
+    'Registered': '#7c3aed', 'Rejected': '#dc3545',
   };
 
   useEffect(() => {
@@ -401,14 +409,14 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
     const base = showDrafts ? DRAFT_ROWS : CLAIM_ROWS;
     if (requestsOnly) {
       const requestRows = base.filter((r) => r.transactionType === 'Claim Time Validity Extension');
-      const statusFiltered = statusFilter ? requestRows.filter((r) => r.status === statusFilter) : requestRows;
+      const statusFiltered = statusFilter ? requestRows.filter((r) => r.requestStatus === statusFilter) : requestRows;
       if (!reqSearchActive) return statusFiltered;
       const q = searchReqNo!.trim().toLowerCase();
       return statusFiltered.filter((r) => r.reqNo.toLowerCase().includes(q));
     }
     if (reqSearchActive) {
       const q = searchReqNo!.trim().toLowerCase();
-      const statusFiltered = statusFilter ? base.filter((r) => r.status === statusFilter) : base;
+      const statusFiltered = statusFilter ? base.filter((r) => r.requestStatus === statusFilter) : base;
       return statusFiltered.filter((r) => r.reqNo.toLowerCase().includes(q));
     }
     // Non-claim requests (e.g. Claim Time Validity Extension) only surface via Request Number search.
@@ -425,21 +433,24 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
     return row.declarations.find((d) => d.declNo.toLowerCase().includes(q))?.declNo ?? row.declarations[0]?.declNo ?? '—';
   };
 
-  const CLAIMS_COL_DEFS: (ColDef & { w: number; draftsOnly?: boolean; claimsOnly?: boolean })[] = [
-    { key: 'reqNo',           label: 'Claim Request No.',     w: 150 },
+  /* `configHidden` columns stay available to the dynamic search views (Declaration Number /
+     Request Number results) but are not offered in the Columns configuration popup. */
+  const CLAIMS_COL_DEFS: (ColDef & { w: number; draftsOnly?: boolean; claimsOnly?: boolean; configHidden?: boolean })[] = [
+    { key: 'reqNo',           label: 'Request No.',           w: 150 },
     { key: 'claimNo',         label: 'Claim No.',             w: 120, claimsOnly: true },
     { key: 'claimType',       label: 'Claim Type',            w: 160 },
     { key: 'declarations',    label: 'No. of Declarations',   w: 150 },
-    { key: 'declNo',          label: 'Declaration Number',    w: 180 },
-    { key: 'depositType',     label: 'Charge Type',           w: 220 },
+    { key: 'declNo',          label: 'Declaration Number',    w: 180, configHidden: true },
+    { key: 'depositType',     label: 'Charge Type',           w: 220, configHidden: true },
     { key: 'claimant',        label: 'Claimant Details',      w: 280 },
-    { key: 'submissionDate',  label: 'Claim Submission Date', w: 170 },
+    { key: 'submissionDate',  label: showDrafts ? 'Claim Request Date' : 'Submission Date', w: 170 },
     { key: 'remark',          label: 'Remarks',               w: 200 },
     { key: 'transactionType', label: 'Transaction Type',      w: 200 },
     { key: 'requestedFor',    label: 'Requested For',         w: 160 },
   ];
 
   const applicableDefs = CLAIMS_COL_DEFS.filter((c) => showDrafts ? !c.claimsOnly : !c.draftsOnly);
+  const configurableDefs = applicableDefs.filter((c) => !c.configHidden);
   /* Default listing hides Charge Type, the single-declaration-number column, and the request-only
      columns — those only surface once the user searches by Declaration Number or Request Number
      (see DECL_SEARCH_COLS / REQ_SEARCH_COLS below). */
@@ -449,10 +460,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
   const showRequestCols = reqSearchActive || requestsOnly;
   const visibleHeaders = (showRequestCols ? REQ_SEARCH_COLS : declSearchActive ? DECL_SEARCH_COLS : visibleCols)
     .map((k) => applicableDefs.find((c) => c.key === k)!)
-    .filter(Boolean)
-    // "Claim Request No." reads as "Request No." once the listing is narrowed to a single
-    // Request Number search — these rows aren't necessarily claims (e.g. Validity Extension).
-    .map((c) => (showRequestCols && c.key === 'reqNo') ? { ...c, label: 'Request No.' } : c);
+    .filter(Boolean);
 
   const {
     tableRef, scrollRef,
@@ -538,17 +546,27 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
     </div>
   );
 
-  // Declaration-Number search results carry both a per-declaration "Sub Claim Status" and the
-  // overall "Claim Status" as static trailing columns, alongside Action.
+  /* Static (sticky) trailing columns, right to left:
+       Action | Claim Status | Request Status | [Sub Claim Status]
+     "Request Status" always trails the scrolling columns and sits immediately before Claim
+     Status. Request-only listings (Request Number search / Claim Time Validity Extension)
+     have no claim behind them, so Claim Status is dropped there and the status filter moves
+     onto Request Status. A Declaration Number search adds the per-declaration Sub Claim
+     Status ahead of both. */
   const STICKY_STATUS_W = 160;
   const STICKY_ACTION_W = 79;
   const dualStatus = declSearchActive;
-  const stickyWidth = STICKY_ACTION_W + STICKY_STATUS_W * (dualStatus ? 2 : 1);
+  const showClaimStatus = !showRequestCols;
+  const reqStatusLabel = showDrafts ? 'Claim Request Status' : 'Request Status';
+  const claimStatusRight = STICKY_ACTION_W;
+  const reqStatusRight = STICKY_ACTION_W + (showClaimStatus ? STICKY_STATUS_W : 0);
+  const subStatusRight = reqStatusRight + STICKY_STATUS_W;
+  const stickyWidth = subStatusRight + (dualStatus ? STICKY_STATUS_W : 0);
 
   const renderSubClaimStatusCell = (status: Status, i: number) => {
     const st = STATUS_STYLE[status];
     return (
-      <td style={{ position: 'sticky', right: STICKY_ACTION_W + STICKY_STATUS_W, background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: STICKY_STATUS_W, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', borderBottom: '1px solid #f8f8f8', zIndex: openFlyout === i ? 49 : 1 }}>
+      <td style={{ position: 'sticky', right: subStatusRight, background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: STICKY_STATUS_W, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', borderBottom: '1px solid #f8f8f8', zIndex: openFlyout === i ? 49 : 1 }}>
         <span className="text-[16px] whitespace-nowrap inline-flex items-center justify-center" style={{ background: st.bg, color: st.color, padding: '4px 12px', borderRadius: 4, lineHeight: '20px', fontWeight: 500, fontFamily: font }}>
           {status}
         </span>
@@ -556,10 +574,10 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
     );
   };
 
-  const renderStatusCell = (status: Status, i: number) => {
+  const renderStatusCell = (status: Status, i: number, right: number = claimStatusRight) => {
     const st = STATUS_STYLE[status];
     return (
-      <td style={{ position: 'sticky', right: 79, background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: 160, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', borderBottom: '1px solid #f8f8f8', zIndex: openFlyout === i ? 49 : 1 }}>
+      <td style={{ position: 'sticky', right, background: '#fff', padding: '0 12px', height: 60, verticalAlign: 'middle', width: STICKY_STATUS_W, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', borderBottom: '1px solid #f8f8f8', zIndex: openFlyout === i ? 49 : 1 }}>
         <span className="text-[16px] whitespace-nowrap inline-flex items-center justify-center" style={{ background: st.bg, color: st.color, padding: '4px 12px', borderRadius: 4, lineHeight: '20px', fontWeight: 500, fontFamily: font }}>
           {status}
         </span>
@@ -579,9 +597,13 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
     <>
     {showColModal && (
       <ManageColumnsModal
-        columns={applicableDefs}
-        visible={visibleCols.filter((k) => applicableDefs.some((c) => c.key === k))}
-        lockedColumns={[{ key: '_status', label: 'Claim Status' }, { key: '_action', label: 'Action' }]}
+        columns={configurableDefs}
+        visible={visibleCols.filter((k) => configurableDefs.some((c) => c.key === k))}
+        lockedColumns={[
+          { key: '_reqStatus', label: showDrafts ? 'Claim Request Status' : 'Request Status' },
+          { key: '_status', label: 'Claim Status' },
+          { key: '_action', label: 'Action' },
+        ]}
         onSave={setVisibleCols}
         onClose={() => onCloseColModal?.()}
       />
@@ -627,19 +649,34 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
                 </th>
               ))}
               {dualStatus && (
-                <th style={{ position: 'sticky', right: STICKY_ACTION_W + STICKY_STATUS_W, width: STICKY_STATUS_W, minWidth: STICKY_STATUS_W, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
+                <th style={{ position: 'sticky', right: subStatusRight, width: STICKY_STATUS_W, minWidth: STICKY_STATUS_W, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
                   <span className="text-[16px] text-[#051937]">Sub Claim Status</span>
                 </th>
               )}
-              <th style={{ position: 'sticky', right: 79, width: 160, minWidth: 160, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
-                <StatusFilterHeader
-                  label={showRequestCols ? 'Request Status' : 'Claim Status'}
-                  options={Object.keys(STATUS_STYLE)}
-                  value={statusFilter}
-                  onChange={(v) => setStatusFilter(v as Status | null)}
-                  colorMap={STATUS_COLOR}
-                />
+              <th style={{ position: 'sticky', right: reqStatusRight, width: STICKY_STATUS_W, minWidth: STICKY_STATUS_W, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
+                {showClaimStatus ? (
+                  <span className="text-[16px] text-[#051937]">{reqStatusLabel}</span>
+                ) : (
+                  <StatusFilterHeader
+                    label={reqStatusLabel}
+                    options={CLAIM_STATUS_OPTIONS}
+                    value={statusFilter}
+                    onChange={(v) => setStatusFilter(v as Status | null)}
+                    colorMap={STATUS_COLOR}
+                  />
+                )}
               </th>
+              {showClaimStatus && (
+                <th style={{ position: 'sticky', right: claimStatusRight, width: STICKY_STATUS_W, minWidth: STICKY_STATUS_W, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
+                  <StatusFilterHeader
+                    label="Claim Status"
+                    options={CLAIM_STATUS_OPTIONS}
+                    value={statusFilter}
+                    onChange={(v) => setStatusFilter(v as Status | null)}
+                    colorMap={STATUS_COLOR}
+                  />
+                </th>
+              )}
               <th style={{ position: 'sticky', right: 0, width: 79, minWidth: 79, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, zIndex: 2, borderTopRightRadius: 8 }}>
                 <span className="text-[16px] text-[#051937]">Action</span>
               </th>
@@ -674,7 +711,8 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
                 <tr key={i}>
                   {visibleHeaders.map((col) => <React.Fragment key={col.key}>{renderCellByKey(col.key)}</React.Fragment>)}
                   {dualStatus && renderSubClaimStatusCell(row.status, i)}
-                  {renderStatusCell(row.status, i)}
+                  {renderStatusCell(row.requestStatus, i, reqStatusRight)}
+                  {showClaimStatus && renderStatusCell(row.status, i, claimStatusRight)}
                   {renderActionCell(i, row)}
                 </tr>
               );

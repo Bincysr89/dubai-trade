@@ -267,6 +267,18 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
   }, [toolbarStatusOpen]);
+
+  // "Claim Requested Date" dropdown inside the Refund & Claims advance filters.
+  const [rcReqDateOpen, setRcReqDateOpen] = useState(false);
+  const rcReqDateRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!rcReqDateOpen) return;
+    const onDoc = (e: MouseEvent) => {
+      if (rcReqDateRef.current && !rcReqDateRef.current.contains(e.target as Node)) setRcReqDateOpen(false);
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [rcReqDateOpen]);
   const [vccStep, setVccStep] = useState<'list' | 'create' | 'searchResult' | 'retryRequest' | 'amend' | 'viewRequest' | 'paymentSuccess' | 'ePaymentPending' | 'ePaymentSuccess' | 'ePaymentProcessing' | 'ePaymentConfirmed' | 'ePaymentFailed' | 'auditHistory' | 'declarationView' | 'updatePaymentMode' | 'creditDebitFailed' | 'retryPayment'>('list');
   const [selectedVccStatus, setSelectedVccStatus] = useState('');
   const [vccListPopupRow, setVccListPopupRow] = useState<VccRow | null>(null);
@@ -390,13 +402,25 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
     'Declaration':       ['Completed', 'Submitted', 'Payment Pending', 'VAT Payment Pending', 'Declined', 'Cancelled', 'Clearance Inspection'],
     'Acknowledgement':   ['Accepted', 'Pending', 'Declined'],
     'VCC':               ['Submitted', 'Payment Pending', 'Payment Failed', 'Under Processing', 'Completed'],
-    'Refund & Claims':   ['Under Processing', 'Completed', 'Suspended', 'Draft'],
-    'Claim Time Validity Extension': ['Under Processing', 'Completed', 'Suspended', 'Draft'],
+    'Refund & Claims':   ['Submitted', 'Registered', 'Under Processing', 'Rejected', 'Completed'],
+    'Claim Time Validity Extension': ['Submitted', 'Registered', 'Under Processing', 'Rejected', 'Completed'],
     'Cargo Transfer':    ['Completed', 'Submitted', 'Cancelled'],
-    'E-Payment':         ['Pending', 'Completed', 'Failed'],
+    'E-Payment':         ['Pending', 'Success', 'Failed'],
   };
+  // The toolbar status dropdown is named for what it filters in each module.
+  const isEPayView = activeMenu === 'E-Payment' || activeTab === 'epay';
+  const statusDropdownLabel = isEPayView
+    ? 'Payment Status'
+    : activeMenu === 'Refund & Claims' || activeMenu === 'Claim Time Validity Extension'
+    ? 'Claim Status'
+    : 'Status';
+  /* ePayment listings default to no date filter at all — the Date Range card only appears
+     once the user narrows Payment Status to Success. */
+  const showDateRangeCard = !isEPayView || toolbarStatus === 'Success';
+
   // Reset toolbar status when switching tabs so previous filter doesn't leak.
   useEffect(() => { setToolbarStatus(null); }, [activeMenu]);
+  useEffect(() => { setToolbarStatus(null); }, [activeTab]);
 
   // Reset the search-type dropdown when switching modules or tabs so options stay consistent
   useEffect(() => {
@@ -1747,7 +1771,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
               aria-expanded={toolbarStatusOpen}
             >
               <span className="text-[16px] text-[#1360d2] font-medium whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>
-                {toolbarStatus ?? 'Status'}
+                {toolbarStatus ?? statusDropdownLabel}
               </span>
               <svg viewBox="0 0 24 24" className={`size-[22px] text-[#1360d2] transition-transform ${toolbarStatusOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M6 9l6 6 6-6" />
@@ -1764,7 +1788,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                   className="block w-full text-left px-[14px] py-[8px] text-[16px] hover:bg-[#e2ebf9] transition-colors"
                   style={{ color: toolbarStatus === null ? '#1360d2' : '#0e1b3d', fontFamily: "'Dubai', sans-serif", fontWeight: toolbarStatus === null ? 500 : 400 }}
                 >
-                  All statuses
+                  All Statuses
                 </button>
                 {TOOLBAR_STATUS_OPTIONS[activeMenu].map((opt) => (
                   <button
@@ -2132,20 +2156,6 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                     </div>
                   </div>
 
-                  {/* Declaration Number — text */}
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={filterValues['rcDeclNumber'] || ''}
-                      onChange={e => setFilterValues(v => ({ ...v, rcDeclNumber: e.target.value }))}
-                      onFocus={() => focusField('rcDeclNumber')}
-                      onBlur={() => blurField('rcDeclNumber')}
-                      className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['rcDeclNumber'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
-                      style={{ fontFamily: "'Dubai', sans-serif" }}
-                    />
-                    <span style={floatLabel(isFloated('rcDeclNumber'))}>Declaration Number</span>
-                  </div>
-
                   {/* Time Interval — dropdown */}
                   <div className="relative">
                     <div
@@ -2158,6 +2168,36 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                       <span className="flex-1 text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcTimeInterval'] || ''}</span>
                       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
                     </div>
+                  </div>
+
+                  {/* Claim Requested Date — dropdown driving which date the range below applies to */}
+                  <div className="relative" ref={rcReqDateRef}>
+                    <div
+                      tabIndex={0}
+                      className={`h-[56px] border rounded-[4px] flex items-center px-[12px] cursor-pointer transition-colors bg-white focus:outline-none ${rcReqDateOpen || filterFocused['rcRequestedDate'] ? 'border-[#1360d2]' : 'border-[#d5ddfb] hover:border-[#1360d2]'}`}
+                      onClick={() => setRcReqDateOpen(o => !o)}
+                    >
+                      <span style={floatLabel(true)}>Claim Requested Date</span>
+                      <span className="flex-1 text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>
+                        {filterValues['rcRequestedDate'] || 'Claim Submission Date'}
+                      </span>
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0, transform: rcReqDateOpen ? 'rotate(180deg)' : undefined }}><path d="M6 9l6 6 6-6" /></svg>
+                    </div>
+                    {rcReqDateOpen && (
+                      <div className="absolute z-[90] top-[60px] left-0 right-0 bg-white rounded-[8px] py-[4px] overflow-hidden" style={{ boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
+                        {['Claim Submission Date', 'Claim Registration Date'].map(opt => {
+                          const selected = (filterValues['rcRequestedDate'] || 'Claim Submission Date') === opt;
+                          return (
+                            <button
+                              key={opt}
+                              onClick={() => { setFilterValues(v => ({ ...v, rcRequestedDate: opt })); setRcReqDateOpen(false); }}
+                              className="block w-full text-left px-[14px] py-[8px] text-[16px] hover:bg-[#e2ebf9] transition-colors"
+                              style={{ color: selected ? '#1360d2' : '#0e1b3d', fontFamily: "'Dubai', sans-serif", fontWeight: selected ? 500 : 400 }}
+                            >{opt}</button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
 
                   {/* From Date — calendar */}
@@ -2513,22 +2553,22 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
 
               </>
               )}
-            </div>
 
-            {/* Footer: Reset + Apply */}
-            <div className="flex justify-end gap-[12px] mt-[24px]">
-              <button
-                className="h-[48px] rounded-[4px] text-[16px] font-medium transition-colors hover:bg-[#f0f4ff]"
-                style={{ width: 146, border: '1.5px solid #2950e5', color: '#2950e5', fontFamily: "'Dubai', sans-serif" }}
-              >
-                Reset
-              </button>
-              <button
-                className="h-[48px] rounded-[4px] text-[16px] font-medium text-white transition-colors hover:opacity-90"
-                style={{ width: 146, background: '#1360d2', fontFamily: "'Dubai', sans-serif" }}
-              >
-                Apply
-              </button>
+              {/* Reset + Apply — inline in the grid, immediately after the last filter field */}
+              <div className="flex items-center gap-[12px] h-[56px]">
+                <button
+                  className="h-[48px] flex-1 rounded-[4px] text-[16px] font-medium transition-colors hover:bg-[#f0f4ff]"
+                  style={{ border: '1.5px solid #2950e5', color: '#2950e5', fontFamily: "'Dubai', sans-serif" }}
+                >
+                  Reset
+                </button>
+                <button
+                  className="h-[48px] flex-1 rounded-[4px] text-[16px] font-medium text-white transition-colors hover:opacity-90"
+                  style={{ background: '#1360d2', fontFamily: "'Dubai', sans-serif" }}
+                >
+                  Apply
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -2563,10 +2603,12 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
           </div>
           )}
 
-          {/* Date range pill */}
+          {/* Date range pill — hidden on ePayment listings unless Payment Status is Success */}
           <div className="flex-1 flex justify-center">
-            <StatusAsOnBadge fromValue={statusFromDate} toValue={statusToDate}
-              onApply={(from, to) => { setStatusFromDate(from); setStatusToDate(to); }} />
+            {showDateRangeCard && (
+              <StatusAsOnBadge fromValue={statusFromDate} toValue={statusToDate}
+                onApply={(from, to) => { setStatusFromDate(from); setStatusToDate(to); }} />
+            )}
           </div>
 
           {/* Drafts toggle — all tabs except VCC, ePayments sidebar, and epay sub-tabs */}
@@ -2605,11 +2647,12 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
             searchDeclNo={searchType === 'Declaration Number' ? searchQuery : undefined}
             searchReqNo={searchType === 'Request Number' ? searchQuery : undefined}
             searchReqType={searchType === 'Request Number' ? ePayReqType : undefined}
+            externalStatus={toolbarStatus}
             showColModal={showColModal}
             onCloseColModal={() => setShowColModal(false)}
           />
         ) : activeTab === 'epay' ? (
-          <EPaymentsTable filterReqNo={ePayVccFilter || undefined} module={activeMenu} showColModal={showColModal} onCloseColModal={() => setShowColModal(false)} />
+          <EPaymentsTable filterReqNo={ePayVccFilter || undefined} module={activeMenu} externalStatus={toolbarStatus} showColModal={showColModal} onCloseColModal={() => setShowColModal(false)} />
         ) : activeMenu === 'VCC' ? (
           (searchType === 'VCC Number' || searchType === 'Chasis Number') && searchQuery !== '' ? (
             <VccVehicleSearchTable

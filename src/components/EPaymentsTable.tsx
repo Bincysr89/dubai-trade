@@ -18,13 +18,13 @@ function DirhamIcon({ size = 14, color = '#0e1b3d' }: { size?: number; color?: s
   );
 }
 
-type EPayStatus = 'Pending' | 'Completed' | 'Failed';
+type EPayStatus = 'Pending' | 'Success' | 'Failed';
 type EPayModule = 'Declaration' | 'VCC' | 'Cargo Transfer' | 'Refund & Claims' | 'Acknowledgement';
 
 const STATUS_STYLE: Record<EPayStatus, { bg: string; color: string }> = {
-  'Pending':   { bg: 'rgba(255,169,26,0.16)', color: '#b45309' },
-  'Completed': { bg: 'rgba(40,167,69,0.10)',  color: '#28a745' },
-  'Failed':    { bg: 'rgba(192,57,43,0.10)',  color: '#c0392b' },
+  'Pending': { bg: 'rgba(255,169,26,0.16)', color: '#b45309' },
+  'Success': { bg: 'rgba(40,167,69,0.10)',  color: '#28a745' },
+  'Failed':  { bg: 'rgba(192,57,43,0.10)',  color: '#c0392b' },
 };
 
 const MODULE_STYLE: Record<EPayModule, { bg: string; color: string }> = {
@@ -43,42 +43,51 @@ type EPayRow = {
   reqNo: string;
   reqType: string;
   clientDecRef: string;
+  /** Claim type behind the payment — only meaningful for Refund & Claims requests. */
+  claimType: string;
   amount: string;
   status: EPayStatus;
 };
 
 const ROWS: EPayRow[] = [
   /* Declaration */
-  { module: 'Declaration',     reqDate: '05-Feb-26', declNo: '1080000003626', approvalDate: '2026-02-05T14:15:48', reqNo: '1101545031', reqType: 'New Declaration',    clientDecRef: 'sreevani',     amount: '93.00',  status: 'Pending'   },
-  { module: 'Declaration',     reqDate: '05-Feb-26', declNo: '1080000003526', approvalDate: '2026-02-05T14:12:17', reqNo: '1101545029', reqType: 'New Declaration',    clientDecRef: 'SREEVANI',     amount: '93.00',  status: 'Pending'   },
-  { module: 'Declaration',     reqDate: '04-Feb-26', declNo: '1080000003412', approvalDate: '2026-02-04T09:30:00', reqNo: '1101544987', reqType: 'Amendment',          clientDecRef: 'JOB-20240205', amount: '115.00', status: 'Completed' },
-  { module: 'Declaration',     reqDate: '03-Feb-26', declNo: '1080000003301', approvalDate: '2026-02-03T11:45:22', reqNo: '1101544856', reqType: 'New Declaration',    clientDecRef: 'REF-450123',   amount: '93.00',  status: 'Failed'    },
-  { module: 'Declaration',     reqDate: '03-Feb-26', declNo: '1080000003298', approvalDate: '2026-02-03T08:20:11', reqNo: '1101544812', reqType: 'Amendment',          clientDecRef: 'PGH-658916',   amount: '78.00',  status: 'Pending'   },
+  { module: 'Declaration',     reqDate: '05-Feb-26', declNo: '1080000003626', approvalDate: '2026-02-05T14:15:48', reqNo: '1101545031', reqType: 'New Declaration',    claimType: '—', clientDecRef: 'sreevani',     amount: '93.00',  status: 'Pending'   },
+  { module: 'Declaration',     reqDate: '05-Feb-26', declNo: '1080000003526', approvalDate: '2026-02-05T14:12:17', reqNo: '1101545029', reqType: 'New Declaration',    claimType: '—', clientDecRef: 'SREEVANI',     amount: '93.00',  status: 'Pending'   },
+  { module: 'Declaration',     reqDate: '04-Feb-26', declNo: '1080000003412', approvalDate: '2026-02-04T09:30:00', reqNo: '1101544987', reqType: 'Amendment',          claimType: '—', clientDecRef: 'JOB-20240205', amount: '115.00', status: 'Success'   },
+  { module: 'Declaration',     reqDate: '03-Feb-26', declNo: '1080000003301', approvalDate: '2026-02-03T11:45:22', reqNo: '1101544856', reqType: 'New Declaration',    claimType: '—', clientDecRef: 'REF-450123',   amount: '93.00',  status: 'Failed'    },
+  { module: 'Declaration',     reqDate: '03-Feb-26', declNo: '1080000003298', approvalDate: '2026-02-03T08:20:11', reqNo: '1101544812', reqType: 'Amendment',          claimType: '—', clientDecRef: 'PGH-658916',   amount: '78.00',  status: 'Pending'   },
   /* VCC */
-  { module: 'VCC',             reqDate: '02-Feb-26', declNo: '1080000003201', approvalDate: '2026-02-02T10:05:33', reqNo: '1101544750', reqType: 'VCC Request',        clientDecRef: '25365',        amount: '155.00', status: 'Pending'   },
-  { module: 'VCC',             reqDate: '01-Feb-26', declNo: '1080000003178', approvalDate: '2026-02-01T13:40:00', reqNo: '1101544698', reqType: 'VCC Request',        clientDecRef: '25366',        amount: '155.00', status: 'Completed' },
-  { module: 'VCC',             reqDate: '30-Jan-26', declNo: '1080000003054', approvalDate: '2026-01-30T09:00:00', reqNo: '1101544600', reqType: 'VCC Amendment',      clientDecRef: '25370',        amount: '80.00',  status: 'Failed'    },
+  { module: 'VCC',             reqDate: '02-Feb-26', declNo: '1080000003201', approvalDate: '2026-02-02T10:05:33', reqNo: '1101544750', reqType: 'VCC Request',        claimType: '—', clientDecRef: '25365',        amount: '155.00', status: 'Pending'   },
+  { module: 'VCC',             reqDate: '01-Feb-26', declNo: '1080000003178', approvalDate: '2026-02-01T13:40:00', reqNo: '1101544698', reqType: 'VCC Request',        claimType: '—', clientDecRef: '25366',        amount: '155.00', status: 'Success'   },
+  { module: 'VCC',             reqDate: '30-Jan-26', declNo: '1080000003054', approvalDate: '2026-01-30T09:00:00', reqNo: '1101544600', reqType: 'VCC Amendment',      claimType: '—', clientDecRef: '25370',        amount: '80.00',  status: 'Failed'    },
   /* Cargo Transfer */
-  { module: 'Cargo Transfer',  reqDate: '06-Feb-26', declNo: '601001745352',  approvalDate: '2026-02-06T08:30:00', reqNo: '1201600411', reqType: 'New Cargo Transfer', clientDecRef: 'CT-2024-00112', amount: '220.00', status: 'Pending'   },
-  { module: 'Cargo Transfer',  reqDate: '04-Feb-26', declNo: '601001745200',  approvalDate: '2026-02-04T11:20:00', reqNo: '1201600380', reqType: 'New Cargo Transfer', clientDecRef: 'CT-2024-00099', amount: '220.00', status: 'Completed' },
-  { module: 'Cargo Transfer',  reqDate: '02-Feb-26', declNo: '601001745051',  approvalDate: '2026-02-02T14:55:00', reqNo: '1201600342', reqType: 'Amend Transfer',     clientDecRef: 'CT-2024-00087', amount: '110.00', status: 'Failed'    },
+  { module: 'Cargo Transfer',  reqDate: '06-Feb-26', declNo: '601001745352',  approvalDate: '2026-02-06T08:30:00', reqNo: '1201600411', reqType: 'New Cargo Transfer', claimType: '—', clientDecRef: 'CT-2024-00112', amount: '220.00', status: 'Pending'   },
+  { module: 'Cargo Transfer',  reqDate: '04-Feb-26', declNo: '601001745200',  approvalDate: '2026-02-04T11:20:00', reqNo: '1201600380', reqType: 'New Cargo Transfer', claimType: '—', clientDecRef: 'CT-2024-00099', amount: '220.00', status: 'Success'   },
+  { module: 'Cargo Transfer',  reqDate: '02-Feb-26', declNo: '601001745051',  approvalDate: '2026-02-02T14:55:00', reqNo: '1201600342', reqType: 'Amend Transfer',     claimType: '—', clientDecRef: 'CT-2024-00087', amount: '110.00', status: 'Failed'    },
   /* Refund & Claims */
-  { module: 'Refund & Claims', reqDate: '07-Feb-26', declNo: '1080000003700', approvalDate: '2026-02-07T10:10:00', reqNo: '1301700200', reqType: 'Refund Request',     clientDecRef: 'RF-2024-0881',  amount: '450.00', status: 'Pending'   },
-  { module: 'Refund & Claims', reqDate: '05-Feb-26', declNo: '1080000003650', approvalDate: '2026-02-05T09:45:00', reqNo: '1301700185', reqType: 'Deposit Claim',      clientDecRef: 'RF-2024-0874',  amount: '1200.00',status: 'Completed' },
-  { module: 'Refund & Claims', reqDate: '03-Feb-26', declNo: '1080000003580', approvalDate: '2026-02-03T13:30:00', reqNo: '1301700160', reqType: 'Refund Request',     clientDecRef: 'RF-2024-0862',  amount: '330.00', status: 'Failed'    },
+  { module: 'Refund & Claims', reqDate: '07-Feb-26', declNo: '1080000003700', approvalDate: '2026-02-07T10:10:00', reqNo: '1301700200', reqType: 'Refund Request',     claimType: 'Refund of Deposits', clientDecRef: 'RF-2024-0881',  amount: '450.00', status: 'Pending'   },
+  { module: 'Refund & Claims', reqDate: '05-Feb-26', declNo: '1080000003650', approvalDate: '2026-02-05T09:45:00', reqNo: '1301700185', reqType: 'Deposit Claim',      claimType: 'Non Remittance', clientDecRef: 'RF-2024-0874',  amount: '1200.00',status: 'Success'   },
+  { module: 'Refund & Claims', reqDate: '03-Feb-26', declNo: '1080000003580', approvalDate: '2026-02-03T13:30:00', reqNo: '1301700160', reqType: 'Refund Request',     claimType: 'Refund of Deposits', clientDecRef: 'RF-2024-0862',  amount: '330.00', status: 'Failed'    },
   /* Acknowledgement */
-  { module: 'Acknowledgement', reqDate: '08-Feb-26', declNo: '1080000003750', approvalDate: '2026-02-08T08:00:00', reqNo: '1401800050', reqType: 'Ack. Fee',           clientDecRef: 'ACK-2024-0091', amount: '50.00',  status: 'Pending'   },
-  { module: 'Acknowledgement', reqDate: '06-Feb-26', declNo: '1080000003690', approvalDate: '2026-02-06T10:30:00', reqNo: '1401800039', reqType: 'Ack. Fee',           clientDecRef: 'ACK-2024-0088', amount: '50.00',  status: 'Completed' },
+  { module: 'Acknowledgement', reqDate: '08-Feb-26', declNo: '1080000003750', approvalDate: '2026-02-08T08:00:00', reqNo: '1401800050', reqType: 'Ack. Fee',           claimType: '—', clientDecRef: 'ACK-2024-0091', amount: '50.00',  status: 'Pending'   },
+  { module: 'Acknowledgement', reqDate: '06-Feb-26', declNo: '1080000003690', approvalDate: '2026-02-06T10:30:00', reqNo: '1401800039', reqType: 'Ack. Fee',           claimType: '—', clientDecRef: 'ACK-2024-0088', amount: '50.00',  status: 'Success'   },
 ];
 
 const SCROLL_COLUMNS: (ColDef & { w: number })[] = [
-  { key: 'reqNo',         label: 'Request No.',                      w: 130 },
-  { key: 'reqDate',       label: 'Request Date',                     w: 130 },
-  { key: 'reqType',       label: 'Request Type',                     w: 170 },
-  { key: 'declNo',        label: 'Declaration No.',                  w: 160 },
-  { key: 'clientDecRef',  label: 'Client Declaration Reference No.', w: 220 },
-  { key: 'approvalDate',  label: 'Declaration Approval Date',        w: 210 },
-  { key: 'amount',        label: 'Amount (AED)',                     w: 120 },
+  { key: 'reqNo',     label: 'Request No.',   w: 150 },
+  { key: 'reqType',   label: 'Request Type',  w: 190 },
+  { key: 'reqDate',   label: 'Request Date',  w: 150 },
+  { key: 'claimType', label: 'Claim Type',    w: 200 },
+  { key: 'amount',    label: 'Amount (AED)',  w: 140 },
+];
+
+/* Every ePayment row exposes the same action set. */
+const EPAY_ACTIONS: { label: string; icon: React.ReactNode }[] = [
+  { label: 'Make Payment',           icon: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="16" height="12" rx="2"/><path d="M2 9h16"/><path d="M6 13h2"/><path d="M10 13h4"/></svg> },
+  { label: 'Recheck Payment Status', icon: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M17 10a7 7 0 1 1-2.05-4.95"/><path d="M17 3v4h-4"/></svg> },
+  { label: 'Payment History',        icon: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v4l2.5 2"/></svg> },
+  { label: 'View',                   icon: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"/><circle cx="10" cy="10" r="2.5"/></svg> },
+  { label: 'Download',               icon: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M10 3v10"/><path d="M5 9l5 5 5-5"/><path d="M3 17h14"/></svg> },
 ];
 
 export default function EPaymentsTable({
@@ -87,6 +96,7 @@ export default function EPaymentsTable({
   searchDeclNo,
   searchReqNo,
   searchReqType,
+  externalStatus,
   showColModal,
   onCloseColModal,
 }: {
@@ -95,6 +105,8 @@ export default function EPaymentsTable({
   searchDeclNo?: string;
   searchReqNo?: string;
   searchReqType?: string;
+  /** Payment Status picked in the page toolbar. */
+  externalStatus?: string | null;
   showColModal?: boolean;
   onCloseColModal?: () => void;
 }) {
@@ -120,11 +132,12 @@ export default function EPaymentsTable({
     (!filterReqNo || r.clientDecRef === filterReqNo) &&
     (!searchDeclNo || r.declNo.includes(searchDeclNo)) &&
     (!searchReqNo || r.reqNo.includes(searchReqNo)) &&
-    (!searchReqType || r.reqType === searchReqType)
+    (!searchReqType || r.reqType === searchReqType) &&
+    (!externalStatus || r.status === externalStatus)
   );
   const paginated = visibleRows.slice((page - 1) * pageSize, page * pageSize);
 
-  const tableMinWidth = visibleHeaders.reduce((s, c) => s + getW(c.key, c.w), 0) + 200;
+  const tableMinWidth = visibleHeaders.reduce((s, c) => s + getW(c.key, c.w), 0) + 230;
 
   return (
     <>
@@ -132,13 +145,13 @@ export default function EPaymentsTable({
       <ManageColumnsModal
         columns={SCROLL_COLUMNS}
         visible={visibleCols}
-        lockedColumns={[{ key: '_status', label: 'Status' }, { key: '_action', label: 'Actions' }]}
+        lockedColumns={[{ key: '_status', label: 'Payment Status' }, { key: '_action', label: 'Action' }]}
         onSave={setVisibleCols}
         onClose={() => onCloseColModal?.()}
       />
     )}
     <div style={{ position: 'relative' }}>
-      <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={200} />
+      <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={230} />
     <div ref={scrollRef} onScroll={handleScroll} className="overflow-x-auto pb-[20px]" style={{ position: 'relative' }}>
       {resizeIndicatorLeft !== null && (
         <div style={{ position: 'absolute', top: 0, bottom: 0, left: resizeIndicatorLeft, width: 3, background: '#1360D2', borderRadius: 2, pointerEvents: 'none', zIndex: 100 }} />
@@ -195,13 +208,13 @@ export default function EPaymentsTable({
                 <span className="text-[16px] font-medium text-[#051937]">{col.label}</span>
               </th>
             ))}
-            {/* Sticky: Status */}
-            <th style={{ position: 'sticky', right: 80, width: 120, minWidth: 120, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
-              <span className="text-[16px] font-medium text-[#051937]">Status</span>
+            {/* Sticky: Payment Status */}
+            <th style={{ position: 'sticky', right: 80, width: 150, minWidth: 150, background: '#a6c2e9', padding: '10px 12px', textAlign: 'left', fontWeight: 500, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>
+              <span className="text-[16px] font-medium text-[#051937]">Payment Status</span>
             </th>
             {/* Sticky: Actions */}
             <th style={{ position: 'sticky', right: 0, width: 80, minWidth: 80, background: '#a6c2e9', padding: '10px 12px', textAlign: 'center', fontWeight: 500, zIndex: 2, borderTopRightRadius: 8, borderBottomRightRadius: 8 }}>
-              <span className="text-[16px] font-medium text-[#051937]">Actions</span>
+              <span className="text-[16px] font-medium text-[#051937]">Action</span>
             </th>
           </tr>
         </thead>
@@ -221,15 +234,13 @@ export default function EPaymentsTable({
 
             return (
               <tr key={i}>
-                {vis('reqDate')      && cell(txt(row.reqDate),      'reqDate',      130, { paddingLeft: 16 })}
-                {vis('declNo')       && cell(txt(row.declNo),       'declNo',       160)}
-                {vis('approvalDate') && cell(txt(row.approvalDate), 'approvalDate', 200)}
-                {vis('reqNo')        && cell(txt(row.reqNo),        'reqNo',        130)}
-                {vis('reqType')      && cell(txt(row.reqType),      'reqType',      170)}
-                {vis('clientDecRef') && cell(txt(row.clientDecRef), 'clientDecRef', 160)}
-                {vis('amount')       && cell(<span className="flex items-center gap-[4px] text-[16px] text-[#0e1b3d] whitespace-nowrap"><DirhamIcon size={14} color="#0e1b3d" />{row.amount}</span>, 'amount', 120)}
-                {/* Sticky: Status */}
-                <td style={{ position: 'sticky', right: 80, background: '#fff', padding: '0 12px', height: 54, verticalAlign: 'middle', width: 120, borderBottom: '1px solid #f0f4ff', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: openFlyout === i ? 49 : 1 }}>
+                {vis('reqNo')     && cell(txt(row.reqNo),     'reqNo',     150, { paddingLeft: 16 })}
+                {vis('reqType')   && cell(txt(row.reqType),   'reqType',   190)}
+                {vis('reqDate')   && cell(txt(row.reqDate),   'reqDate',   150)}
+                {vis('claimType') && cell(txt(row.claimType), 'claimType', 200)}
+                {vis('amount')    && cell(<span className="flex items-center gap-[4px] text-[16px] text-[#0e1b3d] whitespace-nowrap"><DirhamIcon size={14} color="#0e1b3d" />{row.amount}</span>, 'amount', 140)}
+                {/* Sticky: Payment Status */}
+                <td style={{ position: 'sticky', right: 80, background: '#fff', padding: '0 12px', height: 54, verticalAlign: 'middle', width: 150, borderBottom: '1px solid #f0f4ff', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: openFlyout === i ? 49 : 1 }}>
                   <span
                     className="inline-flex items-center justify-center px-[10px] py-[3px] rounded-[4px] text-[16px] font-medium whitespace-nowrap"
                     style={{ background: st.bg, color: st.color, fontFamily: font }}
@@ -254,19 +265,9 @@ export default function EPaymentsTable({
                     {openFlyout === i && (
                       <div
                         className="absolute z-[100] right-0 bg-white rounded-[8px] py-[4px] overflow-hidden"
-                        style={{ top: 36, width: 200, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}
+                        style={{ top: 36, width: 230, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}
                       >
-                        {(row.reqType === 'VCC Request' || row.reqType === 'VCC Amendment' ? [
-                          { label: 'Make ePayment',    icon: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="16" height="12" rx="2"/><path d="M2 9h16"/><path d="M6 13h2"/><path d="M10 13h4"/></svg> },
-                          { label: 'ePayment History', icon: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v4l2.5 2"/></svg> },
-                        ] : row.module === 'Cargo Transfer' ? [
-                          { label: 'View',     icon: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"/><circle cx="10" cy="10" r="2.5"/></svg> },
-                          { label: 'Download', icon: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M10 3v10"/><path d="M5 9l5 5 5-5"/><path d="M3 17h14"/></svg> },
-                        ] : [
-                          { label: 'View',          icon: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"/><circle cx="10" cy="10" r="2.5"/></svg> },
-                          { label: 'Make ePayment', icon: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="16" height="12" rx="2"/><path d="M2 9h16"/><path d="M6 13h2"/><path d="M10 13h4"/></svg> },
-                          { label: 'Download',      icon: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M10 3v10"/><path d="M5 9l5 5 5-5"/><path d="M3 17h14"/></svg> },
-                        ]).map((item) => (
+                        {EPAY_ACTIONS.map((item) => (
                           <button
                             key={item.label}
                             className="group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
