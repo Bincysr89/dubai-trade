@@ -707,6 +707,13 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
   // Eligible Declarations — Add Manually / Upload File tab (all claim types)
   const [declTab, setDeclTab] = useState<'manual' | 'upload'>('manual');
   const [uploadDragging, setUploadDragging] = useState(false);
+  /* Once a text file has been uploaded the eligible-declarations table stays on screen so the
+     rows it produced can be selected. The uploader itself collapses, and re-opens above the
+     table (pushing it down) whenever the Upload Text File tab is clicked again. */
+  const [uploadedFile, setUploadedFile] = useState<string | null>(null);
+  const [uploaderOpen, setUploaderOpen] = useState(true);
+  const acceptUpload = (name: string) => { setUploadedFile(name); setUploaderOpen(false); };
+  const showUploadTable = declTab === 'upload' && uploadedFile !== null;
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
   const [selectedDecls, setSelectedDecls] = useState<Set<string>>(() => new Set(initialSelected ?? []));
@@ -956,7 +963,7 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
                   <button
                     key={t}
                     type="button"
-                    onClick={() => setDeclTab(t)}
+                    onClick={() => { setDeclTab(t); if (t === 'upload') setUploaderOpen(true); }}
                     className="text-[15px] px-[18px] py-[9px] rounded-[4px] transition-colors"
                     style={declTab === t
                       ? { background: '#1360d2', color: '#fff', fontWeight: 500, fontFamily: "'Dubai', sans-serif" }
@@ -969,8 +976,8 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
             </div>
           )}
 
-          {/* Upload File tab */}
-          {claimType && declTab === 'upload' && (
+          {/* Upload File tab — the uploader collapses once a file is in, and re-opens above the table */}
+          {claimType && declTab === 'upload' && uploaderOpen && (
             <div className="px-[24px] py-[20px]">
               <div className="rounded-[8px] p-[24px] max-w-[520px]" style={{ border: '1px solid #eef1f6' }}>
                 <div className="flex items-center justify-between mb-[6px]">
@@ -984,7 +991,7 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
                 <div
                   onDragOver={(e) => { e.preventDefault(); setUploadDragging(true); }}
                   onDragLeave={() => setUploadDragging(false)}
-                  onDrop={(e) => { e.preventDefault(); setUploadDragging(false); }}
+                  onDrop={(e) => { e.preventDefault(); setUploadDragging(false); acceptUpload(e.dataTransfer.files?.[0]?.name ?? 'declarations.txt'); }}
                   className="flex flex-col items-center justify-center gap-[12px] rounded-[6px] py-[36px] transition-colors"
                   style={{ border: `1.5px dashed ${uploadDragging ? '#1360d2' : '#b5c8e8'}`, background: uploadDragging ? '#edf3ff' : '#f8fafd' }}
                 >
@@ -994,13 +1001,38 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
                   <p className="text-[15px] text-[#6d707e]" style={{ fontFamily: "'Dubai', sans-serif" }}>Drag and drop or</p>
                   <button
                     type="button"
-                    onClick={() => setDeclTab('manual')}
+                    onClick={() => acceptUpload('declarations.txt')}
                     className="h-[42px] px-[22px] rounded-[4px] border text-[15px] bg-white hover:bg-[#f0f4ff] transition-colors"
                     style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: "'Dubai', sans-serif" }}
                   >
                     Upload File
                   </button>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Uploaded-file summary — sits between the (collapsed) uploader and the table it produced */}
+          {claimType && showUploadTable && (
+            <div className="px-[24px] pt-[20px]">
+              <div className="flex items-center gap-[12px] flex-wrap rounded-[6px] px-[16px] py-[12px]" style={{ background: '#f4f8ff', border: '1px solid #d5e3fa' }}>
+                <span className="size-[32px] rounded-full inline-flex items-center justify-center flex-shrink-0" style={{ background: '#e2ebf9' }}>
+                  <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#1360d2" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M5 3h7l3 3v11H5z" /><path d="M12 3v3h3M7 11h6M7 14h4" /></svg>
+                </span>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[15px] text-[#0e1b3d] truncate" style={{ fontWeight: 500, fontFamily: "'Dubai', sans-serif" }}>{uploadedFile}</span>
+                  <span className="text-[13px] text-[#697498]" style={{ fontFamily: "'Dubai', sans-serif" }}>
+                    {filtered.length} declaration{filtered.length === 1 ? '' : 's'} found — select the ones to add
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setUploaderOpen(true)}
+                  className="ml-auto h-[38px] px-[16px] rounded-[4px] border text-[14px] bg-white hover:bg-[#f0f4ff] transition-colors flex-shrink-0"
+                  style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500, fontFamily: "'Dubai', sans-serif" }}
+                >
+                  Upload Another File
+                </button>
               </div>
             </div>
           )}
@@ -1331,8 +1363,8 @@ export default function EligibleDeclarationsPage({ onBack, onBackToListing, init
             </div>
           )}
 
-          {/* Table — only shown after claim type is selected, on the Add Manually tab */}
-          {claimType && declTab === 'manual' && (
+          {/* Table — on Add Manually, and on Upload Text File once a file has been uploaded */}
+          {claimType && (declTab === 'manual' || showUploadTable) && (
           <>
           <div className="px-[16px] pt-[8px] pb-[16px]" style={{ position: 'relative' }}>
             <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={mainStickyWidth} />
