@@ -447,9 +447,11 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
       ? ['ctCargoChannel', 'ctCarrierReg', 'ctTransferType', 'ctStatus', 'ctTransferee', 'ctTransferor', 'ctFromDate', 'ctToDate', 'ctBrokerCode']
       : ['cargoChannel', 'regimeType', 'declType', 'permit', 'declStatus', 'fromDate', 'toDate', 'carrierReg', 'customerType', 'customerCode'];
 
-  /* While the Advance Filters panel is open it owns the filtering, so the basic search,
-     the status dropdown and the date pill are greyed out and inert. */
-  const filtersLock = showFilters ? 'opacity-50 pointer-events-none' : '';
+  /* Advance Filters owns the filtering while its panel is open, and keeps owning it for as
+     long as filters stay applied — so the basic search, the status dropdown and the date
+     pill stay greyed and inert after the panel is closed, until Reset clears the tags. */
+  const filtersActive = showFilters || appliedFilters.length > 0;
+  const filtersLock = filtersActive ? 'opacity-50 pointer-events-none' : '';
 
   const applyFilters = () => setAppliedFilters(moduleFilterKeys.filter((k) => (filterValues[k] ?? '').trim() !== ''));
   const resetFilters = () => {
@@ -2791,7 +2793,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
           <div className="flex justify-center basis-full lg:basis-auto lg:flex-1">
             {showDateRangeCard && (
               <StatusAsOnBadge
-                disabled={showFilters}
+                disabled={filtersActive}
                 label={activeMenu === 'Refund & Claims' && activeTab !== 'epay' ? 'Claim Status' : 'Status'}
                 fromValue={statusFromDate} toValue={statusToDate}
                 onApply={(from, to) => { setStatusFromDate(from); setStatusToDate(to); }} />
