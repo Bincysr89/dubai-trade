@@ -672,11 +672,14 @@ export function StatusAsOnBadge({
   toValue,
   onApply,
   label = 'Status',
+  disabled = false,
 }: {
   fromValue: string; // 'YYYY-MM-DD'
   toValue: string;   // 'YYYY-MM-DD'
   onApply: (from: string, to: string) => void;
   label?: string;
+  /** Greyed out and inert — used while the Advance Filters panel owns the filtering. */
+  disabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -694,7 +697,7 @@ export function StatusAsOnBadge({
     /* flexShrink:0 keeps the pill at its natural width so neighbouring controls wrap to the
        next line before it is squeezed; maxWidth caps it on very narrow screens, where the
        card grows in height (min-h, not a fixed h) so the text always stays inside it. */
-    <div ref={wrapRef} style={{ position: 'relative', display: 'inline-flex', flexShrink: 0, maxWidth: '100%' }}>
+    <div ref={wrapRef} style={{ position: 'relative', display: 'inline-flex', flexShrink: 0, maxWidth: '100%', opacity: disabled ? 0.5 : 1, pointerEvents: disabled ? 'none' : undefined }}>
       <div className="inline-flex items-center justify-center gap-[12px] min-h-[44px] py-[8px] px-[28px] rounded-[10px] border border-[#e2e8f5] bg-white text-[16px] text-[#0e1b3d]" style={{ fontFamily: FONT }}>
         <span style={{ fontWeight: 500 }}>{label} As On {fmtDate(fromValue)} To {fmtDate(toValue)}</span>
         <button type="button" onClick={() => setOpen(o => !o)}

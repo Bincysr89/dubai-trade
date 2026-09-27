@@ -269,6 +269,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
   }, [toolbarStatusOpen]);
 
   /* Below md the search bar collapses to an icon; tapping it opens this flyout. */
+  const [appliedFilters, setAppliedFilters] = useState<string[]>([]);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [mobileTypeOpen, setMobileTypeOpen] = useState(false);
 
@@ -413,6 +414,49 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
   };
   // The toolbar status dropdown is named for what it filters in each module.
   const isEPayView = activeMenu === 'E-Payment' || activeTab === 'epay';
+  /* Advance Filters registry — the fields each module renders, in render order, with the
+     label shown on the applied-filter tags. Keys match the filterValues entries. */
+  const FILTER_LABELS: Record<string, string> = {
+    ackDeclType: 'Declaration Type', ackStatus: 'Acknowledgement Status', ackPartyType: 'Party Type',
+    ackBusinessCode: 'Business Code', ackDateType: 'Date Type', ackFromDate: 'From Date', ackToDate: 'To Date',
+    vccDateFrom: 'Request Date From', vccDateTo: 'Request Date To', vccStatus: 'Status',
+    vccCustomerType: 'Customer Type', vccCustomerCode: 'Customer Code', vccVehicleBrand: 'Vehicle Brand',
+    vccVehicleModel: 'Vehicle Model', vccVehicleType: 'Vehicle Type',
+    vccSpecStandard: 'Specification Standard Name', vccYearBuild: 'Vehicle Year Build',
+    rcClaimType: 'Claim Type', rcClaimStatus: 'Claim Status', rcTimeInterval: 'Time Interval',
+    rcRequestedDate: 'Claim Requested Date', rcFromDate: 'From Date', rcToDate: 'To Date',
+    rcClaimantType: 'Claimant Type', rcCode: 'Code', rcName: 'Name',
+    rcSubclaimStatus: 'Subclaim Status', rcSubmissionMode: 'Submission Mode',
+    ctCargoChannel: 'Cargo Channel (inbound)', ctCarrierReg: 'Carrier Reg No.(inbound)',
+    ctTransferType: 'Cargo Transfer Type', ctStatus: 'Cargo Transfer Status',
+    ctTransferee: 'Transferee (Owner)', ctTransferor: 'Transferor',
+    ctFromDate: 'From Date (15 days)', ctToDate: 'To Date', ctBrokerCode: 'Broker Code',
+    cargoChannel: 'Cargo Channel', regimeType: 'Regime Type', declType: 'Declaration Type',
+    permit: 'Permit', declStatus: 'Declaration Status', fromDate: 'From Date (15 days)',
+    toDate: 'To Date', carrierReg: 'Carrier Registration No.', customerType: 'Customer Type',
+    customerCode: 'Customer Code',
+  };
+  const moduleFilterKeys =
+    activeMenu === 'Acknowledgement'
+      ? ['ackDeclType', 'ackStatus', 'ackPartyType', 'ackBusinessCode', 'ackDateType', 'ackFromDate', 'ackToDate']
+      : activeMenu === 'VCC'
+      ? ['vccDateFrom', 'vccDateTo', 'vccStatus', 'vccCustomerType', 'vccCustomerCode', 'vccVehicleBrand', 'vccVehicleModel', 'vccVehicleType', 'vccSpecStandard', 'vccYearBuild']
+      : activeMenu === 'Refund & Claims'
+      ? ['rcClaimType', 'rcClaimStatus', 'rcTimeInterval', 'rcRequestedDate', 'rcFromDate', 'rcToDate', 'rcClaimantType', 'rcCode', 'rcName', 'rcSubclaimStatus', 'rcSubmissionMode']
+      : activeMenu === 'Cargo Transfer'
+      ? ['ctCargoChannel', 'ctCarrierReg', 'ctTransferType', 'ctStatus', 'ctTransferee', 'ctTransferor', 'ctFromDate', 'ctToDate', 'ctBrokerCode']
+      : ['cargoChannel', 'regimeType', 'declType', 'permit', 'declStatus', 'fromDate', 'toDate', 'carrierReg', 'customerType', 'customerCode'];
+
+  /* While the Advance Filters panel is open it owns the filtering, so the basic search,
+     the status dropdown and the date pill are greyed out and inert. */
+  const filtersLock = showFilters ? 'opacity-50 pointer-events-none' : '';
+
+  const applyFilters = () => setAppliedFilters(moduleFilterKeys.filter((k) => (filterValues[k] ?? '').trim() !== ''));
+  const resetFilters = () => {
+    setFilterValues((v) => { const next = { ...v }; moduleFilterKeys.forEach((k) => delete next[k]); return next; });
+    setAppliedFilters([]);
+  };
+
   const searchTypeOptions =
     (activeMenu === 'E-Payment' || activeTab === 'epay')
       ? ['Declaration Number', 'Request Number']
@@ -436,6 +480,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
 
   // Reset toolbar status when switching tabs so previous filter doesn't leak.
   useEffect(() => { setToolbarStatus(null); }, [activeMenu]);
+  // Applied-filter tags belong to one module's field set — clear them on a module change.
+  useEffect(() => { setAppliedFilters([]); }, [activeMenu]);
   useEffect(() => { setToolbarStatus(null); }, [activeTab]);
 
   // Reset the search-type dropdown when switching modules or tabs so options stay consistent
@@ -1666,7 +1712,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
           )}
 
           {/* Center: search bar */}
-          <div className="hidden md:flex items-center bg-white border border-[#d5ddfb] rounded-[4px] h-[48px] flex-1 min-w-[320px] max-w-[420px] relative">
+          <div className={`hidden md:flex items-center bg-white border border-[#d5ddfb] rounded-[4px] h-[48px] flex-1 min-w-[320px] max-w-[420px] relative ${filtersLock}`}>
             {/* Type dropdown */}
             <button
               type="button"
@@ -1740,7 +1786,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
             type="button"
             onClick={() => setMobileSearchOpen(true)}
             aria-label="Search"
-            className="md:hidden flex items-center justify-center h-[48px] w-[48px] rounded-[4px] border border-[#d4dcfa] bg-white flex-shrink-0"
+            className={`md:hidden flex items-center justify-center h-[48px] w-[48px] rounded-[4px] border border-[#d4dcfa] bg-white flex-shrink-0 ${filtersLock}`}
           >
             <svg width="20" height="20" viewBox="0 0 18 18" fill="none">
               <path fillRule="evenodd" clipRule="evenodd" d="M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z" fill="#0E1B3D" />
@@ -1750,7 +1796,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
 
           {/* Request Type secondary dropdown — only for standalone ePayments + Request Number */}
           {activeMenu === 'E-Payment' && searchType === 'Request Number' && (
-            <div className="relative flex-shrink-0">
+            <div className={`relative flex-shrink-0 ${filtersLock}`}>
               <button
                 type="button"
                 onClick={() => setEPayReqTypeOpen(o => !o)}
@@ -1780,7 +1826,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
           )}
 
           {/* Status dropdown — populated from the active table */}
-          <div className="relative flex-shrink-0" ref={toolbarStatusRef}>
+          <div className={`relative flex-shrink-0 ${filtersLock}`} ref={toolbarStatusRef}>
             <button
               type="button"
               onClick={() => setToolbarStatusOpen((o) => !o)}
@@ -2666,12 +2712,14 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
               {/* Reset + Apply — inline in the grid, immediately after the last filter field */}
               <div className="flex items-center gap-[12px] h-[56px]">
                 <button data-secondary-btn
+                  onClick={resetFilters}
                   className="h-[48px] flex-1 rounded-[4px] text-[16px] font-medium transition-colors"
                   style={{ border: '1.5px solid #2950e5', color: '#2950e5', fontFamily: "'Dubai', sans-serif" }}
                 >
                   Reset
                 </button>
                 <button
+                  onClick={applyFilters}
                   className="h-[48px] flex-1 rounded-[4px] text-[16px] font-medium text-white transition-colors hover:opacity-90"
                   style={{ background: '#1360d2', fontFamily: "'Dubai', sans-serif" }}
                 >
@@ -2679,6 +2727,33 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                 </button>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Applied filters — kept outside the panel so they stay visible once it is closed */}
+        {appliedFilters.length > 0 && (
+          <div className="flex items-center flex-wrap gap-[10px] mb-[12px]">
+            {appliedFilters.map((k) => (
+              <span
+                key={k}
+                className="inline-flex items-center h-[36px] px-[14px] rounded-[4px] text-[15px] text-[#0e1b3d] whitespace-nowrap"
+                style={{ background: '#cfe0f7', fontFamily: "'Dubai', sans-serif" }}
+                title={filterValues[k]}
+              >
+                {FILTER_LABELS[k] ?? k}
+              </span>
+            ))}
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="inline-flex items-center gap-[6px] text-[16px] text-[#1360d2] font-medium hover:opacity-70 transition-opacity"
+              style={{ fontFamily: "'Dubai', sans-serif" }}
+            >
+              Reset
+              <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 10a7 7 0 1 1-2.05-4.95" /><path d="M17 3v4h-4" />
+              </svg>
+            </button>
           </div>
         )}
 
@@ -2716,6 +2791,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
           <div className="flex justify-center basis-full lg:basis-auto lg:flex-1">
             {showDateRangeCard && (
               <StatusAsOnBadge
+                disabled={showFilters}
                 label={activeMenu === 'Refund & Claims' && activeTab !== 'epay' ? 'Claim Status' : 'Status'}
                 fromValue={statusFromDate} toValue={statusToDate}
                 onApply={(from, to) => { setStatusFromDate(from); setStatusToDate(to); }} />
