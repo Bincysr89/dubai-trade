@@ -234,7 +234,6 @@ const DRAFT_ROWS: ClaimRow[] = [
 
 function DeclarationsModal({ declarations, chargeType, subClaimStatus, onClose, onDeclarationOpen }: { declarations: DeclDetail[]; chargeType: string; subClaimStatus: Status; onClose: () => void; onDeclarationOpen?: (declNo: string) => void }) {
   const st = STATUS_STYLE[subClaimStatus];
-  const ACTION_W = 60;
   const STATUS_W = 128;
   const { scrollRef, atScrollStart, atScrollEnd, handleScroll, scrollToStart, scrollToEnd } = useTableBehaviors();
   return (
@@ -259,13 +258,14 @@ function DeclarationsModal({ declarations, chargeType, subClaimStatus, onClose, 
           </button>
         </div>
 
-        {/* Bordered inner table — Sub Claim Status + Action are sticky trailing columns, everything
-            else scrolls left/right, matching the master listing table pattern used elsewhere. */}
+        {/* Bordered inner table — Sub Claim Status is the sticky trailing column, everything
+            else scrolls left/right, matching the master listing table pattern used elsewhere.
+            There is no Action column: the Declaration No. link already opens the declaration. */}
         <div className="flex-1 overflow-auto px-[24px] py-[20px]">
           <div className="border border-[#eef1f6] rounded-[8px]" style={{ position: 'relative' }}>
-            <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={STATUS_W + ACTION_W} />
+            <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={STATUS_W} />
             <div ref={scrollRef} onScroll={handleScroll} className="overflow-x-auto">
-              <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 820, fontFamily: font }}>
+              <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 760, fontFamily: font }}>
                 <thead>
                   <tr style={{ background: '#a6c2e9' }}>
                     {['#', 'Declaration No.', 'Declaration Clearance Date', 'Declaration Type', 'Charge Type', 'Owner Details'].map((h, i) => (
@@ -273,11 +273,8 @@ function DeclarationsModal({ declarations, chargeType, subClaimStatus, onClose, 
                         {h}
                       </th>
                     ))}
-                    <th className="text-left text-[16px] text-[#000]" style={{ position: 'sticky', right: ACTION_W, width: STATUS_W, minWidth: STATUS_W, background: '#a6c2e9', padding: '12px 8px', fontWeight: 500, whiteSpace: 'nowrap', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>
+                    <th className="text-left text-[16px] text-[#000]" style={{ position: 'sticky', right: 0, width: STATUS_W, minWidth: STATUS_W, background: '#a6c2e9', padding: '12px 8px', fontWeight: 500, whiteSpace: 'nowrap', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>
                       Sub Claim Status
-                    </th>
-                    <th className="text-left text-[16px] text-[#000]" style={{ position: 'sticky', right: 0, width: ACTION_W, minWidth: ACTION_W, background: '#a6c2e9', padding: '12px 8px', fontWeight: 500, whiteSpace: 'nowrap' }}>
-                      Action
                     </th>
                   </tr>
                 </thead>
@@ -298,20 +295,10 @@ function DeclarationsModal({ declarations, chargeType, subClaimStatus, onClose, 
                       <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'normal', lineHeight: 1.3 }}>{d.category}</td>
                       <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'nowrap' }}>{chargeType}</td>
                       <td className="text-[16px] text-[#0e1b3d]" style={{ padding: '12px', whiteSpace: 'normal', lineHeight: 1.3, maxWidth: 200 }}>{d.ownerCode}</td>
-                      <td style={{ position: 'sticky', right: ACTION_W, width: STATUS_W, minWidth: STATUS_W, background: '#fff', padding: '12px 8px', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>
+                      <td style={{ position: 'sticky', right: 0, width: STATUS_W, minWidth: STATUS_W, background: '#fff', padding: '12px 8px', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>
                         <span className="text-[14px] whitespace-nowrap inline-flex items-center justify-center" style={{ background: st.bg, color: st.color, padding: '4px 10px', borderRadius: 4, fontWeight: 500, fontFamily: font }}>
                           {subClaimStatus}
                         </span>
-                      </td>
-                      <td style={{ position: 'sticky', right: 0, width: ACTION_W, minWidth: ACTION_W, background: '#fff', padding: '12px 8px', textAlign: 'center' }}>
-                        <button
-                          onClick={() => { onDeclarationOpen?.(d.declNo); onClose(); }}
-                          aria-label="View declaration"
-                          className="inline-flex items-center justify-center hover:opacity-70 transition-opacity"
-                          style={{ color: '#1360d2' }}
-                        >
-                          <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z" /><circle cx="10" cy="10" r="2.5" /></svg>
-                        </button>
                       </td>
                     </tr>
                   ))}
