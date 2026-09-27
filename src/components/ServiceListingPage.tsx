@@ -259,7 +259,7 @@ export default function ServiceListingPage({
                 </div>
               )}
             </div>
-            <div className="flex items-center px-[12px] gap-[8px] flex-1 min-w-0">
+            <div className="flex items-center pl-[12px] pr-[5px] gap-[8px] flex-1 min-w-0">
               <input
                 type="text"
                 value={search}

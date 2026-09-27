@@ -959,7 +959,7 @@ export default function CargoInformationPage({ onBack, onHome }: Props) {
                         <path d="M6 9l6 6 6-6" />
                       </svg>
                     </button>
-                    <div className="flex items-center flex-1 min-w-0 px-[12px]">
+                    <div className="flex items-center flex-1 min-w-0 pl-[12px] pr-[5px]">
                       <input type="text" value={searchValue}
                         onChange={e => { setSearchValue(e.target.value); setPage(1); if (searchQuery && e.target.value.trim() === '') setSearchQuery(''); }}
                         onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); setSearchQuery(searchValue); } }}

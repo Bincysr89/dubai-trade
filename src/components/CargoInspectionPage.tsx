@@ -797,7 +797,7 @@ export default function CargoInspectionPage({ onBack }: { onBack: () => void }) 
 
         {/* Search — its own row, below the tabs */}
         <div className="relative flex-shrink-0" style={{ width: '100%', maxWidth: 380 }}>
-          <div className="flex items-center bg-white rounded-[4px] h-[48px]" style={{ border: '1px solid #d5ddfb' }}>
+          <div className="flex items-center bg-white rounded-[4px] h-[48px] pr-[5px]" style={{ border: '1px solid #d5ddfb' }}>
             <input value={declSearch} onChange={e => setDeclSearch(e.target.value)} placeholder="Search Declaration No"
               className="flex-1 px-[14px] text-[16px] text-[#0e1b3d] placeholder:text-[#697498] focus:outline-none bg-transparent" style={{ fontFamily: font }} />
             {declSearch && (

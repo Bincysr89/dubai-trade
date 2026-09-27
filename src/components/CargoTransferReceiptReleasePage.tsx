@@ -562,7 +562,7 @@ export default function CargoTransferReceiptReleasePage({ onBack }: Props) {
                     ))}
                   </div>
                 )}
-                <div className="flex items-center flex-1 px-[12px] gap-[8px]">
+                <div className="flex items-center flex-1 pl-[12px] pr-[5px] gap-[8px]">
                   <input type="text" value={searchValue} onChange={e => setSearchValue(e.target.value)}
                     placeholder="Search…"
                     className="w-[180px] text-[16px] text-[#0e1b3d] placeholder-[#697498] bg-transparent focus:outline-none"

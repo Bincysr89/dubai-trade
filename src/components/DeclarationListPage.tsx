@@ -1741,7 +1741,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
               </div>
             )}
             {/* Input */}
-            <div className="flex items-center flex-1 min-w-0 px-[12px] relative">
+            <div className="flex items-center flex-1 min-w-0 pl-[12px] pr-[5px] relative">
               <input
                 type="text"
                 value={searchValue}
@@ -1992,7 +1992,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                 )}
               </div>
 
-              <div className="flex items-center h-[48px] rounded-[4px] border border-[#d5ddfb] bg-white px-[14px] gap-[10px]">
+              <div className="flex items-center h-[48px] rounded-[4px] border border-[#d5ddfb] bg-white pl-[14px] pr-[5px] gap-[10px]">
                 <input
                   type="text"
                   value={searchValue}
