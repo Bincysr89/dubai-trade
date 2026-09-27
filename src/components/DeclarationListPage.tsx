@@ -1772,13 +1772,10 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
               <button
                 type="button"
                 onClick={submitSearch}
-                disabled={searchValue.trim() === ''}
                 aria-label="Search"
-                className="flex-shrink-0 ml-[8px] disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex-shrink-0 inline-flex items-center justify-center rounded-[6px] transition-opacity hover:opacity-90" style={{ width: 38, height: 38, background: '#1360d2' }}
               >
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" className="flex-shrink-0">
-                  <path fillRule="evenodd" clipRule="evenodd" d="M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z" fill="#0E1B3D" />
-                </svg>
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path fillRule="evenodd" clipRule="evenodd" d="M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z" fill="#ffffff" /></svg>
               </button>
             </div>
           </div>
@@ -2014,9 +2011,9 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                     <svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M5 5l10 10M15 5l-10 10" /></svg>
                   </button>
                 )}
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" className="flex-shrink-0">
-                  <path fillRule="evenodd" clipRule="evenodd" d="M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z" fill="#0E1B3D" />
-                </svg>
+                <button type="button" onClick={() => { submitSearch(); setMobileSearchOpen(false); }} aria-label="Search" className="flex-shrink-0 inline-flex items-center justify-center rounded-[6px] transition-opacity hover:opacity-90" style={{ width: 38, height: 38, background: '#1360d2' }}>
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path fillRule="evenodd" clipRule="evenodd" d="M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z" fill="#ffffff" /></svg>
+                </button>
               </div>
 
               <button
