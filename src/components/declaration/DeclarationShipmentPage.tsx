@@ -9,6 +9,9 @@ export const SHIPMENT_TABS = ['General Shipping Details', 'Package Details', 'Co
 export type ShipmentTab = (typeof SHIPMENT_TABS)[number];
 
 type Props = {
+  /** The amend journey runs a longer stepper, so the labels and active index are overridable. */
+  steps?: string[];
+  stepIndex?: number;
   tab: ShipmentTab;
   onTabChange: (t: ShipmentTab) => void;
   /** Container row edit — opens the shipping-details popup. */
@@ -19,10 +22,10 @@ type Props = {
  * Shipment Details step — Figma 2650:46169 (General Shipping Details),
  * 2650:47573 (Package Details) and 2650:48087 (Container Details).
  */
-export default function DeclarationShipmentPage({ tab, onTabChange, onEditContainer }: Props) {
+export default function DeclarationShipmentPage({ tab, onTabChange, onEditContainer, steps, stepIndex }: Props) {
   return (
     <div className="flex flex-col gap-[24px]" style={{ fontFamily: font }}>
-      <JourneyStepper active={1} />
+      <JourneyStepper active={stepIndex ?? 1} steps={steps} />
       <TabBar tabs={SHIPMENT_TABS} active={tab} onChange={onTabChange} />
 
       {tab === 'General Shipping Details' && <GeneralShippingDetails />}

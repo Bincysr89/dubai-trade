@@ -19,15 +19,25 @@ export const JOURNEY_STEPS = [
   'Payment Details',
 ];
 
+/** The amend journey adds Documents and an Amendment Summary — Figma 2650:45705. */
+export const AMEND_STEPS = [
+  'General Information',
+  'Shipment Details',
+  'Invoice Details',
+  'Documents',
+  'Amendment Summary',
+  'Payment Details',
+];
+
 /**
  * Journey stepper. Steps up to and including `active` are green checks; the trail leaving
  * the active step is blue (the step being worked on next), earlier trails green, later grey.
  */
-export function JourneyStepper({ active }: { active: number }) {
+export function JourneyStepper({ active, steps = JOURNEY_STEPS }: { active: number; steps?: string[] }) {
   return (
     <div className="bg-white rounded-[8px] px-[20px] py-[20px] overflow-x-auto" style={{ boxShadow: '1px 2px 12px rgba(0,0,0,0.06)' }}>
       <div className="flex items-center justify-center gap-[8px]" style={{ minWidth: 'max-content' }}>
-        {JOURNEY_STEPS.map((label, i) => {
+        {steps.map((label, i) => {
           const done = i <= active;
           return (
             <React.Fragment key={label}>

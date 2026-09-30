@@ -23,6 +23,13 @@ import VehicleLookupModal, { type VehicleLookupKind } from './declaration/Vehicl
 import ContainerEditModal from './declaration/ContainerEditModal';
 import LineItemDetailsPage from './declaration/LineItemDetailsPage';
 import ViewDeclarationPage from './declaration/ViewDeclarationPage';
+import AmendmentSummaryPage from './declaration/AmendmentSummaryPage';
+import AmendPaymentPage from './declaration/AmendPaymentPage';
+import AmendSubmitPage from './declaration/AmendSubmitPage';
+import AmendSuccessPage from './declaration/AmendSuccessPage';
+import EditPersonalCustomerModal from './declaration/EditPersonalCustomerModal';
+import ImporterCodeModal from './declaration/ImporterCodeModal';
+import { AMEND_STEPS } from './declaration/DeclarationUI';
 import Header from './Header';
 import importBySeaSrc from '../assets/importbysea.svg';
 // @ts-ignore
@@ -41,9 +48,11 @@ type Props = {
   onApplyPermits: () => void;
   /** Default Cargo Channel / Regime Type for the declaration form (from landing toggles). */
   defaults?: { cargoChannel?: string; regimeType?: string };
+  /** Amending an existing declaration rather than creating one — Figma 2650:57939. */
+  amendDeclarationNo?: string;
 };
 
-type Step = 'start' | 'carrier' | 'invoice' | 'invoiceList' | 'documents' | 'review' | 'shipment' | 'invoiceDetails' | 'documentUpload' | 'payment' | 'submit' | 'declarationSuccess' | 'lineItemDetails' | 'viewDeclaration';
+type Step = 'start' | 'carrier' | 'invoice' | 'invoiceList' | 'documents' | 'review' | 'shipment' | 'invoiceDetails' | 'documentUpload' | 'amendSummary' | 'payment' | 'submit' | 'declarationSuccess' | 'lineItemDetails' | 'viewDeclaration';
 
 /* ── Journey stepper (Import by Sea → … → Cargo Waves), Integrated Clearance active ── */
 function JourneyStepper({ onClose }: { onClose: () => void }) {
@@ -197,7 +206,7 @@ const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ chi
   <div className={`bg-white rounded-[8px] ${className}`} style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.10)' }}>{children}</div>
 );
 
-export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults }: Props) {
+export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults, amendDeclarationNo }: Props) {
   const [step, setStep] = useState<Step>('start');
   /* "Proceed To Review & Submit Declaration" holds on a filling popup, then opens Review. */
   const [filingOpen, setFilingOpen] = useState(false);
@@ -226,6 +235,10 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
   const [dragging, setDragging] = useState(false);
   const [addLineItem, setAddLineItem] = useState(false);
   const [declType, setDeclType] = useState('Declaration Type');
+  /* Amend chain — the extra popups the amend entry page hangs off. */
+  const amend = !!amendDeclarationNo;
+  const [editPersonalOpen, setEditPersonalOpen] = useState(false);
+  const [importerCodeOpen, setImporterCodeOpen] = useState(false);
   /* Each screen keeps the title its design carries, rather than "Integrated Clearance"
      everywhere. The declaration name stands in for the type chosen on the first step. */
   /* "101-Import to local from ROW" reads as "New - Import to local from ROW" once the
@@ -233,11 +246,14 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
   const declarationName = `New - ${(declType && declType !== 'Declaration Type'
     ? declType.replace(/^\d+\s*-\s*/, '')
     : 'Import to local from ROW')}`;
+  /* Amend keeps the declaration it is editing in the title across every step. */
+  const amendName = `Amend - Import to Local from ROW - ${amendDeclarationNo}`;
   const pageTitle =
     addLineItem ? (hsSearchOpen ? 'Search HS Code' : 'Add Line Item')
-    : step === 'start' ? 'Integrated Clearance'
     : step === 'lineItemDetails' ? 'Line Item Details'
     : step === 'viewDeclaration' ? 'View Declaration'
+    : amend ? amendName
+    : step === 'start' ? 'Integrated Clearance'
     : declarationName;
 
   return (
@@ -264,7 +280,16 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
         <div className="px-4 md:px-10 pb-[24px]">
           <h1 className="text-[30px] text-[#0e1b3d] mb-[16px]" style={{ fontWeight: 700 }}>{pageTitle}</h1>
 
-          {step === 'start' && <StartStep onProceed={() => setStep('carrier')} defaults={defaults} onDeclTypeChange={setDeclType} />}
+          {step === 'start' && amend && (
+            <AmendStartStep
+              carrier={carrierReg}
+              onCarrierChange={setCarrierReg}
+              onVesselSearch={() => setVesselSearchOpen(true)}
+              onEditImporter={() => setImporterCodeOpen(true)}
+              onEditPersonalCustomer={() => setEditPersonalOpen(true)}
+            />
+          )}
+          {step === 'start' && !amend && <StartStep onProceed={() => setStep('carrier')} defaults={defaults} onDeclTypeChange={setDeclType} />}
           {step === 'carrier' && (
             <CarrierStep
               onImporterSearch={() => setCodeLookup('importer')}
@@ -298,33 +323,53 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
               onAddLineItem={() => setAddLineItem(true)}
             />
           )}
-          {step === 'invoiceList' && <InvoiceListStep onAddLineItem={() => setAddLineItem(true)} />}
+          {step === 'invoiceList' && <InvoiceListStep onAddLineItem={() => setAddLineItem(true)} amend={amend} />}
           {step === 'documents' && <DocumentsStep />}
           {step === 'review' && (
             <DeclarationReviewPage
               onLookup={(f) => (f === 'exporter' ? setExporterLookupOpen(true) : setPartyLookup(f))}
               onAddOverseasCustomer={() => setAddOverseasOpen(true)}
+              amend={amend}
+              onEditImporter={() => setImporterCodeOpen(true)}
+              steps={amend ? AMEND_STEPS : undefined}
             />
           )}
-          {step === 'shipment' && <DeclarationShipmentPage tab={shipmentTab} onTabChange={setShipmentTab} onEditContainer={setEditContainer} />}
+          {step === 'shipment' && (
+            <DeclarationShipmentPage tab={shipmentTab} onTabChange={setShipmentTab} onEditContainer={setEditContainer}
+              steps={amend ? AMEND_STEPS : undefined} />
+          )}
           {step === 'invoiceDetails' && (
             <DeclarationInvoiceDetailsPage
               onViewDetails={() => { setReturnStep('invoiceDetails'); setStep('lineItemDetails'); }}
-              onEditDetails={() => setStep('invoice')}
+              onEditDetails={() => setStep(amend ? 'invoiceList' : 'invoice')}
+              amend={amend}
+              steps={amend ? AMEND_STEPS : undefined}
             />
           )}
           {step === 'lineItemDetails' && <LineItemDetailsPage />}
           {step === 'viewDeclaration' && <ViewDeclarationPage />}
-          {step === 'documentUpload' && <DeclarationDocumentUploadPage />}
-          {step === 'payment' && <DeclarationPaymentPage />}
+          {step === 'documentUpload' && (
+            <DeclarationDocumentUploadPage
+              steps={amend ? AMEND_STEPS : undefined}
+              existingDocs={amend ? AMEND_EXISTING_DOCS : undefined}
+            />
+          )}
+          {step === 'amendSummary' && (
+            <AmendmentSummaryPage onViewVersion={() => { setReturnStep('amendSummary'); setStep('viewDeclaration'); }} />
+          )}
+          {step === 'payment' && (amend ? <AmendPaymentPage /> : <DeclarationPaymentPage />)}
           {step === 'submit' && (
-            <DeclarationSubmitPage onViewDeclaration={() => { setReturnStep('submit'); setStep('viewDeclaration'); }} />
+            amend
+              ? <AmendSubmitPage onViewDeclaration={() => { setReturnStep('submit'); setStep('viewDeclaration'); }} />
+              : <DeclarationSubmitPage onViewDeclaration={() => { setReturnStep('submit'); setStep('viewDeclaration'); }} />
           )}
           {step === 'declarationSuccess' && (
-            <DeclarationSuccessPage
-              onContinueToOga={onApplyPermits}
-              onViewDeclaration={() => { setReturnStep('declarationSuccess'); setStep('viewDeclaration'); }}
-            />
+            amend
+              ? <AmendSuccessPage onViewDeclaration={() => { setReturnStep('declarationSuccess'); setStep('viewDeclaration'); }} />
+              : <DeclarationSuccessPage
+                  onContinueToOga={onApplyPermits}
+                  onViewDeclaration={() => { setReturnStep('declarationSuccess'); setStep('viewDeclaration'); }}
+                />
           )}
           </>)}
         </div>
@@ -334,6 +379,8 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
       {vehicleLookup && <VehicleLookupModal kind={vehicleLookup} onClose={() => setVehicleLookup(null)} />}
       {codeLookup && <CodeSearchModal kind={codeLookup} onClose={() => setCodeLookup(null)} />}
       {advanceSearchOpen && <AdvanceSearchModal onClose={() => setAdvanceSearchOpen(false)} />}
+      {editPersonalOpen && <EditPersonalCustomerModal onClose={() => setEditPersonalOpen(false)} />}
+      {importerCodeOpen && <ImporterCodeModal onClose={() => setImporterCodeOpen(false)} />}
       {vesselSearchOpen && (
         <VesselSearchModal
           onClose={() => setVesselSearchOpen(false)}
@@ -369,13 +416,14 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
             }
             if (step === 'carrier') setStep('start');
             else if (step === 'invoice') setStep('carrier');
-            else if (step === 'invoiceList') setStep('invoice');
+            else if (step === 'invoiceList') setStep(amend ? 'start' : 'invoice');
             else if (step === 'documents') setStep('invoiceList');
-            else if (step === 'review') setStep('documents');
+            else if (step === 'review') setStep(amend ? 'invoiceList' : 'documents');
             else if (step === 'shipment') setStep('review');
             else if (step === 'invoiceDetails') setStep('shipment');
             else if (step === 'documentUpload') setStep('invoiceDetails');
-            else if (step === 'payment') setStep('documentUpload');
+            else if (step === 'amendSummary') setStep('documentUpload');
+            else if (step === 'payment') setStep(amend ? 'amendSummary' : 'documentUpload');
             else if (step === 'submit') setStep('payment');
             else if (step === 'declarationSuccess') onClose();
             else if (step === 'lineItemDetails' || step === 'viewDeclaration') setStep(returnStep);
@@ -392,14 +440,18 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
           </>)}
           {!addLineItem && (step === 'start' || step === 'carrier') && (
             <button
-              onClick={() => setStep(step === 'start' ? 'carrier' : 'invoice')}
+              onClick={() => setStep(step === 'start' ? (amend ? 'invoiceList' : 'carrier') : 'invoice')}
               className="h-[48px] px-[32px] rounded-[4px] text-[16px] text-white hover:bg-[#0f4fb5] transition-colors"
               style={{ background: '#1360d2', fontWeight: 500 }}
-            >Save</button>
+            >{amend && step === 'start' ? 'Proceed' : 'Save'}</button>
           )}
           {!addLineItem && (step === 'invoice' || step === 'invoiceList') && (
             <button
-              onClick={() => setStep(step === 'invoice' ? 'invoiceList' : 'documents')}
+              onClick={() => {
+                if (step === 'invoice') { setStep('invoiceList'); return; }
+                if (amend) { setFilingOpen(true); return; }
+                setStep('documents');
+              }}
               className="h-[48px] px-[32px] rounded-[4px] text-[16px] text-white hover:bg-[#0f4fb5] transition-colors"
               style={{ background: '#1360d2', fontWeight: 500 }}
             >Proceed</button>
@@ -456,6 +508,13 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
             >Proceed</button>
           )}
           {!addLineItem && step === 'documentUpload' && (
+            <button
+              onClick={() => setStep(amend ? 'amendSummary' : 'payment')}
+              className="h-[48px] px-[32px] rounded-[4px] text-[16px] text-white hover:bg-[#0f4fb5] transition-colors"
+              style={{ background: '#1360d2', fontWeight: 500 }}
+            >Proceed</button>
+          )}
+          {!addLineItem && step === 'amendSummary' && (
             <button
               onClick={() => setStep('payment')}
               className="h-[48px] px-[32px] rounded-[4px] text-[16px] text-white hover:bg-[#0f4fb5] transition-colors"
@@ -601,6 +660,76 @@ function ReadOnlyForm({ channel = 'Sea', regime = 'Import', third = ['BOL Number
 }
 
 /* ── Step 2: Carrier + Exporter ── */
+/* Files already on the declaration when an amendment starts — Figma 2650:93112. */
+const AMEND_EXISTING_DOCS = [
+  { fileName: 'Passport Copy', authority: 'Dubai Customs', docType: 'Invoice Consumption Requ..', size: '50 MB', uploadedOn: '08-12-2024' },
+  { fileName: 'Trade License copy', authority: 'Dubai Customs', docType: 'Trade License Copy', size: '50 MB', uploadedOn: '08-12-2024' },
+  { fileName: 'Certificate Of Origin issued by the Ministry', authority: 'Dubai Customs', docType: 'Passport Copy', size: '50 MB', uploadedOn: '08-12-2024' },
+  { fileName: 'Organizational Structure/Profile Copy', authority: 'Dubai Customs', docType: 'Passport Copy', size: '50 MB', uploadedOn: '08-12-2024' },
+  { fileName: 'Invoice Consumption Request Letter', authority: 'Dubai Customs', docType: 'Cert. of Origin', size: '50 MB', uploadedOn: '08-12-2024' },
+  { fileName: 'Laboratory 123234.pdf', authority: 'Dubai Customs', docType: 'Laboratory Results', size: '50 MB', uploadedOn: '08-12-2024' },
+];
+
+/* ── Amend entry — Figma 2650:57939. The create form with everything that cannot
+      change on an amendment locked down. ── */
+function AmendStartStep({ carrier, onCarrierChange, onVesselSearch, onEditImporter, onEditPersonalCustomer }: {
+  carrier: string; onCarrierChange: (v: string) => void; onVesselSearch: () => void;
+  onEditImporter: () => void; onEditPersonalCustomer: () => void;
+}) {
+  const [mawb, setMawb] = useState('B87654');
+  return (
+    <>
+      <Card className="p-[24px] mb-[24px]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-[16px]">
+          <Field label="Regime Type" value="Import" required readOnly select />
+          <Field label="Declaration Type" value="Declaration Type" required readOnly select />
+          <Field label="Cargo Channel" value="Sea" required readOnly select />
+          <Field label="DO Number" value="" onChange={() => {}} placeholder="DO Number" />
+          <Field label="Client Doc. Ref. Number" value="" onChange={() => {}} required placeholder="Client Doc. Ref. Number" />
+        </div>
+      </Card>
+
+      <Card className="p-[24px] mb-[24px]">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] max-w-[720px]">
+          <Field label="Carrier Registration Number" value={carrier} onChange={onCarrierChange} required search
+            onSearch={onVesselSearch} searchLabel="Search Vessel" />
+          <Field label="MAWB/MBOL" value={mawb} onChange={setMawb} required />
+        </div>
+      </Card>
+
+      <h2 className="text-[20px] text-[#0e1b3d] mb-[4px]" style={{ fontWeight: 700 }}>Importer Code</h2>
+      <p className="text-[15px] text-[#5a6282] mb-[16px]">Add imported code directly or use Quick/Advance search to choose personal customer code.</p>
+
+      <Card className="p-[24px]">
+        <div className="flex flex-wrap items-start gap-x-[28px] gap-y-[16px]">
+          <div className="min-w-[240px] flex-1">
+            <label className="text-[14px] text-[#0e1b3d] block mb-[6px]"><span className="text-[#ea2428]">*</span>Importer Code</label>
+            <div className="relative rounded-[4px] border border-[#d5ddfb] flex items-center px-[14px]" style={{ height: 56, background: '#f4f6fa' }}>
+              <span className="flex-1 text-[16px] text-[#0e1b3d] truncate">AE-0008680</span>
+              <button type="button" onClick={onEditImporter} aria-label="Edit Importer Code"
+                className="flex-shrink-0 inline-flex items-center justify-center rounded-full hover:bg-[#e8eefb] transition-colors" style={{ width: 32, height: 32 }}>
+                <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#1360d2" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 13.5V17h3.5L16 7.5 12.5 4 3 13.5z" /><path d="M11.5 5L15 8.5" />
+                </svg>
+              </button>
+            </div>
+            <div className="mt-[6px] px-[12px] py-[8px] rounded-[4px] text-[14px] text-[#0e1b3d]" style={{ background: '#e2ebf9' }}>Albertina Halvorson III</div>
+          </div>
+          <div className="flex items-center pt-[30px] text-[15px] text-[#5a6282]">Or</div>
+          <div className="min-w-[240px] flex-1">
+            <label className="text-[14px] text-[#0e1b3d] block mb-[6px]">Personal Customer Code</label>
+            <Field label="" value="PC00038163" readOnly />
+            <div className="mt-[6px] px-[12px] py-[8px] rounded-[4px] text-[14px] text-[#0e1b3d]" style={{ background: '#e2ebf9' }}>Albertina Halvorson III</div>
+          </div>
+          <button data-secondary-btn type="button" onClick={onEditPersonalCustomer}
+            className="mt-[28px] h-[48px] px-[20px] rounded-[4px] border text-[16px] bg-white transition-colors"
+            style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Edit Personal Customer Details</button>
+        </div>
+      </Card>
+    </>
+  );
+}
+
 function CarrierStep({ onImporterSearch, onPersonalCustomerSearch, onAdvanceSearch, onAddPersonalCustomer, carrier, onCarrierChange, onVesselSearch }: {
   onImporterSearch: () => void; onPersonalCustomerSearch: () => void;
   onAdvanceSearch: () => void; onAddPersonalCustomer: () => void;
@@ -766,7 +895,7 @@ function DocumentsStep() {
 }
 
 /* ── Step 4: Invoices added + line items ── */
-function InvoiceListStep({ onAddLineItem }: { onAddLineItem: () => void }) {
+function InvoiceListStep({ onAddLineItem, amend = false }: { onAddLineItem: () => void; amend?: boolean }) {
   const [expanded, setExpanded] = useState(true);
   const [entryMode, setEntryMode] = useState<InvoiceEntryMode | null>(null);
   const { scrollRef, atScrollStart, atScrollEnd, handleScroll, scrollToStart, scrollToEnd } = useTableBehaviors();
@@ -777,13 +906,14 @@ function InvoiceListStep({ onAddLineItem }: { onAddLineItem: () => void }) {
       <ReadOnlyForm channel="Air" regime="Export" third={['AWB Number', 'AWB1234567']} fourth={['Flight Information', 'EK1234']} />
 
       <h2 className="text-[20px] text-[#0e1b3d] mb-[4px]" style={{ fontWeight: 700 }}>Invoice Details</h2>
-      <p className="text-[15px] text-[#5a6282] mb-[16px]">You can add Cargo details manually or upload a Text file.</p>
+      {!amend && <p className="text-[15px] text-[#5a6282] mb-[16px]">You can add Cargo details manually or upload a Text file.</p>}
 
+      {/* Amending an existing declaration cannot add new invoices, so both routes are off */}
       <div className="mb-[16px]">
-        <InvoiceEntryButtons mode={entryMode} onChange={setEntryMode} />
+        <InvoiceEntryButtons mode={entryMode} onChange={setEntryMode} disabled={amend} />
       </div>
 
-      {entryMode && (
+      {entryMode && !amend && (
         <div className="mb-[16px]">
           <InvoiceEntryPanel mode={entryMode} onClose={() => setEntryMode(null)} onAddLineItem={onAddLineItem} />
         </div>

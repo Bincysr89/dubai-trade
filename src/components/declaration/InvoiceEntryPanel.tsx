@@ -161,8 +161,10 @@ export default function InvoiceEntryPanel({ mode, onClose, onSaved, onAddLineIte
 }
 
 /** The paired "Upload Text File" / "Add Manually" buttons that open the panel above the list. */
-export function InvoiceEntryButtons({ mode, onChange }: {
+export function InvoiceEntryButtons({ mode, onChange, disabled = false }: {
   mode: InvoiceEntryMode | null; onChange: (m: InvoiceEntryMode | null) => void;
+  /** Amending an existing declaration leaves both routes visible but inert. */
+  disabled?: boolean;
 }) {
   return (
     <div className="flex items-center gap-[12px] flex-wrap" style={{ fontFamily: font }}>
@@ -172,14 +174,16 @@ export function InvoiceEntryButtons({ mode, onChange }: {
           <button
             key={m}
             type="button"
-            data-secondary-btn
+            data-secondary-btn={disabled ? undefined : ''}
+            disabled={disabled}
             aria-pressed={active}
             onClick={() => onChange(active ? null : m)}
             className="h-[44px] px-[22px] rounded-[4px] bg-white text-[16px] transition-colors"
             style={{
-              border: `${active ? 2 : 1}px solid #1360d2`,
-              color: '#1360d2',
+              border: `${active && !disabled ? 2 : 1}px solid ${disabled ? '#c7d2e8' : '#1360d2'}`,
+              color: disabled ? '#9aa6c0' : '#1360d2',
               fontWeight: 500,
+              cursor: disabled ? 'not-allowed' : 'pointer',
             }}
           >
             {m === 'upload' ? 'Upload Text File' : 'Add Manually'}

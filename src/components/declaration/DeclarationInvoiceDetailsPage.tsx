@@ -54,9 +54,15 @@ const LINE_ITEM_COLUMNS = [
   'HS Code', 'Goods Description', 'Condition', 'Country of origin', 'Weight', 'Value of Goods',
   'Statistical Quantity - Units', 'Supplementary Quantity - Units', 'Item Quantity - Units',
 ];
+/* Amend reports the money side of each line instead of the quantities — Figma 2650:52579. */
+const AMEND_LINE_ITEM_COLUMNS = [
+  'HS Code', 'Goods Description', 'Condition', 'Country of origin', 'Weight',
+  'Goods Value In Foreign Currency', 'Statistical Quantity - Units', 'Currency Rate', 'CIF Value',
+];
 const LINE_ITEMS = ['AX1234567', 'BX1234567', 'CX1234567', 'DX1234567', 'EX1234567', 'EX1234567'].map((hs) => ({
   hs, desc: 'Spare parts', condition: 'New', origin: 'India', weight: '100 kg',
   value: 'AED 1500', statQty: '100 unit', suppQty: '100 unit', itemQty: '100 unit',
+  rate: '01', cif: '1000',
 }));
 
 const VEHICLE_COLUMNS = [
@@ -88,6 +94,11 @@ const invoiceIcon = (
 );
 
 type Props = {
+  /** The amend journey runs a longer stepper, so the labels and active index are overridable. */
+  steps?: string[];
+  stepIndex?: number;
+  /** Amend lists the goods value in foreign currency, the rate and the CIF value. */
+  amend?: boolean;
   /** "View Details" on an invoice or line-item row opens the invoice view page. */
   onViewDetails?: () => void;
   /** "Edit Details" returns to the invoice upload page that precedes the stepper. */
@@ -95,10 +106,11 @@ type Props = {
 };
 
 /** Invoice Details step — Figma 2650:48551. */
-export default function DeclarationInvoiceDetailsPage({ onViewDetails, onEditDetails }: Props) {
+export default function DeclarationInvoiceDetailsPage({ onViewDetails, onEditDetails, steps, stepIndex, amend }: Props) {
   const [openInvoice, setOpenInvoice] = useState<number | null>(1);
   const [openLineItem, setOpenLineItem] = useState<string | null>('AX1234567');
   const [flyout, setFlyout] = useState<{ kind: 'invoice' | 'line' | 'vehicle'; at: { top: number; left: number } } | null>(null);
+  const lineColumns = amend ? AMEND_LINE_ITEM_COLUMNS : LINE_ITEM_COLUMNS;
   const [linePage, setLinePage] = useState(4);
   const [linePageSize, setLinePageSize] = useState(8);
   const [vehPage, setVehPage] = useState(4);
@@ -113,7 +125,7 @@ export default function DeclarationInvoiceDetailsPage({ onViewDetails, onEditDet
 
   return (
     <div className="flex flex-col gap-[24px]" style={{ fontFamily: font }}>
-      <JourneyStepper active={2} />
+      <JourneyStepper active={stepIndex ?? 2} steps={steps} />
 
       <div className="flex items-center justify-between gap-[16px] flex-wrap">
         <div className="flex items-center gap-[40px] flex-wrap">
@@ -157,11 +169,11 @@ export default function DeclarationInvoiceDetailsPage({ onViewDetails, onEditDet
             {expanded && (
               <div className="mt-[24px] flex flex-col gap-[8px]">
                 <span className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 600 }}>Line Items</span>
-                <span className="text-[14px] text-[#697498] mb-[8px]">100 Items Available</span>
+                <span className="text-[14px] text-[#697498] mb-[8px]">{amend ? '200 HS Code Available' : '100 Items Available'}</span>
 
                 <JourneyTable minWidth={1235}>
                     <JourneyThead columns={[
-                      ...LINE_ITEM_COLUMNS.map((label) => ({ label })),
+                      ...lineColumns.map((label) => ({ label })),
                       { label: 'Action', w: 90, filter: false, sticky: true },
                     ]} />
                     <tbody>
@@ -171,7 +183,18 @@ export default function DeclarationInvoiceDetailsPage({ onViewDetails, onEditDet
                           <React.Fragment key={`${li.hs}-${i}`}>
                             <tr>
                               <JourneyTd first>{li.hs}</JourneyTd><JourneyTd>{li.desc}</JourneyTd><JourneyTd>{li.condition}</JourneyTd><JourneyTd>{li.origin}</JourneyTd>
-                              <JourneyTd>{li.weight}</JourneyTd><JourneyTd>{li.value}</JourneyTd><JourneyTd>{li.statQty}</JourneyTd><JourneyTd>{li.suppQty}</JourneyTd><JourneyTd>{li.itemQty}</JourneyTd>
+                              <JourneyTd>{li.weight}</JourneyTd>
+                              {amend ? (
+                                <>
+                                  <JourneyTd>{li.value}</JourneyTd><JourneyTd>{li.statQty}</JourneyTd>
+                                  <JourneyTd>{li.rate}</JourneyTd><JourneyTd>{li.cif}</JourneyTd>
+                                </>
+                              ) : (
+                                <>
+                                  <JourneyTd>{li.value}</JourneyTd><JourneyTd>{li.statQty}</JourneyTd>
+                                  <JourneyTd>{li.suppQty}</JourneyTd><JourneyTd>{li.itemQty}</JourneyTd>
+                                </>
+                              )}
                               <JourneyTd sticky width={90}>
                                 <span className="flex items-center gap-[10px]">
                                   <button onClick={openFlyout('line')} aria-label="Line item actions"
@@ -183,7 +206,7 @@ export default function DeclarationInvoiceDetailsPage({ onViewDetails, onEditDet
                             </tr>
                             {open && (
                               <tr>
-                                <td colSpan={LINE_ITEM_COLUMNS.length + 1} style={{ padding: 0, background: '#f8fafd' }}>
+                                <td colSpan={lineColumns.length + 1} style={{ padding: 0, background: '#f8fafd' }}>
                                   <div className="px-[16px] py-[20px] flex flex-col gap-[12px]">
                                     <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 600 }}>Vehicle Details</span>
                                     <JourneyTable minWidth={1500}>

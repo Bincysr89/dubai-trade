@@ -34,10 +34,18 @@ function Dropdown({ label, required, value }: { label: string; required?: boolea
 }
 
 /** Document Upload step — Figma 2650:50767, with the Refund & Claims uploader layout. */
-export default function DeclarationDocumentUploadPage() {
+type Props = {
+  /** The amend journey runs a longer stepper, so the labels and active index are overridable. */
+  steps?: string[];
+  stepIndex?: number;
+  /** Amend pre-loads the files already on the declaration; those rows cannot be deleted. */
+  existingDocs?: { fileName: string; authority: string; docType: string; size: string; uploadedOn: string }[];
+};
+
+export default function DeclarationDocumentUploadPage({ steps, stepIndex, existingDocs }: Props) {
   return (
     <div className="flex flex-col gap-[24px]" style={{ fontFamily: font }}>
-      <JourneyStepper active={3} />
+      <JourneyStepper active={stepIndex ?? 3} steps={steps} />
 
       {/* ── Availability of Documents ── */}
       <SectionCard>
@@ -54,7 +62,14 @@ export default function DeclarationDocumentUploadPage() {
       </SectionCard>
 
       {/* ── Upload Documents — same two-card layout as the Refund & Claims document step ── */}
-      <DocumentUploadSection docTypes={DOC_OPTIONS} authority="Dubai Customs" />
+      <DocumentUploadSection
+        docTypes={DOC_OPTIONS}
+        authority="Dubai Customs"
+        initialDocs={existingDocs?.map((d, i) => ({
+          id: `existing-${i}`, docType: d.docType, authority: d.authority,
+          fileName: d.fileName, fileSize: 0, uploadedOn: d.uploadedOn, locked: true,
+        }))}
+      />
     </div>
   );
 }

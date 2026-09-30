@@ -17,13 +17,18 @@ const PAYMENT_ROWS = [
   ['Other charges', 'AED 607.00', 'Credit/Debit Account', '1098 -TIG'],
 ];
 
-type Props = { onViewDeclaration?: () => void };
+type Props = {
+  onViewDeclaration?: () => void;
+  /** The amend journey runs a longer stepper, so the labels and active index are overridable. */
+  steps?: string[];
+  stepIndex?: number;
+};
 
 /** Review & Submit step — Figma 2650:52068. */
-export default function DeclarationSubmitPage({ onViewDeclaration }: Props) {
+export default function DeclarationSubmitPage({ onViewDeclaration, steps, stepIndex }: Props) {
   return (
     <div className="flex flex-col gap-[24px]" style={{ fontFamily: font }}>
-      <JourneyStepper active={4} />
+      <JourneyStepper active={stepIndex ?? 4} steps={steps} />
 
       <div className="flex flex-col gap-[16px]">
         <div className="flex items-center justify-between gap-[16px] flex-wrap">

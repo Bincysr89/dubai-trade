@@ -26,12 +26,18 @@ function Select({ value }: { value: string }) {
 }
 
 /** Payment Details step — Figma 2650:56012. */
-export default function DeclarationPaymentPage() {
+type Props = {
+  /** The amend journey runs a longer stepper, so the labels and active index are overridable. */
+  steps?: string[];
+  stepIndex?: number;
+};
+
+export default function DeclarationPaymentPage({ steps, stepIndex }: Props) {
   const [agreed, setAgreed] = useState(true);
 
   return (
     <div className="flex flex-col gap-[24px]" style={{ fontFamily: font }}>
-      <JourneyStepper active={4} />
+      <JourneyStepper active={stepIndex ?? 4} steps={steps} />
 
       <div className="flex flex-col gap-[16px]">
         <SectionTitle>Payment Details</SectionTitle>

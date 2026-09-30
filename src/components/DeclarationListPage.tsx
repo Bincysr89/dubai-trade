@@ -419,6 +419,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
   );
   const [permitFromJourney, setPermitFromJourney] = useState(!!autoPermitChat);
   const [clearanceJourneyOpen, setClearanceJourneyOpen] = useState(!!autoStartJourney);
+  /* Amend reuses the journey with the declaration it is editing — Figma 2650:57939. */
+  const [amendDeclNo, setAmendDeclNo] = useState<string | null>(null);
   const [completeJourneyOpen, setCompleteJourneyOpen] = useState(false);
   const [completeJourneyStart, setCompleteJourneyStart] = useState<'permits' | 'declInfo'>('permits');
   const [siraFlowOpen, setSiraFlowOpen] = useState(false);
@@ -3215,6 +3217,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                                     onClick={() => {
                                       setOpenFlyout(null);
                                       if (item.label === 'Apply for Permit') setPermitCreateOpen(true);
+                                      if (item.label === 'Amend') { setAmendDeclNo(decl.no); setClearanceJourneyOpen(true); }
                                     }}
                                   >
                                     <img src={item.icon} alt="" className="size-[20px] object-contain flex-shrink-0 group-hover:brightness-0 group-hover:invert" />
@@ -3278,7 +3281,9 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
       {/* Start Journey — Integrated Clearance journey (start → carrier → invoice → line items) */}
       {clearanceJourneyOpen && (
         <ClearanceJourneyPage
-          onClose={() => setClearanceJourneyOpen(false)}
+          key={amendDeclNo ?? 'create'}
+          onClose={() => { setClearanceJourneyOpen(false); setAmendDeclNo(null); }}
+          amendDeclarationNo={amendDeclNo ?? undefined}
           defaults={journeyDefaults}
           onApplyPermits={() => { setPermitPrefill({ activity: journeyExport ? 'Export' : 'Import', mode: journeyExport ? 'Air' : 'Sea', cargo: journeyExport ? 'Dangerous Goods & Firearms' : 'Food & Hazardous Goods Consignment' }); setPermitFromJourney(true); setPermitCreateOpen(true); }}
         />

@@ -19,6 +19,8 @@ export type UploadedDocRow = {
   fileName: string;
   fileSize: number;
   uploadedOn: string;
+  /** Already on the declaration before this amendment — download only, no delete. */
+  locked?: boolean;
 };
 
 function formatBytes(bytes: number) {
@@ -192,16 +194,18 @@ export default function DocumentUploadSection({
                     <JourneyTd first>{d.fileName}</JourneyTd>
                     <JourneyTd>{d.authority}</JourneyTd>
                     <JourneyTd>{d.docType}</JourneyTd>
-                    <JourneyTd>{formatBytes(d.fileSize)}</JourneyTd>
+                    <JourneyTd>{d.fileSize ? formatBytes(d.fileSize) : '50 MB'}</JourneyTd>
                     <JourneyTd>{d.uploadedOn}</JourneyTd>
                     <JourneyTd>
                       <span className="flex items-center gap-[16px]">
-                        <button type="button" aria-label={`Delete ${d.fileName}`} onClick={() => removeDoc(d.id)}
-                          className="inline-flex items-center justify-center hover:opacity-70 transition-opacity" style={{ color: '#dc3545' }}>
-                          <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M3 5h14M8 5V3h4v2M6 5l1 12h6l1-12M9 8v6M11 8v6" />
-                          </svg>
-                        </button>
+                        {!d.locked && (
+                          <button type="button" aria-label={`Delete ${d.fileName}`} onClick={() => removeDoc(d.id)}
+                            className="inline-flex items-center justify-center hover:opacity-70 transition-opacity" style={{ color: '#dc3545' }}>
+                            <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M3 5h14M8 5V3h4v2M6 5l1 12h6l1-12M9 8v6M11 8v6" />
+                            </svg>
+                          </button>
+                        )}
                         <button type="button" aria-label={`Download ${d.fileName}`}
                           className="inline-flex items-center justify-center hover:opacity-70 transition-opacity" style={{ color: '#1360d2' }}>
                           <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
