@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import MoreIcon from './MoreIcon';
 import Header from './Header';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
@@ -181,7 +182,7 @@ function ListStep({ config, onClose, onStart }: { config: PermitServiceConfig; o
                     ))}
                     <td className="px-[16px] py-[15px] relative">
                       <button onClick={() => setOpenFlyout(openFlyout === ri ? null : ri)} className="size-[28px] rounded flex items-center justify-center hover:bg-[#f0f4ff]">
-                        <svg viewBox="0 0 24 24" className="size-[16px] text-[#697498]" fill="currentColor"><circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" /></svg>
+                        <MoreIcon />
                       </button>
                       {openFlyout === ri && (
                         <>

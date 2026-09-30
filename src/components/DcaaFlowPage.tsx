@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import MoreIcon from './MoreIcon';
 import Header from './Header';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
@@ -151,7 +152,7 @@ function ShipmentsStep({ title, shipments, onAdd, onBack, onSubmit }: { title: s
           <div className="grid grid-cols-4 px-[16px] py-[12px] text-[13px] text-[#455174]" style={{ background: '#c9def7', fontWeight: 600 }}><span>Airway Bill Number</span><span>Number of Pieces</span><span>Commodity</span><span className="text-right">Action</span></div>
           {shipments.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-[10px] py-[56px]"><svg viewBox="0 0 24 24" className="size-[46px] text-[#c3cbe0]" fill="none" stroke="currentColor" strokeWidth="1.3"><path d="M21 16V8a2 2 0 00-1-1.7l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.7l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" /><path d="M3.3 7L12 12l8.7-5M12 22V12" /></svg><p className="text-[14px] text-[#8f94ae]">No shipments yet  - start adding shipments</p></div>
-          ) : shipments.map((s, i) => <div key={i} className="grid grid-cols-4 px-[16px] py-[14px] text-[14px] text-[#0e1b3d] border-t border-[#eef1f6]"><span>{s[0]}</span><span>{s[1]}</span><span>{s[2]}</span><span className="text-right"><svg viewBox="0 0 24 24" className="size-[16px] text-[#697498] inline" fill="currentColor"><circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" /></svg></span></div>)}
+          ) : shipments.map((s, i) => <div key={i} className="grid grid-cols-4 px-[16px] py-[14px] text-[14px] text-[#0e1b3d] border-t border-[#eef1f6]"><span>{s[0]}</span><span>{s[1]}</span><span>{s[2]}</span><span className="text-right"><MoreIcon /></span></div>)}
         </div>
         <label className="flex items-center gap-[8px] text-[14px] text-[#0e1b3d] mt-[16px]"><span className="size-[18px] rounded-[4px] bg-[#1360d2] flex items-center justify-center"><svg viewBox="0 0 16 16" className="size-[11px]" fill="none" stroke="#fff" strokeWidth="2.4"><path d="M3 8l3.5 3.5L13 5" /></svg></span>I agree to Dubai Municipality <span className="text-[#1360d2]">Terms &amp; Conditions</span> and I have read the <span className="text-[#1360d2]">Privacy Policy</span> <span className="text-[#ea2428]">*</span></label>
       </Card>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import MoreIcon from './MoreIcon';
 import PermitInformationFilingModal from './PermitInformationFilingModal';
 import DeclarationReviewPage from './declaration/DeclarationReviewPage';
 import DeclarationShipmentPage, { SHIPMENT_TABS, type ShipmentTab } from './declaration/DeclarationShipmentPage';
@@ -952,7 +953,7 @@ function InvoiceListStep({ onAddLineItem, amend = false }: { onAddLineItem: () =
             ))}
           </div>
           <div className="flex items-center gap-[10px] flex-shrink-0">
-            <button onClick={openFlyout('invoice')} aria-label="Invoice 1 actions" className="size-[30px] rounded flex items-center justify-center hover:bg-[#f0f4ff]"><svg viewBox="0 0 24 24" className="size-[16px] text-[#697498]" fill="currentColor"><circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" /></svg></button>
+            <button onClick={openFlyout('invoice')} aria-label="Invoice 1 actions" className="size-[30px] rounded flex items-center justify-center hover:bg-[#f0f4ff]"><MoreIcon /></button>
             <button onClick={() => setExpanded((e) => !e)} aria-label={expanded ? 'Collapse invoice' : 'Expand invoice'} className="size-[30px] rounded-full border border-[#d5ddfb] flex items-center justify-center"><svg viewBox="0 0 24 24" className="size-[16px] text-[#697498] transition-transform" style={{ transform: expanded ? 'none' : 'rotate(180deg)' }} fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M6 9l6 6 6-6" /></svg></button>
           </div>
         </div>
@@ -973,7 +974,7 @@ function InvoiceListStep({ onAddLineItem, amend = false }: { onAddLineItem: () =
                     <tr>
                       {row.map((v, i) => <JourneyTd key={i} first={i === 0}>{v}</JourneyTd>)}
                       <JourneyTd sticky width={80}>
-                        <button onClick={openFlyout('line')} aria-label="Line item actions" className="size-[28px] rounded flex items-center justify-center hover:bg-[#f0f4ff]"><svg viewBox="0 0 24 24" className="size-[16px] text-[#697498]" fill="currentColor"><circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" /></svg></button>
+                        <button onClick={openFlyout('line')} aria-label="Line item actions" className="size-[28px] rounded flex items-center justify-center hover:bg-[#f0f4ff]"><MoreIcon /></button>
                       </JourneyTd>
                     </tr>
                   </tbody>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import MoreIcon from './MoreIcon';
 import Header from './Header';
 import JourneyProgress from './JourneyBanner';
 import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
@@ -172,7 +173,7 @@ function ListStep({ onClose, onRequest }: { onClose: () => void; onRequest: () =
                           : <span className="text-[#0e1b3d]">{cell}</span>}
                       </td>
                     ))}
-                    <td className="px-[14px] py-[14px]" style={{ background: '#fff', position: 'sticky', right: 0, minWidth: 100, width: 100, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 1 }}><div className="flex items-center gap-[8px]"><button className="size-[26px] flex items-center justify-center"><svg viewBox="0 0 24 24" className="size-[15px] text-[#697498]" fill="currentColor"><circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" /></svg></button><button className="size-[26px] rounded-full border border-[#d5ddfb] flex items-center justify-center"><svg viewBox="0 0 24 24" className="size-[14px] text-[#697498]" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M6 9l6 6 6-6" /></svg></button></div></td>
+                    <td className="px-[14px] py-[14px]" style={{ background: '#fff', position: 'sticky', right: 0, minWidth: 100, width: 100, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 1 }}><div className="flex items-center gap-[8px]"><button className="size-[26px] flex items-center justify-center"><MoreIcon /></button><button className="size-[26px] rounded-full border border-[#d5ddfb] flex items-center justify-center"><svg viewBox="0 0 24 24" className="size-[14px] text-[#697498]" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M6 9l6 6 6-6" /></svg></button></div></td>
                   </tr>
                 ))}
               </tbody>

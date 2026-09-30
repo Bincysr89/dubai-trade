@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
+import MoreIcon from '../MoreIcon';
 import Pagination from '../Pagination';
 import RowFlyout, { STEPPER_INVOICE_MENU, STEPPER_LINE_ITEM_MENU, anchorFrom } from './RowFlyout';
 import { JourneyStepper, JourneyTable, JourneyTd, JourneyThead, SectionCard, font } from './DeclarationUI';
-
-const MoreIcon = () => (
-  <svg viewBox="0 0 4 18" width="4" height="18" fill="#697498"><circle cx="2" cy="2" r="2" /><circle cx="2" cy="9" r="2" /><circle cx="2" cy="16" r="2" /></svg>
-);
 
 const Chevron = ({ up }: { up?: boolean }) => (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1360d2" strokeWidth="2.2" strokeLinecap="round"
@@ -159,7 +156,7 @@ export default function DeclarationInvoiceDetailsPage({ onViewDetails, onEditDet
                               <JourneyTd sticky width={90}>
                                 <span className="flex items-center gap-[10px]">
                                   <button onClick={openFlyout('line')} aria-label="Line item actions"
-                                    className="size-[24px] inline-flex items-center justify-center rounded hover:bg-[#f0f4ff]"><MoreIcon /></button>
+                                    className="size-[28px] inline-flex items-center justify-center rounded hover:bg-[#f0f4ff]"><MoreIcon /></button>
                                   <button onClick={() => setOpenLineItem(open ? null : li.hs)} aria-label={open ? 'Collapse line item' : 'Expand line item'}
                                     className="size-[24px] inline-flex items-center justify-center rounded hover:bg-[#f0f4ff]"><Chevron up={open} /></button>
                                 </span>
@@ -181,7 +178,7 @@ export default function DeclarationInvoiceDetailsPage({ onViewDetails, onEditDet
                                               {r.map((cell, ci) => <JourneyTd key={ci} first={ci === 0}>{cell}</JourneyTd>)}
                                               <JourneyTd sticky width={70}>
                                                 <button onClick={openFlyout('vehicle')} aria-label="Vehicle actions"
-                                                  className="size-[24px] inline-flex items-center justify-center rounded hover:bg-[#f0f4ff]"><MoreIcon /></button>
+                                                  className="size-[28px] inline-flex items-center justify-center rounded hover:bg-[#f0f4ff]"><MoreIcon /></button>
                                               </JourneyTd>
                                             </tr>
                                           ))}

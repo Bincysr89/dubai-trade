@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import MoreIcon from './MoreIcon';
 import { createPortal } from 'react-dom';
 import Pagination from './Pagination';
 import StatusFilterHeader from './StatusFilterHeader';
@@ -503,9 +504,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
           setOpenFlyout(i);
         }}
       >
-        <svg viewBox="0 0 4 18" width="4" height="18" fill="#697498">
-          <circle cx="2" cy="2" r="2" /><circle cx="2" cy="9" r="2" /><circle cx="2" cy="16" r="2" />
-        </svg>
+        <MoreIcon />
       </button>
       {openFlyout === i && flyoutPos && createPortal(
         <div ref={flyoutRef} className="fixed z-[1000] bg-white rounded-[8px] py-[4px] overflow-hidden" style={{ top: flyoutPos.top, left: flyoutPos.left, width: FLYOUT_W, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import MoreIcon from './MoreIcon';
 import Pagination from './Pagination';
 import StatusFilterHeader from './StatusFilterHeader';
 import { ColumnFilter } from './ColumnFilter';
@@ -321,9 +322,7 @@ export default function CargoTransferTable({ showDrafts = false, onViewRequest, 
                       aria-label="More actions"
                       onClick={() => setOpenFlyout(openFlyout === i ? null : i)}
                     >
-                      <svg viewBox="0 0 4 18" width="4" height="18" fill="#697498">
-                        <circle cx="2" cy="2" r="2" /><circle cx="2" cy="9" r="2" /><circle cx="2" cy="16" r="2" />
-                      </svg>
+                      <MoreIcon />
                     </button>
 
                     {openFlyout === i && (

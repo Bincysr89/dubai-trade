@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import MoreIcon from './MoreIcon';
 import Pagination from './Pagination';
 import StatusFilterHeader from './StatusFilterHeader';
 import { ColumnFilter } from './ColumnFilter';
@@ -269,9 +270,7 @@ export default function AcknowledgementTable({ onView, onAccept, onDecline, onHi
                       aria-label="More actions"
                       onClick={() => setOpenFlyout(openFlyout === i ? null : i)}
                     >
-                      <svg viewBox="0 0 4 18" width="4" height="18" fill="#697498">
-                        <circle cx="2" cy="2" r="2" /><circle cx="2" cy="9" r="2" /><circle cx="2" cy="16" r="2" />
-                      </svg>
+                      <MoreIcon />
                     </button>
                     {openFlyout === i && (
                       <div className="absolute z-[100] bg-white rounded-[8px] py-[4px] overflow-hidden" style={{ right: '100%', top: 0, marginRight: 6, width: 200, boxShadow: '0px 2px 16px 0px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>

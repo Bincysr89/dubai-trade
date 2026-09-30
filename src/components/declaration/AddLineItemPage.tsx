@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import MoreIcon from '../MoreIcon';
 import Pagination from '../Pagination';
 import { Field, JourneyTable, JourneyTd, JourneyThead, SectionCard, SectionTitle, StatusChip, TabBar, font } from './DeclarationUI';
 
@@ -223,9 +224,7 @@ export default function AddLineItemPage({
                           <button type="button" aria-label={`Vehicle ${i + 1} actions`}
                             onClick={() => setVehicleMenu(vehicleMenu === i ? null : i)}
                             className="size-[28px] inline-flex items-center justify-center rounded hover:bg-[#f0f4ff]">
-                            <svg viewBox="0 0 4 18" width="4" height="18" fill="#697498">
-                              <circle cx="2" cy="2" r="2" /><circle cx="2" cy="9" r="2" /><circle cx="2" cy="16" r="2" />
-                            </svg>
+                            <MoreIcon />
                           </button>
                           {vehicleMenu === i && (
                             <span className="absolute z-[40] bg-white rounded-[8px] py-[4px] overflow-hidden"

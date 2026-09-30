@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import MoreIcon from './MoreIcon';
 import BackToListingBar from './BackToListingBar';
 import VccDetailsModal, { type VccDetails } from './VccDetailsModal';
 import VccAuditHistoryModal from './VccAuditHistoryModal';
@@ -272,9 +273,7 @@ export default function VccViewRequestPage({ onBack, requestNumber = '25365', st
                             aria-label={`Actions for VCC ${v.vccNo}`}
                             className="size-[32px] inline-flex items-center justify-center rounded-[4px] hover:bg-[#f0f4ff] transition-colors"
                           >
-                            <svg viewBox="0 0 4 18" width="4" height="18" fill="#697498">
-                              <circle cx="2" cy="2" r="2" /><circle cx="2" cy="9" r="2" /><circle cx="2" cy="16" r="2" />
-                            </svg>
+                            <MoreIcon />
                           </button>
                           {actionMenuFor === v.vccNo && (
                             <div

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import MoreIcon from './MoreIcon';
 import ManageColumnsModal, { ColDef } from './ManageColumnsModal';
 import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
 import Header from './Header';
@@ -3266,9 +3267,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                               className="size-[28px] flex items-center justify-center rounded hover:bg-[#f0f4ff] transition-colors"
                               onClick={() => setOpenFlyout(openFlyout === i ? null : i)}
                             >
-                              <svg viewBox="0 0 4 18" width="4" height="18" fill="#697498">
-                                <circle cx="2" cy="2" r="2"/><circle cx="2" cy="9" r="2"/><circle cx="2" cy="16" r="2"/>
-                              </svg>
+                              <MoreIcon />
                             </button>
 
                             {/* Flyout menu */}

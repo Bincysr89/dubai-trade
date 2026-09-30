@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import MoreIcon from './MoreIcon';
 import { ColumnFilter } from './ColumnFilter';
 import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
 
@@ -214,9 +215,7 @@ export default function CargoTransferHistoryPage({ onBack, onBackToListing, onSu
                           aria-label="More actions"
                           onClick={() => setOpenFlyout(openFlyout === i ? null : i)}
                         >
-                          <svg viewBox="0 0 4 18" width="4" height="18" fill="#697498">
-                            <circle cx="2" cy="2" r="2" /><circle cx="2" cy="9" r="2" /><circle cx="2" cy="16" r="2" />
-                          </svg>
+                          <MoreIcon />
                         </button>
 
                         {openFlyout === i && (

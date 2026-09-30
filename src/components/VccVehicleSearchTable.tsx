@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import MoreIcon from './MoreIcon';
 import VccDetailsModal, { type VccDetails } from './VccDetailsModal';
 import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
 
@@ -206,9 +207,7 @@ export default function VccVehicleSearchTable({ searchTerm, searchType, onViewRe
                       aria-label={`Actions for VCC ${row.vccNo}`}
                       className="size-[32px] inline-flex items-center justify-center rounded-[4px] hover:bg-[#f0f4ff] transition-colors"
                     >
-                      <svg viewBox="0 0 4 18" width="4" height="18" fill="#697498">
-                        <circle cx="2" cy="2" r="2" /><circle cx="2" cy="9" r="2" /><circle cx="2" cy="16" r="2" />
-                      </svg>
+                      <MoreIcon />
                     </button>
                     {menuFor === row.vccNo && (
                       <div

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import MoreIcon from './MoreIcon';
 import Header from './Header';
 import JourneyProgress from './JourneyBanner';
 import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
@@ -145,7 +146,7 @@ function DetailsStep({ onBack, onNext }: { onBack: () => void; onNext: () => voi
                     <tr key={ri} className="border-t border-[#eef1f6]">
                       {r.map((v, ci) => <td key={ci} className="text-[13px] text-[#0e1b3d] px-[12px] py-[12px] whitespace-nowrap">{v}</td>)}
                       <td className="px-[12px] py-[12px]" style={{ background: '#fff', position: 'sticky', right: 0, minWidth: 80, width: 80, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 1 }}>
-                        <svg viewBox="0 0 24 24" className="size-[15px] text-[#697498]" fill="currentColor"><circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" /></svg>
+                        <MoreIcon />
                       </td>
                     </tr>
                   ))}

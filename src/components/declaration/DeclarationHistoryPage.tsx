@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import MoreIcon from '../MoreIcon';
 import { createPortal } from 'react-dom';
 import ActionPage from './ActionPage';
 import { JourneyTable, JourneyTd, JourneyThead, StatusChip, font } from './DeclarationUI';
@@ -73,9 +74,7 @@ export default function DeclarationHistoryPage({ onHome, onBack, onAction }: Pro
                   <button type="button" aria-label={`Request ${r.no} actions`}
                     onClick={openMenu(i)}
                     className="size-[28px] inline-flex items-center justify-center rounded hover:bg-[#f0f4ff]">
-                    <svg viewBox="0 0 4 18" width="4" height="18" fill="#697498">
-                      <circle cx="2" cy="2" r="2" /><circle cx="2" cy="9" r="2" /><circle cx="2" cy="16" r="2" />
-                    </svg>
+                    <MoreIcon />
                   </button>
                 </JourneyTd>
               </tr>
