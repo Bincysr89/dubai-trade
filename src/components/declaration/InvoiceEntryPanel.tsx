@@ -54,7 +54,7 @@ export default function InvoiceEntryPanel({ mode, onClose, onSaved, onAddLineIte
   const fileRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="bg-white rounded-[8px] px-[24px] py-[22px]"
+    <div className={`bg-white rounded-[8px] px-[24px] py-[22px] ${mode === 'upload' ? 'max-w-[560px]' : ''}`}
       style={{ boxShadow: '0px 5px 32px rgba(143,155,186,0.16)', fontFamily: font }}>
 
       <div className="flex items-start justify-between gap-[16px] mb-[20px]">
@@ -94,7 +94,7 @@ export default function InvoiceEntryPanel({ mode, onClose, onSaved, onAddLineIte
               const f = e.dataTransfer.files?.[0];
               if (f) { setFileName(f.name); onSaved?.(); }
             }}
-            className="flex flex-col items-center justify-center gap-[12px] rounded-[8px] py-[36px] px-[16px] transition-colors"
+            className="flex flex-col items-center justify-center gap-[12px] rounded-[8px] py-[32px] px-[16px] transition-colors"
             style={{ border: `1.5px dashed ${dragging ? '#1360d2' : '#b5c8e8'}`, background: dragging ? '#edf3ff' : '#f8fafd' }}
           >
             <div className="size-[56px] rounded-full inline-flex items-center justify-center" style={{ background: '#e2ebf9' }}>

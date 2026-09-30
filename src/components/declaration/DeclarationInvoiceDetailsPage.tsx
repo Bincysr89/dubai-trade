@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import Pagination from '../Pagination';
-import InvoiceEntryPanel, { InvoiceEntryButtons, type InvoiceEntryMode } from './InvoiceEntryPanel';
 import { JourneyStepper, JourneyTable, JourneyTd, JourneyThead, SectionCard, font } from './DeclarationUI';
 
 const MoreIcon = () => (
@@ -48,8 +47,6 @@ function Flyout({ items, at, onPick, onClose }: {
 }
 
 const eyeIcon = <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z" /><circle cx="10" cy="10" r="2.5" /></svg>;
-const amendIcon = <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3 13.5V17h3.5L16 7.5 12.5 4 3 13.5z" /><path d="M11.5 5L15 8.5" /></svg>;
-const deleteIcon = <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3 5h14M8 5V3h4v2M16 5l-1 12H5L4 5" /><path d="M8 9v5M12 9v5" /></svg>;
 const carIcon = <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M3 12h14v3H3zM5 12l1.5-4h7L15 12" /><circle cx="6.5" cy="15.5" r="1.2" /><circle cx="13.5" cy="15.5" r="1.2" /></svg>;
 const docIcon = <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M5 3h7l3 3v11H5z" /><path d="M12 3v3h3M7 10h6M7 13h4" /></svg>;
 
@@ -93,13 +90,12 @@ const invoiceIcon = (
 type Props = {
   /** "View Details" on an invoice or line-item row opens the invoice view page. */
   onViewDetails?: () => void;
-  /** "Save & Add Line Item" in the manual entry panel. */
-  onAddLineItem?: () => void;
+  /** "Edit Details" returns to the invoice upload page that precedes the stepper. */
+  onEditDetails?: () => void;
 };
 
 /** Invoice Details step — Figma 2650:48551. */
-export default function DeclarationInvoiceDetailsPage({ onViewDetails, onAddLineItem }: Props) {
-  const [entryMode, setEntryMode] = useState<InvoiceEntryMode | null>(null);
+export default function DeclarationInvoiceDetailsPage({ onViewDetails, onEditDetails }: Props) {
   const [openInvoice, setOpenInvoice] = useState<number | null>(1);
   const [openLineItem, setOpenLineItem] = useState<string | null>('AX1234567');
   const [flyout, setFlyout] = useState<{ kind: 'invoice' | 'line' | 'vehicle'; at: { top: number; left: number } } | null>(null);
@@ -111,7 +107,7 @@ export default function DeclarationInvoiceDetailsPage({ onViewDetails, onAddLine
   const openFlyout = (kind: 'invoice' | 'line' | 'vehicle') => (e: React.MouseEvent) => {
     e.stopPropagation();
     const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const height = kind === 'invoice' ? 96 : kind === 'line' ? 188 : 144;
+    const height = kind === 'line' ? 144 : 52;
     setFlyout({ kind, at: { top: Math.min(r.bottom + 4, window.innerHeight - height - 8), left: Math.max(8, r.left - 170) } });
   };
 
@@ -119,23 +115,16 @@ export default function DeclarationInvoiceDetailsPage({ onViewDetails, onAddLine
     <div className="flex flex-col gap-[24px]" style={{ fontFamily: font }}>
       <JourneyStepper active={2} />
 
-      <div className="flex flex-col gap-[16px]">
-        <p className="text-[16px] text-[#697498]">You can add invoice details manually or upload a Text file.</p>
-        {/* Both entry routes stay live once invoices exist, so more can be added in place. */}
-        <InvoiceEntryButtons mode={entryMode} onChange={setEntryMode} />
-      </div>
-
-      {entryMode && (
-        <InvoiceEntryPanel
-          mode={entryMode}
-          onClose={() => setEntryMode(null)}
-          onAddLineItem={onAddLineItem}
-        />
-      )}
-
-      <div className="flex items-center gap-[40px] flex-wrap">
-        <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>03 Invoices Added</span>
-        <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Grand Total: AED 25,000.00</span>
+      <div className="flex items-center justify-between gap-[16px] flex-wrap">
+        <div className="flex items-center gap-[40px] flex-wrap">
+          <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>03 Invoices Added</span>
+          <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Grand Total: AED 25,000.00</span>
+        </div>
+        {/* Editing the invoices means going back to where they were added, before the stepper */}
+        <button data-secondary-btn type="button" onClick={onEditDetails}
+          className="h-[44px] px-[24px] rounded-[4px] border bg-white text-[16px] transition-colors"
+          style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}
+        >Edit Details</button>
       </div>
 
       {INVOICES.map((inv) => {
@@ -173,7 +162,7 @@ export default function DeclarationInvoiceDetailsPage({ onViewDetails, onAddLine
                 <JourneyTable minWidth={1235}>
                     <JourneyThead columns={[
                       ...LINE_ITEM_COLUMNS.map((label) => ({ label })),
-                      { label: 'Action', w: 90, filter: false },
+                      { label: 'Action', w: 90, filter: false, sticky: true },
                     ]} />
                     <tbody>
                       {LINE_ITEMS.map((li, i) => {
@@ -183,7 +172,7 @@ export default function DeclarationInvoiceDetailsPage({ onViewDetails, onAddLine
                             <tr>
                               <JourneyTd first>{li.hs}</JourneyTd><JourneyTd>{li.desc}</JourneyTd><JourneyTd>{li.condition}</JourneyTd><JourneyTd>{li.origin}</JourneyTd>
                               <JourneyTd>{li.weight}</JourneyTd><JourneyTd>{li.value}</JourneyTd><JourneyTd>{li.statQty}</JourneyTd><JourneyTd>{li.suppQty}</JourneyTd><JourneyTd>{li.itemQty}</JourneyTd>
-                              <JourneyTd>
+                              <JourneyTd sticky width={90}>
                                 <span className="flex items-center gap-[10px]">
                                   <button onClick={openFlyout('line')} aria-label="Line item actions"
                                     className="size-[24px] inline-flex items-center justify-center rounded hover:bg-[#f0f4ff]"><MoreIcon /></button>
@@ -200,13 +189,13 @@ export default function DeclarationInvoiceDetailsPage({ onViewDetails, onAddLine
                                     <JourneyTable minWidth={1500}>
                                         <JourneyThead columns={[
                                           ...VEHICLE_COLUMNS.map((label) => ({ label })),
-                                          { label: 'Action', w: 70, filter: false },
+                                          { label: 'Action', w: 70, filter: false, sticky: true },
                                         ]} />
                                         <tbody>
                                           {VEHICLE_ROWS.map((r, ri) => (
                                             <tr key={ri}>
                                               {r.map((cell, ci) => <JourneyTd key={ci} first={ci === 0}>{cell}</JourneyTd>)}
-                                              <JourneyTd>
+                                              <JourneyTd sticky width={70}>
                                                 <button onClick={openFlyout('vehicle')} aria-label="Vehicle actions"
                                                   className="size-[24px] inline-flex items-center justify-center rounded hover:bg-[#f0f4ff]"><MoreIcon /></button>
                                               </JourneyTd>
@@ -248,23 +237,13 @@ export default function DeclarationInvoiceDetailsPage({ onViewDetails, onAddLine
           onClose={() => setFlyout(null)}
           onPick={(label) => { if (label === 'View Details') onViewDetails?.(); }}
           items={
-            flyout.kind === 'invoice'
+            flyout.kind === 'line'
               ? [
-                  { label: 'Amend', icon: amendIcon },
-                  { label: 'Delete', icon: deleteIcon },
-                ]
-              : flyout.kind === 'line'
-              ? [
-                  { label: 'Amend', icon: amendIcon },
+                  { label: 'View Details', icon: eyeIcon },
                   { label: 'Vehicle Details', icon: carIcon },
                   { label: 'Permit Details', icon: docIcon },
-                  { label: 'Delete', icon: deleteIcon },
                 ]
-              : [
-                  { label: 'View Details', icon: eyeIcon },
-                  { label: 'Amend', icon: amendIcon },
-                  { label: 'Delete', icon: deleteIcon },
-                ]
+              : [{ label: 'View Details', icon: eyeIcon }]
           }
         />
       )}

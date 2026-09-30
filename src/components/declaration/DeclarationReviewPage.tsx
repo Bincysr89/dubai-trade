@@ -50,70 +50,66 @@ export default function DeclarationReviewPage({ onLookup, onAddOverseasCustomer 
       <div className="flex flex-col gap-[20px]">
         <SectionTitle>Person/Parties</SectionTitle>
         <SectionCard>
-          <div className="flex flex-wrap gap-x-[20px] gap-y-[35px] items-start">
+          {/* Four columns on the same rhythm as the Declaration Header above */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-x-[20px] gap-y-[32px] items-start">
             <Field
-              className="w-full sm:w-[315px]"
               value="Importers Code" valueRequired disabled trailing="edit"
               chips={['SONY GULF FZE']}
             />
 
-            <div className="flex flex-wrap gap-[8px] items-start">
-              <Field
-                className="w-full sm:w-[312px]"
-                value="Exporters Code" trailing="search"
-                trailingLabel="Search Exporters Code"
-                onTrailingClick={() => onLookup?.('exporter')}
-                chips={['Maersk Shipping']}
-              />
-              <div className="flex items-center gap-[8px]">
-                <span className="text-[16px] text-[#1e1e1e]" style={{ fontWeight: 500 }}>OR</span>
-                <div className="flex flex-col gap-[8px] items-start">
-                  <button
-                    data-secondary-btn
-                    type="button"
-                    onClick={onAddOverseasCustomer}
-                    className="flex items-center justify-center h-[48px] px-[20px] rounded-[4px] border bg-white transition-colors"
-                    style={{ width: 185, borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}
-                  >
-                    <span className="text-[16px] capitalize">Add Overseas Customer</span>
-                  </button>
-                  <label className="flex items-center gap-[8px] cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={mraAeo}
-                      onChange={(e) => setMraAeo(e.target.checked)}
-                      className="size-[18px] rounded-[2px]"
-                      style={{ accentColor: '#1360d2' }}
-                    />
-                    <span className="text-[14px] text-[#051937]" style={{ fontWeight: 500 }}>MRA AEO</span>
-                  </label>
-                </div>
+            <Field
+              value="Exporters Code" trailing="search"
+              trailingLabel="Search Exporters Code"
+              onTrailingClick={() => onLookup?.('exporter')}
+              chips={['Maersk Shipping']}
+            />
+
+            {/* The alternative to an exporter code, so it sits in the column beside it */}
+            <div className="flex items-start gap-[10px]">
+              <span className="text-[16px] text-[#1e1e1e] leading-[48px]" style={{ fontWeight: 500 }}>OR</span>
+              <div className="flex flex-col gap-[8px] items-start min-w-0">
+                <button
+                  data-secondary-btn
+                  type="button"
+                  onClick={onAddOverseasCustomer}
+                  className="flex items-center justify-center h-[48px] px-[20px] rounded-[4px] border bg-white transition-colors w-full"
+                  style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}
+                >
+                  <span className="text-[16px] capitalize whitespace-nowrap">Add Overseas Customer</span>
+                </button>
+                <label className="flex items-center gap-[8px] cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={mraAeo}
+                    onChange={(e) => setMraAeo(e.target.checked)}
+                    className="size-[18px] rounded-[2px]"
+                    style={{ accentColor: '#1360d2' }}
+                  />
+                  <span className="text-[14px] text-[#051937]" style={{ fontWeight: 500 }}>MRA AEO</span>
+                </label>
               </div>
             </div>
 
             <Field
-              className="w-full sm:w-[315px]"
               value="Notify Party Code" trailing="search"
               trailingLabel="Search Notify Party Code"
               onTrailingClick={() => onLookup?.('notifyParty')}
               chips={['SONY GULF FZE']}
             />
             <Field
-              className="w-full sm:w-[315px]"
               value="Cargo Handlers Code" valueRequired trailing="search"
               trailingLabel="Search Cargo Handlers Code"
               onTrailingClick={() => onLookup?.('cargoHandler')}
               chips={['SONY GULF FZE']}
             />
             <Field
-              className="w-full sm:w-[315px]"
               value="Agent’s Code" valueRequired trailing="search"
               trailingLabel="Search Agent’s Code"
               onTrailingClick={() => onLookup?.('agent')}
-              chips={['SONY GULF FZE', 'Maersk Shipping']}
+              chips={['Maersk Shipping']}
             />
-            <Field className="w-full sm:w-[315px]" value="Customs Broker" disabled />
-            <Field className="w-full sm:w-[315px]" value="E-Commerce" label="Trade Type" trailing="chevron" />
+            <Field value="Customs Broker" disabled />
+            <Field value="E-Commerce" label="Trade Type" trailing="chevron" />
           </div>
         </SectionCard>
       </div>

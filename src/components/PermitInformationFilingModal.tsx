@@ -21,7 +21,7 @@ type Props = {
  * "Hang on! We are filling your information…" — shown while the declaration is assembled
  * from the journey, then hands over to the review page. Figma 2650:70259.
  */
-export default function PermitInformationFilingModal({ onClose, onDone, durationMs = 5000 }: Props) {
+export default function PermitInformationFilingModal({ onClose, onDone, durationMs = 2000 }: Props) {
   useEffect(() => {
     const t = setTimeout(onDone, durationMs);
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };

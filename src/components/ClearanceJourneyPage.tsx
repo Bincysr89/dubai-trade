@@ -310,7 +310,7 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
           {step === 'invoiceDetails' && (
             <DeclarationInvoiceDetailsPage
               onViewDetails={() => { setReturnStep('invoiceDetails'); setStep('lineItemDetails'); }}
-              onAddLineItem={() => setAddLineItem(true)}
+              onEditDetails={() => setStep('invoice')}
             />
           )}
           {step === 'lineItemDetails' && <LineItemDetailsPage />}
@@ -738,12 +738,12 @@ function ManualInvoice({ onSave, onAddLineItem }: { onSave: () => void; onAddLin
 /* ── Step 5: Required documents upload ── */
 function DocumentsStep() {
   const DOC_TYPES = [
-    { label: 'Invoice', required: true, nature: 'Copy' },
-    { label: 'Packaging List', required: true, nature: 'Copy' },
-    { label: 'AWB/BOL', nature: 'Copy' },
-    { label: 'Laboratory Results', nature: 'Original' },
-    { label: 'Certificate of Origin', nature: 'Original' },
-    { label: 'Other Documents', nature: 'Any' },
+    { label: 'Invoice', required: true },
+    { label: 'Packaging List', required: true },
+    { label: 'AWB/BOL' },
+    { label: 'Laboratory Results' },
+    { label: 'Certificate of Origin' },
+    { label: 'Other Documents', isNew: true },
   ];
   return (
     <>
@@ -752,20 +752,15 @@ function DocumentsStep() {
       <h2 className="text-[20px] text-[#0e1b3d] mb-[4px]" style={{ fontWeight: 700 }}>Required Documents</h2>
       <p className="text-[15px] text-[#5a6282] mb-[16px]">Select the document type and upload the supporting file.</p>
 
-      {/* Same two-card uploader as the Refund & Claims document step */}
-      <DocumentUploadSection
-        docTypes={DOC_TYPES}
-        authority="Dubai Customs"
-        title="Upload Documents"
-        description="Select the document type and upload the file — we will share the documents with the authorities."
-      />
-
-      <div className="mt-[24px]">
-        <h2 className="text-[20px] text-[#0e1b3d] mb-[12px]" style={{ fontWeight: 700 }}>OGA Required Documents</h2>
-        <div className="max-w-[300px]">
-          <Field label="" value="" placeholder="Choose Issuing Authorities" select />
+      <DocumentUploadSection docTypes={DOC_TYPES} authority="Dubai Customs">
+        {/* The OGA picker belongs with the document types, not in a card of its own */}
+        <div className="flex flex-col gap-[10px] pt-[4px]">
+          <p className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 600 }}>OGA Required Documents</p>
+          <div className="max-w-[300px]">
+            <Field label="" value="" placeholder="Choose Issuing Authorities" select />
+          </div>
         </div>
-      </div>
+      </DocumentUploadSection>
     </>
   );
 }

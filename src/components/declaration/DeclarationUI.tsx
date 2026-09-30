@@ -168,13 +168,14 @@ export function PartyInformation() {
     <div className="flex flex-col gap-[20px]">
       <SectionTitle>Party Information</SectionTitle>
       <div className="flex flex-col gap-[20px]">
-        <div className="flex flex-wrap gap-[20px] items-stretch">
-          <SectionCard>
-            <div className="flex items-center h-full" style={{ minWidth: 240 }}>
+        {/* Each row fills the full width: the narrow cards flex, the detail-heavy ones take more of it */}
+        <div className="flex flex-wrap lg:flex-nowrap gap-[20px] items-stretch">
+          <SectionCard className="flex-1 min-w-[220px]">
+            <div className="flex items-center h-full">
               <Readout label="Exporter Name" value="Shaheer" />
             </div>
           </SectionCard>
-          <SectionCard>
+          <SectionCard className="flex-[3] min-w-[280px]">
             <div className="flex flex-wrap gap-x-[48px] gap-y-[20px] items-start">
               <Readout label="Importer Name" value="Shaheer" />
               <Readout label="Importer License Expires on" value="13-03-2024">
@@ -189,16 +190,16 @@ export function PartyInformation() {
             </div>
           </SectionCard>
         </div>
-        <div className="flex flex-wrap gap-[20px] items-stretch">
-          <SectionCard>
-            <div className="flex flex-wrap gap-x-[48px] gap-y-[20px] items-start">
+        <div className="flex flex-wrap lg:flex-nowrap gap-[20px] items-stretch">
+          <SectionCard className="flex-[2] min-w-[280px]">
+            <div className="flex flex-wrap gap-x-[48px] gap-y-[20px] items-start h-full">
               <Readout label="Broker Name" value="SWBR001 M&M Private L.L.C" />
               <Readout label="Broker License Expires on" value="13-03-2024" />
             </div>
           </SectionCard>
-          <SectionCard><Readout label="Notify Party Name" value="SINOTRAN S Middle East FZ" /></SectionCard>
-          <SectionCard><Readout label="Cargo Handler Name" value="DPW" /></SectionCard>
-          <SectionCard><Readout label="Agent Name" value="Maersk Shipping" /></SectionCard>
+          <SectionCard className="flex-1 min-w-[200px]"><Readout label="Notify Party Name" value="SINOTRAN S Middle East FZ" /></SectionCard>
+          <SectionCard className="flex-1 min-w-[160px]"><Readout label="Cargo Handler Name" value="DPW" /></SectionCard>
+          <SectionCard className="flex-1 min-w-[160px]"><Readout label="Agent Name" value="Maersk Shipping" /></SectionCard>
         </div>
       </div>
     </div>

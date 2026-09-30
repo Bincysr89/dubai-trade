@@ -10,12 +10,12 @@ const AVAILABILITY = [
 ];
 
 const DOC_OPTIONS = [
-  { label: 'Passport Copy', required: true, nature: 'Copy' },
-  { label: 'Trade License copy', nature: 'Copy' },
-  { label: 'Certificate Of Origin issued by the Ministry', nature: 'Original' },
-  { label: 'Organizational Structure/Profile Copy', nature: 'Copy' },
-  { label: 'Invoice Consumption Request Letter', nature: 'Copy' },
-  { label: 'Letter of Undertaking for Shipping Agent', nature: 'Original' },
+  { label: 'Passport Copy', required: true, count: '2/5' },
+  { label: 'Trade License copy' },
+  { label: 'Certificate Of Origin issued by the Ministry' },
+  { label: 'Organizational Structure/Profile Copy', isNew: true },
+  { label: 'Invoice Consumption Request Letter' },
+  { label: 'Letter of Undertaking for Shipping Agent', isNew: true },
 ];
 
 function Dropdown({ label, required, value }: { label: string; required?: boolean; value: string }) {

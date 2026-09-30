@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import Pagination from '../Pagination';
-import { ColumnFilter } from '../ColumnFilter';
 import {
-  Field, JourneyStepper, PartyInformation, SectionCard, SectionTitle, TabBar, editSrc, font,
+  Field, JourneyStepper, JourneyTable, JourneyTd, JourneyThead, PartyInformation,
+  SectionCard, SectionTitle, TabBar, editSrc, font,
 } from './DeclarationUI';
 
 export const SHIPMENT_TABS = ['General Shipping Details', 'Package Details', 'Container Details'] as const;
@@ -95,29 +95,16 @@ function PackageDetails() {
     <div className="flex flex-col gap-[20px]">
       <SectionTitle>Package Details</SectionTitle>
       <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '1px 2px 12px rgba(0,0,0,0.06)' }}>
-        <div className="overflow-x-auto">
-          <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 700, fontFamily: font }}>
-            <thead>
-              <tr style={{ background: '#dce7f7' }}>
-                <th className="text-left" style={{ padding: '12px 20px', fontWeight: 500, width: '50%' }}>
-                  <ColumnFilter label="Number of Packages" labelClass="text-[16px] font-medium text-[#051937]" />
-                </th>
-                <th className="text-left" style={{ padding: '12px 20px', fontWeight: 500 }}>
-                  <ColumnFilter label="Shipping Marks" labelClass="text-[16px] font-medium text-[#051937]" />
-                </th>
+        <JourneyTable minWidth={700}>
+          <JourneyThead columns={[{ label: 'Number of Packages' }, { label: 'Shipping Marks' }]} />
+          <tbody>
+            {rows.map((r, i) => (
+              <tr key={i}>
+                {r.map((cell, j) => <JourneyTd key={j} first={j === 0}>{cell}</JourneyTd>)}
               </tr>
-            </thead>
-            <tbody>
-              {rows.map((r, i) => (
-                <tr key={i} style={{ borderBottom: '1px solid #f0f3fa' }}>
-                  {r.map((cell, j) => (
-                    <td key={j} className="text-[16px] text-[#051937]" style={{ padding: '16px 20px', whiteSpace: 'nowrap' }}>{cell}</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </JourneyTable>
         <div className="px-[20px] py-[16px]">
           <Pagination
             page={page}
@@ -150,40 +137,33 @@ function ContainerDetails({ onEdit }: { onEdit?: (containerNo: string) => void }
     <div className="flex flex-col gap-[20px]">
       <SectionTitle>Container Details</SectionTitle>
       <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '1px 2px 12px rgba(0,0,0,0.06)' }}>
-        <div className="overflow-x-auto">
-          <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 800, fontFamily: font }}>
-            <thead>
-              <tr style={{ background: '#dce7f7' }}>
-                {['Container No', 'Seal No', 'Container Size', 'Container Type'].map((c) => (
-                  <th key={c} className="text-left" style={{ padding: '12px 20px', fontWeight: 500 }}>
-                    <ColumnFilter label={c} labelClass="text-[16px] font-medium text-[#051937]" />
-                  </th>
-                ))}
-                <th className="text-left text-[16px] text-[#051937]" style={{ padding: '12px 20px', fontWeight: 500, width: 90 }}>Action</th>
+        <JourneyTable minWidth={800}>
+          <JourneyThead columns={[
+            { label: 'Container No' }, { label: 'Seal No' },
+            { label: 'Container Size' }, { label: 'Container Type' },
+            { label: 'Action', w: 90, filter: false, sticky: true },
+          ]} />
+          <tbody>
+            {CONTAINER_ROWS.map((r, i) => (
+              <tr key={i}>
+                <JourneyTd first>{r.no}</JourneyTd>
+                <JourneyTd>{r.seal}</JourneyTd>
+                <JourneyTd>{r.size}</JourneyTd>
+                <JourneyTd>{r.type}</JourneyTd>
+                <JourneyTd sticky width={90}>
+                  <button
+                    type="button"
+                    onClick={() => onEdit?.(r.no)}
+                    aria-label={`Edit container ${r.no}`}
+                    className="inline-flex items-center justify-center hover:opacity-70 transition-opacity"
+                  >
+                    <img src={editSrc} alt="" width={20} height={20} />
+                  </button>
+                </JourneyTd>
               </tr>
-            </thead>
-            <tbody>
-              {CONTAINER_ROWS.map((r, i) => (
-                <tr key={i} style={{ borderBottom: '1px solid #f0f3fa' }}>
-                  <td className="text-[16px] text-[#051937]" style={{ padding: '16px 20px', whiteSpace: 'nowrap' }}>{r.no}</td>
-                  <td className="text-[16px] text-[#051937]" style={{ padding: '16px 20px', whiteSpace: 'nowrap' }}>{r.seal}</td>
-                  <td className="text-[16px] text-[#051937]" style={{ padding: '16px 20px', whiteSpace: 'nowrap' }}>{r.size}</td>
-                  <td className="text-[16px] text-[#051937]" style={{ padding: '16px 20px', whiteSpace: 'nowrap' }}>{r.type}</td>
-                  <td style={{ padding: '16px 20px' }}>
-                    <button
-                      type="button"
-                      onClick={() => onEdit?.(r.no)}
-                      aria-label={`Edit container ${r.no}`}
-                      className="inline-flex items-center justify-center hover:opacity-70 transition-opacity"
-                    >
-                      <img src={editSrc} alt="" width={20} height={20} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </JourneyTable>
       </div>
     </div>
   );
