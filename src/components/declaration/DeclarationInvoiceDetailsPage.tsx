@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import MoreIcon from '../MoreIcon';
 import Pagination from '../Pagination';
 import RowFlyout, { STEPPER_INVOICE_MENU, STEPPER_LINE_ITEM_MENU, anchorFrom } from './RowFlyout';
-import { JourneyStepper, JourneyTable, JourneyTd, JourneyThead, SectionCard, TABLE_HEAD_BG_NESTED, font } from './DeclarationUI';
+import { JourneyStepper, JourneyTable, JourneyTd, JourneyThead, SectionCard, SectionTitle, TABLE_HEAD_BG_NESTED, font } from './DeclarationUI';
 
 const Chevron = ({ up }: { up?: boolean }) => (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1360d2" strokeWidth="2.2" strokeLinecap="round"
@@ -62,10 +62,13 @@ type Props = {
   onViewDetails?: () => void;
   /** "Edit Details" returns to the invoice upload page that precedes the stepper. */
   onEditDetails?: () => void;
+  /** Read-only rendering for View Declaration — no stepper, no Edit Details, and the
+      invoice cards carry their payment method (Figma 2835:99130). */
+  view?: boolean;
 };
 
 /** Invoice Details step — Figma 2650:48551. */
-export default function DeclarationInvoiceDetailsPage({ onViewDetails, onEditDetails, steps, stepIndex, amend }: Props) {
+export default function DeclarationInvoiceDetailsPage({ onViewDetails, onEditDetails, steps, stepIndex, amend, view = false }: Props) {
   const [openInvoice, setOpenInvoice] = useState<number | null>(1);
   const [openLineItem, setOpenLineItem] = useState<string | null>('AX1234567');
   const [flyout, setFlyout] = useState<{ kind: 'invoice' | 'line' | 'vehicle'; at: { top: number; left: number } } | null>(null);
@@ -96,7 +99,8 @@ export default function DeclarationInvoiceDetailsPage({ onViewDetails, onEditDet
 
   return (
     <div className="flex flex-col gap-[24px]" style={{ fontFamily: font }}>
-      <JourneyStepper active={stepIndex ?? 2} steps={steps} />
+      {!view && <JourneyStepper active={stepIndex ?? 2} steps={steps} />}
+      {view && <SectionTitle>Invoice Details</SectionTitle>}
 
       <div className="flex items-center justify-between gap-[16px] flex-wrap">
         <div className="flex items-center gap-[40px] flex-wrap">
@@ -104,10 +108,12 @@ export default function DeclarationInvoiceDetailsPage({ onViewDetails, onEditDet
           <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Grand Total: AED 25,000.00</span>
         </div>
         {/* Editing the invoices means going back to where they were added, before the stepper */}
-        <button data-secondary-btn type="button" onClick={onEditDetails}
-          className="h-[44px] px-[24px] rounded-[4px] border bg-white text-[16px] transition-colors"
-          style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}
-        >Edit Details</button>
+        {!view && (
+          <button data-secondary-btn type="button" onClick={onEditDetails}
+            className="h-[44px] px-[24px] rounded-[4px] border bg-white text-[16px] transition-colors"
+            style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}
+          >Edit Details</button>
+        )}
       </div>
 
       {INVOICES.map((inv) => {
@@ -123,7 +129,8 @@ export default function DeclarationInvoiceDetailsPage({ onViewDetails, onEditDet
             <div className="flex items-center justify-between gap-[20px]">
               <div className="flex flex-wrap gap-x-[56px] gap-y-[16px] flex-1 min-w-0">
                 {[['Invoice Number', inv.number], ['Invoice Date', inv.date], ['Terms of Delivery', inv.terms],
-                  ['No. of Line Items', inv.lineItems], ['Invoice Value', inv.value]].map(([l, v]) => (
+                  ['No. of Line Items', inv.lineItems], ['Invoice Value', inv.value],
+                  ...(view ? [['Payment Method', 'Bank transfer']] : [])].map(([l, v]) => (
                   <div key={l} className="flex flex-col gap-[6px]">
                     <span className="text-[14px] text-[#697498]">{l}</span>
                     <span className="text-[15px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{v}</span>

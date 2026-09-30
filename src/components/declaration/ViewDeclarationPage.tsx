@@ -1,7 +1,9 @@
 import React from 'react';
-import { Readout, SectionCard, SectionTitle, font } from './DeclarationUI';
-
-const filterSrc = new URL('../../assets/declaration/filter-list.svg', import.meta.url).href;
+import DeclarationInvoiceDetailsPage from './DeclarationInvoiceDetailsPage';
+import {
+  JourneyTable, JourneyTd, JourneyThead, Readout, SectionTitle, StatusChip,
+  TABLE_HEAD_BG, font,
+} from './DeclarationUI';
 
 /** A band of read-out pairs, separated by the hairline rules used on the Customs Bill card. */
 function Band({ pairs, cols = 5, last }: { pairs: [string, React.ReactNode][]; cols?: number; last?: boolean }) {
@@ -27,22 +29,103 @@ function DocCard({ children }: { children: React.ReactNode }) {
   );
 }
 
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-[16px]">
+      <SectionTitle>{title}</SectionTitle>
+      {children}
+    </div>
+  );
+}
+
+const PACKAGE_ROWS = Array.from({ length: 7 }, () => ['1000 Packaged Goods', 'Based on BOL no. from Manifest Data']);
+
+const CONTAINER_ROWS = [
+  ['1', 'N/A', 'N/A', 'A12345677', '2345678'],
+  ['2', 'N/A', 'N/A', 'A12345677', '2345678'],
+  ['3', 'N/A', 'N/A', 'A12345677', '2345678'],
+  ['4', 'N/A', 'N/A', 'A12345677', '2345678'],
+];
+
+const CHARGES = [
+  ['E-Archive Service Fee', '50', 'E-Payment', '1233456', '-', '-', '-'],
+  ['Registration Fee', '70', 'E-Payment', '1233456', '-', '-', '-'],
+  ['Knowledge Innovation Dhiram', '20', 'E-Payment', '1233456', '-', '-', '-'],
+];
+
+const VERSIONS = Array.from({ length: 6 }, (_, i) => ({
+  version: `Version ${i + 1}`, submitted: '19/06/2024, 19:40', cleared: '19/06/2024, 19:40', current: i === 0,
+}));
+
 const UPLOADED = [
   ['Invoice 12124.PDF', 'Dubai Customs', 'Invoice', '50 MB', '08-12-2024'],
   ['Invoice 898486.xls', 'Dubai Customs', 'Invoice', '50 MB', '08-12-2024'],
   ['Invoice 189777.pdf', 'Dubai Customs', 'Invoice', '50 MB', '08-12-2024'],
   ['BOL123.pdf', 'Dubai Customs', 'AWB/BOL', '50 MB', '08-12-2024'],
-  ['Cert. of Origin1213.pdf', 'Dubai Customs', 'Cert. of Origin', '50 MB', '08-12-2024'],
+  ['Cert. of Origin1213.pdf', 'Dubai Municipality', 'Cert. of Origin', '50 MB', '08-12-2024'],
   ['Laboratory 123234.pdf', 'Dubai Municipality', 'Laboratory Results', '50 MB', '08-12-2024'],
 ];
 
-/** View Declaration — Figma 2835:102541. A long read-only record of the submitted declaration. */
-export default function ViewDeclarationPage() {
+/** Small chip standing in for the party logo shown against some Customs Bill entries. */
+function LogoChip() {
+  return (
+    <span className="inline-flex items-center px-[6px] py-[1px] rounded-[3px] text-[11px] mr-[6px] align-middle"
+      style={{ background: '#e2ebf9', color: '#1360d2', fontWeight: 600 }}>Logo</span>
+  );
+}
+
+type Props = {
+  /** Which version is on screen — named in the title. */
+  version?: number;
+  status?: string;
+  onViewVersion?: (version: string) => void;
+};
+
+/** View Declaration — Figma 2835:99130. A read-only record of the submitted declaration. */
+export default function ViewDeclarationPage({ version = 1, status = 'Submitted', onViewVersion }: Props) {
   return (
     <div className="flex flex-col gap-[24px]" style={{ fontFamily: font }}>
+      {/* ── Title, actions and the customer-care notice ── */}
+      <div className="flex items-center justify-between gap-[16px] flex-wrap">
+        <div className="flex items-center gap-[16px] flex-wrap">
+          <h2 className="text-[28px] text-[#0e1b3d]" style={{ fontWeight: 600 }}>
+            Customs Declaration ( Version {version} )
+          </h2>
+          <StatusChip status={status} />
+        </div>
+        <div className="flex items-center gap-[12px] flex-shrink-0">
+          <button data-secondary-btn type="button"
+            className="h-[44px] px-[22px] rounded-[4px] border bg-white text-[16px] inline-flex items-center gap-[8px] transition-colors"
+            style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>
+            <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="15" cy="5" r="2" /><circle cx="5" cy="10" r="2" /><circle cx="15" cy="15" r="2" />
+              <path d="M6.8 9L13.2 6M6.8 11l6.4 3" />
+            </svg>
+            Share
+          </button>
+          <button data-secondary-btn type="button"
+            className="h-[44px] px-[22px] rounded-[4px] border bg-white text-[16px] inline-flex items-center gap-[8px] transition-colors"
+            style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>
+            <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 10a7 7 0 1 1-2.05-4.95" /><path d="M17 3v4h-4" />
+            </svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-[10px] rounded-[4px] px-[16px] py-[12px]"
+        style={{ background: '#eef4ff', border: '1px solid #1360d2' }}>
+        <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="#1360d2" strokeWidth="1.6" className="flex-shrink-0">
+          <circle cx="10" cy="10" r="8" /><path d="M10 9v5M10 6h.01" strokeLinecap="round" />
+        </svg>
+        <span className="text-[16px] text-[#1360d2]">
+          Please Contact Customer Care If Declaration Number Is Not Displayed Within 30 Minutes Of Declaration Submission
+        </span>
+      </div>
+
       {/* ── Customs Bill ── */}
-      <div className="flex flex-col gap-[16px]">
-        <SectionTitle>Customs Bill</SectionTitle>
+      <Section title="Customs Bill">
         <DocCard>
           <Band pairs={[
             ['Regime Type', 'Import'], ['Trade Type', 'Non E-commerce'],
@@ -54,13 +137,13 @@ export default function ViewDeclarationPage() {
             ['Declaration/Customs Clearance No.', '--'],
           ]} />
           <Band pairs={[
-            ['Consignee/Importer/Buyer/Transferee', 'UATReport.LLC AE-1049640'],
+            ['Consignee/Importer/Buyer/Transferee', <span key="c" className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 600 }}><LogoChip />UATReport.LLC AE-1049640</span>],
             ['Consignor/Exporter/Seller/Transferor', 'shaheer 36933'],
           ]} cols={4} />
           <Band pairs={[['Cargo Ownership', 'NA'], ['Associated Owner', 'NA']]} cols={4} />
           <Band pairs={[
             ['Importer VAT TRN', '1011234567890'],
-            ['Broker', 'Consolidated Shipping Services LLC-102923746'],
+            ['Broker', <span key="b" className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 600 }}><LogoChip />Consolidated Shipping Services LLC-102923746</span>],
             ['Passenger', 'NA'], ['Agent', 'Maersk Shipping AE-1000087'], ['Notify Party', 'NA'],
           ]} />
           <Band pairs={[
@@ -74,69 +157,59 @@ export default function ViewDeclarationPage() {
           ]} />
           <Band pairs={[['Destination Country', 'United Arab Emirates'], ['Response Type', '--']]} cols={5} last />
         </DocCard>
-      </div>
+      </Section>
 
       {/* ── Goods/Package Details ── */}
-      <div className="flex flex-col gap-[16px]">
-        <SectionTitle>Goods/Package Details</SectionTitle>
+      <Section title="Goods/Package Details">
         <DocCard>
+          <Band pairs={[['Goods Location', 'Jebel Ali'], ['Cargo Handler', 'PR-01398 / DPW']]} cols={4} />
           <Band pairs={[
-            ['Package Details', '1000 Packaged Goods'],
-            ['Marks & Numbers', 'Based on BOL no. from Manifest Data'],
+            ['Net Weight', '120KG'], ['Gross Weight', '120kg'],
+            ['Measurement', '1'], ['Cargo Type', 'FCL'],
           ]} cols={4} last />
         </DocCard>
-      </div>
+      </Section>
+
+      {/* ── Package Details ── */}
+      <Section title="Package Details">
+        <DocCard>
+          <JourneyTable minWidth={760}>
+            <JourneyThead columns={[{ label: 'Number of Packages', w: 520 }, { label: 'Marks & Numbers' }]} />
+            <tbody>
+              {PACKAGE_ROWS.map((r, i) => (
+                <tr key={i}>
+                  {r.map((cell, j) => <JourneyTd key={j} first={j === 0}>{cell}</JourneyTd>)}
+                </tr>
+              ))}
+            </tbody>
+          </JourneyTable>
+        </DocCard>
+      </Section>
 
       {/* ── Container Details ── */}
-      <div className="flex flex-col gap-[16px]">
-        <SectionTitle>Container Details</SectionTitle>
+      <Section title="Container Details">
         <DocCard>
-          <div className="overflow-x-auto">
-            <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 760 }}>
-              <thead>
-                <tr style={{ background: '#a6c2e9' }}>
-                  {['Container No', 'Seal No', 'Container Size', 'Container Type'].map((c) => (
-                    <th key={c} className="text-left text-[16px]" style={{ padding: '12px 20px', color: '#051937', fontWeight: 500, whiteSpace: 'nowrap' }}>{c}</th>
-                  ))}
+          <JourneyTable minWidth={860}>
+            <JourneyThead columns={[
+              { label: 'Serial Number', w: 180, filter: false }, { label: 'Container Type' },
+              { label: 'Container Size' }, { label: 'Container Number' }, { label: 'Seal Number' },
+            ]} />
+            <tbody>
+              {CONTAINER_ROWS.map((r, i) => (
+                <tr key={i}>
+                  {r.map((cell, j) => <JourneyTd key={j} first={j === 0}>{cell}</JourneyTd>)}
                 </tr>
-              </thead>
-              <tbody>
-                {[['LILI1303120', 'NA', '--', '--'], ['LILI1303130', 'NA', '20', 'Reefer'], ['LILI1303140', 'NA', '--', '--']].map((r, i) => (
-                  <tr key={i} style={{ borderBottom: '1px solid #f0f3fa' }}>
-                    {r.map((cell, j) => <td key={j} className="text-[16px] text-[#051937]" style={{ padding: '16px 20px' }}>{cell}</td>)}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </JourneyTable>
         </DocCard>
-      </div>
+      </Section>
 
-      {/* ── Invoice Details ── */}
-      <div className="flex flex-col gap-[16px]">
-        <div className="flex items-center gap-[40px] flex-wrap">
-          <SectionTitle>Invoice Details</SectionTitle>
-          <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>03 Invoices Added</span>
-          <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>Grand Total: AED 25,000.00</span>
-        </div>
-        <DocCard>
-          <div className="px-[24px] pt-[20px]">
-            <span className="text-[17px] text-[#0e1b3d]" style={{ fontWeight: 600 }}>Invoice 1</span>
-          </div>
-          <Band pairs={[
-            ['Invoice Number', 'TD 2403'], ['Invoice Date', '09/11/2024'], ['Terms of Delivery', 'Cost & Fright'],
-            ['No. of Line Items', '1 Line Item'], ['Invoice Value', 'USD 6400.00'],
-          ]} />
-          <Band pairs={[
-            ['Payment Method', 'Bank transfer'], ['Attested with Mofaic', 'Yes'],
-            ['EDAS Attestation Number', '12345678'],
-          ]} cols={5} last />
-        </DocCard>
-      </div>
+      {/* ── Invoice Details — the journey's accordion, rendered read-only ── */}
+      <DeclarationInvoiceDetailsPage view />
 
       {/* ── Document Availability ── */}
-      <div className="flex flex-col gap-[16px]">
-        <SectionTitle>Document Availability</SectionTitle>
+      <Section title="Document Availability">
         <DocCard>
           <Band pairs={[
             ['Invoice', 'Available in Electronics'], ['AWB/BOL', 'Available in Electronics'],
@@ -144,97 +217,140 @@ export default function ViewDeclarationPage() {
             ['Reason for not required', 'Reason'],
           ]} last />
         </DocCard>
-      </div>
+      </Section>
 
       {/* ── Custom Charge Details ── */}
-      <div className="flex flex-col gap-[16px]">
-        <SectionTitle>Custom Charge Details</SectionTitle>
-        <DocCard>
-          <Band pairs={[
-            ['Duty & Tax', 'AED 1000.00'], ['Deposit', 'AED 2850.00'],
-            ['Additional Duty', 'AED 607.00'], ['Other charges', 'AED 607.00'],
-            ['Total Payable amount', 'AED 4,457.00'],
-          ]} last />
-        </DocCard>
-      </div>
-
-      {/* ── Transit Details / Other Remarks ── */}
-      <div className="flex flex-col gap-[16px]">
-        <SectionTitle>Transit Details / Other Remarks</SectionTitle>
-        <DocCard><Band pairs={[['Remarks', '--']]} cols={4} last /></DocCard>
-      </div>
-
-      {/* ── Anti Dumping Details ── */}
-      <div className="flex flex-col gap-[16px]">
-        <SectionTitle>Anti Dumping Details</SectionTitle>
-        <DocCard>
-          <Band pairs={[
-            ['Manufacturer/Exporter', 'Exporter Name'], ['Anti Dumping Applicability', 'Not Applicable'],
-            ['Reason for Not Applicable', 'Not Applicable'],
-          ]} last />
-        </DocCard>
-      </div>
-
-      {/* ── Declaration Versions ── */}
-      <div className="flex flex-col gap-[16px]">
-        <SectionTitle>Declaration Versions</SectionTitle>
-        <DocCard>
-          <div className="flex flex-wrap gap-[12px] px-[24px] py-[24px]">
-            {['Version 1', 'Version 2', 'Version 3', 'Version 4', 'Version 5', 'Version 6'].map((v) => (
-              <button key={v} data-secondary-btn type="button"
-                className="h-[42px] px-[22px] rounded-[4px] border bg-white text-[15px] transition-colors"
-                style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>{v}</button>
-            ))}
-          </div>
-        </DocCard>
-      </div>
-
-      {/* ── Documents Uploaded ── */}
-      <div className="flex flex-col gap-[16px]">
-        <SectionTitle>Documents Uploaded</SectionTitle>
+      <Section title="Custom Charge Details">
         <DocCard>
           <div className="overflow-x-auto">
-            <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 900 }}>
+            <table className="w-full" style={{ borderCollapse: 'separate', borderSpacing: 0, minWidth: 1000, fontFamily: font }}>
               <thead>
-                <tr style={{ background: '#a6c2e9' }}>
-                  {['Document Name', 'Authority Name', 'Document Type', 'Uploaded size', 'Uploaded on'].map((c) => (
-                    <th key={c} style={{ padding: '14px 20px', textAlign: 'left', whiteSpace: 'nowrap' }}>
-                      <span className="inline-flex items-center gap-[4px]">
-                        <span className="text-[16px]" style={{ color: '#051937', fontWeight: 500 }}>{c}</span>
-                        <img src={filterSrc} alt="" width={16} height={16} />
-                      </span>
+                {/* Two header rows: the charge columns sit under "Total Customs Charge Details",
+                    the settlement columns under "Collection Details". */}
+                <tr>
+                  <th colSpan={2} style={{ background: TABLE_HEAD_BG, padding: '12px 16px', textAlign: 'left' }}>
+                    <span className="text-[16px] text-[#051937]" style={{ fontWeight: 600 }}>Total Customs Charge Details</span>
+                  </th>
+                  <th colSpan={5} style={{ background: TABLE_HEAD_BG, padding: '12px 16px', textAlign: 'left' }}>
+                    <span className="text-[16px] text-[#051937]" style={{ fontWeight: 600 }}>Collection Details</span>
+                  </th>
+                </tr>
+                <tr>
+                  {['Charge Type', 'Amount', 'Payment Mode', 'Receipt Number', 'Account/Cheque Number', 'Bank/Branch', 'Status'].map((c) => (
+                    <th key={c} style={{ background: '#e4edf9', padding: '12px 16px', textAlign: 'left', whiteSpace: 'nowrap' }}>
+                      <span className="text-[16px] text-[#051937]" style={{ fontWeight: 500 }}>{c}</span>
                     </th>
                   ))}
-                  <th className="text-left text-[16px]" style={{ padding: '12px 20px', color: '#051937', fontWeight: 500, width: 100 }}>Action</th>
                 </tr>
               </thead>
               <tbody>
-                {UPLOADED.map((r, i) => (
-                  <tr key={i} style={{ borderBottom: '1px solid #f0f3fa' }}>
-                    {r.map((cell, j) => <td key={j} className="text-[16px] text-[#051937]" style={{ padding: '16px 20px', whiteSpace: 'nowrap' }}>{cell}</td>)}
-                    <td style={{ padding: '16px 20px' }}>
-                      <button type="button" className="text-[16px] text-[#1360d2] hover:underline" style={{ fontWeight: 500 }}>View</button>
-                    </td>
+                {CHARGES.map((r, i) => (
+                  <tr key={i}>
+                    {r.map((cell, j) => (
+                      <td key={j} className="text-[16px] text-[#051937]"
+                        style={{ background: '#fff', padding: 16, whiteSpace: 'nowrap', borderBottom: '1px solid #f0f3fa', fontWeight: j === 0 ? 500 : 400 }}>
+                        {cell}
+                      </td>
+                    ))}
                   </tr>
                 ))}
+                <tr>
+                  <td style={{ background: '#e4edf9', padding: 16 }}>
+                    <span className="text-[16px] text-[#051937]" style={{ fontWeight: 600 }}>Total</span>
+                  </td>
+                  <td colSpan={6} style={{ background: '#e4edf9', padding: 16 }}>
+                    <span className="text-[16px] text-[#051937]" style={{ fontWeight: 600 }}>AED: 12890</span>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
         </DocCard>
-        <div className="flex items-center justify-between gap-[16px] flex-wrap">
-          <p className="text-[14px] text-[#455174]">
-            Please contact Customer care if declaration number is not displayed within 30 minutes of declaration submission
-          </p>
-          <button data-secondary-btn type="button"
-            className="h-[44px] px-[24px] rounded-[4px] border bg-white text-[15px] inline-flex items-center gap-[8px] transition-colors"
-            style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>
-            <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M17 10a7 7 0 1 1-2.05-4.95" /><path d="M17 3v4h-4" />
-            </svg>
-            Refresh
-          </button>
-        </div>
-      </div>
+      </Section>
+
+      {/* ── Transit Details / Other Remarks ── */}
+      <Section title="Transit Details / Other Remarks">
+        <DocCard>
+          <Band pairs={[
+            ['Carrier Name', 'Carrier Name'], ['Outbound MAWB/MBOL', 'Outbound MAWB/MBOL'],
+            ['Outbound HAWB/HBOL', 'Outbound HAWB/HBOL'], ['Carrier Registration No.', 'Carrier Number'],
+          ]} cols={4} />
+          <Band pairs={[
+            ['Point of Exit', 'Point of Exit'], ['Outbound Cargo Channel', 'OutBound Cargo Channel'],
+            ['Outbound schedule date', '20-Aug-2023'],
+          ]} cols={4} />
+          <Band pairs={[
+            ['Importing Warehouse/FZ Code', 'Importing W/H Code'],
+            ['Exporting Warehouse/FZ Code', 'Exporting W/H Code'],
+            ['Broker ID', 'AE-1019056'], ['Client Declaration No.', 'SFCL/0243/2024'],
+          ]} cols={4} />
+          <Band pairs={[['Other Remarks', '-']]} cols={4} last />
+        </DocCard>
+      </Section>
+
+      {/* ── Declaration Versions ── */}
+      <Section title="Declaration Versions">
+        <DocCard>
+          <JourneyTable minWidth={860}>
+            <JourneyThead columns={[
+              { label: 'Version' }, { label: 'Submitted Date' }, { label: 'Cleared Date' },
+              { label: 'Action', w: 120, filter: false },
+            ]} />
+            <tbody>
+              {VERSIONS.map((v) => (
+                <tr key={v.version}>
+                  <JourneyTd first>
+                    <span className="flex items-center gap-[10px]">
+                      <span className="text-[16px] text-[#051937]">{v.version}</span>
+                      {v.current && (
+                        <span className="text-[14px] px-[10px] py-[3px] rounded-[4px] whitespace-nowrap"
+                          style={{ background: 'rgba(19,96,210,0.10)', color: '#1360d2', fontWeight: 500 }}>Currently Viewing</span>
+                      )}
+                    </span>
+                  </JourneyTd>
+                  <JourneyTd>{v.submitted}</JourneyTd>
+                  <JourneyTd>{v.cleared}</JourneyTd>
+                  <JourneyTd>
+                    {v.current
+                      ? <span className="text-[16px] text-[#a7b0c6]" style={{ fontWeight: 500 }}>View</span>
+                      : (
+                        <button type="button" onClick={() => onViewVersion?.(v.version)}
+                          className="text-[16px] text-[#1360d2] underline" style={{ fontWeight: 500 }}>View</button>
+                      )}
+                  </JourneyTd>
+                </tr>
+              ))}
+            </tbody>
+          </JourneyTable>
+        </DocCard>
+      </Section>
+
+      {/* ── Documents Uploaded ── */}
+      <Section title="Documents Uploaded">
+        <DocCard>
+          <JourneyTable minWidth={960}>
+            <JourneyThead columns={[
+              { label: 'Document Name' }, { label: 'Authority Name' }, { label: 'Document Type' },
+              { label: 'Uploaded size' }, { label: 'Uploaded on' }, { label: 'Action', w: 110, filter: false },
+            ]} />
+            <tbody>
+              {UPLOADED.map((r, i) => (
+                <tr key={i}>
+                  {r.map((cell, j) => <JourneyTd key={j} first={j === 0}>{cell}</JourneyTd>)}
+                  <JourneyTd>
+                    <button type="button" aria-label={`Download ${r[0]}`}
+                      className="inline-flex items-center justify-center hover:opacity-70 transition-opacity" style={{ color: '#1360d2' }}>
+                      <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M10 3v10M5 9l5 5 5-5M3 17h14" />
+                      </svg>
+                    </button>
+                  </JourneyTd>
+                </tr>
+              ))}
+            </tbody>
+          </JourneyTable>
+        </DocCard>
+      </Section>
     </div>
   );
 }
