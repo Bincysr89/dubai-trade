@@ -959,7 +959,7 @@ function InvoiceListStep({ onAddLineItem, amend = false }: { onAddLineItem: () =
         </div>
 
         {expanded && (
-          <>
+          <div className="mt-[10px] pt-[20px]" style={{ borderTop: '1px solid #e6ecf5' }}>
             <p className="text-[16px] text-[#0e1b3d] mb-[2px]" style={{ fontWeight: 700 }}>Line Items</p>
             <p className="text-[13px] text-[#8f94ae] mb-[12px]">(100 Items Available)</p>
             <div className="pb-[4px]" style={{ position: 'relative' }}>
@@ -981,7 +981,7 @@ function InvoiceListStep({ onAddLineItem, amend = false }: { onAddLineItem: () =
                 </table>
               </div>
             </div>
-          </>
+          </div>
         )}
       </Card>
 

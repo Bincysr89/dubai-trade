@@ -255,7 +255,10 @@ export type JourneyColumn = {
   sticky?: boolean;
 };
 
-export function JourneyThead({ columns }: { columns: JourneyColumn[] }) {
+/** Nested tables (a line item's vehicles) sit on a lighter band than their parent. */
+export const TABLE_HEAD_BG_NESTED = '#cbdef3';
+
+export function JourneyThead({ columns, headBg = TABLE_HEAD_BG }: { columns: JourneyColumn[]; headBg?: string }) {
   return (
     <thead>
       <tr>
@@ -265,7 +268,7 @@ export function JourneyThead({ columns }: { columns: JourneyColumn[] }) {
             <th
               key={`${c.label}-${i}`}
               style={{
-                background: TABLE_HEAD_BG,
+                background: headBg,
                 padding: '12px 12px',
                 paddingLeft: i === 0 ? 16 : 12,
                 textAlign: 'left',
@@ -322,7 +325,7 @@ export function JourneyTable({ minWidth, children, scrollRef, onScroll }: {
 }) {
   return (
     <div className="overflow-x-auto" ref={scrollRef} onScroll={onScroll}>
-      <table className="w-full" style={{ borderCollapse: 'collapse', minWidth, fontFamily: font }}>
+      <table className="w-full" style={{ borderCollapse: 'separate', borderSpacing: 0, minWidth, fontFamily: font }}>
         {children}
       </table>
     </div>

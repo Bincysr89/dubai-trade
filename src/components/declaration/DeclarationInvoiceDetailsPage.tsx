@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import MoreIcon from '../MoreIcon';
 import Pagination from '../Pagination';
 import RowFlyout, { STEPPER_INVOICE_MENU, STEPPER_LINE_ITEM_MENU, anchorFrom } from './RowFlyout';
-import { JourneyStepper, JourneyTable, JourneyTd, JourneyThead, SectionCard, font } from './DeclarationUI';
+import { JourneyStepper, JourneyTable, JourneyTd, JourneyThead, SectionCard, TABLE_HEAD_BG_NESTED, font } from './DeclarationUI';
 
 const Chevron = ({ up }: { up?: boolean }) => (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1360d2" strokeWidth="2.2" strokeLinecap="round"
@@ -70,6 +70,20 @@ export default function DeclarationInvoiceDetailsPage({ onViewDetails, onEditDet
   const [openLineItem, setOpenLineItem] = useState<string | null>('AX1234567');
   const [flyout, setFlyout] = useState<{ kind: 'invoice' | 'line' | 'vehicle'; at: { top: number; left: number } } | null>(null);
   const lineColumns = amend ? AMEND_LINE_ITEM_COLUMNS : LINE_ITEM_COLUMNS;
+  /* The nested vehicle table lives inside a table that scrolls sideways, so its block is
+     pinned to the left edge and sized to the visible width — otherwise its own sticky
+     Action column would pin off-screen, past the parent table's right edge. */
+  const lineScrollRef = useRef<HTMLDivElement>(null);
+  const [lineViewWidth, setLineViewWidth] = useState<number>();
+  useEffect(() => {
+    const el = lineScrollRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const update = () => setLineViewWidth(el.clientWidth);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [openInvoice, openLineItem]);
   const [linePage, setLinePage] = useState(4);
   const [linePageSize, setLinePageSize] = useState(8);
   const [vehPage, setVehPage] = useState(4);
@@ -125,11 +139,11 @@ export default function DeclarationInvoiceDetailsPage({ onViewDetails, onEditDet
             </div>
 
             {expanded && (
-              <div className="mt-[24px] flex flex-col gap-[8px]">
+              <div className="mt-[20px] pt-[20px] flex flex-col gap-[8px]" style={{ borderTop: '1px solid #e6ecf5' }}>
                 <span className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 600 }}>Line Items</span>
                 <span className="text-[14px] text-[#697498] mb-[8px]">{amend ? '200 HS Code Available' : '100 Items Available'}</span>
 
-                <JourneyTable minWidth={1235}>
+                <JourneyTable minWidth={1235} scrollRef={lineScrollRef}>
                     <JourneyThead columns={[
                       ...lineColumns.map((label) => ({ label })),
                       { label: 'Action', w: 90, filter: false, sticky: true },
@@ -164,11 +178,12 @@ export default function DeclarationInvoiceDetailsPage({ onViewDetails, onEditDet
                             </tr>
                             {open && (
                               <tr>
-                                <td colSpan={lineColumns.length + 1} style={{ padding: 0, background: '#f8fafd' }}>
-                                  <div className="px-[16px] py-[20px] flex flex-col gap-[12px]">
+                                <td colSpan={lineColumns.length + 1} style={{ padding: 0, background: '#f4f7fc', borderBottom: '1px solid #e6ecf5' }}>
+                                  <div className="px-[16px] py-[20px] flex flex-col gap-[12px]"
+                                    style={{ position: 'sticky', left: 0, width: lineViewWidth }}>
                                     <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 600 }}>Vehicle Details</span>
                                     <JourneyTable minWidth={1500}>
-                                        <JourneyThead columns={[
+                                        <JourneyThead headBg={TABLE_HEAD_BG_NESTED} columns={[
                                           ...VEHICLE_COLUMNS.map((label) => ({ label })),
                                           { label: 'Action', w: 70, filter: false, sticky: true },
                                         ]} />
