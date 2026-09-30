@@ -869,12 +869,12 @@ function ManualInvoice({ onSave, onAddLineItem }: { onSave: () => void; onAddLin
 /* ── Step 5: Required documents upload ── */
 function DocumentsStep() {
   const DOC_TYPES = [
-    { label: 'Invoice', required: true },
-    { label: 'Packaging List', required: true },
-    { label: 'AWB/BOL' },
-    { label: 'Laboratory Results' },
-    { label: 'Certificate of Origin' },
-    { label: 'Other Documents', isNew: true },
+    { label: 'Invoice', required: true, nature: 'Copy' },
+    { label: 'Packaging List', required: true, nature: 'Copy' },
+    { label: 'AWB/BOL', nature: 'Copy' },
+    { label: 'Laboratory Results', nature: 'Original' },
+    { label: 'Certificate of Origin', nature: 'Original' },
+    { label: 'Other Documents', nature: 'Any', isNew: true },
   ];
   return (
     <>

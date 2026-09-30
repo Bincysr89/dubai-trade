@@ -6,6 +6,8 @@ const MAX_SIZE_MB = 50;
 export type DocTypeOption = {
   label: string;
   required?: boolean;
+  /** Grey badge naming what is expected — "Copy", "Original", "Any". */
+  nature?: string;
   /** Green counter badge, e.g. "2/5" on Passport Copy. */
   count?: string;
   /** Blue "New" badge. */
@@ -81,7 +83,7 @@ export default function DocumentUploadSection({
 
         {/* Left card — document types */}
         <div className="bg-white rounded-[8px] px-[24px] py-[22px] flex flex-col gap-[20px]"
-          style={{ flex: '1 1 0%', minWidth: 300, boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+          style={{ flex: '0 0 calc(66% - 8px)', minWidth: 300, boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
 
           <div className="flex flex-col gap-[4px]">
             <p className="text-[20px] text-[#0e1b3d]" style={{ fontWeight: 600 }}>{title}</p>
@@ -90,32 +92,46 @@ export default function DocumentUploadSection({
 
           <div className="flex flex-col gap-[16px]">
             <p className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 600 }}>{authority}</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-[20px] gap-y-[20px] pr-[12px]"
-              style={{ maxHeight: 200, overflowY: 'auto' }}>
-              {docTypes.map((o) => (
-                <label key={o.label} className="flex items-start gap-[10px] cursor-pointer select-none">
-                  <input
-                    type="radio"
-                    name="docType"
-                    checked={picked === o.label}
-                    onChange={() => setPicked(o.label)}
-                    className="mt-[3px] size-[16px] flex-shrink-0"
-                    style={{ accentColor: '#1360d2' }}
-                  />
-                  <span className="text-[16px] text-[#0e1b3d] leading-[1.35]">
-                    {o.required && <span style={{ color: '#dc3545' }}>*</span>}
-                    {o.label}
-                    {o.count && (
-                      <span className="ml-[8px] inline-flex items-center px-[8px] py-[1px] rounded-[10px] text-[12px] align-middle"
-                        style={{ background: '#e4f6e9', color: '#219653', fontWeight: 600 }}>{o.count}</span>
-                    )}
-                    {o.isNew && (
-                      <span className="ml-[8px] inline-flex items-center px-[8px] py-[1px] rounded-[10px] text-[12px] align-middle"
-                        style={{ background: '#1360d2', color: '#fff', fontWeight: 600 }}>New</span>
-                    )}
-                  </span>
-                </label>
-              ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-[12px] gap-y-[8px]">
+              {docTypes.map((o) => {
+                const active = picked === o.label;
+                return (
+                  <label
+                    key={o.label}
+                    className="flex items-center gap-[10px] px-[12px] py-[12px] rounded-[6px] cursor-pointer transition-colors"
+                    style={{ background: active ? '#f0f5ff' : '#f8fafd', border: `1.5px solid ${active ? '#1360d2' : '#e6eaf5'}` }}
+                  >
+                    <input
+                      type="radio"
+                      name="docType"
+                      checked={active}
+                      onChange={() => setPicked(o.label)}
+                      className="size-[17px] flex-shrink-0"
+                      style={{ accentColor: '#1360d2' }}
+                    />
+                    <span className="flex items-center flex-wrap gap-[6px] min-w-0">
+                      <span className="text-[16px] leading-snug" style={{ color: active ? '#0e1b3d' : '#455174', fontWeight: active ? 500 : 400 }}>
+                        {o.required && <span style={{ color: '#dc3545', marginRight: 2 }}>*</span>}
+                        {o.label}
+                      </span>
+                      {o.nature && (
+                        <span className="text-[14px] px-[6px] py-[1px] rounded-[4px] whitespace-nowrap"
+                          style={{ background: active ? 'rgba(19,96,210,0.10)' : '#eef1f8', color: active ? '#1360d2' : '#697498', fontWeight: 500 }}>
+                          {o.nature}
+                        </span>
+                      )}
+                      {o.count && (
+                        <span className="text-[12px] px-[8px] py-[1px] rounded-[10px] whitespace-nowrap"
+                          style={{ background: '#e4f6e9', color: '#219653', fontWeight: 600 }}>{o.count}</span>
+                      )}
+                      {o.isNew && (
+                        <span className="text-[12px] px-[8px] py-[1px] rounded-[10px] whitespace-nowrap"
+                          style={{ background: '#1360d2', color: '#fff', fontWeight: 600 }}>New</span>
+                      )}
+                    </span>
+                  </label>
+                );
+              })}
             </div>
           </div>
 
@@ -124,7 +140,7 @@ export default function DocumentUploadSection({
 
         {/* Right card — uploader; kept to its own compact width rather than stretched */}
         <div className="bg-white rounded-[8px] px-[24px] py-[22px] flex flex-col gap-[16px]"
-          style={{ flex: '0 0 420px', maxWidth: '100%', boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
+          style={{ flex: '0 0 calc(34% - 8px)', minWidth: 260, boxShadow: '0px 5px 32px rgba(143,155,186,0.16)' }}>
 
           <div className="flex flex-col gap-[8px]">
             <p className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 600 }}>Upload File</p>
