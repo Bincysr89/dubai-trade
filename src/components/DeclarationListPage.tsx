@@ -56,6 +56,12 @@ import PermitServiceFlow from './PermitServiceFlow';
 import { PERMIT_SERVICE_CONFIGS } from './permitServiceConfigs';
 import CargoTransferReceiptReleasePage from './CargoTransferReceiptReleasePage';
 import CargoTransferHistoryPage from './CargoTransferHistoryPage';
+import CancelDeclarationFlow from './declaration/CancelDeclarationFlow';
+import DeclarationHistoryPage from './declaration/DeclarationHistoryPage';
+import DeclSuspensionHistoryPage from './declaration/SuspensionHistoryPage';
+import DeclarantResponsePage from './declaration/DeclarantResponsePage';
+import ViewDeclarationPage from './declaration/ViewDeclarationPage';
+import ActionPage from './declaration/ActionPage';
 import SuspensionHistoryPage from './SuspensionHistoryPage';
 import SuspensionHistoryViewPage from './SuspensionHistoryViewPage';
 import SuspensionResponsePage from './SuspensionResponsePage';
@@ -421,6 +427,11 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
   const [clearanceJourneyOpen, setClearanceJourneyOpen] = useState(!!autoStartJourney);
   /* Amend reuses the journey with the declaration it is editing — Figma 2650:57939. */
   const [amendDeclNo, setAmendDeclNo] = useState<string | null>(null);
+  /* The other row actions — each takes over the page, as the cargo-transfer sub-flows do. */
+  const [declAction, setDeclAction] = useState<'cancel' | 'history' | 'suspensionHistory' | 'declarantResponse' | 'viewDeclaration' | null>(null);
+  const [declActionNo, setDeclActionNo] = useState('');
+  /* Opened from the listing or from Declaration History — Back goes wherever it came from. */
+  const [declActionFrom, setDeclActionFrom] = useState<'list' | 'history'>('list');
   const [completeJourneyOpen, setCompleteJourneyOpen] = useState(false);
   const [completeJourneyStart, setCompleteJourneyStart] = useState<'permits' | 'declInfo'>('permits');
   const [siraFlowOpen, setSiraFlowOpen] = useState(false);
@@ -1239,6 +1250,69 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
               setAckDeclineRowIndex(null);
             }}
           />
+        </div>
+      </div>
+    );
+  }
+
+  /* Row actions from the declaration listing (and from Declaration History) take over the
+     page the same way the cargo-transfer sub-flows do. */
+  if (declAction) {
+    const backToSource = () => {
+      if (declActionFrom === 'history') { setDeclAction('history'); return; }
+      setDeclAction(null);
+    };
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col bg-[#f8fafd] overflow-hidden">
+        <div className="flex-shrink-0">
+          <Header onServiceCatalogue={onServiceCatalogue} onHome={onClose} />
+        </div>
+        <div className="flex-1 overflow-hidden">
+          {declAction === 'cancel' && (
+            <CancelDeclarationFlow
+              declarationNo={declActionNo}
+              onClose={backToSource}
+              onViewDeclaration={() => setDeclAction('viewDeclaration')}
+            />
+          )}
+          {declAction === 'history' && (
+            <DeclarationHistoryPage
+              onHome={onClose}
+              onBack={() => setDeclAction(null)}
+              onAction={(action) => {
+                setDeclActionFrom('history');
+                if (action === 'amend') {
+                  setDeclAction(null);
+                  setAmendDeclNo(declActionNo);
+                  setClearanceJourneyOpen(true);
+                  return;
+                }
+                if (action === 'printDeclaration') return;
+                setDeclAction(
+                  action === 'cancel' ? 'cancel'
+                  : action === 'suspensionHistory' ? 'suspensionHistory'
+                  : action === 'viewDeclaration' ? 'viewDeclaration'
+                  : 'declarantResponse',
+                );
+              }}
+            />
+          )}
+          {declAction === 'suspensionHistory' && (
+            <DeclSuspensionHistoryPage declarationNo={declActionNo} onHome={onClose} onBack={backToSource} />
+          )}
+          {declAction === 'declarantResponse' && (
+            <DeclarantResponsePage
+              declarationNumber={declActionNo}
+              onHome={onClose}
+              onBack={backToSource}
+              onBackToListing={() => { setDeclActionFrom('list'); setDeclAction(null); }}
+            />
+          )}
+          {declAction === 'viewDeclaration' && (
+            <ActionPage title="View Declaration" onHome={onClose} onBack={backToSource}>
+              <ViewDeclarationPage />
+            </ActionPage>
+          )}
         </div>
       </div>
     );
@@ -3218,6 +3292,19 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                                       setOpenFlyout(null);
                                       if (item.label === 'Apply for Permit') setPermitCreateOpen(true);
                                       if (item.label === 'Amend') { setAmendDeclNo(decl.no); setClearanceJourneyOpen(true); }
+                                      if (item.label === 'Cancel' || item.label === 'Declaration History'
+                                        || item.label === "Declarant's Suspension Response" || item.label === 'Suspension History'
+                                        || item.label === 'View Declaration') {
+                                        setDeclActionNo(decl.no);
+                                        setDeclActionFrom('list');
+                                        setDeclAction(
+                                          item.label === 'Cancel' ? 'cancel'
+                                          : item.label === 'Declaration History' ? 'history'
+                                          : item.label === 'Suspension History' ? 'suspensionHistory'
+                                          : item.label === 'View Declaration' ? 'viewDeclaration'
+                                          : 'declarantResponse',
+                                        );
+                                      }
                                     }}
                                   >
                                     <img src={item.icon} alt="" className="size-[20px] object-contain flex-shrink-0 group-hover:brightness-0 group-hover:invert" />

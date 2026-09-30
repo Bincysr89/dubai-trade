@@ -38,6 +38,8 @@ type Props = {
   initialDocs?: UploadedDocRow[];
   /** Extra content rendered inside the left card, below the document types. */
   children?: React.ReactNode;
+  /** Numbers the uploaded rows, as the cancel and suspension pages do. */
+  numbered?: boolean;
 };
 
 /**
@@ -51,6 +53,7 @@ export default function DocumentUploadSection({
   docTypes,
   initialDocs,
   children,
+  numbered = false,
 }: Props) {
   const [picked, setPicked] = useState<string>(docTypes[0]?.label ?? '');
   const [docs, setDocs] = useState<UploadedDocRow[]>(initialDocs ?? []);
@@ -185,13 +188,15 @@ export default function DocumentUploadSection({
           ) : (
             <JourneyTable minWidth={900}>
               <JourneyThead columns={[
+                ...(numbered ? [{ label: '', w: 56, filter: false }] : []),
                 { label: 'Document Name' }, { label: 'Authority Name' }, { label: 'Document Type' },
                 { label: 'Uploaded size' }, { label: 'Uploaded on' }, { label: 'Action', w: 110, filter: false },
               ]} />
               <tbody>
-                {docs.map((d) => (
+                {docs.map((d, i) => (
                   <tr key={d.id}>
-                    <JourneyTd first>{d.fileName}</JourneyTd>
+                    {numbered && <JourneyTd first width={56}>{i + 1}</JourneyTd>}
+                    <JourneyTd first={!numbered}>{d.fileName}</JourneyTd>
                     <JourneyTd>{d.authority}</JourneyTd>
                     <JourneyTd>{d.docType}</JourneyTd>
                     <JourneyTd>{d.fileSize ? formatBytes(d.fileSize) : '50 MB'}</JourneyTd>
