@@ -38,9 +38,9 @@ export default function DeclarationPaymentPage() {
 
         <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '1px 2px 12px rgba(0,0,0,0.06)' }}>
           {/* Column headings */}
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px_260px] gap-[20px] px-[20px] py-[14px]" style={{ background: '#e2ebf9' }}>
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px_260px] gap-[20px] px-[20px] py-[14px]" style={{ background: '#a6c2e9' }}>
             {['Charges', 'Payment Mode', 'Payment Reference'].map((h) => (
-              <span key={h} className="text-[15px]" style={{ color: '#455174', fontWeight: 500 }}>{h}</span>
+              <span key={h} className="text-[16px]" style={{ color: '#051937', fontWeight: 500 }}>{h}</span>
             ))}
           </div>
 

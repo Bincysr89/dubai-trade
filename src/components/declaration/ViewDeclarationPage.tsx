@@ -94,16 +94,16 @@ export default function ViewDeclarationPage() {
           <div className="overflow-x-auto">
             <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 760 }}>
               <thead>
-                <tr style={{ background: '#e2ebf9' }}>
+                <tr style={{ background: '#a6c2e9' }}>
                   {['Container No', 'Seal No', 'Container Size', 'Container Type'].map((c) => (
-                    <th key={c} className="text-left text-[14px]" style={{ padding: '14px 20px', color: '#455174', fontWeight: 500, whiteSpace: 'nowrap' }}>{c}</th>
+                    <th key={c} className="text-left text-[16px]" style={{ padding: '12px 20px', color: '#051937', fontWeight: 500, whiteSpace: 'nowrap' }}>{c}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {[['LILI1303120', 'NA', '--', '--'], ['LILI1303130', 'NA', '20', 'Reefer'], ['LILI1303140', 'NA', '--', '--']].map((r, i) => (
-                  <tr key={i} style={{ borderBottom: '1px solid #eef1f6' }}>
-                    {r.map((cell, j) => <td key={j} className="text-[15px] text-[#0e1b3d]" style={{ padding: '16px 20px' }}>{cell}</td>)}
+                  <tr key={i} style={{ borderBottom: '1px solid #f0f3fa' }}>
+                    {r.map((cell, j) => <td key={j} className="text-[16px] text-[#051937]" style={{ padding: '16px 20px' }}>{cell}</td>)}
                   </tr>
                 ))}
               </tbody>
@@ -196,24 +196,24 @@ export default function ViewDeclarationPage() {
           <div className="overflow-x-auto">
             <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 900 }}>
               <thead>
-                <tr style={{ background: '#e2ebf9' }}>
+                <tr style={{ background: '#a6c2e9' }}>
                   {['Document Name', 'Authority Name', 'Document Type', 'Uploaded size', 'Uploaded on'].map((c) => (
                     <th key={c} style={{ padding: '14px 20px', textAlign: 'left', whiteSpace: 'nowrap' }}>
                       <span className="inline-flex items-center gap-[4px]">
-                        <span className="text-[14px]" style={{ color: '#455174', fontWeight: 500 }}>{c}</span>
+                        <span className="text-[16px]" style={{ color: '#051937', fontWeight: 500 }}>{c}</span>
                         <img src={filterSrc} alt="" width={16} height={16} />
                       </span>
                     </th>
                   ))}
-                  <th className="text-left text-[14px]" style={{ padding: '14px 20px', color: '#455174', fontWeight: 500, width: 100 }}>Action</th>
+                  <th className="text-left text-[16px]" style={{ padding: '12px 20px', color: '#051937', fontWeight: 500, width: 100 }}>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {UPLOADED.map((r, i) => (
-                  <tr key={i} style={{ borderBottom: '1px solid #eef1f6' }}>
-                    {r.map((cell, j) => <td key={j} className="text-[14px] text-[#0e1b3d]" style={{ padding: '16px 20px', whiteSpace: 'nowrap' }}>{cell}</td>)}
+                  <tr key={i} style={{ borderBottom: '1px solid #f0f3fa' }}>
+                    {r.map((cell, j) => <td key={j} className="text-[16px] text-[#051937]" style={{ padding: '16px 20px', whiteSpace: 'nowrap' }}>{cell}</td>)}
                     <td style={{ padding: '16px 20px' }}>
-                      <button type="button" className="text-[14px] text-[#1360d2] hover:underline" style={{ fontWeight: 500 }}>View</button>
+                      <button type="button" className="text-[16px] text-[#1360d2] hover:underline" style={{ fontWeight: 500 }}>View</button>
                     </td>
                   </tr>
                 ))}

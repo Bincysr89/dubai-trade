@@ -100,18 +100,18 @@ function PackageDetails() {
             <thead>
               <tr style={{ background: '#dce7f7' }}>
                 <th className="text-left" style={{ padding: '12px 20px', fontWeight: 500, width: '50%' }}>
-                  <ColumnFilter label="Number of Packages" labelClass="text-[15px] font-medium text-[#051937]" />
+                  <ColumnFilter label="Number of Packages" labelClass="text-[16px] font-medium text-[#051937]" />
                 </th>
                 <th className="text-left" style={{ padding: '12px 20px', fontWeight: 500 }}>
-                  <ColumnFilter label="Shipping Marks" labelClass="text-[15px] font-medium text-[#051937]" />
+                  <ColumnFilter label="Shipping Marks" labelClass="text-[16px] font-medium text-[#051937]" />
                 </th>
               </tr>
             </thead>
             <tbody>
               {rows.map((r, i) => (
-                <tr key={i} style={{ borderBottom: '1px solid #eef1f6' }}>
+                <tr key={i} style={{ borderBottom: '1px solid #f0f3fa' }}>
                   {r.map((cell, j) => (
-                    <td key={j} className="text-[15px] text-[#0e1b3d]" style={{ padding: '16px 20px', whiteSpace: 'nowrap' }}>{cell}</td>
+                    <td key={j} className="text-[16px] text-[#051937]" style={{ padding: '16px 20px', whiteSpace: 'nowrap' }}>{cell}</td>
                   ))}
                 </tr>
               ))}
@@ -156,19 +156,19 @@ function ContainerDetails({ onEdit }: { onEdit?: (containerNo: string) => void }
               <tr style={{ background: '#dce7f7' }}>
                 {['Container No', 'Seal No', 'Container Size', 'Container Type'].map((c) => (
                   <th key={c} className="text-left" style={{ padding: '12px 20px', fontWeight: 500 }}>
-                    <ColumnFilter label={c} labelClass="text-[15px] font-medium text-[#051937]" />
+                    <ColumnFilter label={c} labelClass="text-[16px] font-medium text-[#051937]" />
                   </th>
                 ))}
-                <th className="text-left text-[15px] text-[#051937]" style={{ padding: '12px 20px', fontWeight: 500, width: 90 }}>Action</th>
+                <th className="text-left text-[16px] text-[#051937]" style={{ padding: '12px 20px', fontWeight: 500, width: 90 }}>Action</th>
               </tr>
             </thead>
             <tbody>
               {CONTAINER_ROWS.map((r, i) => (
-                <tr key={i} style={{ borderBottom: '1px solid #eef1f6' }}>
-                  <td className="text-[15px] text-[#0e1b3d]" style={{ padding: '16px 20px', whiteSpace: 'nowrap' }}>{r.no}</td>
-                  <td className="text-[15px] text-[#0e1b3d]" style={{ padding: '16px 20px', whiteSpace: 'nowrap' }}>{r.seal}</td>
-                  <td className="text-[15px] text-[#0e1b3d]" style={{ padding: '16px 20px', whiteSpace: 'nowrap' }}>{r.size}</td>
-                  <td className="text-[15px] text-[#0e1b3d]" style={{ padding: '16px 20px', whiteSpace: 'nowrap' }}>{r.type}</td>
+                <tr key={i} style={{ borderBottom: '1px solid #f0f3fa' }}>
+                  <td className="text-[16px] text-[#051937]" style={{ padding: '16px 20px', whiteSpace: 'nowrap' }}>{r.no}</td>
+                  <td className="text-[16px] text-[#051937]" style={{ padding: '16px 20px', whiteSpace: 'nowrap' }}>{r.seal}</td>
+                  <td className="text-[16px] text-[#051937]" style={{ padding: '16px 20px', whiteSpace: 'nowrap' }}>{r.size}</td>
+                  <td className="text-[16px] text-[#051937]" style={{ padding: '16px 20px', whiteSpace: 'nowrap' }}>{r.type}</td>
                   <td style={{ padding: '16px 20px' }}>
                     <button
                       type="button"

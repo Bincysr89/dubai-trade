@@ -84,9 +84,9 @@ export default function VehicleLookupModal({ kind, onClose, onSelect }: Props) {
       <div className="overflow-x-auto">
         <table className="w-full" style={{ borderCollapse: 'collapse' }}>
           <thead>
-            <tr style={{ background: '#e2ebf9' }}>
+            <tr style={{ background: '#a6c2e9' }}>
               {cfg.columns.map((c) => (
-                <th key={c} className="text-left text-[14px]" style={{ padding: '12px', color: '#455174', fontWeight: 500, whiteSpace: 'nowrap' }}>{c}</th>
+                <th key={c} className="text-left text-[16px]" style={{ padding: '12px', color: '#051937', fontWeight: 500, whiteSpace: 'nowrap' }}>{c}</th>
               ))}
               <th className="text-left text-[14px]" style={{ padding: '12px', color: '#455174', fontWeight: 500, width: 80 }}>Action</th>
             </tr>
@@ -95,13 +95,13 @@ export default function VehicleLookupModal({ kind, onClose, onSelect }: Props) {
             {cfg.rows.map((r, i) => (
               <tr key={i}>
                 {r.map((cell, j) => (
-                  <td key={j} className="text-[15px] text-[#0e1b3d]" style={{ padding: '14px 12px' }}>{cell}</td>
+                  <td key={j} className="text-[16px] text-[#051937]" style={{ padding: '16px 12px' }}>{cell}</td>
                 ))}
                 <td style={{ padding: '14px 12px' }}>
                   <button
                     type="button"
                     onClick={() => { onSelect?.(r); onClose(); }}
-                    className="text-[15px] text-[#1360d2] hover:underline"
+                    className="text-[16px] text-[#1360d2] hover:underline"
                     style={{ fontWeight: 500 }}
                   >Select</button>
                 </td>

@@ -1,8 +1,27 @@
 import React, { useState } from 'react';
-import { Field, SectionCard, SectionTitle, TabBar, font } from './DeclarationUI';
+import Pagination from '../Pagination';
+import { Field, JourneyTable, JourneyTd, JourneyThead, SectionCard, SectionTitle, StatusChip, TabBar, font } from './DeclarationUI';
 
 const VEHICLE_TABS = ['Upload Text File', 'Add Manually'] as const;
 type VehicleTab = (typeof VEHICLE_TABS)[number];
+
+/* Vehicle list — Figma 2650:72470. Rows appear once vehicles are added or a file is uploaded. */
+const VEHICLE_COLUMNS = [
+  'Vehicle Type', 'Value Brand', 'Model', 'Condition', 'Chassis Number',
+  'Specification std.', 'Color', 'Color1', 'Color2', 'Color3', 'Drive',
+];
+const UPLOADED_VEHICLES: string[][] = [
+  ['4WD', 'Toyota', 'Land Cruiser', 'New', 'JX12344545', 'GCC Standard', 'White', 'White', 'White', 'White', 'Right Hand Drive'],
+  ['2WD', 'Honda', 'Civic', 'New', 'JX12344545', 'GCC Standard', 'Black', 'Black', 'Black', 'Black', 'Right Hand Drive'],
+  ['4WD', 'Honda', 'Civix', 'New', 'JX12344545', 'GCC Standard', 'White', 'White', 'White', 'White', 'Right Hand Drive'],
+  ['2WD', 'Honda', 'Civic', 'New', 'JX12344545', 'GCC Standard', 'White', 'White', 'White', 'White', 'Right Hand Drive'],
+  ['4WD', 'Toyota', 'Land Cruiser', 'New', 'JX12344545', 'GCC Standard', 'Black', 'Black', 'Black', 'Black', 'Right Hand Drive'],
+  ['2WD', 'Honda', 'Civic', 'New', 'JX12344545', 'GCC Standard', 'Black', 'Black', 'Black', 'Black', 'Right Hand Drive'],
+  ['4WD', 'Honda', 'Land Cruiser', 'New', 'JX12344545', 'GCC Standard', 'White', 'White', 'White', 'White', 'Right Hand Drive'],
+  ['4WD', 'Honda', 'Civic', 'New', 'JX12344545', 'GCC Standard', 'White', 'White', 'White', 'White', 'Right Hand Drive'],
+];
+/* The manual form is a mock-up, so Save appends the row it is showing. */
+const MANUAL_VEHICLE = ['2WD', 'Honda', 'D12243545', 'New', 'A2344657878', 'GCC Standard', 'White', 'White', 'White', 'White', 'Right Hand Drive'];
 
 const PERMITS = [
   { authority: 'Dubai Municipality', ref: 'P12345678', notRequired: true, granted: 'Yes' },
@@ -23,6 +42,11 @@ export default function AddLineItemPage({
   goodsDescription = 'Core sand shooting cone',
 }: Props) {
   const [vehicleTab, setVehicleTab] = useState<VehicleTab>('Add Manually');
+  const [vehicles, setVehicles] = useState<string[][]>([]);
+  const [vehiclePage, setVehiclePage] = useState(1);
+  const [vehiclePageSize, setVehiclePageSize] = useState(8);
+  const [vehicleMenu, setVehicleMenu] = useState<number | null>(null);
+  const addVehicle = () => setVehicles((v) => [...v, MANUAL_VEHICLE]);
 
   return (
     <div className="flex flex-col gap-[24px]" style={{ fontFamily: font }}>
@@ -115,8 +139,16 @@ export default function AddLineItemPage({
       <div className="flex flex-col gap-[16px]">
         <SectionTitle>Vehicle Details</SectionTitle>
         <SectionCard>
-          <div className="mb-[28px]">
+          <div className="mb-[28px] flex items-center justify-between gap-[16px] flex-wrap">
             <TabBar tabs={VEHICLE_TABS} active={vehicleTab} onChange={setVehicleTab} />
+            {vehicles.length > 0 && (
+              <button type="button" className="flex items-center gap-[6px] text-[16px] text-[#1360d2] hover:opacity-80 transition-opacity">
+                <svg viewBox="0 0 24 24" className="size-[18px]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 3v12M7 10l5 5 5-5M5 21h14" />
+                </svg>
+                Download Vehicle List
+              </button>
+            )}
           </div>
 
           {vehicleTab === 'Add Manually' ? (
@@ -146,10 +178,10 @@ export default function AddLineItemPage({
               </div>
 
               <div className="flex flex-wrap items-center gap-[16px] mt-[32px]">
-                <button type="button"
+                <button type="button" onClick={addVehicle}
                   className="h-[46px] px-[40px] rounded-[4px] text-[16px] text-white hover:opacity-90 transition-opacity"
                   style={{ background: '#1360d2', fontWeight: 500 }}>Save</button>
-                <button data-secondary-btn type="button"
+                <button data-secondary-btn type="button" onClick={addVehicle}
                   className="h-[46px] px-[24px] rounded-[4px] border bg-white text-[16px] transition-colors"
                   style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Save &amp; Add Another Vehicle Item</button>
                 <button data-secondary-btn type="button"
@@ -167,9 +199,55 @@ export default function AddLineItemPage({
                 </svg>
               </div>
               <p className="text-[15px] text-[#6d707e]">Drag and drop or</p>
-              <button data-secondary-btn type="button"
+              <button data-secondary-btn type="button" onClick={() => setVehicles(UPLOADED_VEHICLES)}
                 className="h-[42px] px-[22px] rounded-[4px] border text-[15px] bg-white transition-colors"
                 style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Upload File</button>
+            </div>
+          )}
+
+          {/* Vehicles added so far — Figma 2650:72470 */}
+          {vehicles.length > 0 && (
+            <div className="mt-[28px] flex flex-col gap-[12px]">
+              <JourneyTable minWidth={1500}>
+                <JourneyThead columns={[
+                  ...VEHICLE_COLUMNS.map((label) => ({ label })),
+                  { label: 'Action', w: 80, filter: false, sticky: true },
+                ]} />
+                <tbody>
+                  {vehicles.map((v, i) => (
+                    <tr key={i}>
+                      {v.map((cell, j) => <JourneyTd key={j} first={j === 0}>{cell}</JourneyTd>)}
+                      <JourneyTd sticky width={80}>
+                        <span className="relative inline-flex">
+                          <button type="button" aria-label={`Vehicle ${i + 1} actions`}
+                            onClick={() => setVehicleMenu(vehicleMenu === i ? null : i)}
+                            className="size-[28px] inline-flex items-center justify-center rounded hover:bg-[#f0f4ff]">
+                            <svg viewBox="0 0 4 18" width="4" height="18" fill="#697498">
+                              <circle cx="2" cy="2" r="2" /><circle cx="2" cy="9" r="2" /><circle cx="2" cy="16" r="2" />
+                            </svg>
+                          </button>
+                          {vehicleMenu === i && (
+                            <span className="absolute z-[40] bg-white rounded-[8px] py-[4px] overflow-hidden"
+                              style={{ right: '100%', top: 0, marginRight: 6, width: 150, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
+                              <button type="button" onClick={() => setVehicleMenu(null)}
+                                className="block w-full text-left px-[14px] py-[10px] text-[16px] text-[#111838] hover:bg-[#e2ebf9] transition-colors">Amend</button>
+                              <button type="button"
+                                onClick={() => { setVehicles((prev) => prev.filter((_, k) => k !== i)); setVehicleMenu(null); }}
+                                className="block w-full text-left px-[14px] py-[10px] text-[16px] text-[#111838] hover:bg-[#e2ebf9] transition-colors">Delete</button>
+                            </span>
+                          )}
+                        </span>
+                      </JourneyTd>
+                    </tr>
+                  ))}
+                </tbody>
+              </JourneyTable>
+              <Pagination
+                page={vehiclePage} totalPages={Math.max(1, Math.ceil(vehicles.length / vehiclePageSize))}
+                pageSize={vehiclePageSize} pageSizeOptions={[8, 16, 32]} totalItems={vehicles.length}
+                onPageChange={setVehiclePage}
+                onPageSizeChange={(s) => { setVehiclePageSize(s); setVehiclePage(1); }}
+              />
             </div>
           )}
         </SectionCard>
@@ -185,16 +263,16 @@ export default function AddLineItemPage({
           <div className="overflow-x-auto">
             <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 760 }}>
               <thead>
-                <tr style={{ background: '#e2ebf9' }}>
+                <tr style={{ background: '#a6c2e9' }}>
                   {['Permit Authority', 'Permit Reference No.', 'Permit Not Required', 'Permit Granted'].map((c) => (
-                    <th key={c} className="text-left text-[14px]" style={{ padding: '14px 20px', color: '#455174', fontWeight: 500, whiteSpace: 'nowrap' }}>{c}</th>
+                    <th key={c} className="text-left text-[16px]" style={{ padding: '12px 20px', color: '#051937', fontWeight: 500, whiteSpace: 'nowrap' }}>{c}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {PERMITS.map((p) => (
-                  <tr key={p.authority} style={{ borderBottom: '1px solid #eef1f6' }}>
-                    <td className="text-[15px] text-[#0e1b3d]" style={{ padding: '16px 20px' }}>{p.authority}</td>
+                  <tr key={p.authority} style={{ borderBottom: '1px solid #f0f3fa' }}>
+                    <td className="text-[16px] text-[#051937]" style={{ padding: '16px 20px' }}>{p.authority}</td>
                     <td style={{ padding: '12px 20px' }}>
                       <input
                         defaultValue={p.ref}
@@ -207,7 +285,7 @@ export default function AddLineItemPage({
                       <input type="checkbox" defaultChecked={p.notRequired} disabled={p.notRequired}
                         className="size-[18px] rounded-[2px]" style={{ accentColor: '#1360d2' }} />
                     </td>
-                    <td className="text-[15px] text-[#0e1b3d]" style={{ padding: '16px 20px' }}>{p.granted}</td>
+                    <td style={{ padding: '16px 20px' }}><StatusChip status={p.granted} /></td>
                   </tr>
                 ))}
               </tbody>

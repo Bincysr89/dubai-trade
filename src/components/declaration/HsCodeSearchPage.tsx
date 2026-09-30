@@ -51,24 +51,24 @@ export default function HsCodeSearchPage({ onSelect }: Props) {
         <div className="overflow-x-auto">
           <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 860 }}>
             <thead>
-              <tr style={{ background: '#e2ebf9' }}>
+              <tr style={{ background: '#a6c2e9' }}>
                 {['Product Key', 'HS Code', 'Product Description'].map((c) => (
-                  <th key={c} className="text-left text-[14px]" style={{ padding: '14px 20px', color: '#455174', fontWeight: 500, whiteSpace: 'nowrap' }}>{c}</th>
+                  <th key={c} className="text-left text-[16px]" style={{ padding: '12px 20px', color: '#051937', fontWeight: 500, whiteSpace: 'nowrap' }}>{c}</th>
                 ))}
-                <th className="text-left text-[14px]" style={{ padding: '14px 20px', color: '#455174', fontWeight: 500, width: 160 }}>Action</th>
+                <th className="text-left text-[16px]" style={{ padding: '12px 20px', color: '#051937', fontWeight: 500, width: 160 }}>Action</th>
               </tr>
             </thead>
             <tbody>
               {ROWS.map((r, i) => (
-                <tr key={i} style={{ borderBottom: '1px solid #eef1f6' }}>
+                <tr key={i} style={{ borderBottom: '1px solid #f0f3fa' }}>
                   {r.map((cell, j) => (
-                    <td key={j} className="text-[15px] text-[#0e1b3d]" style={{ padding: '16px 20px', whiteSpace: 'nowrap' }}>{cell}</td>
+                    <td key={j} className="text-[16px] text-[#051937]" style={{ padding: '16px 20px', whiteSpace: 'nowrap' }}>{cell}</td>
                   ))}
                   <td style={{ padding: '16px 20px' }}>
                     <button
                       type="button"
                       onClick={() => onSelect?.(r[1], r[2])}
-                      className="text-[15px] text-[#1360d2] hover:underline"
+                      className="text-[16px] text-[#1360d2] hover:underline"
                       style={{ fontWeight: 500 }}
                     >Select HS Code</button>
                   </td>

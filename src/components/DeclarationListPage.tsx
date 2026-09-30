@@ -298,18 +298,6 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
     return () => document.removeEventListener('mousedown', onDoc);
   }, [toolbarStatusOpen]);
 
-  /* Reports menu — Figma 6072:133176 places it between Need Help and Start Journey. */
-  const [reportsOpen, setReportsOpen] = useState(false);
-  const reportsRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!reportsOpen) return;
-    const onDoc = (e: MouseEvent) => {
-      if (reportsRef.current && !reportsRef.current.contains(e.target as Node)) setReportsOpen(false);
-    };
-    document.addEventListener('mousedown', onDoc);
-    return () => document.removeEventListener('mousedown', onDoc);
-  }, [reportsOpen]);
-
   /* Below md the search bar collapses to an icon; tapping it opens this flyout. */
   const [appliedFilters, setAppliedFilters] = useState<string[]>([]);
   /* Claimant Type drives the Code field: it becomes Broker Code or Personal Customer Code,
@@ -1940,42 +1928,6 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                 <circle cx="12" cy="12" r="9" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><circle cx="12" cy="17" r=".5" fill="currentColor" />
               </svg>
             </button>
-
-            {/* Reports menu — Declaration listing only */}
-            {activeMenu === 'Declaration' && activeTab !== 'epay' && (
-              <div className="relative flex-shrink-0" ref={reportsRef}>
-                <button
-                  type="button"
-                  onClick={() => setReportsOpen(o => !o)}
-                  aria-haspopup="menu"
-                  aria-expanded={reportsOpen}
-                  className="flex items-center gap-[8px] h-[48px] px-[16px] bg-white border border-[#d5ddfb] rounded-[4px] hover:bg-[#f7faff] transition-colors"
-                  style={{ fontFamily: "'Dubai', sans-serif" }}
-                >
-                  <span className="text-[16px] text-[#1360d2] font-medium whitespace-nowrap">Reports</span>
-                  <svg viewBox="0 0 24 24" className={`size-[22px] text-[#1360d2] transition-transform ${reportsOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <path d="M6 9l6 6 6-6" />
-                  </svg>
-                </button>
-                {reportsOpen && (
-                  <div
-                    className="absolute z-[80] top-[52px] right-0 bg-white rounded-[8px] py-[4px] overflow-hidden"
-                    style={{ minWidth: 240, boxShadow: '0px 2px 16px 0px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}
-                    role="menu"
-                  >
-                    {['Declaration Report', 'Duty & Tax Report', 'Deposit Report', 'Suspension Report'].map(opt => (
-                      <button
-                        key={opt}
-                        role="menuitem"
-                        onClick={() => setReportsOpen(false)}
-                        className="block w-full text-left px-[14px] py-[8px] text-[16px] text-[#0e1b3d] hover:bg-[#e2ebf9] transition-colors"
-                        style={{ fontFamily: "'Dubai', sans-serif" }}
-                      >{opt}</button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
 
             {/* CT Release / Receipt button — Cargo Transfer only (not on epay sub-tab) */}
             {activeMenu === 'Cargo Transfer' && activeTab !== 'epay' && (

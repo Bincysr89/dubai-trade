@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Pagination from '../Pagination';
 import DeclarationModal from './DeclarationModal';
-import { Readout, SectionCard, SectionTitle, font } from './DeclarationUI';
+import { Readout, SectionCard, SectionTitle, StatusChip, font } from './DeclarationUI';
 
 const filterSrc = new URL('../../assets/declaration/filter-list.svg', import.meta.url).href;
 
@@ -144,29 +144,29 @@ export default function LineItemDetailsPage() {
           <div className="overflow-x-auto">
             <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 1400 }}>
               <thead>
-                <tr style={{ background: '#e2ebf9' }}>
+                <tr style={{ background: '#a6c2e9' }}>
                   {VEHICLE_COLUMNS.map((c) => (
                     <th key={c} style={{ padding: 12, textAlign: 'left', whiteSpace: 'nowrap' }}>
                       <span className="inline-flex items-center gap-[4px]">
-                        <span className="text-[14px]" style={{ color: '#455174', fontWeight: 500, letterSpacing: '0.07px' }}>{c}</span>
+                        <span className="text-[16px]" style={{ color: '#051937', fontWeight: 500, letterSpacing: '0.07px' }}>{c}</span>
                         <img src={filterSrc} alt="" width={16} height={16} />
                       </span>
                     </th>
                   ))}
                   <th style={{ padding: 12, textAlign: 'left', width: 80 }}>
-                    <span className="text-[14px]" style={{ color: '#455174', fontWeight: 500 }}>Action</span>
+                    <span className="text-[16px]" style={{ color: '#051937', fontWeight: 500 }}>Action</span>
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {VEHICLE_ROWS.map((r, i) => (
-                  <tr key={i} style={{ borderBottom: '1px solid #eef1f6' }}>
+                  <tr key={i} style={{ borderBottom: '1px solid #f0f3fa' }}>
                     {r.map((cell, j) => (
-                      <td key={j} className="text-[14px] text-[#0e1b3d]" style={{ padding: 12, whiteSpace: 'nowrap' }}>{cell}</td>
+                      <td key={j} className="text-[16px] text-[#051937]" style={{ padding: '16px 12px', whiteSpace: 'nowrap' }}>{cell}</td>
                     ))}
                     <td style={{ padding: 12 }}>
                       <button type="button" onClick={() => setVehicle(r)}
-                        className="text-[14px] text-[#1360d2] hover:underline" style={{ fontWeight: 500 }}>View</button>
+                        className="text-[16px] text-[#1360d2] hover:underline" style={{ fontWeight: 500 }}>View</button>
                     </td>
                   </tr>
                 ))}
@@ -189,11 +189,11 @@ export default function LineItemDetailsPage() {
           <div className="overflow-x-auto">
             <table className="w-full" style={{ borderCollapse: 'collapse', minWidth: 760 }}>
               <thead>
-                <tr style={{ background: '#e2ebf9' }}>
+                <tr style={{ background: '#a6c2e9' }}>
                   {['Permit Authority', 'Permit Reference No.', 'Permit Not Required', 'Permit Granted'].map((c) => (
                     <th key={c} style={{ padding: '14px 20px', textAlign: 'left', whiteSpace: 'nowrap' }}>
                       <span className="inline-flex items-center gap-[4px]">
-                        <span className="text-[14px]" style={{ color: '#455174', fontWeight: 500 }}>{c}</span>
+                        <span className="text-[16px]" style={{ color: '#051937', fontWeight: 500 }}>{c}</span>
                         <img src={filterSrc} alt="" width={16} height={16} />
                       </span>
                     </th>
@@ -202,13 +202,13 @@ export default function LineItemDetailsPage() {
               </thead>
               <tbody>
                 {[['Dubai Municipality', 'P12345678', 'Yes'], ['TDRA', 'P12345678', 'No']].map((r) => (
-                  <tr key={r[0]} style={{ borderBottom: '1px solid #eef1f6' }}>
-                    <td className="text-[15px] text-[#0e1b3d]" style={{ padding: '16px 20px' }}>{r[0]}</td>
-                    <td className="text-[15px] text-[#0e1b3d]" style={{ padding: '16px 20px' }}>{r[1]}</td>
+                  <tr key={r[0]} style={{ borderBottom: '1px solid #f0f3fa' }}>
+                    <td className="text-[16px] text-[#051937]" style={{ padding: '16px 20px' }}>{r[0]}</td>
+                    <td className="text-[16px] text-[#051937]" style={{ padding: '16px 20px' }}>{r[1]}</td>
                     <td style={{ padding: '16px 20px' }}>
                       <input type="checkbox" readOnly className="size-[18px]" style={{ accentColor: '#1360d2' }} />
                     </td>
-                    <td className="text-[15px] text-[#0e1b3d]" style={{ padding: '16px 20px' }}>{r[2]}</td>
+                    <td style={{ padding: '16px 20px' }}><StatusChip status={r[2]} /></td>
                   </tr>
                 ))}
               </tbody>

@@ -12,6 +12,10 @@ import OverseasCustomerSearchModal from './declaration/OverseasCustomerSearchMod
 import AddOverseasCustomerModal from './declaration/AddOverseasCustomerModal';
 import CodeSearchModal, { type CodeSearchKind } from './declaration/CodeSearchModal';
 import AdvanceSearchModal from './declaration/AdvanceSearchModal';
+import DocumentUploadSection from './declaration/DocumentUploadSection';
+import VesselSearchModal from './declaration/VesselSearchModal';
+import InvoiceEntryPanel, { InvoiceEntryButtons, type InvoiceEntryMode } from './declaration/InvoiceEntryPanel';
+import { JourneyTd, JourneyThead } from './declaration/DeclarationUI';
 import CustomerRegistrationModal, { CustomerRegisteredModal } from './declaration/CustomerRegistrationModal';
 import AddLineItemPage from './declaration/AddLineItemPage';
 import HsCodeSearchPage from './declaration/HsCodeSearchPage';
@@ -205,6 +209,9 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
   /* Importer / personal-customer chain on the Importer Code step. */
   const [codeLookup, setCodeLookup] = useState<CodeSearchKind | null>(null);
   const [advanceSearchOpen, setAdvanceSearchOpen] = useState(false);
+  const [vesselSearchOpen, setVesselSearchOpen] = useState(false);
+  /* Rotation number picked in Search Vessel fills the Carrier Registration Number field. */
+  const [carrierReg, setCarrierReg] = useState('680523');
   const [customerRegOpen, setCustomerRegOpen] = useState(false);
   const [customerRegistered, setCustomerRegistered] = useState(false);
   /* Add Line Item: the HS Code search is its own page, the rest are popups. */
@@ -264,6 +271,9 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
               onPersonalCustomerSearch={() => setCodeLookup('personalCustomer')}
               onAdvanceSearch={() => setAdvanceSearchOpen(true)}
               onAddPersonalCustomer={() => setCustomerRegOpen(true)}
+              carrier={carrierReg}
+              onCarrierChange={setCarrierReg}
+              onVesselSearch={() => setVesselSearchOpen(true)}
             />
           )}
           {addLineItem ? (
@@ -300,6 +310,7 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
           {step === 'invoiceDetails' && (
             <DeclarationInvoiceDetailsPage
               onViewDetails={() => { setReturnStep('invoiceDetails'); setStep('lineItemDetails'); }}
+              onAddLineItem={() => setAddLineItem(true)}
             />
           )}
           {step === 'lineItemDetails' && <LineItemDetailsPage />}
@@ -323,6 +334,12 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
       {vehicleLookup && <VehicleLookupModal kind={vehicleLookup} onClose={() => setVehicleLookup(null)} />}
       {codeLookup && <CodeSearchModal kind={codeLookup} onClose={() => setCodeLookup(null)} />}
       {advanceSearchOpen && <AdvanceSearchModal onClose={() => setAdvanceSearchOpen(false)} />}
+      {vesselSearchOpen && (
+        <VesselSearchModal
+          onClose={() => setVesselSearchOpen(false)}
+          onSelect={(_name, rotation) => setCarrierReg(rotation)}
+        />
+      )}
       {customerRegOpen && (
         <CustomerRegistrationModal
           onClose={() => setCustomerRegOpen(false)}
@@ -584,11 +601,11 @@ function ReadOnlyForm({ channel = 'Sea', regime = 'Import', third = ['BOL Number
 }
 
 /* ── Step 2: Carrier + Exporter ── */
-function CarrierStep({ onImporterSearch, onPersonalCustomerSearch, onAdvanceSearch, onAddPersonalCustomer }: {
+function CarrierStep({ onImporterSearch, onPersonalCustomerSearch, onAdvanceSearch, onAddPersonalCustomer, carrier, onCarrierChange, onVesselSearch }: {
   onImporterSearch: () => void; onPersonalCustomerSearch: () => void;
   onAdvanceSearch: () => void; onAddPersonalCustomer: () => void;
+  carrier: string; onCarrierChange: (v: string) => void; onVesselSearch: () => void;
 }) {
-  const [carrier, setCarrier] = useState('680523');
   const [mawb, setMawb] = useState('B87654');
   const [exporter, setExporter] = useState('AE1006');
   const [pcc, setPcc] = useState('PC0007007');
@@ -598,7 +615,8 @@ function CarrierStep({ onImporterSearch, onPersonalCustomerSearch, onAdvanceSear
 
       <Card className="p-[24px] mb-[24px]">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] max-w-[720px]">
-          <Field label="Carrier Registration Number" value={carrier} onChange={setCarrier} required search />
+          <Field label="Carrier Registration Number" value={carrier} onChange={onCarrierChange} required search
+            onSearch={onVesselSearch} searchLabel="Search Vessel" />
           <Field label="MAWB/MBOL" value={mawb} onChange={setMawb} required />
         </div>
       </Card>
@@ -720,61 +738,32 @@ function ManualInvoice({ onSave, onAddLineItem }: { onSave: () => void; onAddLin
 /* ── Step 5: Required documents upload ── */
 function DocumentsStep() {
   const DOC_TYPES = [
-    { label: 'Invoice', required: true },
-    { label: 'Packaging List', required: true },
-    { label: 'AWB/BOL', required: false },
-    { label: 'Laboratory Results', required: false },
-    { label: 'Certificate of Origin', required: false },
-    { label: 'Other Documents', required: false },
+    { label: 'Invoice', required: true, nature: 'Copy' },
+    { label: 'Packaging List', required: true, nature: 'Copy' },
+    { label: 'AWB/BOL', nature: 'Copy' },
+    { label: 'Laboratory Results', nature: 'Original' },
+    { label: 'Certificate of Origin', nature: 'Original' },
+    { label: 'Other Documents', nature: 'Any' },
   ];
-  const [selected, setSelected] = useState(0);
-  const [dragging, setDragging] = useState(false);
   return (
     <>
       <ReadOnlyForm channel="Sea" regime="Import" third={['BOL Number', 'BOL122324']} fourth={['Vessel Information', 'MSK13324']} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-[24px] items-start">
-        {/* Left: document type selection */}
-        <div>
-          <h2 className="text-[20px] text-[#0e1b3d] mb-[4px]" style={{ fontWeight: 700 }}>Required Documents</h2>
-          <p className="text-[15px] text-[#5a6282] mb-[16px]">Select the document type to upload</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-[12px] mb-[28px]">
-            {DOC_TYPES.map((doc, i) => {
-              const active = selected === i;
-              return (
-                <label key={doc.label} onClick={() => setSelected(i)}
-                  className="flex items-center gap-[10px] px-[14px] py-[13px] rounded-[6px] cursor-pointer transition-colors"
-                  style={{ background: active ? '#f0f5ff' : '#fff', border: `1.5px solid ${active ? '#1360d2' : '#e6eaf5'}` }}>
-                  <span className="size-[18px] rounded-full flex-shrink-0 inline-flex items-center justify-center" style={{ border: `2px solid ${active ? '#1360d2' : '#a7abb2'}` }}>
-                    {active && <span className="size-[8px] rounded-full" style={{ background: '#1360d2' }} />}
-                  </span>
-                  <span className="text-[15px]" style={{ color: active ? '#0e1b3d' : '#455174', fontWeight: active ? 500 : 400 }}>
-                    {doc.required && <span style={{ color: '#ea2428' }}>*</span>}{doc.label}
-                  </span>
-                </label>
-              );
-            })}
-          </div>
+      <h2 className="text-[20px] text-[#0e1b3d] mb-[4px]" style={{ fontWeight: 700 }}>Required Documents</h2>
+      <p className="text-[15px] text-[#5a6282] mb-[16px]">Select the document type and upload the supporting file.</p>
 
-          <h2 className="text-[20px] text-[#0e1b3d] mb-[12px]" style={{ fontWeight: 700 }}>OGA Required Documents</h2>
-          <div className="max-w-[300px]">
-            <Field label="" value="" placeholder="Choose Issuing Authorities" select />
-          </div>
-        </div>
+      {/* Same two-card uploader as the Refund & Claims document step */}
+      <DocumentUploadSection
+        docTypes={DOC_TYPES}
+        authority="Dubai Customs"
+        title="Upload Documents"
+        description="Select the document type and upload the file — we will share the documents with the authorities."
+      />
 
-        {/* Right: upload zone */}
-        <div
-          onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={(e) => { e.preventDefault(); setDragging(false); }}
-          className="flex flex-col items-center justify-center gap-[16px] rounded-[8px] py-[56px] px-[24px] transition-colors"
-          style={{ border: `1.5px dashed ${dragging ? '#1360d2' : '#b5c8e8'}`, background: dragging ? '#edf3ff' : '#fbfcff', minHeight: 280 }}
-        >
-          <div className="size-[60px] rounded-full inline-flex items-center justify-center" style={{ background: '#e9eef7' }}>
-            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#8a93a6" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" /></svg>
-          </div>
-          <p className="text-[15px] text-[#5a6282] text-center max-w-[360px]">PDF/excel/JPEG/PNG/ formats can be uploaded. Maximum file size limit 50Mb</p>
-          <button data-secondary-btn className="h-[44px] px-[22px] rounded-[6px] border text-[15px] bg-white transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Drag And Drop Or Upload File</button>
+      <div className="mt-[24px]">
+        <h2 className="text-[20px] text-[#0e1b3d] mb-[12px]" style={{ fontWeight: 700 }}>OGA Required Documents</h2>
+        <div className="max-w-[300px]">
+          <Field label="" value="" placeholder="Choose Issuing Authorities" select />
         </div>
       </div>
     </>
@@ -784,6 +773,7 @@ function DocumentsStep() {
 /* ── Step 4: Invoices added + line items ── */
 function InvoiceListStep({ onAddLineItem }: { onAddLineItem: () => void }) {
   const [expanded, setExpanded] = useState(true);
+  const [entryMode, setEntryMode] = useState<InvoiceEntryMode | null>(null);
   const { scrollRef, atScrollStart, atScrollEnd, handleScroll, scrollToStart, scrollToEnd } = useTableBehaviors();
   const cols = ['HS Code', 'Goods Description', 'Condition', 'Country of origin', 'Weight', 'Value of Goods', 'Statistical Quantity - Unit', 'Supplementary Quantity/Units', 'Item Quantity', 'Action'];
   const row = ['AX1234567', 'Spare parts', 'New', 'India', '100 kg', 'AED 1500', '100 - Unit', '100', '100 - Unit'];
@@ -794,10 +784,15 @@ function InvoiceListStep({ onAddLineItem }: { onAddLineItem: () => void }) {
       <h2 className="text-[20px] text-[#0e1b3d] mb-[4px]" style={{ fontWeight: 700 }}>Invoice Details</h2>
       <p className="text-[15px] text-[#5a6282] mb-[16px]">You can add Cargo details manually or upload a Text file.</p>
 
-      <div className="flex items-center gap-[8px] mb-[16px]">
-        <button className="text-[15px] px-[18px] py-[9px] rounded-[4px] border bg-white" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Upload Text File</button>
-        <button className="text-[15px] px-[18px] py-[9px] rounded-[4px] border bg-white" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Add Manually</button>
+      <div className="mb-[16px]">
+        <InvoiceEntryButtons mode={entryMode} onChange={setEntryMode} />
       </div>
+
+      {entryMode && (
+        <div className="mb-[16px]">
+          <InvoiceEntryPanel mode={entryMode} onClose={() => setEntryMode(null)} onAddLineItem={onAddLineItem} />
+        </div>
+      )}
 
       <div className="flex items-center gap-[24px] mb-[14px]">
         <span className="text-[15px] text-[#0e1b3d]" style={{ fontWeight: 600 }}>03 Invoices Added</span>
@@ -835,23 +830,17 @@ function InvoiceListStep({ onAddLineItem }: { onAddLineItem: () => void }) {
             <div className="pb-[4px]" style={{ position: 'relative' }}>
               <ScrollArrows atStart={atScrollStart} atEnd={atScrollEnd} onLeft={scrollToStart} onRight={scrollToEnd} stickyWidth={80} />
               <div ref={scrollRef} onScroll={handleScroll} className="overflow-x-auto rounded-[8px] border border-[#eef1f6]">
-                <table className="w-full border-collapse" style={{ minWidth: 1000 }}>
-                  <thead>
-                    <tr style={{ background: '#eaf1fb' }}>
-                      {cols.slice(0, -1).map((c) => (
-                        <th key={c} className="text-left text-[13px] text-[#455174] px-[14px] py-[12px] whitespace-nowrap" style={{ fontWeight: 600 }}>{c}</th>
-                      ))}
-                      <th className="text-left text-[13px] text-[#455174] px-[14px] py-[12px] whitespace-nowrap" style={{ fontWeight: 600, background: '#eaf1fb', position: 'sticky', right: 0, minWidth: 80, width: 80, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2 }}>{cols[cols.length - 1]}</th>
-                    </tr>
-                  </thead>
+                <table className="w-full" style={{ minWidth: 1000, borderCollapse: 'collapse', fontFamily: font }}>
+                  <JourneyThead columns={[
+                    ...cols.slice(0, -1).map((label) => ({ label })),
+                    { label: cols[cols.length - 1], w: 80, filter: false, sticky: true },
+                  ]} />
                   <tbody>
-                    <tr className="border-t border-[#eef1f6]">
-                      {row.map((v, i) => (
-                        <td key={i} className="text-[14px] text-[#0e1b3d] px-[14px] py-[14px] whitespace-nowrap">{v}</td>
-                      ))}
-                      <td className="px-[14px] py-[14px]" style={{ background: '#fff', position: 'sticky', right: 0, minWidth: 80, width: 80, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 1 }}>
+                    <tr>
+                      {row.map((v, i) => <JourneyTd key={i} first={i === 0}>{v}</JourneyTd>)}
+                      <JourneyTd sticky width={80}>
                         <button className="size-[28px] rounded flex items-center justify-center hover:bg-[#f0f4ff]"><svg viewBox="0 0 24 24" className="size-[16px] text-[#697498]" fill="currentColor"><circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" /></svg></button>
-                      </td>
+                      </JourneyTd>
                     </tr>
                   </tbody>
                 </table>

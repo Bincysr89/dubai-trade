@@ -1,4 +1,5 @@
 import React from 'react';
+import { ColumnFilter } from '../ColumnFilter';
 
 export const editSrc = new URL('../../assets/declaration/fi-edit.svg', import.meta.url).href;
 export const searchSrc = new URL('../../assets/declaration/search-24px.svg', import.meta.url).href;
@@ -222,5 +223,128 @@ export function TabBar<T extends string>({ tabs, active, onChange }: { tabs: rea
         </button>
       ))}
     </div>
+  );
+}
+
+/* ── Tables ──────────────────────────────────────────────────────────────
+   Every table in the declaration journey wears the same chrome as the
+   Refund & Claims listings: an #a6c2e9 header band with per-column filter
+   handles, 16px body text on a hairline rule, and tinted status chips. */
+
+export const TABLE_HEAD_BG = '#a6c2e9';
+export const TABLE_ROW_RULE = '1px solid #f0f3fa';
+export const STICKY_COL_SHADOW = '-3px 0 6px rgba(0,0,0,0.06)';
+
+export type JourneyColumn = {
+  label: string;
+  w?: number;
+  /** Column-filter handle next to the label; on by default. */
+  filter?: boolean;
+  /** Pins the column to the right edge (used by the Action columns). */
+  sticky?: boolean;
+};
+
+export function JourneyThead({ columns }: { columns: JourneyColumn[] }) {
+  return (
+    <thead>
+      <tr>
+        {columns.map((c, i) => {
+          const last = i === columns.length - 1;
+          return (
+            <th
+              key={`${c.label}-${i}`}
+              style={{
+                background: TABLE_HEAD_BG,
+                padding: '12px 12px',
+                paddingLeft: i === 0 ? 16 : 12,
+                textAlign: 'left',
+                fontWeight: 500,
+                whiteSpace: 'nowrap',
+                width: c.w, minWidth: c.w,
+                borderTopLeftRadius: i === 0 ? 8 : undefined,
+                borderTopRightRadius: last ? 8 : undefined,
+                ...(c.sticky
+                  ? { position: 'sticky' as const, right: 0, zIndex: 2, boxShadow: STICKY_COL_SHADOW }
+                  : null),
+              }}
+            >
+              {c.filter === false
+                ? <span className="text-[16px] font-medium text-[#051937] whitespace-nowrap" style={{ fontFamily: font }}>{c.label}</span>
+                : <ColumnFilter label={c.label} />}
+            </th>
+          );
+        })}
+      </tr>
+    </thead>
+  );
+}
+
+export function JourneyTd({ children, first, sticky, width, style }: {
+  children?: React.ReactNode; first?: boolean; sticky?: boolean; width?: number; style?: React.CSSProperties;
+}) {
+  return (
+    <td
+      style={{
+        background: '#fff',
+        padding: '0 12px',
+        paddingLeft: first ? 16 : 12,
+        height: 56,
+        verticalAlign: 'middle',
+        borderBottom: TABLE_ROW_RULE,
+        whiteSpace: 'nowrap',
+        width, minWidth: width,
+        ...(sticky ? { position: 'sticky' as const, right: 0, zIndex: 1, boxShadow: STICKY_COL_SHADOW } : null),
+        ...style,
+      }}
+    >
+      {typeof children === 'string' || typeof children === 'number'
+        ? <span className="text-[16px] text-[#051937]" style={{ fontFamily: font }}>{children}</span>
+        : children}
+    </td>
+  );
+}
+
+/** Scroll box + table element with the journey's shared table metrics. */
+export function JourneyTable({ minWidth, children, scrollRef, onScroll }: {
+  minWidth?: number; children: React.ReactNode;
+  scrollRef?: React.Ref<HTMLDivElement>; onScroll?: React.UIEventHandler<HTMLDivElement>;
+}) {
+  return (
+    <div className="overflow-x-auto" ref={scrollRef} onScroll={onScroll}>
+      <table className="w-full" style={{ borderCollapse: 'collapse', minWidth, fontFamily: font }}>
+        {children}
+      </table>
+    </div>
+  );
+}
+
+/* Status tints are shared with the Refund & Claims tables so one status reads
+   the same colour wherever it appears. */
+export const STATUS_TINTS: Record<string, { bg: string; color: string }> = {
+  'Under Processing': { bg: 'rgba(255,169,26,0.16)',  color: '#b45309' },
+  'Completed':        { bg: 'rgba(40,167,69,0.10)',   color: '#28a745' },
+  'Cleared':          { bg: 'rgba(40,167,69,0.10)',   color: '#28a745' },
+  'Approved':         { bg: 'rgba(40,167,69,0.10)',   color: '#28a745' },
+  'Yes':              { bg: 'rgba(40,167,69,0.10)',   color: '#28a745' },
+  'Suspended':        { bg: 'rgba(220,53,69,0.10)',   color: '#dc3545' },
+  'Rejected':         { bg: 'rgba(220,53,69,0.10)',   color: '#dc3545' },
+  'No':               { bg: 'rgba(220,53,69,0.10)',   color: '#dc3545' },
+  'Draft':            { bg: 'rgba(105,116,152,0.10)', color: '#697498' },
+  'Submitted':        { bg: 'rgba(19,96,210,0.10)',   color: '#1360d2' },
+  'New':              { bg: 'rgba(19,96,210,0.10)',   color: '#1360d2' },
+  'Payment Pending':  { bg: 'rgba(255,169,26,0.16)',  color: '#b45309' },
+  'Pending':          { bg: 'rgba(255,169,26,0.16)',  color: '#b45309' },
+  'Registered':       { bg: 'rgba(124,58,237,0.10)',  color: '#7c3aed' },
+};
+
+export function StatusChip({ status }: { status: string }) {
+  const st = STATUS_TINTS[status] ?? { bg: 'rgba(105,116,152,0.10)', color: '#697498' };
+  return (
+    <span
+      className="text-[16px] whitespace-nowrap inline-flex items-center justify-center"
+      style={{ background: st.bg, color: st.color, padding: '4px 12px', borderRadius: 4, lineHeight: '20px', fontWeight: 500, fontFamily: font }}
+    >
+      {status}
+    </span>
   );
 }

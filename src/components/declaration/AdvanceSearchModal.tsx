@@ -1,8 +1,14 @@
 import React from 'react';
 import DeclarationModal from './DeclarationModal';
-import { chevronSrc, font } from './DeclarationUI';
+import { JourneyTable, JourneyTd, JourneyThead, chevronSrc, editSrc, font } from './DeclarationUI';
 
-type Props = { onClose: () => void; onApply?: () => void };
+type Props = { onClose: () => void; onApply?: () => void; onSelect?: (row: string[]) => void };
+
+/* Results — Figma 4866:152989. */
+const RESULT_COLUMNS = ['Code', 'Name', 'ID Doc Type', 'ID Doc No.', 'ID Doc Issuing Country', 'Mobile No.'];
+const RESULTS = ['AE-1000087', 'AE-1000255', 'AE-1000375', 'AE-1000507'].map((code) => (
+  [code, 'John Doe', 'Passport', '11111111', 'India', '97111111111']
+));
 
 function Labelled({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
@@ -26,7 +32,7 @@ function SelectBox({ value }: { value: string }) {
 }
 
 /** Advance Search — Figma 2650:59245. */
-export default function AdvanceSearchModal({ onClose, onApply }: Props) {
+export default function AdvanceSearchModal({ onClose, onApply, onSelect }: Props) {
   return (
     <DeclarationModal title="Advance Search" onClose={onClose} maxWidth={920}>
       <p className="text-[18px] text-[#0e1b3d] mb-[24px]" style={{ fontWeight: 600 }}>Select Search Criteria</p>
@@ -54,10 +60,36 @@ export default function AdvanceSearchModal({ onClose, onApply }: Props) {
           className="h-[48px] px-[36px] rounded-[4px] border bg-white text-[16px] transition-colors"
           style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}
         >Reset</button>
-        <button type="button" onClick={() => { onApply?.(); onClose(); }}
+        <button type="button" onClick={() => onApply?.()}
           className="h-[48px] px-[40px] rounded-[4px] text-[16px] text-white hover:opacity-90 transition-opacity"
           style={{ background: '#1360d2', fontWeight: 500 }}
         >Apply</button>
+      </div>
+
+      {/* Matches — the popup keeps the criteria above the results, so a search can be narrowed in place */}
+      <div className="mt-[28px]">
+        <JourneyTable minWidth={880}>
+          <JourneyThead columns={[
+            ...RESULT_COLUMNS.map((label) => ({ label })),
+            { label: 'Action', w: 130, filter: false },
+          ]} />
+          <tbody>
+            {RESULTS.map((r, i) => (
+              <tr key={i}>
+                {r.map((cell, j) => <JourneyTd key={j} first={j === 0}>{cell}</JourneyTd>)}
+                <JourneyTd>
+                  <span className="flex items-center gap-[12px]">
+                    <button type="button" aria-label={`Edit ${r[0]}`} className="inline-flex items-center justify-center hover:opacity-70 transition-opacity">
+                      <img src={editSrc} alt="" width={20} height={20} />
+                    </button>
+                    <button type="button" onClick={() => { onSelect?.(r); onClose(); }}
+                      className="text-[16px] text-[#1360d2] hover:underline" style={{ fontWeight: 500 }}>Select</button>
+                  </span>
+                </JourneyTd>
+              </tr>
+            ))}
+          </tbody>
+        </JourneyTable>
       </div>
     </DeclarationModal>
   );
