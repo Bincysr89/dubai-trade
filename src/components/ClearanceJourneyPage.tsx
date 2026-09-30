@@ -16,6 +16,9 @@ import CustomerRegistrationModal, { CustomerRegisteredModal } from './declaratio
 import AddLineItemPage from './declaration/AddLineItemPage';
 import HsCodeSearchPage from './declaration/HsCodeSearchPage';
 import VehicleLookupModal, { type VehicleLookupKind } from './declaration/VehicleLookupModal';
+import ContainerEditModal from './declaration/ContainerEditModal';
+import LineItemDetailsPage from './declaration/LineItemDetailsPage';
+import ViewDeclarationPage from './declaration/ViewDeclarationPage';
 import Header from './Header';
 import importBySeaSrc from '../assets/importbysea.svg';
 // @ts-ignore
@@ -36,7 +39,7 @@ type Props = {
   defaults?: { cargoChannel?: string; regimeType?: string };
 };
 
-type Step = 'start' | 'carrier' | 'invoice' | 'invoiceList' | 'documents' | 'review' | 'shipment' | 'invoiceDetails' | 'documentUpload' | 'payment' | 'submit' | 'declarationSuccess';
+type Step = 'start' | 'carrier' | 'invoice' | 'invoiceList' | 'documents' | 'review' | 'shipment' | 'invoiceDetails' | 'documentUpload' | 'payment' | 'submit' | 'declarationSuccess' | 'lineItemDetails' | 'viewDeclaration';
 
 /* ── Journey stepper (Import by Sea → … → Cargo Waves), Integrated Clearance active ── */
 function JourneyStepper({ onClose }: { onClose: () => void }) {
@@ -208,9 +211,22 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
   const [hsSearchOpen, setHsSearchOpen] = useState(false);
   const [hsPicked, setHsPicked] = useState<{ code: string; description: string } | null>(null);
   const [vehicleLookup, setVehicleLookup] = useState<VehicleLookupKind | null>(null);
+  const [editContainer, setEditContainer] = useState<string | null>(null);
+  /* Remembers which step to return to when leaving a drill-down view. */
+  const [returnStep, setReturnStep] = useState<Step>('invoiceDetails');
+
   const [invoiceTab, setInvoiceTab] = useState<'upload' | 'manual'>('upload');
   const [dragging, setDragging] = useState(false);
   const [addLineItem, setAddLineItem] = useState(false);
+  /* Each screen keeps the title its design carries, rather than "Integrated Clearance"
+     everywhere. The declaration name stands in for the type chosen on the first step. */
+  const declarationName = 'New - Import to local from ROW';
+  const pageTitle =
+    addLineItem ? (hsSearchOpen ? 'Search HS Code' : 'Add Line Item')
+    : step === 'start' ? 'Integrated Clearance'
+    : step === 'lineItemDetails' ? 'Line Item Details'
+    : step === 'viewDeclaration' ? 'View Declaration'
+    : declarationName;
 
   return (
     <div className="fixed inset-0 z-[70] flex flex-col bg-[#f8fafd]" style={{ fontFamily: font }}>
@@ -234,7 +250,7 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
         <JourneyStepper onClose={onClose} />
 
         <div className="px-4 md:px-10 pb-[24px]">
-          <h1 className="text-[30px] text-[#0e1b3d] mb-[16px]" style={{ fontWeight: 700 }}>Integrated Clearance</h1>
+          <h1 className="text-[30px] text-[#0e1b3d] mb-[16px]" style={{ fontWeight: 700 }}>{pageTitle}</h1>
 
           {step === 'start' && <StartStep onProceed={() => setStep('carrier')} defaults={defaults} />}
           {step === 'carrier' && (
@@ -275,16 +291,30 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
               onAddOverseasCustomer={() => setAddOverseasOpen(true)}
             />
           )}
-          {step === 'shipment' && <DeclarationShipmentPage tab={shipmentTab} onTabChange={setShipmentTab} />}
-          {step === 'invoiceDetails' && <DeclarationInvoiceDetailsPage />}
+          {step === 'shipment' && <DeclarationShipmentPage tab={shipmentTab} onTabChange={setShipmentTab} onEditContainer={setEditContainer} />}
+          {step === 'invoiceDetails' && (
+            <DeclarationInvoiceDetailsPage
+              onViewDetails={() => { setReturnStep('invoiceDetails'); setStep('lineItemDetails'); }}
+            />
+          )}
+          {step === 'lineItemDetails' && <LineItemDetailsPage />}
+          {step === 'viewDeclaration' && <ViewDeclarationPage />}
           {step === 'documentUpload' && <DeclarationDocumentUploadPage />}
           {step === 'payment' && <DeclarationPaymentPage />}
-          {step === 'submit' && <DeclarationSubmitPage />}
-          {step === 'declarationSuccess' && <DeclarationSuccessPage onContinueToOga={onApplyPermits} />}
+          {step === 'submit' && (
+            <DeclarationSubmitPage onViewDeclaration={() => { setReturnStep('submit'); setStep('viewDeclaration'); }} />
+          )}
+          {step === 'declarationSuccess' && (
+            <DeclarationSuccessPage
+              onContinueToOga={onApplyPermits}
+              onViewDeclaration={() => { setReturnStep('declarationSuccess'); setStep('viewDeclaration'); }}
+            />
+          )}
           </>)}
         </div>
       </div>
 
+      {editContainer && <ContainerEditModal containerNo={editContainer} onClose={() => setEditContainer(null)} />}
       {vehicleLookup && <VehicleLookupModal kind={vehicleLookup} onClose={() => setVehicleLookup(null)} />}
       {codeLookup && <CodeSearchModal kind={codeLookup} onClose={() => setCodeLookup(null)} />}
       {advanceSearchOpen && <AdvanceSearchModal onClose={() => setAdvanceSearchOpen(false)} />}
@@ -326,6 +356,7 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
             else if (step === 'payment') setStep('documentUpload');
             else if (step === 'submit') setStep('payment');
             else if (step === 'declarationSuccess') onClose();
+            else if (step === 'lineItemDetails' || step === 'viewDeclaration') setStep(returnStep);
             else onClose();
           }}
           className="h-[48px] px-[28px] rounded-[4px] border text-[16px] transition-colors"
@@ -452,27 +483,21 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
 
 /* ── Step 1: Start clearance ── */
 function StartStep({ onProceed, defaults }: { onProceed: () => void; defaults?: { cargoChannel?: string; regimeType?: string } }) {
-  const [channel, setChannel] = useState(defaults?.cargoChannel ?? 'Sea');
+  /* Field set per Figma 2650:42905 — DO Number is the only optional one. */
   const [regime, setRegime] = useState(defaults?.regimeType ?? 'Import');
-  // Sea → BOL Number + Vessel Information · Air → AWB Number + Flight Number
-  const isSea = channel === 'Sea';
-  const [f3, setF3] = useState(isSea ? 'BOL122324' : 'AWB1234567');
-  const [f4, setF4] = useState(isSea ? 'MSK13324' : 'EK1234');
+  const [declType, setDeclType] = useState('Declaration Type');
+  const [channel, setChannel] = useState(defaults?.cargoChannel ?? 'Sea');
+  const [doNumber, setDoNumber] = useState('');
   const [ref, setRef] = useState('A113384');
-  const onChannel = (v: string) => {
-    setChannel(v);
-    if (v === 'Sea') { setF3('BOL122324'); setF4('MSK13324'); }
-    else { setF3('AWB1234567'); setF4('EK1234'); }
-  };
   return (
     <>
       <Card className="p-[24px] mb-[24px]">
         <p className="text-[16px] text-[#0e1b3d] mb-[16px]" style={{ fontWeight: 500 }}>Enter the Details to Start Clearance Process</p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-[16px] items-center">
-          <Field label="Cargo Channel" value={channel} onChange={onChannel} options={['Sea', 'Air']} required select />
           <Field label="Regime Type" value={regime} onChange={setRegime} options={['Import', 'Export']} required select />
-          <Field label={isSea ? 'BOL Number' : 'AWB Number'} value={f3} onChange={setF3} required />
-          <Field label={isSea ? 'Vessel Information' : 'Flight Number'} value={f4} onChange={setF4} required />
+          <Field label="Declaration Type" value={declType} onChange={setDeclType} options={['Declaration Type', '101-Import to local from ROW', '102-Import to local from FZ', '103-Import for re-export']} required select />
+          <Field label="Cargo Channel" value={channel} onChange={setChannel} options={['Sea', 'Air']} required select />
+          <Field label="DO Number" value={doNumber} onChange={setDoNumber} placeholder="DO Number" />
           <Field label="Client Doc. Ref. Number" value={ref} onChange={setRef} required />
           <button onClick={onProceed} className="h-[56px] rounded-[4px] text-[16px] text-white hover:bg-[#0f4fb5] transition-colors" style={{ background: '#1360d2', fontWeight: 500 }}>Proceed</button>
         </div>

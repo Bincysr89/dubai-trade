@@ -26,7 +26,6 @@ export default function AddLineItemPage({
 
   return (
     <div className="flex flex-col gap-[24px]" style={{ fontFamily: font }}>
-      <p className="text-[28px] text-[#0e1b3d]" style={{ fontWeight: 700 }}>Add Line Item</p>
 
       {/* Invoice summary strip */}
       <SectionCard className="!py-[20px]">

@@ -33,7 +33,6 @@ export default function HsCodeSearchPage({ onSelect }: Props) {
 
   return (
     <div className="flex flex-col gap-[20px]" style={{ fontFamily: font }}>
-      <p className="text-[28px] text-[#0e1b3d]" style={{ fontWeight: 700 }}>Search HS Code</p>
       <p className="text-[20px] text-[#0e1b3d]" style={{ fontWeight: 600 }}>Add item description to find the HS code</p>
 
       <div className="bg-white rounded-[8px] px-[20px] py-[24px]" style={{ boxShadow: '1px 2px 12px rgba(0,0,0,0.06)' }}>
