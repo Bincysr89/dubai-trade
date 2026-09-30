@@ -7,6 +7,9 @@ import DeclarationDocumentUploadPage from './declaration/DeclarationDocumentUplo
 import DeclarationPaymentPage from './declaration/DeclarationPaymentPage';
 import DeclarationSubmitPage from './declaration/DeclarationSubmitPage';
 import DeclarationSuccessPage from './declaration/DeclarationSuccessPage';
+import PartySearchModal, { type PartySearchKind } from './declaration/PartySearchModal';
+import OverseasCustomerSearchModal from './declaration/OverseasCustomerSearchModal';
+import AddOverseasCustomerModal from './declaration/AddOverseasCustomerModal';
 import Header from './Header';
 import importBySeaSrc from '../assets/importbysea.svg';
 // @ts-ignore
@@ -178,6 +181,10 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
   /* "Proceed To Review & Submit Declaration" holds on a filling popup, then opens Review. */
   const [filingOpen, setFilingOpen] = useState(false);
   const [shipmentTab, setShipmentTab] = useState<ShipmentTab>(SHIPMENT_TABS[0]);
+  /* Person/Parties lookups hung off the General Information search icons. */
+  const [partyLookup, setPartyLookup] = useState<PartySearchKind | null>(null);
+  const [exporterLookupOpen, setExporterLookupOpen] = useState(false);
+  const [addOverseasOpen, setAddOverseasOpen] = useState(false);
   const [invoiceTab, setInvoiceTab] = useState<'upload' | 'manual'>('upload');
   const [dragging, setDragging] = useState(false);
   const [addLineItem, setAddLineItem] = useState(false);
@@ -221,7 +228,12 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
           )}
           {step === 'invoiceList' && <InvoiceListStep onAddLineItem={() => setAddLineItem(true)} />}
           {step === 'documents' && <DocumentsStep />}
-          {step === 'review' && <DeclarationReviewPage />}
+          {step === 'review' && (
+            <DeclarationReviewPage
+              onLookup={(f) => (f === 'exporter' ? setExporterLookupOpen(true) : setPartyLookup(f))}
+              onAddOverseasCustomer={() => setAddOverseasOpen(true)}
+            />
+          )}
           {step === 'shipment' && <DeclarationShipmentPage tab={shipmentTab} onTabChange={setShipmentTab} />}
           {step === 'invoiceDetails' && <DeclarationInvoiceDetailsPage />}
           {step === 'documentUpload' && <DeclarationDocumentUploadPage />}
@@ -231,6 +243,10 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
           </>)}
         </div>
       </div>
+
+      {partyLookup && <PartySearchModal kind={partyLookup} onClose={() => setPartyLookup(null)} />}
+      {exporterLookupOpen && <OverseasCustomerSearchModal onClose={() => setExporterLookupOpen(false)} />}
+      {addOverseasOpen && <AddOverseasCustomerModal onClose={() => setAddOverseasOpen(false)} />}
 
       {filingOpen && (
         <PermitInformationFilingModal
