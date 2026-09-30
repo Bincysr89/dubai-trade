@@ -431,7 +431,7 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
     { key: 'depositType',     label: 'Charge Type',           w: 220, configHidden: true },
     { key: 'claimant',        label: 'Claimant Details',      w: 280 },
     { key: 'submissionDate',  label: showDrafts ? 'Claim Request Date' : 'Submission Date', w: 170 },
-    { key: 'remark',          label: 'Remarks',               w: 200 },
+    { key: 'remark',          label: 'Remarks',               w: 200, claimsOnly: true },
     { key: 'transactionType', label: 'Transaction Type',      w: 200 },
     { key: 'requestedFor',    label: 'Requested For',         w: 160 },
   ];

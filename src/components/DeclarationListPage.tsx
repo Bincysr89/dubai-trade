@@ -278,7 +278,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [mobileTypeOpen, setMobileTypeOpen] = useState(false);
 
-  // "Claim Requested Date" dropdown inside the Refund & Claims advance filters.
+  // "Date Type" dropdown inside the Refund & Claims advance filters.
   const [rcReqDateOpen, setRcReqDateOpen] = useState(false);
   const rcReqDateRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -429,7 +429,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
     vccVehicleModel: 'Vehicle Model', vccVehicleType: 'Vehicle Type',
     vccSpecStandard: 'Specification Standard Name', vccYearBuild: 'Vehicle Year Build',
     rcClaimType: 'Claim Type', rcClaimStatus: 'Claim Status', rcTimeInterval: 'Time Interval',
-    rcRequestedDate: 'Claim Requested Date', rcFromDate: 'From Date', rcToDate: 'To Date',
+    rcRequestedDate: 'Date Type', rcFromDate: 'From Date', rcToDate: 'To Date',
     rcClaimantType: 'Claimant Type', rcCode: 'Code', rcName: 'Name',
     rcSubclaimStatus: 'Subclaim Status', rcSubmissionMode: 'Submission Mode',
     ctCargoChannel: 'Cargo Channel (inbound)', ctCarrierReg: 'Carrier Reg No.(inbound)',
@@ -2344,14 +2344,14 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                     </div>
                   </div>
 
-                  {/* Claim Requested Date — dropdown driving which date the range below applies to */}
+                  {/* Date Type — drives which date the range below applies to */}
                   <div className="relative" ref={rcReqDateRef}>
                     <div
                       tabIndex={0}
                       className={`h-[56px] border rounded-[4px] flex items-center px-[12px] cursor-pointer transition-colors bg-white focus:outline-none ${rcReqDateOpen || filterFocused['rcRequestedDate'] ? 'border-[#1360d2]' : 'border-[#d5ddfb] hover:border-[#1360d2]'}`}
                       onClick={() => setRcReqDateOpen(o => !o)}
                     >
-                      <span style={floatLabel(true)}>Claim Requested Date</span>
+                      <span style={floatLabel(true)}>Date Type</span>
                       <span className="flex-1 text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>
                         {filterValues['rcRequestedDate'] || 'Claim Submission Date'}
                       </span>
