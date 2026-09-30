@@ -157,15 +157,17 @@ type Props = {
 type BadgeType = 'both' | 'aeo' | 'wlp';
 type DeclStatus = 'Cleared' | 'Submitted' | 'Payment Pending' | 'VAT Payment Pending' | 'Declined' | 'Cancelled' | 'Clearance Inspection' | 'Draft';
 
-const STATUS_STYLE: Record<DeclStatus, { bg: string; color: string; border: string }> = {
-  'Cleared':              { bg: '#e6f4ec', color: '#1b6c3a', border: '#a8d5b8' },
-  'Submitted':            { bg: '#e8f0ff', color: '#1360d2', border: '#b3caff' },
-  'Payment Pending':      { bg: 'rgba(255,169,26,0.16)', color: '#b45309', border: '#fcd7a0' },
-  'VAT Payment Pending':  { bg: 'rgba(255,169,26,0.16)', color: '#b45309', border: '#fcd7a0' },
-  'Declined':             { bg: '#fde8e8', color: '#c0392b', border: '#f5b8b8' },
-  'Cancelled':            { bg: '#f0f0f3', color: '#4a4f60', border: '#d0d3de' },
-  'Clearance Inspection': { bg: '#e6f4ec', color: '#1b6c3a', border: '#a8d5b8' },
-  'Draft':                { bg: '#e8f0ff', color: '#1360d2', border: '#b3caff' },
+/* Same tints as the Refund & Claims status chips, so one status reads the same
+   wherever it appears: a flat colour wash, no outline. */
+const STATUS_STYLE: Record<DeclStatus, { bg: string; color: string }> = {
+  'Cleared':              { bg: 'rgba(40,167,69,0.10)',   color: '#28a745' },
+  'Submitted':            { bg: 'rgba(19,96,210,0.10)',   color: '#1360d2' },
+  'Payment Pending':      { bg: 'rgba(255,169,26,0.16)',  color: '#b45309' },
+  'VAT Payment Pending':  { bg: 'rgba(255,169,26,0.16)',  color: '#b45309' },
+  'Declined':             { bg: 'rgba(220,53,69,0.10)',   color: '#dc3545' },
+  'Cancelled':            { bg: 'rgba(105,116,152,0.10)', color: '#697498' },
+  'Clearance Inspection': { bg: 'rgba(40,167,69,0.10)',   color: '#28a745' },
+  'Draft':                { bg: 'rgba(105,116,152,0.10)', color: '#697498' },
 };
 
 // Figma asset URLs for flyout icons (valid 7 days)
@@ -391,9 +393,9 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
   const [ackDeclineRowIndex, setAckDeclineRowIndex] = useState<number | null>(null);
   const [declStatusFilter, setDeclStatusFilter] = useState<DeclStatus | null>(null);
   const DECL_STATUS_COLOR: Record<DeclStatus, string> = {
-    'Cleared': '#1b6c3a', 'Submitted': '#1360d2', 'Payment Pending': '#b45309',
+    'Cleared': '#28a745', 'Submitted': '#1360d2', 'Payment Pending': '#b45309',
     'VAT Payment Pending': '#b45309', 'Declined': '#dc3545',
-    'Cancelled': '#697498', 'Clearance Inspection': '#1360d2', 'Draft': '#1360d2',
+    'Cancelled': '#697498', 'Clearance Inspection': '#28a745', 'Draft': '#697498',
   };
   /* The leading visible column and the rows shown for the current Drafts/status selection. */
   const declFirstCol = DECL_COLUMNS.find(c => declVisibleCols.includes(c.label))?.label;
@@ -3161,8 +3163,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                       }}>
                         <div className="flex items-center gap-[6px]">
                           <span
-                            className="text-[16px] font-medium px-[10px] py-[4px] rounded-[4px] whitespace-nowrap"
-                            style={{ background: st.bg, color: st.color, border: `1px solid ${st.border}` }}
+                            className="text-[16px] whitespace-nowrap inline-flex items-center justify-center"
+                            style={{ background: st.bg, color: st.color, padding: '4px 12px', borderRadius: 4, lineHeight: '20px', fontWeight: 500 }}
                           >
                             {decl.status}
                           </span>
