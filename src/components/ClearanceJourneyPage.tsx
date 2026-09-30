@@ -218,9 +218,14 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
   const [invoiceTab, setInvoiceTab] = useState<'upload' | 'manual'>('upload');
   const [dragging, setDragging] = useState(false);
   const [addLineItem, setAddLineItem] = useState(false);
+  const [declType, setDeclType] = useState('Declaration Type');
   /* Each screen keeps the title its design carries, rather than "Integrated Clearance"
      everywhere. The declaration name stands in for the type chosen on the first step. */
-  const declarationName = 'New - Import to local from ROW';
+  /* "101-Import to local from ROW" reads as "New - Import to local from ROW" once the
+     numeric prefix is dropped; before a type is picked it falls back to the default. */
+  const declarationName = `New - ${(declType && declType !== 'Declaration Type'
+    ? declType.replace(/^\d+\s*-\s*/, '')
+    : 'Import to local from ROW')}`;
   const pageTitle =
     addLineItem ? (hsSearchOpen ? 'Search HS Code' : 'Add Line Item')
     : step === 'start' ? 'Integrated Clearance'
@@ -252,7 +257,7 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
         <div className="px-4 md:px-10 pb-[24px]">
           <h1 className="text-[30px] text-[#0e1b3d] mb-[16px]" style={{ fontWeight: 700 }}>{pageTitle}</h1>
 
-          {step === 'start' && <StartStep onProceed={() => setStep('carrier')} defaults={defaults} />}
+          {step === 'start' && <StartStep onProceed={() => setStep('carrier')} defaults={defaults} onDeclTypeChange={setDeclType} />}
           {step === 'carrier' && (
             <CarrierStep
               onImporterSearch={() => setCodeLookup('importer')}
@@ -482,7 +487,10 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
 }
 
 /* ── Step 1: Start clearance ── */
-function StartStep({ onProceed, defaults }: { onProceed: () => void; defaults?: { cargoChannel?: string; regimeType?: string } }) {
+function StartStep({ onProceed, defaults, onDeclTypeChange }: {
+  onProceed: () => void; defaults?: { cargoChannel?: string; regimeType?: string };
+  onDeclTypeChange?: (t: string) => void;
+}) {
   /* Field set per Figma 2650:42905 — DO Number is the only optional one. */
   const [regime, setRegime] = useState(defaults?.regimeType ?? 'Import');
   const [declType, setDeclType] = useState('Declaration Type');
@@ -495,7 +503,7 @@ function StartStep({ onProceed, defaults }: { onProceed: () => void; defaults?: 
         <p className="text-[16px] text-[#0e1b3d] mb-[16px]" style={{ fontWeight: 500 }}>Enter the Details to Start Clearance Process</p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-[16px] items-center">
           <Field label="Regime Type" value={regime} onChange={setRegime} options={['Import', 'Export']} required select />
-          <Field label="Declaration Type" value={declType} onChange={setDeclType} options={['Declaration Type', '101-Import to local from ROW', '102-Import to local from FZ', '103-Import for re-export']} required select />
+          <Field label="Declaration Type" value={declType} onChange={(v) => { setDeclType(v); onDeclTypeChange?.(v); }} options={['Declaration Type', '101-Import to local from ROW', '102-Import to local from FZ', '103-Import for re-export']} required select />
           <Field label="Cargo Channel" value={channel} onChange={setChannel} options={['Sea', 'Air']} required select />
           <Field label="DO Number" value={doNumber} onChange={setDoNumber} placeholder="DO Number" />
           <Field label="Client Doc. Ref. Number" value={ref} onChange={setRef} required />

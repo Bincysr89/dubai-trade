@@ -155,16 +155,17 @@ type Props = {
 
 
 type BadgeType = 'both' | 'aeo' | 'wlp';
-type DeclStatus = 'Completed' | 'Submitted' | 'Payment Pending' | 'VAT Payment Pending' | 'Declined' | 'Cancelled' | 'Clearance Inspection';
+type DeclStatus = 'Cleared' | 'Submitted' | 'Payment Pending' | 'VAT Payment Pending' | 'Declined' | 'Cancelled' | 'Clearance Inspection' | 'Draft';
 
 const STATUS_STYLE: Record<DeclStatus, { bg: string; color: string; border: string }> = {
-  'Completed':              { bg: '#e6f4ec', color: '#1b6c3a', border: '#a8d5b8' },
+  'Cleared':              { bg: '#e6f4ec', color: '#1b6c3a', border: '#a8d5b8' },
   'Submitted':            { bg: '#e8f0ff', color: '#1360d2', border: '#b3caff' },
   'Payment Pending':      { bg: 'rgba(255,169,26,0.16)', color: '#b45309', border: '#fcd7a0' },
   'VAT Payment Pending':  { bg: 'rgba(255,169,26,0.16)', color: '#b45309', border: '#fcd7a0' },
   'Declined':             { bg: '#fde8e8', color: '#c0392b', border: '#f5b8b8' },
   'Cancelled':            { bg: '#f0f0f3', color: '#4a4f60', border: '#d0d3de' },
   'Clearance Inspection': { bg: '#e6f4ec', color: '#1b6c3a', border: '#a8d5b8' },
+  'Draft':                { bg: '#e8f0ff', color: '#1360d2', border: '#b3caff' },
 };
 
 // Figma asset URLs for flyout icons (valid 7 days)
@@ -182,13 +183,20 @@ const FLYOUT_ITEMS = [
   { icon: flyoutIcons.eye,     label: 'View Declaration' },
   { icon: flyoutIcons.edit,    label: 'Amend' },
   { icon: flyoutIcons.cancel,  label: 'Cancel' },
-  { icon: flyoutIcons.payment, label: 'E-Payment' },
-  { icon: flyoutIcons.payment, label: 'VCC Requests' },
+  { icon: flyoutIcons.payment, label: 'E-Payments' },
   { icon: flyoutIcons.history, label: 'Declaration History' },
   { icon: flyoutIcons.history, label: "Declarant's Suspension Response" },
   { icon: flyoutIcons.history, label: 'Suspension History' },
   { icon: flyoutIcons.print,   label: 'Print Declaration' },
   { icon: flyoutIcons.article, label: 'Apply for Permit' },
+];
+
+/* Drafts rows offer a different set of actions — Figma 2650:38914. */
+const DRAFT_FLYOUT_ITEMS = [
+  { icon: flyoutIcons.article, label: 'Proceed To DM' },
+  { icon: flyoutIcons.article, label: 'Proceed to Declaration' },
+  { icon: flyoutIcons.print,   label: 'Print' },
+  { icon: flyoutIcons.payment, label: 'Share Via Email' },
 ];
 
 const DECLARATIONS: {
@@ -198,7 +206,7 @@ const DECLARATIONS: {
   doNo: string; permit: boolean; broker: string; createdBy: string;
   statusDate: string; status: DeclStatus; showInfo?: boolean;
 }[] = [
-  { no:'1012132132', badge:'both', type:'Export from Local',                               date:'05-Dec-24', owner:'code + name', channel:'Sea', reqNo:'12345788', reqType:'New', clientRef:'JOB213354578',   carrierReg:'JOB213354578',   mawb:'MAWB/MBOL', hawb:'HAWB/HBOL', doNo:'NIL',       permit:true,  broker:'code + name. S', createdBy:'Username', statusDate:'08-Dec-24', status:'Completed' },
+  { no:'1012132132', badge:'both', type:'Export from Local',                               date:'05-Dec-24', owner:'code + name', channel:'Sea', reqNo:'12345788', reqType:'New', clientRef:'JOB213354578',   carrierReg:'JOB213354578',   mawb:'MAWB/MBOL', hawb:'HAWB/HBOL', doNo:'NIL',       permit:true,  broker:'code + name. S', createdBy:'Username', statusDate:'08-Dec-24', status:'Cleared' },
   { no:'1012132132', badge:'aeo',  type:'Export Statistical',                               date:'05-Dec-24', owner:'code + name', channel:'Sea', reqNo:'12345788', reqType:'New', clientRef:'PGH658916794',   carrierReg:'PGH658916794',   mawb:'MAWB/MBOL', hawb:'HAWB/HBOL', doNo:'DO-123456', permit:true,  broker:'code + name. S', createdBy:'Username', statusDate:'08-Dec-24', status:'Submitted' },
   { no:'1012132132', badge:'wlp',  type:'Re Export to ROW (after import for re export)',    date:'05-Dec-24', owner:'code + name', channel:'Sea', reqNo:'12345788', reqType:'New', clientRef:'GJF4589789487',  carrierReg:'GJF4589789487',  mawb:'MAWB/MBOL', hawb:'HAWB/HBOL', doNo:'DO-123456', permit:false, broker:'code + name. S', createdBy:'Username', statusDate:'08-Dec-24', status:'Submitted' },
   { no:'1012132132', badge:'both', type:'Re Export to ROW (after import for re export)',    date:'05-Dec-24', owner:'code + name', channel:'Sea', reqNo:'12345788', reqType:'New', clientRef:'VNF215648748',   carrierReg:'VNF215648748',   mawb:'MAWB/MBOL', hawb:'HAWB/HBOL', doNo:'DO-123456', permit:true,  broker:'code + name. S', createdBy:'Username', statusDate:'08-Dec-24', status:'Payment Pending' },
@@ -221,29 +229,50 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
   const [showDrafts, setShowDrafts] = useState(false);
   const [showColModal, setShowColModal] = useState(false);
 
-  const DECL_COL_DEFS: ColDef[] = useMemo(() => [
-    { key: 'Declaration No.',    label: 'Declaration No.'    },
-    { key: 'Declaration Type',   label: 'Declaration Type'   },
-    { key: 'Submitted Date',     label: 'Submitted Date'     },
-    { key: 'Declaration owner',  label: 'Declaration owner'  },
-    { key: 'Cargo Channel',      label: 'Cargo Channel'      },
-    { key: 'Request No.',        label: 'Request No.'        },
-    { key: 'Request Type',       label: 'Request Type'       },
-    { key: 'Client Ref. No.',    label: 'Client Ref. No.'    },
-    { key: 'Carrier Reg No.',    label: 'Carrier Reg No.'    },
-    { key: 'MAWB/MBOL',         label: 'MAWB/MBOL'         },
-    { key: 'HAWB/HBOL',         label: 'HAWB/HBOL'         },
-    { key: 'DO No.',             label: 'DO No.'             },
-    { key: 'Permit',             label: 'Permit'             },
-    { key: 'Broker',             label: 'Broker'             },
-    { key: 'Created by',         label: 'Created by'         },
-    { key: 'Status Date',        label: 'Status Date'        },
-  ], []);
+  /* Column widths are shared by the header and the body cells — one source of truth so
+     the two stay in step when the Drafts toggle swaps the column set (Figma 2650:38914). */
+  const DECL_COLUMNS: { label: string; w: number }[] = useMemo(() => (
+    showDrafts
+      ? [
+        { label: 'Declaration Type',   w: 210 },
+        { label: 'Declaration owner',  w: 120 },
+        { label: 'Cargo Channel',      w: 100 },
+        { label: 'Client Ref. No.',    w: 130 },
+        { label: 'MAWB/MBOL',          w: 105 },
+        { label: 'HAWB/HBOL',          w: 100 },
+        { label: 'Carrier Reg No.',    w: 130 },
+        { label: 'DO No.',             w: 95  },
+        { label: 'Permit',             w: 72  },
+        { label: 'Broker',             w: 110 },
+      ]
+      : [
+        { label: 'Declaration No.',    w: 148 },
+        { label: 'Declaration Type',   w: 210 },
+        { label: 'Submitted Date',     w: 110 },
+        { label: 'Declaration owner',  w: 120 },
+        { label: 'Cargo Channel',      w: 100 },
+        { label: 'Request No.',        w: 105 },
+        { label: 'Request Type',       w: 95  },
+        { label: 'Client Ref. No.',    w: 130 },
+        { label: 'Carrier Reg No.',    w: 130 },
+        { label: 'MAWB/MBOL',          w: 105 },
+        { label: 'HAWB/HBOL',          w: 100 },
+        { label: 'DO No.',             w: 95  },
+        { label: 'Permit',             w: 72  },
+        { label: 'Broker',             w: 110 },
+        { label: 'Created by',         w: 100 },
+        { label: 'Status Date',        w: 100 },
+      ]
+  ), [showDrafts]);
+  const DECL_COL_DEFS: ColDef[] = useMemo(
+    () => DECL_COLUMNS.map(c => ({ key: c.label, label: c.label })), [DECL_COLUMNS]);
   const DECL_LOCKED_COLS: ColDef[] = useMemo(() => [
-    { key: 'Declaration Status', label: 'Declaration Status' },
+    { key: showDrafts ? 'Status' : 'Declaration Status', label: showDrafts ? 'Status' : 'Declaration Status' },
     { key: 'Actions',            label: 'Actions'            },
-  ], []);
+  ], [showDrafts]);
   const [declVisibleCols, setDeclVisibleCols] = useState<string[]>(() => DECL_COL_DEFS.map(c => c.key));
+  // Swapping the Drafts toggle swaps the column set — show all of the new set.
+  useEffect(() => { setDeclVisibleCols(DECL_COL_DEFS.map(c => c.key)); setDeclStatusFilter(null); }, [showDrafts]);
   const [searchType, setSearchType] = useState('Declaration');
   const [searchTypeOpen, setSearchTypeOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
@@ -268,6 +297,18 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
   }, [toolbarStatusOpen]);
+
+  /* Reports menu — Figma 6072:133176 places it between Need Help and Start Journey. */
+  const [reportsOpen, setReportsOpen] = useState(false);
+  const reportsRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!reportsOpen) return;
+    const onDoc = (e: MouseEvent) => {
+      if (reportsRef.current && !reportsRef.current.contains(e.target as Node)) setReportsOpen(false);
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [reportsOpen]);
 
   /* Below md the search bar collapses to an icon; tapping it opens this flyout. */
   const [appliedFilters, setAppliedFilters] = useState<string[]>([]);
@@ -362,10 +403,20 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
   const [ackDeclineRowIndex, setAckDeclineRowIndex] = useState<number | null>(null);
   const [declStatusFilter, setDeclStatusFilter] = useState<DeclStatus | null>(null);
   const DECL_STATUS_COLOR: Record<DeclStatus, string> = {
-    'Completed': '#1b6c3a', 'Submitted': '#1360d2', 'Payment Pending': '#b45309',
+    'Cleared': '#1b6c3a', 'Submitted': '#1360d2', 'Payment Pending': '#b45309',
     'VAT Payment Pending': '#b45309', 'Declined': '#dc3545',
-    'Cancelled': '#697498', 'Clearance Inspection': '#1360d2',
+    'Cancelled': '#697498', 'Clearance Inspection': '#1360d2', 'Draft': '#1360d2',
   };
+  /* The leading visible column and the rows shown for the current Drafts/status selection. */
+  const declFirstCol = DECL_COLUMNS.find(c => declVisibleCols.includes(c.label))?.label;
+  const declRows = useMemo(() => {
+    const base: typeof DECLARATIONS = showDrafts
+      ? DECLARATIONS.map(d => ({ ...d, status: 'Draft' as DeclStatus, showInfo: false }))
+      : DECLARATIONS;
+    return declStatusFilter ? base.filter(d => d.status === declStatusFilter) : base;
+  }, [showDrafts, declStatusFilter]);
+  const declTableMinWidth =
+    DECL_COLUMNS.filter(c => declVisibleCols.includes(c.label)).reduce((t, c) => t + c.w, 0) + 226;
   const ackDeclarationNumbers = (() => {
     if (ackStep === 'acceptSuccess') return Array.from(ackSelected).map((i) => ACK_ROWS[i]?.declaration).filter(Boolean) as string[];
     if (ackStep === 'declineSuccess' && ackDeclineRowIndex !== null) return [ACK_ROWS[ackDeclineRowIndex]?.declaration].filter(Boolean) as string[];
@@ -409,7 +460,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
 
   // Status options per menu — defined here so it can reference `activeMenu`.
   const TOOLBAR_STATUS_OPTIONS: Record<typeof activeMenu, string[]> = {
-    'Declaration':       ['Completed', 'Submitted', 'Payment Pending', 'VAT Payment Pending', 'Declined', 'Cancelled', 'Clearance Inspection'],
+    'Declaration':       ['Cleared', 'Submitted', 'Payment Pending', 'VAT Payment Pending', 'Declined', 'Cancelled', 'Clearance Inspection'],
     'Acknowledgement':   ['Accepted', 'Pending', 'Declined'],
     'VCC':               ['Submitted', 'Payment Pending', 'Payment Failed', 'Under Processing', 'Completed'],
     'Refund & Claims':   ['Submitted', 'Registered', 'Under Processing', 'Rejected', 'Completed'],
@@ -475,7 +526,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
       ? ['Request Number']
       : activeMenu === 'Cargo Transfer'
       ? ['Cargo Transfer No.', 'Request Number', 'Client Reference Number', 'Container Number', 'MAWB/MBOL']
-      : ['Declaration', 'Request No.', 'Client Ref.', 'MAWB/MBOL'];
+      : ['Declaration', 'Client Ref Number', 'Container Number', 'HAWB/HBOL', 'MAWB/MBOL', 'Request Number', 'Vehicle Chassis Number'];
   const statusDropdownLabel = isEPayView
     ? 'Payment Status'
     : activeMenu === 'Refund & Claims' || activeMenu === 'Claim Time Validity Extension'
@@ -1763,6 +1814,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                     ? `Enter ${searchType.toLowerCase()} and press Enter`
                     : activeMenu === 'E-Payment' && searchType === 'Request Number'
                     ? 'Enter request number'
+                    : activeMenu === 'Declaration' && activeTab !== 'epay'
+                    ? (searchType === 'Declaration' ? 'Declaration no.' : 'Enter number')
                     : `${searchType.toLowerCase()}`
                 }
                 className="flex-1 min-w-0 text-[16px] text-[#0e1b3d] focus:outline-none bg-transparent placeholder:text-[#697498]"
@@ -1887,6 +1940,42 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                 <circle cx="12" cy="12" r="9" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><circle cx="12" cy="17" r=".5" fill="currentColor" />
               </svg>
             </button>
+
+            {/* Reports menu — Declaration listing only */}
+            {activeMenu === 'Declaration' && activeTab !== 'epay' && (
+              <div className="relative flex-shrink-0" ref={reportsRef}>
+                <button
+                  type="button"
+                  onClick={() => setReportsOpen(o => !o)}
+                  aria-haspopup="menu"
+                  aria-expanded={reportsOpen}
+                  className="flex items-center gap-[8px] h-[48px] px-[16px] bg-white border border-[#d5ddfb] rounded-[4px] hover:bg-[#f7faff] transition-colors"
+                  style={{ fontFamily: "'Dubai', sans-serif" }}
+                >
+                  <span className="text-[16px] text-[#1360d2] font-medium whitespace-nowrap">Reports</span>
+                  <svg viewBox="0 0 24 24" className={`size-[22px] text-[#1360d2] transition-transform ${reportsOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </button>
+                {reportsOpen && (
+                  <div
+                    className="absolute z-[80] top-[52px] right-0 bg-white rounded-[8px] py-[4px] overflow-hidden"
+                    style={{ minWidth: 240, boxShadow: '0px 2px 16px 0px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}
+                    role="menu"
+                  >
+                    {['Declaration Report', 'Duty & Tax Report', 'Deposit Report', 'Suspension Report'].map(opt => (
+                      <button
+                        key={opt}
+                        role="menuitem"
+                        onClick={() => setReportsOpen(false)}
+                        className="block w-full text-left px-[14px] py-[8px] text-[16px] text-[#0e1b3d] hover:bg-[#e2ebf9] transition-colors"
+                        style={{ fontFamily: "'Dubai', sans-serif" }}
+                      >{opt}</button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* CT Release / Receipt button — Cargo Transfer only (not on epay sub-tab) */}
             {activeMenu === 'Cargo Transfer' && activeTab !== 'epay' && (
@@ -2846,15 +2935,17 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
           {/* Drafts toggle — all tabs except VCC, ePayments sidebar, and epay sub-tabs */}
           {activeMenu !== 'VCC' && activeMenu !== 'E-Payment' && activeTab !== 'epay' && (
             <div className="flex items-center gap-[8px] flex-shrink-0">
+              <span className="text-[16px] text-[#0e1b3d] font-medium whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>
+                Drafts
+              </span>
               <button
                 onClick={() => setShowDrafts(!showDrafts)}
+                aria-pressed={showDrafts}
+                aria-label="Show drafts"
                 className={`relative w-[48px] h-[28px] rounded-full transition-colors ${showDrafts ? 'bg-[#1360d2]' : 'bg-[#e2ebf9]'}`}
               >
                 <div className={`absolute top-[3px] size-[22px] rounded-full bg-white shadow transition-transform ${showDrafts ? 'translate-x-[22px]' : 'translate-x-[3px]'}`} />
               </button>
-              <span className="text-[16px] text-[#0e1b3d] font-medium whitespace-nowrap" style={{ fontFamily: "'Dubai', sans-serif" }}>
-                Drafts
-              </span>
             </div>
           )}
 
@@ -3008,7 +3099,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
             <div ref={declScrollRef} onScroll={declHandleScroll} className="overflow-x-auto">
             <table
               style={{
-                minWidth: 2100,
+                minWidth: declTableMinWidth,
                 borderCollapse: 'separate',
                 borderSpacing: '0 8px',
                 fontFamily: "'Dubai', sans-serif",
@@ -3018,24 +3109,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
               {/* ── HEADER ── */}
               <thead>
                 <tr>
-                  {([
-                    { label: 'Declaration No.',    w: 148 },
-                    { label: 'Declaration Type',   w: 210 },
-                    { label: 'Submitted Date',     w: 110 },
-                    { label: 'Declaration owner',  w: 120 },
-                    { label: 'Cargo Channel',      w: 100 },
-                    { label: 'Request No.',        w: 105 },
-                    { label: 'Request Type',       w: 95  },
-                    { label: 'Client Ref. No.',    w: 130 },
-                    { label: 'Carrier Reg No.',    w: 130 },
-                    { label: 'MAWB/MBOL',          w: 105 },
-                    { label: 'HAWB/HBOL',          w: 100 },
-                    { label: 'DO No.',             w: 95  },
-                    { label: 'Permit',             w: 72  },
-                    { label: 'Broker',             w: 110 },
-                    { label: 'Created by',         w: 100 },
-                    { label: 'Status Date',        w: 100 },
-                  ] as { label: string; w: number }[]).filter(col => declVisibleCols.includes(col.label)).map((col, idx) => (
+                  {DECL_COLUMNS.filter(col => declVisibleCols.includes(col.label)).map((col, idx) => (
                     <th
                       key={col.label}
                       style={{ width: col.w, minWidth: col.w, background: '#a6c2e9', padding: '10px 8px', textAlign: 'left', fontWeight: 500, borderRadius: idx === 0 ? '8px 0 0 0' : undefined, paddingLeft: idx === 0 ? 16 : 8 }}
@@ -3050,8 +3124,8 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                     boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 2,
                   }}>
                     <StatusFilterHeader
-                      label="Declaration Status"
-                      options={Object.keys(STATUS_STYLE)}
+                      label={showDrafts ? 'Status' : 'Declaration Status'}
+                      options={Object.keys(STATUS_STYLE).filter((k) => (k === 'Draft') === showDrafts)}
                       value={declStatusFilter}
                       onChange={(v) => setDeclStatusFilter(v as DeclStatus | null)}
                       colorMap={DECL_STATUS_COLOR}
@@ -3070,57 +3144,61 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
 
               {/* ── BODY ── */}
               <tbody>
-                {(declStatusFilter ? DECLARATIONS.filter((d) => d.status === declStatusFilter) : DECLARATIONS).map((decl, i) => {
+                {declRows.map((decl, i) => {
                   const st = STATUS_STYLE[decl.status];
-                  const cell = (content: React.ReactNode, w?: number, extra?: React.CSSProperties) => (
-                    <td style={{ background: '#fff', padding: '0 8px', height: 46, verticalAlign: 'middle', width: w, ...(extra || {}) }}>
-                      {content}
-                    </td>
+                  /* The leading visible column carries the row's left inset, whichever
+                     column that happens to be once Drafts/column config change the set. */
+                  const cell = (label: string, content: React.ReactNode, extra?: React.CSSProperties) => (
+                    declVisibleCols.includes(label) ? (
+                      <td key={label} style={{
+                        background: '#fff', height: 46, verticalAlign: 'middle',
+                        width: DECL_COLUMNS.find(c => c.label === label)?.w,
+                        padding: label === declFirstCol ? '0 8px 0 16px' : '0 8px',
+                        ...(extra || {}),
+                      }}>{content}</td>
+                    ) : null
                   );
                   const txt = (v: string) => (
                     <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{v}</span>
                   );
                   return (
                     <tr key={i}>
-                      {/* Declaration No. */}
-                      {declVisibleCols.includes('Declaration No.') && (
-                      <td style={{ background: '#fff', padding: '0 8px 0 16px', height: 46, verticalAlign: 'middle', width: 148 }}>
-                        <div className="flex items-center gap-[6px]">
-                          <div className="flex items-center gap-[3px] flex-shrink-0">
-                            {(decl.badge === 'both' || decl.badge === 'wlp') && (
-                              <img src={wlpLogoSrc} alt="WLP" style={{ height: 9 }} />
-                            )}
-                            {(decl.badge === 'both' || decl.badge === 'aeo') && (
-                              <img src={aeoLogoSrc} alt="AEO" style={{ height: 8 }} />
-                            )}
-                          </div>
-                          <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{decl.no}</span>
-                        </div>
-                      </td>
-                      )}
-                      {declVisibleCols.includes('Declaration Type')  && cell(txt(decl.type),       210)}
-                      {declVisibleCols.includes('Submitted Date')     && cell(txt(decl.date),        110)}
-                      {declVisibleCols.includes('Declaration owner')  && cell(txt(decl.owner),       120)}
-                      {declVisibleCols.includes('Cargo Channel')      && cell(txt(decl.channel),     100)}
-                      {declVisibleCols.includes('Request No.')        && cell(txt(decl.reqNo),       105)}
-                      {declVisibleCols.includes('Request Type')       && cell(txt(decl.reqType),     95)}
-                      {declVisibleCols.includes('Client Ref. No.')    && cell(txt(decl.clientRef),   130)}
-                      {declVisibleCols.includes('Carrier Reg No.')    && cell(txt(decl.carrierReg),  130)}
-                      {declVisibleCols.includes('MAWB/MBOL')         && cell(txt(decl.mawb),        105)}
-                      {declVisibleCols.includes('HAWB/HBOL')         && cell(txt(decl.hawb),        100)}
-                      {declVisibleCols.includes('DO No.')             && cell(txt(decl.doNo),        95)}
-                      {/* Permit */}
-                      {declVisibleCols.includes('Permit') && (
-                      <td style={{ background: '#fff', padding: '0 8px', height: 46, verticalAlign: 'middle', width: 72 }}>
-                        {decl.permit
-                          ? <span className="text-[16px] text-[#1360d2] cursor-pointer hover:underline">Yes</span>
-                          : <span className="text-[16px] text-[#0e1b3d]">No</span>
+                      {/* Rendered in DECL_COLUMNS order so header and body never drift apart. */}
+                      {DECL_COLUMNS.map(({ label }) => {
+                        switch (label) {
+                          case 'Declaration No.': return cell(label, (
+                            <div className="flex items-center gap-[6px]">
+                              <div className="flex items-center gap-[3px] flex-shrink-0">
+                                {(decl.badge === 'both' || decl.badge === 'wlp') && (
+                                  <img src={wlpLogoSrc} alt="WLP" style={{ height: 9 }} />
+                                )}
+                                {(decl.badge === 'both' || decl.badge === 'aeo') && (
+                                  <img src={aeoLogoSrc} alt="AEO" style={{ height: 8 }} />
+                                )}
+                              </div>
+                              <span className="text-[16px] text-[#0e1b3d] whitespace-nowrap">{decl.no}</span>
+                            </div>
+                          ));
+                          case 'Permit': return cell(label, decl.permit
+                            ? <span className="text-[16px] text-[#1360d2] cursor-pointer hover:underline">Yes</span>
+                            : <span className="text-[16px] text-[#0e1b3d]">No</span>);
+                          case 'Declaration Type':  return cell(label, txt(decl.type));
+                          case 'Submitted Date':    return cell(label, txt(decl.date));
+                          case 'Declaration owner': return cell(label, txt(decl.owner));
+                          case 'Cargo Channel':     return cell(label, txt(decl.channel));
+                          case 'Request No.':       return cell(label, txt(decl.reqNo));
+                          case 'Request Type':      return cell(label, txt(decl.reqType));
+                          case 'Client Ref. No.':   return cell(label, txt(decl.clientRef));
+                          case 'Carrier Reg No.':   return cell(label, txt(decl.carrierReg));
+                          case 'MAWB/MBOL':         return cell(label, txt(decl.mawb));
+                          case 'HAWB/HBOL':         return cell(label, txt(decl.hawb));
+                          case 'DO No.':            return cell(label, txt(decl.doNo));
+                          case 'Broker':            return cell(label, txt(decl.broker));
+                          case 'Created by':        return cell(label, txt(decl.createdBy));
+                          case 'Status Date':       return cell(label, txt(decl.statusDate));
+                          default: return null;
                         }
-                      </td>
-                      )}
-                      {declVisibleCols.includes('Broker')      && cell(txt(decl.broker),      110)}
-                      {declVisibleCols.includes('Created by')  && cell(txt(decl.createdBy),   100)}
-                      {declVisibleCols.includes('Status Date') && cell(txt(decl.statusDate),  100)}
+                      })}
 
                       {/* STICKY: Declaration Status */}
                       <td style={{
@@ -3176,7 +3254,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                                   border: '1px solid #f0f0f5',
                                 }}
                               >
-                                {FLYOUT_ITEMS.map((item) => (
+                                {(showDrafts ? DRAFT_FLYOUT_ITEMS : FLYOUT_ITEMS).map((item) => (
                                   <button
                                     key={item.label}
                                     className="flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left group hover:bg-[#1360d2] transition-colors"
