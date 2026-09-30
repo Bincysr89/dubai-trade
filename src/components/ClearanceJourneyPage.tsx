@@ -3,6 +3,10 @@ import PermitInformationFilingModal from './PermitInformationFilingModal';
 import DeclarationReviewPage from './declaration/DeclarationReviewPage';
 import DeclarationShipmentPage, { SHIPMENT_TABS, type ShipmentTab } from './declaration/DeclarationShipmentPage';
 import DeclarationInvoiceDetailsPage from './declaration/DeclarationInvoiceDetailsPage';
+import DeclarationDocumentUploadPage from './declaration/DeclarationDocumentUploadPage';
+import DeclarationPaymentPage from './declaration/DeclarationPaymentPage';
+import DeclarationSubmitPage from './declaration/DeclarationSubmitPage';
+import DeclarationSuccessPage from './declaration/DeclarationSuccessPage';
 import Header from './Header';
 import importBySeaSrc from '../assets/importbysea.svg';
 // @ts-ignore
@@ -23,7 +27,7 @@ type Props = {
   defaults?: { cargoChannel?: string; regimeType?: string };
 };
 
-type Step = 'start' | 'carrier' | 'invoice' | 'invoiceList' | 'documents' | 'review' | 'shipment' | 'invoiceDetails' | 'documentUpload';
+type Step = 'start' | 'carrier' | 'invoice' | 'invoiceList' | 'documents' | 'review' | 'shipment' | 'invoiceDetails' | 'documentUpload' | 'payment' | 'submit' | 'declarationSuccess';
 
 /* ── Journey stepper (Import by Sea → … → Cargo Waves), Integrated Clearance active ── */
 function JourneyStepper({ onClose }: { onClose: () => void }) {
@@ -220,6 +224,10 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
           {step === 'review' && <DeclarationReviewPage />}
           {step === 'shipment' && <DeclarationShipmentPage tab={shipmentTab} onTabChange={setShipmentTab} />}
           {step === 'invoiceDetails' && <DeclarationInvoiceDetailsPage />}
+          {step === 'documentUpload' && <DeclarationDocumentUploadPage />}
+          {step === 'payment' && <DeclarationPaymentPage />}
+          {step === 'submit' && <DeclarationSubmitPage />}
+          {step === 'declarationSuccess' && <DeclarationSuccessPage onContinueToOga={onApplyPermits} />}
           </>)}
         </div>
       </div>
@@ -243,11 +251,15 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
             else if (step === 'review') setStep('documents');
             else if (step === 'shipment') setStep('review');
             else if (step === 'invoiceDetails') setStep('shipment');
+            else if (step === 'documentUpload') setStep('invoiceDetails');
+            else if (step === 'payment') setStep('documentUpload');
+            else if (step === 'submit') setStep('payment');
+            else if (step === 'declarationSuccess') onClose();
             else onClose();
           }}
           className="h-[48px] px-[28px] rounded-[4px] border text-[16px] transition-colors"
           style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}
-        >Back</button>
+        >{step === 'declarationSuccess' ? 'Back To Listing' : 'Back'}</button>
 
         <div className="flex items-center gap-[12px]">
           {addLineItem && (<>
@@ -318,6 +330,34 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
               className="h-[48px] px-[32px] rounded-[4px] text-[16px] text-white hover:bg-[#0f4fb5] transition-colors"
               style={{ background: '#1360d2', fontWeight: 500 }}
             >Proceed</button>
+          )}
+          {!addLineItem && step === 'documentUpload' && (
+            <button
+              onClick={() => setStep('payment')}
+              className="h-[48px] px-[32px] rounded-[4px] text-[16px] text-white hover:bg-[#0f4fb5] transition-colors"
+              style={{ background: '#1360d2', fontWeight: 500 }}
+            >Proceed</button>
+          )}
+          {!addLineItem && step === 'payment' && (
+            <button
+              onClick={() => setStep('submit')}
+              className="h-[48px] px-[32px] rounded-[4px] text-[16px] text-white hover:bg-[#0f4fb5] transition-colors"
+              style={{ background: '#1360d2', fontWeight: 500 }}
+            >Proceed</button>
+          )}
+          {!addLineItem && step === 'submit' && (
+            <button
+              onClick={() => setStep('declarationSuccess')}
+              className="h-[48px] px-[36px] rounded-[4px] text-[16px] text-white hover:bg-[#0f4fb5] transition-colors"
+              style={{ background: '#1360d2', fontWeight: 500 }}
+            >Submit</button>
+          )}
+          {!addLineItem && step === 'declarationSuccess' && (
+            <button
+              onClick={onApplyPermits}
+              className="h-[48px] px-[32px] rounded-[4px] text-[16px] text-white hover:bg-[#0f4fb5] transition-colors"
+              style={{ background: '#1360d2', fontWeight: 500 }}
+            >Continue To OGA</button>
           )}
           {!addLineItem && step === 'documents' && (
             <>
