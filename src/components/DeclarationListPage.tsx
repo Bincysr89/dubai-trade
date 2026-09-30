@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import ManageColumnsModal, { ColDef } from './ManageColumnsModal';
 import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
 import Header from './Header';
+import ClaimantCodePickerModal from './ClaimantCodePickerModal';
 import VccTable, { type VccRow } from './VccTable';
 import VccListPopup from './VccListPopup';
 import VccRecheckSuccessModal from './VccRecheckSuccessModal';
@@ -270,6 +271,10 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
 
   /* Below md the search bar collapses to an icon; tapping it opens this flyout. */
   const [appliedFilters, setAppliedFilters] = useState<string[]>([]);
+  /* Claimant Type drives the Code field: it becomes Broker Code or Personal Customer Code,
+     each with a trailing search button opening its own lookup. */
+  const [rcClaimantTypeOpen, setRcClaimantTypeOpen] = useState(false);
+  const [claimantPicker, setClaimantPicker] = useState<'broker' | 'personal' | null>(null);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [mobileTypeOpen, setMobileTypeOpen] = useState(false);
 
@@ -502,6 +507,12 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
   const [openFlyout, setOpenFlyout] = useState<number | null>(null);
   const [filterFocused, setFilterFocused] = useState<Record<string, boolean>>({});
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
+
+  /* Claimant Type re-labels the Code field and picks which lookup its search button opens. */
+  const claimantType = filterValues['rcClaimantType'] || '';
+  const rcCodeLabel = claimantType === 'Broker' ? 'Broker Code'
+    : claimantType === 'Personal Customer' ? 'Personal Customer Code'
+    : 'Code';
   const flyoutRef = useRef<HTMLDivElement>(null);
   const {
     scrollRef: declScrollRef, atScrollStart: declAtScrollStart, atScrollEnd: declAtScrollEnd,
@@ -2029,6 +2040,15 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
           </div>
         )}
 
+        {claimantPicker && (
+          <ClaimantCodePickerModal
+            open
+            variant={claimantPicker}
+            onClose={() => setClaimantPicker(null)}
+            onSelect={(code, name) => setFilterValues(v => ({ ...v, rcCode: code, rcName: name }))}
+          />
+        )}
+
         {/* Advance Filters Panel */}
         {showFilters && (
           <div
@@ -2368,21 +2388,36 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                     onChange={v => setFilterValues(prev => ({ ...prev, rcToDate: v }))}
                   />
 
-                  {/* Claimant Type — dropdown */}
+                  {/* Claimant Type — dropdown; picking one re-labels the Code field below */}
                   <div className="relative">
                     <div
                       tabIndex={0}
-                      className={`h-[56px] border rounded-[4px] flex items-center px-[12px] cursor-pointer transition-colors bg-white focus:outline-none ${filterFocused['rcClaimantType'] ? 'border-[#1360d2]' : 'border-[#d5ddfb] hover:border-[#1360d2]'}`}
-                      onClick={() => focusField('rcClaimantType')}
-                      onBlur={() => blurField('rcClaimantType')}
+                      className={`h-[56px] border rounded-[4px] flex items-center px-[12px] cursor-pointer transition-colors bg-white focus:outline-none ${rcClaimantTypeOpen || filterFocused['rcClaimantType'] ? 'border-[#1360d2]' : 'border-[#d5ddfb] hover:border-[#1360d2]'}`}
+                      onClick={() => setRcClaimantTypeOpen(o => !o)}
                     >
-                      <span style={floatLabel(isFloated('rcClaimantType'))}>Claimant Type</span>
-                      <span className="flex-1 text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{filterValues['rcClaimantType'] || ''}</span>
-                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
+                      <span style={floatLabel(isFloated('rcClaimantType') || !!claimantType)}>Claimant Type</span>
+                      <span className="flex-1 text-[16px] text-[#0e1b3d]" style={{ fontFamily: "'Dubai', sans-serif" }}>{claimantType}</span>
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#697498" strokeWidth="2" style={{ flexShrink: 0, transform: rcClaimantTypeOpen ? 'rotate(180deg)' : undefined }}><path d="M6 9l6 6 6-6" /></svg>
                     </div>
+                    {rcClaimantTypeOpen && (
+                      <div className="absolute z-[90] top-[60px] left-0 right-0 bg-white rounded-[8px] py-[4px] overflow-hidden" style={{ boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
+                        {['Broker', 'Personal Customer'].map(opt => (
+                          <button
+                            key={opt}
+                            onClick={() => {
+                              // Switching claimant type invalidates any code picked for the other one.
+                              setFilterValues(v => ({ ...v, rcClaimantType: opt, rcCode: '', rcName: '' }));
+                              setRcClaimantTypeOpen(false);
+                            }}
+                            className="block w-full text-left px-[14px] py-[10px] text-[16px] hover:bg-[#e2ebf9] transition-colors"
+                            style={{ color: opt === claimantType ? '#1360d2' : '#0e1b3d', fontFamily: "'Dubai', sans-serif", fontWeight: opt === claimantType ? 500 : 400 }}
+                          >{opt}</button>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
-                  {/* Code — text */}
+                  {/* Code — relabelled per claimant type, with a lookup once one is chosen */}
                   <div className="relative">
                     <input
                       type="text"
@@ -2390,10 +2425,21 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                       onChange={e => setFilterValues(v => ({ ...v, rcCode: e.target.value }))}
                       onFocus={() => focusField('rcCode')}
                       onBlur={() => blurField('rcCode')}
-                      className={`h-[56px] w-full border rounded-[4px] px-[12px] text-[16px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${filterFocused['rcCode'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
+                      className={`h-[56px] w-full border rounded-[4px] text-[16px] text-[#0e1b3d] focus:outline-none transition-colors bg-white ${claimantType ? 'pl-[12px] pr-[52px]' : 'px-[12px]'} ${filterFocused['rcCode'] ? 'border-[#1360d2]' : 'border-[#d5ddfb]'}`}
                       style={{ fontFamily: "'Dubai', sans-serif" }}
                     />
-                    <span style={floatLabel(isFloated('rcCode'))}>Code</span>
+                    <span style={floatLabel(isFloated('rcCode'))}>{rcCodeLabel}</span>
+                    {claimantType && (
+                      <button
+                        type="button"
+                        aria-label={`Search ${rcCodeLabel}`}
+                        onClick={() => setClaimantPicker(claimantType === 'Broker' ? 'broker' : 'personal')}
+                        className="absolute right-[5px] top-1/2 -translate-y-1/2 inline-flex items-center justify-center rounded-[6px] transition-opacity hover:opacity-90"
+                        style={{ width: 38, height: 38, background: '#1360d2' }}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path fillRule="evenodd" clipRule="evenodd" d="M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z" fill="#ffffff" /></svg>
+                      </button>
+                    )}
                   </div>
 
                   {/* Name — text */}
@@ -2739,7 +2785,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                 style={{ background: '#cfe0f7', fontFamily: "'Dubai', sans-serif" }}
                 title={filterValues[k]}
               >
-                {FILTER_LABELS[k] ?? k}
+                {k === 'rcCode' ? rcCodeLabel : (FILTER_LABELS[k] ?? k)}
               </span>
             ))}
             <button
