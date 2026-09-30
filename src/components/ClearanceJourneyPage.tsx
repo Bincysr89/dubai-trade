@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import PermitInformationFilingModal from './PermitInformationFilingModal';
+import DeclarationReviewPage from './DeclarationReviewPage';
 import Header from './Header';
 import importBySeaSrc from '../assets/importbysea.svg';
 // @ts-ignore
@@ -19,7 +21,7 @@ type Props = {
   defaults?: { cargoChannel?: string; regimeType?: string };
 };
 
-type Step = 'start' | 'carrier' | 'invoice' | 'invoiceList' | 'documents';
+type Step = 'start' | 'carrier' | 'invoice' | 'invoiceList' | 'documents' | 'review';
 
 /* ── Journey stepper (Import by Sea → … → Cargo Waves), Integrated Clearance active ── */
 function JourneyStepper({ onClose }: { onClose: () => void }) {
@@ -167,6 +169,8 @@ const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ chi
 
 export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults }: Props) {
   const [step, setStep] = useState<Step>('start');
+  /* "Proceed To Review & Submit Declaration" holds on a filling popup, then opens Review. */
+  const [filingOpen, setFilingOpen] = useState(false);
   const [invoiceTab, setInvoiceTab] = useState<'upload' | 'manual'>('upload');
   const [dragging, setDragging] = useState(false);
   const [addLineItem, setAddLineItem] = useState(false);
@@ -210,9 +214,17 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
           )}
           {step === 'invoiceList' && <InvoiceListStep onAddLineItem={() => setAddLineItem(true)} />}
           {step === 'documents' && <DocumentsStep />}
+          {step === 'review' && <DeclarationReviewPage />}
           </>)}
         </div>
       </div>
+
+      {filingOpen && (
+        <PermitInformationFilingModal
+          onClose={() => setFilingOpen(false)}
+          onDone={() => { setFilingOpen(false); setStep('review'); }}
+        />
+      )}
 
       {/* Bottom bar */}
       <div className="flex-shrink-0 bg-white px-4 md:px-10 py-[16px] flex items-center justify-between gap-[12px]" style={{ boxShadow: '0px -2px 8px rgba(0,0,0,0.06)' }}>
@@ -223,6 +235,7 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
             else if (step === 'invoice') setStep('carrier');
             else if (step === 'invoiceList') setStep('invoice');
             else if (step === 'documents') setStep('invoiceList');
+            else if (step === 'review') setStep('documents');
             else onClose();
           }}
           className="h-[48px] px-[28px] rounded-[4px] border text-[16px] transition-colors"
@@ -248,9 +261,22 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
               style={{ background: '#1360d2', fontWeight: 500 }}
             >Proceed</button>
           )}
+          {!addLineItem && step === 'review' && (
+            <>
+              <button data-secondary-btn
+                className="h-[48px] px-[24px] rounded-[4px] border text-[16px] bg-white transition-colors"
+                style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}
+              >Save &amp; Exit</button>
+              <button
+                className="h-[48px] px-[32px] rounded-[4px] text-[16px] text-white hover:bg-[#0f4fb5] transition-colors"
+                style={{ background: '#1360d2', fontWeight: 500 }}
+              >Proceed</button>
+            </>
+          )}
           {!addLineItem && step === 'documents' && (
             <>
               <button data-secondary-btn
+                onClick={() => setFilingOpen(true)}
                 className="h-[48px] px-[24px] rounded-[4px] border text-[16px] bg-white transition-colors"
                 style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}
               >Proceed To Review &amp; Submit Declaration</button>
