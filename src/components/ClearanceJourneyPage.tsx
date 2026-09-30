@@ -10,6 +10,9 @@ import DeclarationSuccessPage from './declaration/DeclarationSuccessPage';
 import PartySearchModal, { type PartySearchKind } from './declaration/PartySearchModal';
 import OverseasCustomerSearchModal from './declaration/OverseasCustomerSearchModal';
 import AddOverseasCustomerModal from './declaration/AddOverseasCustomerModal';
+import CodeSearchModal, { type CodeSearchKind } from './declaration/CodeSearchModal';
+import AdvanceSearchModal from './declaration/AdvanceSearchModal';
+import CustomerRegistrationModal, { CustomerRegisteredModal } from './declaration/CustomerRegistrationModal';
 import Header from './Header';
 import importBySeaSrc from '../assets/importbysea.svg';
 // @ts-ignore
@@ -88,11 +91,13 @@ function JourneyStepper({ onClose }: { onClose: () => void }) {
 
 /* ── Field with a true floating label (inside when empty, floats up on focus/value) ── */
 function Field({
-  label, value, required, readOnly, select, search, onChange, placeholder, options,
+  label, value, required, readOnly, select, search, onChange, placeholder, options, onSearch, searchLabel,
 }: {
   label: string; value: string; required?: boolean; readOnly?: boolean;
   select?: boolean; search?: boolean; placeholder?: string; options?: string[];
   onChange?: (v: string) => void;
+  /** Makes the trailing magnifier a button that opens a lookup. */
+  onSearch?: () => void; searchLabel?: string;
 }) {
   const [focused, setFocused] = useState(false);
   const [open, setOpen] = useState(false);
@@ -165,7 +170,13 @@ function Field({
           <svg viewBox="0 0 24 24" className="size-[18px] flex-shrink-0 text-[#697498]" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M6 9l6 6 6-6" /></svg>
         )}
         {search && (
-          <svg viewBox="0 0 18 18" width="18" height="18" className="flex-shrink-0" fill="none"><path fillRule="evenodd" clipRule="evenodd" d="M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z" fill="#0E1B3D"/></svg>
+          onSearch ? (
+            <button type="button" onClick={onSearch} aria-label={searchLabel} className="flex-shrink-0 inline-flex items-center justify-center rounded-full hover:bg-[#f0f4ff] transition-colors" style={{ width: 32, height: 32 }}>
+              <svg viewBox="0 0 18 18" width="18" height="18" fill="none"><path fillRule="evenodd" clipRule="evenodd" d="M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z" fill="#0E1B3D"/></svg>
+            </button>
+          ) : (
+            <svg viewBox="0 0 18 18" width="18" height="18" className="flex-shrink-0" fill="none"><path fillRule="evenodd" clipRule="evenodd" d="M11.76 10.27L17.49 16L16 17.49L10.27 11.76C9.2 12.53 7.91 13 6.5 13C2.91 13 0 10.09 0 6.5C0 2.91 2.91 0 6.5 0C10.09 0 13 2.91 13 6.5C13 7.91 12.53 9.2 11.76 10.27ZM6.5 2C4.01 2 2 4.01 2 6.5C2 8.99 4.01 11 6.5 11C8.99 11 11 8.99 11 6.5C11 4.01 8.99 2 6.5 2Z" fill="#0E1B3D"/></svg>
+          )
         )}
       </div>
     </div>
@@ -185,6 +196,11 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
   const [partyLookup, setPartyLookup] = useState<PartySearchKind | null>(null);
   const [exporterLookupOpen, setExporterLookupOpen] = useState(false);
   const [addOverseasOpen, setAddOverseasOpen] = useState(false);
+  /* Importer / personal-customer chain on the Importer Code step. */
+  const [codeLookup, setCodeLookup] = useState<CodeSearchKind | null>(null);
+  const [advanceSearchOpen, setAdvanceSearchOpen] = useState(false);
+  const [customerRegOpen, setCustomerRegOpen] = useState(false);
+  const [customerRegistered, setCustomerRegistered] = useState(false);
   const [invoiceTab, setInvoiceTab] = useState<'upload' | 'manual'>('upload');
   const [dragging, setDragging] = useState(false);
   const [addLineItem, setAddLineItem] = useState(false);
@@ -214,7 +230,14 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
           <h1 className="text-[30px] text-[#0e1b3d] mb-[16px]" style={{ fontWeight: 700 }}>Integrated Clearance</h1>
 
           {step === 'start' && <StartStep onProceed={() => setStep('carrier')} defaults={defaults} />}
-          {step === 'carrier' && <CarrierStep />}
+          {step === 'carrier' && (
+            <CarrierStep
+              onImporterSearch={() => setCodeLookup('importer')}
+              onPersonalCustomerSearch={() => setCodeLookup('personalCustomer')}
+              onAdvanceSearch={() => setAdvanceSearchOpen(true)}
+              onAddPersonalCustomer={() => setCustomerRegOpen(true)}
+            />
+          )}
           {addLineItem ? (
             <AddLineItem />
           ) : (<>
@@ -243,6 +266,16 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
           </>)}
         </div>
       </div>
+
+      {codeLookup && <CodeSearchModal kind={codeLookup} onClose={() => setCodeLookup(null)} />}
+      {advanceSearchOpen && <AdvanceSearchModal onClose={() => setAdvanceSearchOpen(false)} />}
+      {customerRegOpen && (
+        <CustomerRegistrationModal
+          onClose={() => setCustomerRegOpen(false)}
+          onSubmitted={() => setCustomerRegistered(true)}
+        />
+      )}
+      {customerRegistered && <CustomerRegisteredModal onClose={() => setCustomerRegistered(false)} />}
 
       {partyLookup && <PartySearchModal kind={partyLookup} onClose={() => setPartyLookup(null)} />}
       {exporterLookupOpen && <OverseasCustomerSearchModal onClose={() => setExporterLookupOpen(false)} />}
@@ -496,7 +529,10 @@ function ReadOnlyForm({ channel = 'Sea', regime = 'Import', third = ['BOL Number
 }
 
 /* ── Step 2: Carrier + Exporter ── */
-function CarrierStep() {
+function CarrierStep({ onImporterSearch, onPersonalCustomerSearch, onAdvanceSearch, onAddPersonalCustomer }: {
+  onImporterSearch: () => void; onPersonalCustomerSearch: () => void;
+  onAdvanceSearch: () => void; onAddPersonalCustomer: () => void;
+}) {
   const [carrier, setCarrier] = useState('680523');
   const [mawb, setMawb] = useState('B87654');
   const [exporter, setExporter] = useState('AE1006');
@@ -519,20 +555,20 @@ function CarrierStep() {
         <div className="flex flex-wrap items-start gap-x-[28px] gap-y-[16px]">
           <div className="min-w-[240px] flex-1">
             <label className="text-[14px] text-[#0e1b3d] block mb-[6px]"><span className="text-[#ea2428]">*</span>Choose Exporter Code</label>
-            <Field label="" value={exporter} onChange={setExporter} search />
+            <Field label="" value={exporter} onChange={setExporter} search onSearch={onImporterSearch} searchLabel="Search Importer Code" />
             <div className="mt-[6px] px-[12px] py-[8px] rounded-[4px] text-[14px] text-[#0e1b3d]" style={{ background: '#e2ebf9' }}>Sony Gulf FZE</div>
           </div>
           <div className="flex items-center pt-[30px] text-[15px] text-[#5a6282]">Or</div>
           <div className="min-w-[240px] flex-1">
             <label className="text-[14px] text-[#0e1b3d] block mb-[6px]">Choose Personal Customer Code</label>
-            <Field label="" value={pcc} onChange={setPcc} search />
+            <Field label="" value={pcc} onChange={setPcc} search onSearch={onPersonalCustomerSearch} searchLabel="Search Personal Customer Code" />
             <div className="mt-[6px] px-[12px] py-[8px] rounded-[4px] text-[14px] text-[#0e1b3d]" style={{ background: '#e2ebf9' }}>Naresh</div>
           </div>
-          <div className="flex items-center gap-[6px] pt-[34px] text-[#1360d2] text-[15px] cursor-pointer">
+          <button type="button" onClick={onAdvanceSearch} className="flex items-center gap-[6px] pt-[34px] text-[#1360d2] text-[15px] hover:opacity-80 transition-opacity">
             <svg viewBox="0 0 24 24" className="size-[18px]" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M7 12h10M11 18h2" strokeLinecap="round" /></svg>
             Advance Search
-          </div>
-          <button data-secondary-btn className="mt-[28px] h-[44px] px-[18px] rounded-[4px] border text-[15px] transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Add New Personal Customer</button>
+          </button>
+          <button data-secondary-btn onClick={onAddPersonalCustomer} className="mt-[28px] h-[44px] px-[18px] rounded-[4px] border text-[15px] transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Add New Personal Customer</button>
         </div>
       </Card>
     </>
