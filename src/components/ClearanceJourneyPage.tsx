@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import PermitInformationFilingModal from './PermitInformationFilingModal';
-import DeclarationReviewPage from './DeclarationReviewPage';
+import DeclarationReviewPage from './declaration/DeclarationReviewPage';
+import DeclarationShipmentPage, { SHIPMENT_TABS, type ShipmentTab } from './declaration/DeclarationShipmentPage';
+import DeclarationInvoiceDetailsPage from './declaration/DeclarationInvoiceDetailsPage';
 import Header from './Header';
 import importBySeaSrc from '../assets/importbysea.svg';
 // @ts-ignore
@@ -21,7 +23,7 @@ type Props = {
   defaults?: { cargoChannel?: string; regimeType?: string };
 };
 
-type Step = 'start' | 'carrier' | 'invoice' | 'invoiceList' | 'documents' | 'review';
+type Step = 'start' | 'carrier' | 'invoice' | 'invoiceList' | 'documents' | 'review' | 'shipment' | 'invoiceDetails' | 'documentUpload';
 
 /* ── Journey stepper (Import by Sea → … → Cargo Waves), Integrated Clearance active ── */
 function JourneyStepper({ onClose }: { onClose: () => void }) {
@@ -171,6 +173,7 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
   const [step, setStep] = useState<Step>('start');
   /* "Proceed To Review & Submit Declaration" holds on a filling popup, then opens Review. */
   const [filingOpen, setFilingOpen] = useState(false);
+  const [shipmentTab, setShipmentTab] = useState<ShipmentTab>(SHIPMENT_TABS[0]);
   const [invoiceTab, setInvoiceTab] = useState<'upload' | 'manual'>('upload');
   const [dragging, setDragging] = useState(false);
   const [addLineItem, setAddLineItem] = useState(false);
@@ -215,6 +218,8 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
           {step === 'invoiceList' && <InvoiceListStep onAddLineItem={() => setAddLineItem(true)} />}
           {step === 'documents' && <DocumentsStep />}
           {step === 'review' && <DeclarationReviewPage />}
+          {step === 'shipment' && <DeclarationShipmentPage tab={shipmentTab} onTabChange={setShipmentTab} />}
+          {step === 'invoiceDetails' && <DeclarationInvoiceDetailsPage />}
           </>)}
         </div>
       </div>
@@ -236,6 +241,8 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
             else if (step === 'invoiceList') setStep('invoice');
             else if (step === 'documents') setStep('invoiceList');
             else if (step === 'review') setStep('documents');
+            else if (step === 'shipment') setStep('review');
+            else if (step === 'invoiceDetails') setStep('shipment');
             else onClose();
           }}
           className="h-[48px] px-[28px] rounded-[4px] border text-[16px] transition-colors"
@@ -268,10 +275,49 @@ export default function ClearanceJourneyPage({ onClose, onApplyPermits, defaults
                 style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}
               >Save &amp; Exit</button>
               <button
+                onClick={() => { setShipmentTab(SHIPMENT_TABS[0]); setStep('shipment'); }}
                 className="h-[48px] px-[32px] rounded-[4px] text-[16px] text-white hover:bg-[#0f4fb5] transition-colors"
                 style={{ background: '#1360d2', fontWeight: 500 }}
               >Proceed</button>
             </>
+          )}
+          {/* Shipment footer mirrors the design: the tab you are on decides which
+              "Proceed To …" buttons are offered. */}
+          {!addLineItem && step === 'shipment' && (
+            <>
+              {shipmentTab === 'General Shipping Details' && (
+                <button data-secondary-btn
+                  className="h-[48px] px-[24px] rounded-[4px] border text-[16px] bg-white transition-colors"
+                  style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}
+                >Save &amp; Exit</button>
+              )}
+              {shipmentTab === 'General Shipping Details' && (
+                <button data-secondary-btn
+                  onClick={() => setShipmentTab('Package Details')}
+                  className="h-[48px] px-[24px] rounded-[4px] border text-[16px] bg-white transition-colors"
+                  style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}
+                >Proceed To Package Details</button>
+              )}
+              {shipmentTab === 'Package Details' && (
+                <button data-secondary-btn
+                  onClick={() => setShipmentTab('Container Details')}
+                  className="h-[48px] px-[24px] rounded-[4px] border text-[16px] bg-white transition-colors"
+                  style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}
+                >Proceed To Container Details</button>
+              )}
+              <button
+                onClick={() => setStep('invoiceDetails')}
+                className="h-[48px] px-[24px] rounded-[4px] text-[16px] text-white hover:bg-[#0f4fb5] transition-colors"
+                style={{ background: '#1360d2', fontWeight: 500 }}
+              >Proceed To Invoice Details</button>
+            </>
+          )}
+          {!addLineItem && step === 'invoiceDetails' && (
+            <button
+              onClick={() => setStep('documentUpload')}
+              className="h-[48px] px-[32px] rounded-[4px] text-[16px] text-white hover:bg-[#0f4fb5] transition-colors"
+              style={{ background: '#1360d2', fontWeight: 500 }}
+            >Proceed</button>
           )}
           {!addLineItem && step === 'documents' && (
             <>
