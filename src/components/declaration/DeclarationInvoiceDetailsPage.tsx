@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { createPortal } from 'react-dom';
 import Pagination from '../Pagination';
+import RowFlyout, { STEPPER_INVOICE_MENU, STEPPER_LINE_ITEM_MENU, anchorFrom } from './RowFlyout';
 import { JourneyStepper, JourneyTable, JourneyTd, JourneyThead, SectionCard, font } from './DeclarationUI';
 
 const MoreIcon = () => (
@@ -11,44 +11,6 @@ const Chevron = ({ up }: { up?: boolean }) => (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1360d2" strokeWidth="2.2" strokeLinecap="round"
     style={{ transform: up ? 'rotate(180deg)' : undefined }}><path d="M6 9l6 6 6-6" /></svg>
 );
-
-/** Row flyout — rendered as a fixed portal so the table's scroll box can't clip it. */
-function Flyout({ items, at, onPick, onClose }: {
-  items: { label: string; icon: React.ReactNode }[];
-  at: { top: number; left: number };
-  onPick: (label: string) => void;
-  onClose: () => void;
-}) {
-  React.useEffect(() => {
-    const h = () => onClose();
-    document.addEventListener('mousedown', h);
-    window.addEventListener('scroll', h, true);
-    return () => { document.removeEventListener('mousedown', h); window.removeEventListener('scroll', h, true); };
-  }, [onClose]);
-  return createPortal(
-    <div
-      className="fixed z-[1000] bg-white rounded-[8px] py-[4px] overflow-hidden"
-      style={{ top: at.top, left: at.left, width: 200, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5', fontFamily: font }}
-      onMouseDown={(e) => e.stopPropagation()}
-    >
-      {items.map((it) => (
-        <button
-          key={it.label}
-          onClick={() => { onPick(it.label); onClose(); }}
-          className="group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
-        >
-          <span className="text-[#697498] group-hover:text-white flex-shrink-0">{it.icon}</span>
-          <span className="text-[15px] text-[#111838] group-hover:text-white">{it.label}</span>
-        </button>
-      ))}
-    </div>,
-    document.body,
-  );
-}
-
-const eyeIcon = <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z" /><circle cx="10" cy="10" r="2.5" /></svg>;
-const carIcon = <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M3 12h14v3H3zM5 12l1.5-4h7L15 12" /><circle cx="6.5" cy="15.5" r="1.2" /><circle cx="13.5" cy="15.5" r="1.2" /></svg>;
-const docIcon = <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M5 3h7l3 3v11H5z" /><path d="M12 3v3h3M7 10h6M7 13h4" /></svg>;
 
 const LINE_ITEM_COLUMNS = [
   'HS Code', 'Goods Description', 'Condition', 'Country of origin', 'Weight', 'Value of Goods',
@@ -118,9 +80,7 @@ export default function DeclarationInvoiceDetailsPage({ onViewDetails, onEditDet
 
   const openFlyout = (kind: 'invoice' | 'line' | 'vehicle') => (e: React.MouseEvent) => {
     e.stopPropagation();
-    const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const height = kind === 'line' ? 144 : 52;
-    setFlyout({ kind, at: { top: Math.min(r.bottom + 4, window.innerHeight - height - 8), left: Math.max(8, r.left - 170) } });
+    setFlyout({ kind, at: anchorFrom(e, kind === 'invoice' ? 1 : 3) });
   };
 
   return (
@@ -148,8 +108,9 @@ export default function DeclarationInvoiceDetailsPage({ onViewDetails, onEditDet
               <span className="text-[18px] text-[#0e1b3d]" style={{ fontWeight: 600 }}>Invoice {inv.id}</span>
             </div>
 
-            <div className="flex items-start justify-between gap-[20px] flex-wrap">
-              <div className="flex flex-wrap gap-x-[56px] gap-y-[16px]">
+            {/* The actions sit on the same line as the read-outs, never wrapped below them */}
+            <div className="flex items-center justify-between gap-[20px]">
+              <div className="flex flex-wrap gap-x-[56px] gap-y-[16px] flex-1 min-w-0">
                 {[['Invoice Number', inv.number], ['Invoice Date', inv.date], ['Terms of Delivery', inv.terms],
                   ['No. of Line Items', inv.lineItems], ['Invoice Value', inv.value]].map(([l, v]) => (
                   <div key={l} className="flex flex-col gap-[6px]">
@@ -255,19 +216,11 @@ export default function DeclarationInvoiceDetailsPage({ onViewDetails, onEditDet
       })}
 
       {flyout && (
-        <Flyout
+        <RowFlyout
           at={flyout.at}
           onClose={() => setFlyout(null)}
           onPick={(label) => { if (label === 'View Details') onViewDetails?.(); }}
-          items={
-            flyout.kind === 'line'
-              ? [
-                  { label: 'View Details', icon: eyeIcon },
-                  { label: 'Vehicle Details', icon: carIcon },
-                  { label: 'Permit Details', icon: docIcon },
-                ]
-              : [{ label: 'View Details', icon: eyeIcon }]
-          }
+          items={flyout.kind === 'line' ? STEPPER_LINE_ITEM_MENU : STEPPER_INVOICE_MENU}
         />
       )}
     </div>

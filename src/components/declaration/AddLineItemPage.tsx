@@ -190,7 +190,8 @@ export default function AddLineItemPage({
               </div>
             </>
           ) : (
-            <div className="flex flex-col items-center justify-center gap-[14px] rounded-[6px] py-[48px]"
+            // Compact drop zone, the same size as the create flow's uploader.
+            <div className="flex flex-col items-center justify-center gap-[14px] rounded-[6px] py-[36px] px-[16px] max-w-[420px]"
               style={{ border: '1.5px dashed #b5c8e8', background: '#fbfcfe' }}>
               <div className="size-[54px] rounded-full inline-flex items-center justify-center" style={{ background: '#eef1f6' }}>
                 <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#6d707e" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -198,9 +199,9 @@ export default function AddLineItemPage({
                   <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
                 </svg>
               </div>
-              <p className="text-[15px] text-[#6d707e]">Drag and drop or</p>
+              <p className="text-[16px] text-[#6d707e]">Drag and drop or</p>
               <button data-secondary-btn type="button" onClick={() => setVehicles(UPLOADED_VEHICLES)}
-                className="h-[42px] px-[22px] rounded-[4px] border text-[15px] bg-white transition-colors"
+                className="h-[42px] px-[22px] rounded-[4px] border text-[16px] bg-white transition-colors"
                 style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Upload File</button>
             </div>
           )}

@@ -15,6 +15,7 @@ import AdvanceSearchModal from './declaration/AdvanceSearchModal';
 import DocumentUploadSection from './declaration/DocumentUploadSection';
 import VesselSearchModal from './declaration/VesselSearchModal';
 import InvoiceEntryPanel, { InvoiceEntryButtons, type InvoiceEntryMode } from './declaration/InvoiceEntryPanel';
+import RowFlyout, { INVOICE_HEADER_MENU, LINE_ITEM_MENU, anchorFrom, type FlyoutAnchor } from './declaration/RowFlyout';
 import { JourneyTd, JourneyThead } from './declaration/DeclarationUI';
 import CustomerRegistrationModal, { CustomerRegisteredModal } from './declaration/CustomerRegistrationModal';
 import AddLineItemPage from './declaration/AddLineItemPage';
@@ -898,6 +899,12 @@ function DocumentsStep() {
 function InvoiceListStep({ onAddLineItem, amend = false }: { onAddLineItem: () => void; amend?: boolean }) {
   const [expanded, setExpanded] = useState(true);
   const [entryMode, setEntryMode] = useState<InvoiceEntryMode | null>(null);
+  /* Row menus — Figma 2650:62069, the same set in the create and amend flows. */
+  const [flyout, setFlyout] = useState<{ kind: 'invoice' | 'line'; at: FlyoutAnchor } | null>(null);
+  const openFlyout = (kind: 'invoice' | 'line') => (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setFlyout({ kind, at: anchorFrom(e, kind === 'invoice' ? 2 : 4) });
+  };
   const { scrollRef, atScrollStart, atScrollEnd, handleScroll, scrollToStart, scrollToEnd } = useTableBehaviors();
   const cols = ['HS Code', 'Goods Description', 'Condition', 'Country of origin', 'Weight', 'Value of Goods', 'Statistical Quantity - Unit', 'Supplementary Quantity/Units', 'Item Quantity', 'Action'];
   const row = ['AX1234567', 'Spare parts', 'New', 'India', '100 kg', 'AED 1500', '100 - Unit', '100', '100 - Unit'];
@@ -934,18 +941,20 @@ function InvoiceListStep({ onAddLineItem, amend = false }: { onAddLineItem: () =
           <button onClick={onAddLineItem} data-secondary-btn className="h-[38px] px-[16px] rounded-[4px] border text-[14px] bg-white transition-colors" style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>Add Line Item</button>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-y-[14px] gap-x-[16px] mb-[8px]">
-          {[['Invoice Number', 'TD 2403'], ['Invoice Date', '09/11/2024'], ['Terms of Delivery', 'Cost & Fright'], ['No. of Line Items', '1 Line Item'], ['Invoice Value', 'USD 6400.00']].map(([k, v]) => (
-            <div key={k}>
-              <p className="text-[13px] text-[#8f94ae]">{k}</p>
-              <p className="text-[15px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{v}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="flex items-center justify-end gap-[10px] mb-[10px]">
-          <button className="size-[30px] rounded flex items-center justify-center hover:bg-[#f0f4ff]"><svg viewBox="0 0 24 24" className="size-[16px] text-[#697498]" fill="currentColor"><circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" /></svg></button>
-          <button onClick={() => setExpanded((e) => !e)} className="size-[30px] rounded-full border border-[#d5ddfb] flex items-center justify-center"><svg viewBox="0 0 24 24" className="size-[16px] text-[#697498] transition-transform" style={{ transform: expanded ? 'none' : 'rotate(180deg)' }} fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M6 9l6 6 6-6" /></svg></button>
+        {/* The actions sit on the same line as the read-outs, never wrapped below them */}
+        <div className="flex items-center justify-between gap-[20px] mb-[10px]">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-y-[14px] gap-x-[16px] flex-1 min-w-0">
+            {[['Invoice Number', 'TD 2403'], ['Invoice Date', '09/11/2024'], ['Terms of Delivery', 'Cost & Fright'], ['No. of Line Items', '1 Line Item'], ['Invoice Value', 'USD 6400.00']].map(([k, v]) => (
+              <div key={k}>
+                <p className="text-[13px] text-[#8f94ae]">{k}</p>
+                <p className="text-[15px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>{v}</p>
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center gap-[10px] flex-shrink-0">
+            <button onClick={openFlyout('invoice')} aria-label="Invoice 1 actions" className="size-[30px] rounded flex items-center justify-center hover:bg-[#f0f4ff]"><svg viewBox="0 0 24 24" className="size-[16px] text-[#697498]" fill="currentColor"><circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" /></svg></button>
+            <button onClick={() => setExpanded((e) => !e)} aria-label={expanded ? 'Collapse invoice' : 'Expand invoice'} className="size-[30px] rounded-full border border-[#d5ddfb] flex items-center justify-center"><svg viewBox="0 0 24 24" className="size-[16px] text-[#697498] transition-transform" style={{ transform: expanded ? 'none' : 'rotate(180deg)' }} fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M6 9l6 6 6-6" /></svg></button>
+          </div>
         </div>
 
         {expanded && (
@@ -964,7 +973,7 @@ function InvoiceListStep({ onAddLineItem, amend = false }: { onAddLineItem: () =
                     <tr>
                       {row.map((v, i) => <JourneyTd key={i} first={i === 0}>{v}</JourneyTd>)}
                       <JourneyTd sticky width={80}>
-                        <button className="size-[28px] rounded flex items-center justify-center hover:bg-[#f0f4ff]"><svg viewBox="0 0 24 24" className="size-[16px] text-[#697498]" fill="currentColor"><circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" /></svg></button>
+                        <button onClick={openFlyout('line')} aria-label="Line item actions" className="size-[28px] rounded flex items-center justify-center hover:bg-[#f0f4ff]"><svg viewBox="0 0 24 24" className="size-[16px] text-[#697498]" fill="currentColor"><circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" /></svg></button>
                       </JourneyTd>
                     </tr>
                   </tbody>
@@ -974,6 +983,19 @@ function InvoiceListStep({ onAddLineItem, amend = false }: { onAddLineItem: () =
           </>
         )}
       </Card>
+
+      {flyout && (
+        <RowFlyout
+          at={flyout.at}
+          onClose={() => setFlyout(null)}
+          onPick={(label) => {
+            if (label !== 'Amend') return;
+            /* Amending the header reopens the invoice form; amending a line opens that page. */
+            if (flyout.kind === 'invoice') setEntryMode('manual'); else onAddLineItem();
+          }}
+          items={flyout.kind === 'invoice' ? INVOICE_HEADER_MENU : LINE_ITEM_MENU}
+        />
+      )}
     </>
   );
 }
