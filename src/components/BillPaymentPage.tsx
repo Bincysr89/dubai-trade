@@ -446,8 +446,27 @@ function ReceiptModal({ onClose, rows }: { onClose: () => void; rows: typeof PAY
             </div>
           </div>
 
-          <p className="text-[13px] text-[#697498] text-center italic" style={{ fontFamily: font }}>
-          </p>
+          {/* Footer buttons — the same centred pair as the account top-up receipt */}
+          <div className="flex items-center justify-center gap-3 pt-1">
+            <button
+              onClick={() => window.print()}
+              className="h-[44px] px-8 rounded-[4px] text-[16px] text-white flex items-center gap-2 hover:opacity-90 transition-opacity"
+              style={{ background: '#1360d2', fontFamily: font }}
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" strokeLinecap="round" />
+                <rect x="6" y="14" width="12" height="8" rx="1" />
+              </svg>
+              Print
+            </button>
+            <button
+              onClick={onClose}
+              data-secondary-btn className="h-[44px] px-8 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white transition-colors flex items-center gap-2"
+              style={{ fontFamily: font }}
+            >
+              ✕ Close
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -555,20 +574,25 @@ function TransactionModal({ row, rows, onClose }: { row?: typeof PAYMENT_ROWS[0]
             </table>
           </div>
 
-          <div className="flex justify-center gap-4 mt-6">
+          {/* Footer buttons — same pair as the account top-up receipt */}
+          <div className="flex items-center justify-center gap-3 mt-6">
             <button
               onClick={() => window.print()}
-              className="px-8 py-2 rounded text-[16px] text-white"
-              style={{ background: '#1360d2', fontFamily: font, minWidth: 140 }}
+              className="h-[44px] px-8 rounded-[4px] text-[16px] text-white flex items-center gap-2 hover:opacity-90 transition-opacity"
+              style={{ background: '#1360d2', fontFamily: font }}
             >
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" strokeLinecap="round" />
+                <rect x="6" y="14" width="12" height="8" rx="1" />
+              </svg>
               Print
             </button>
             <button
               onClick={onClose}
-              className="px-8 py-2 rounded text-[16px]"
-              style={{ border: '1px solid #1360d2', color: '#1360d2', background: 'white', fontFamily: font, minWidth: 140 }}
+              data-secondary-btn className="h-[44px] px-8 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white transition-colors flex items-center gap-2"
+              style={{ fontFamily: font }}
             >
-              Close
+              ✕ Close
             </button>
           </div>
         </div>
@@ -1365,28 +1389,39 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
           </div>
           <div className="flex-1 overflow-y-auto px-10 pb-10">
 
-            {/* Merged card — green tick + transaction details */}
+            {/* Green success banner card */}
+            <div className="bg-white rounded-[12px] border border-[#e0e8f5] flex flex-col items-center py-8 mb-5"
+              style={{ boxShadow: 'rgba(143, 155, 186, 0.16) 0px 5px 32px' }}>
+              <div className="flex items-center justify-center w-[72px] h-[72px] rounded-full mb-4"
+                style={{ background: '#34a853' }}>
+                <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="white" strokeWidth="2.5">
+                  <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <p className="text-[24px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 500 }}>
+                Invoice payment has been processed successfully.
+              </p>
+            </div>
+
+            {/* Payment Transaction Details card */}
             <div className="bg-white rounded-[12px] border border-[#e0e8f5] overflow-hidden mb-5"
               style={{ boxShadow: 'rgba(143, 155, 186, 0.16) 0px 5px 32px' }}>
-              {/* Green tick + success text */}
-              <div className="flex flex-col items-center py-8 border-b border-[#e0e8f5]">
-                <div className="flex items-center justify-center w-[72px] h-[72px] rounded-full mb-4"
-                  style={{ background: '#34a853' }}>
-                  <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="white" strokeWidth="2.5">
-                    <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+              <div className="flex items-center justify-between px-6 py-4 border-b border-[#e0e8f5]">
+                <span className="text-[20px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 500 }}>Payment Transaction Details</span>
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-[6px] text-[16px] font-semibold"
+                  style={{ background: 'rgba(40,167,69,0.12)', color: '#28a745', fontFamily: font }}>
+                  <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="#28a745" strokeWidth="2">
+                    <circle cx="10" cy="10" r="8" /><path d="M6 10l3 3 5-5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                </div>
-                <p className="text-[24px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 500 }}>
-                  Invoice payment has been processed successfully.
-                </p>
+                  Success
+                </span>
               </div>
-
-              {/* Detail grid */}
-              <div className="px-6 py-4">
-                <div className="grid grid-cols-5 gap-x-4 gap-y-6">
+              <div className="p-6">
+                <div className="grid grid-cols-4 gap-x-8 gap-y-6">
                   {[
                     ['Transaction No.',          '13133'],
                     ['Transaction Date',         '10-06-2026'],
+                    ['Status',                   'Success'],
                     ['DEG Transaction No.',      '590000237262582'],
                     ['DEG Transaction Date',     '10-06-2026 11:47:57'],
                     ['EPayment Transaction No.', '20021737'],
@@ -1396,17 +1431,13 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                   ].map(([label, value]) => (
                     <div key={label}>
                       <p className="text-[16px] text-[#697498] mb-[4px]" style={{ fontFamily: font }}>{label}</p>
-                      <p className="text-[16px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>{value}</p>
+                      <p className={`text-[16px] font-semibold ${label === 'Status' ? 'text-[#28a745]' : 'text-[#0e1b3d]'}`} style={{ fontFamily: font }}>{value}</p>
                     </div>
                   ))}
                 </div>
-
-                {/* Message row */}
                 <div className="mt-6 pt-5 border-t border-[#f0f4ff]">
                   <p className="text-[16px] text-[#697498] mb-[6px]" style={{ fontFamily: font }}>Message</p>
-                  <p className="text-[16px] text-[#1360d2] mb-1" style={{ fontFamily: font }}>
-                    Payment Status Remarks: Paid
-                  </p>
+                  <p className="text-[16px] text-[#1360d2] mb-1" style={{ fontFamily: font }}>Payment Status Remarks: Paid</p>
                   <p className="text-[16px] text-[#dc3545]" style={{ fontFamily: font }}>
                     Collection Status Remarks: Transaction has been processed successfully.
                   </p>
@@ -1414,28 +1445,71 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               </div>
             </div>
 
-            {/* Center-aligned action buttons */}
-            <div className="flex items-center justify-center gap-4">
+            {/* Payment Details card */}
+            <div className="bg-white rounded-[12px] border border-[#e0e8f5] overflow-hidden"
+              style={{ boxShadow: 'rgba(143, 155, 186, 0.16) 0px 5px 32px' }}>
+              <div className="px-6 py-4 border-b border-[#e0e8f5]">
+                <span className="text-[20px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 500 }}>Payment Details</span>
+              </div>
+              <div className="overflow-x-auto">
+                <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 0', fontFamily: font }}>
+                  <thead>
+                    <tr>
+                      {['Payment Type', 'Invoice No.', 'Amount', 'Receipt No.', 'Remarks', 'Status'].map((h, i) => (
+                        <th key={h} style={{ background: '#a6c2e9', padding: '12px 16px', textAlign: 'left', fontWeight: 500, paddingLeft: i === 0 ? 24 : 12 }}>
+                          <span className="text-[16px] font-medium text-[#051937] whitespace-nowrap">{h}</span>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {detailRows.map((r, i) => (
+                      <tr key={i} style={{ borderBottom: '1px solid #f0f4ff' }}>
+                        <td style={{ background: '#fff', padding: '14px 16px', paddingLeft: 24, verticalAlign: 'middle' }}>
+                          <span className="text-[16px] text-[#0e1b3d]">{r.type}</span>
+                        </td>
+                        <td style={{ background: '#fff', padding: '14px 12px', verticalAlign: 'middle' }}>
+                          <span className="text-[16px] text-[#0e1b3d]">{r.invoiceNo}</span>
+                        </td>
+                        <td style={{ background: '#fff', padding: '14px 12px', verticalAlign: 'middle' }}>
+                          <span className="text-[16px] text-[#0e1b3d] flex items-center gap-[3px]"><DirhamIcon size={14} color="#0e1b3d" />{r.amount}</span>
+                        </td>
+                        <td style={{ background: '#fff', padding: '14px 12px', verticalAlign: 'middle' }}>
+                          <span className="text-[16px] text-[#0e1b3d]">{r.receiptNo}</span>
+                        </td>
+                        <td style={{ background: '#fff', padding: '14px 12px', verticalAlign: 'middle', maxWidth: 260 }}>
+                          <span className="text-[16px] text-[#697498]">{r.remarks}</span>
+                        </td>
+                        <td style={{ background: '#fff', padding: '14px 12px', verticalAlign: 'middle' }}>
+                          <span className="inline-flex items-center px-[10px] py-[3px] rounded-[4px] text-[16px] font-semibold whitespace-nowrap"
+                            style={{ background: 'rgba(40,167,69,0.12)', color: '#28a745' }}>{r.status}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Actions sit under the Payment Details card, centred — Back to Listing first */}
+            <div className="flex items-center justify-center gap-4 mt-6">
               <button
-                onClick={() => setInvPayDetails(tx)}
-                className="h-[44px] px-8 rounded-[4px] text-[16px] text-white hover:opacity-90 transition-opacity"
-                style={{ background: '#1360d2', fontFamily: font }}
+                onClick={() => { setStep('list'); setSelectedRows(new Set()); }}
+                data-secondary-btn className="h-[44px] px-8 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white transition-colors flex items-center gap-2"
+                style={{ fontFamily: font }}
               >
-                View Payment Details
+                <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5l-5 5 5 5" strokeLinecap="round" /></svg>
+                Back to Listing
               </button>
               <button
                 onClick={() => setShowReceipt(true)}
-                className="h-[44px] px-8 rounded-[4px] text-[16px] text-white hover:opacity-90 transition-opacity"
+                className="h-[44px] px-6 rounded-[4px] text-[16px] text-white hover:opacity-90 transition-opacity flex items-center gap-2"
                 style={{ background: '#1360d2', fontFamily: font }}
               >
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
+                </svg>
                 View &amp; Print Receipt
-              </button>
-              <button data-secondary-btn
-                onClick={() => { setStep('list'); setSelectedRows(new Set()); }}
-                className="h-[44px] px-8 rounded-[4px] border text-[16px] bg-white transition-colors"
-                style={{ border: '1px solid #1360d2', color: '#1360d2', fontFamily: font }}
-              >
-                Back to Listing
               </button>
             </div>
           </div>
@@ -1685,7 +1759,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             <Breadcrumb onBack={onBack} extra="Payment Confirmation" />
             <h1 className="text-[28px] font-bold text-[#0e1b3d] mb-5" style={{ fontFamily: font }}>Payment Confirmation</h1>
           </div>
-          <div className="flex-1 overflow-y-auto px-10" style={{ paddingBottom: 80 }}>
+          <div className="flex-1 overflow-y-auto px-10 pb-10">
 
             {/* Green success banner card */}
             <div className="bg-white rounded-[12px] border border-[#e0e8f5] flex flex-col items-center py-8 mb-5"
@@ -1788,29 +1862,27 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 </table>
               </div>
             </div>
-          </div>
-
-          {/* Bottom floating bar */}
-          <div className="flex-shrink-0 flex items-center justify-between px-10 border-t border-[#d5ddfb] bg-white"
-            style={{ height: 68, boxShadow: '0px -4px 12px rgba(0,0,0,0.08)' }}>
-            <button
-              onClick={() => { setAccView('list'); setSelectedAccs(new Set()); setAccPayAmounts({}); }}
-              data-secondary-btn className="h-[44px] px-8 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white transition-colors flex items-center gap-2"
-              style={{ fontFamily: font }}
-            >
-              <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5l-5 5 5 5" strokeLinecap="round" /></svg>
-              Back to Listing
-            </button>
-            <button
-              onClick={() => setShowAccReceipt(true)}
-              className="h-[44px] px-6 rounded-[4px] text-[16px] text-white hover:opacity-90 transition-opacity flex items-center gap-2"
-              style={{ background: '#1360d2', fontFamily: font }}
-            >
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
-              </svg>
-              View &amp; Print Receipt
-            </button>
+            {/* Actions sit under the Payment Details card, centred — Back to Listing first */}
+            <div className="flex items-center justify-center gap-4 mt-6">
+              <button
+                onClick={() => { setAccView('list'); setSelectedAccs(new Set()); setAccPayAmounts({}); }}
+                data-secondary-btn className="h-[44px] px-8 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white transition-colors flex items-center gap-2"
+                style={{ fontFamily: font }}
+              >
+                <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5l-5 5 5 5" strokeLinecap="round" /></svg>
+                Back to Listing
+              </button>
+              <button
+                onClick={() => setShowAccReceipt(true)}
+                className="h-[44px] px-6 rounded-[4px] text-[16px] text-white hover:opacity-90 transition-opacity flex items-center gap-2"
+                style={{ background: '#1360d2', fontFamily: font }}
+              >
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
+                </svg>
+                View &amp; Print Receipt
+              </button>
+            </div>
           </div>
         </div>
 
