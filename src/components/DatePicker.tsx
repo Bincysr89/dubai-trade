@@ -325,7 +325,7 @@ export function DateInput({
     top: floated ? -9 : '50%',
     transform: floated ? 'none' : 'translateY(-50%)',
     fontSize: floated ? 12 : 16,
-    color: open ? '#1360d2' : '#0e1b3d',
+    color: '#0e1b3d',
     pointerEvents: 'none',
     transition: 'all 0.15s',
     fontFamily: FONT,
@@ -344,7 +344,7 @@ export function DateInput({
       <div
         onClick={() => { if (!disabled) setOpen(o => !o); }}
         style={{
-          height: 56, border: `1.5px solid ${open ? '#1360d2' : '#d5ddfb'}`,
+          height: 56, border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}`,
           borderRadius: 4, background: disabled ? '#f2f4f8' : '#fff', display: 'flex', alignItems: 'center',
           paddingLeft: 12, paddingRight: 12, cursor: disabled ? 'not-allowed' : 'pointer',
           justifyContent: 'space-between', boxSizing: 'border-box',
