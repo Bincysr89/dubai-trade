@@ -477,23 +477,83 @@ function ReceiptModal({ onClose, rows }: { onClose: () => void; rows: typeof PAY
 
 type TxRow = typeof PAYMENT_ROWS[0];
 
-/** Pill tabs, matching the All Records / E-Payment pair on the declaration listing. */
+/** Pill tabs, matching the All Records / E-Payment pair on the declaration listing.
+    The strip scrolls once there are more transactions than fit, with chevrons either side. */
 function TxTabs({ count, active, onChange }: { count: number; active: number; onChange: (i: number) => void }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [arrows, setArrows] = useState({ left: false, right: false });
+
+  const sync = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setArrows({
+      left: el.scrollLeft > 1,
+      right: el.scrollLeft + el.clientWidth < el.scrollWidth - 1,
+    });
+  };
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    sync();
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(sync);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [count]);
+
+  /* Keep the selected tab in view when it is reached with the arrows. */
+  useEffect(() => {
+    scrollRef.current?.querySelectorAll('button')[active]?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+  }, [active]);
+
+  const nudge = (dir: -1 | 1) => scrollRef.current?.scrollBy({ left: dir * 200, behavior: 'smooth' });
+  const overflowing = arrows.left || arrows.right;
+
+  const arrowBtn = (dir: -1 | 1, enabled: boolean) => (
+    <button
+      type="button"
+      onClick={() => nudge(dir)}
+      disabled={!enabled}
+      aria-label={dir === -1 ? 'Scroll tabs left' : 'Scroll tabs right'}
+      className="h-[32px] w-[32px] rounded-full inline-flex items-center justify-center flex-shrink-0 transition-colors"
+      style={{
+        border: `1px solid ${enabled ? '#1360d2' : '#e5efff'}`,
+        color: enabled ? '#1360d2' : '#b0b8d0',
+        background: 'white',
+        cursor: enabled ? 'pointer' : 'not-allowed',
+      }}
+    >
+      <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+        <path d={dir === -1 ? 'M12 5l-5 5 5 5' : 'M8 5l5 5-5 5'} />
+      </svg>
+    </button>
+  );
+
   return (
-    <div className="bg-white flex items-center gap-[12px] h-[48px] px-[16px] py-[8px] rounded-[6px] flex-shrink-0"
+    <div className="bg-white flex items-center gap-[12px] h-[48px] px-[16px] py-[8px] rounded-[6px] flex-shrink min-w-0"
       style={{ boxShadow: '0px 4px 10px rgba(0,0,0,0.08)' }}>
-      {Array.from({ length: count }, (_, i) => (
-        <button
-          key={i}
-          onClick={() => onChange(i)}
-          className={`h-[40px] px-[16px] rounded-[4px] text-[16px] font-medium transition-colors ${
-            active === i ? 'bg-[#1360d2] text-white' : 'bg-[#f7faff] text-[#697498] border border-[#e5efff]'
-          }`}
-          style={{ fontFamily: font }}
-        >
-          Transaction {i + 1}
-        </button>
-      ))}
+      {overflowing && arrowBtn(-1, arrows.left)}
+      <div
+        ref={scrollRef}
+        onScroll={sync}
+        className="flex items-center gap-[12px] overflow-x-auto no-scrollbar"
+        style={{ maxWidth: 520, scrollbarWidth: 'none' }}
+      >
+        {Array.from({ length: count }, (_, i) => (
+          <button
+            key={i}
+            onClick={() => onChange(i)}
+            className={`h-[40px] px-[16px] rounded-[4px] text-[16px] font-medium transition-colors whitespace-nowrap flex-shrink-0 ${
+              active === i ? 'bg-[#1360d2] text-white' : 'bg-[#f7faff] text-[#697498] border border-[#e5efff]'
+            }`}
+            style={{ fontFamily: font }}
+          >
+            Transaction {i + 1}
+          </button>
+        ))}
+      </div>
+      {overflowing && arrowBtn(1, arrows.right)}
     </div>
   );
 }
@@ -588,8 +648,11 @@ function TxAccordion({ tx, index, open, onToggle }: { tx: TxRow; index: number; 
         className="w-full flex items-center gap-6 px-5 py-4 text-left transition-colors hover:bg-[#f8fafd]"
         style={{ background: open ? '#f4f7fc' : 'white' }}
       >
-        <span className="text-[16px] font-semibold text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: font }}>
-          Transaction {index + 1}
+        {/* The transaction's position, as a numbered badge rather than a worded label */}
+        <span className="inline-flex items-center justify-center rounded-full text-white text-[16px] font-semibold flex-shrink-0"
+          style={{ width: 32, height: 32, background: '#1360d2', fontFamily: font }}>
+          {index + 1}
+          <span className="sr-only">Transaction {index + 1}</span>
         </span>
         <span className="flex-1 min-w-0 grid grid-cols-4 gap-x-8">
           {headerPairs.map(([label, value]) => (
@@ -1480,8 +1543,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   /* ── Success / Transaction Details screen ───────────────────────────────── */
   if (step === 'success') {
     const tx = PAYMENT_ROWS[1];
-    /* A payment can settle across more than one transaction, so the popup tabs them. */
-    const confirmationTxs = PAYMENT_ROWS.filter(r => r.status === 'Success').slice(0, 2);
+    /* A payment can settle across several transactions, so the popup tabs them. */
+    const confirmationTxs = PAYMENT_ROWS.filter(r => r.status === 'Success').slice(0, 5);
     const detailRows = selectedList.length > 0
       ? selectedList.map((r, i) => ({ type: r.type, invoiceNo: r.number, amount: r.balance, receiptNo: `Z-${12645 + i}`, remarks: `M1CS 1927055; BPS Transaction for ECM-${r.number}`, status: 'Success' }))
       : tx.details;
