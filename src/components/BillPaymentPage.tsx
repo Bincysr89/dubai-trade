@@ -846,6 +846,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const [paymentMethod, setPaymentMethod]   = useState<'epayment' | 'debit'>('epayment');
   const [showReceipt, setShowReceipt]             = useState(false);
   const [showAccReceipt, setShowAccReceipt]       = useState(false);
+  /* The account payment's own Payment Transaction Details popup. */
+  const [showAccTxDetails, setShowAccTxDetails]   = useState(false);
   const [showEPayConfirm, setShowEPayConfirm]     = useState(false);
   const [showAccEPayConfirm, setShowAccEPayConfirm] = useState(false);
   const [showInvReceipt, setShowInvReceipt]       = useState(false);
@@ -1445,53 +1447,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               </div>
             </div>
 
-            {/* Payment Details card */}
-            <div className="bg-white rounded-[12px] border border-[#e0e8f5] overflow-hidden"
-              style={{ boxShadow: 'rgba(143, 155, 186, 0.16) 0px 5px 32px' }}>
-              <div className="px-6 py-4 border-b border-[#e0e8f5]">
-                <span className="text-[20px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 500 }}>Payment Details</span>
-              </div>
-              <div className="overflow-x-auto">
-                <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 0', fontFamily: font }}>
-                  <thead>
-                    <tr>
-                      {['Payment Type', 'Invoice No.', 'Amount', 'Receipt No.', 'Remarks', 'Status'].map((h, i) => (
-                        <th key={h} style={{ background: '#a6c2e9', padding: '12px 16px', textAlign: 'left', fontWeight: 500, paddingLeft: i === 0 ? 24 : 12 }}>
-                          <span className="text-[16px] font-medium text-[#051937] whitespace-nowrap">{h}</span>
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {detailRows.map((r, i) => (
-                      <tr key={i} style={{ borderBottom: '1px solid #f0f4ff' }}>
-                        <td style={{ background: '#fff', padding: '14px 16px', paddingLeft: 24, verticalAlign: 'middle' }}>
-                          <span className="text-[16px] text-[#0e1b3d]">{r.type}</span>
-                        </td>
-                        <td style={{ background: '#fff', padding: '14px 12px', verticalAlign: 'middle' }}>
-                          <span className="text-[16px] text-[#0e1b3d]">{r.invoiceNo}</span>
-                        </td>
-                        <td style={{ background: '#fff', padding: '14px 12px', verticalAlign: 'middle' }}>
-                          <span className="text-[16px] text-[#0e1b3d] flex items-center gap-[3px]"><DirhamIcon size={14} color="#0e1b3d" />{r.amount}</span>
-                        </td>
-                        <td style={{ background: '#fff', padding: '14px 12px', verticalAlign: 'middle' }}>
-                          <span className="text-[16px] text-[#0e1b3d]">{r.receiptNo}</span>
-                        </td>
-                        <td style={{ background: '#fff', padding: '14px 12px', verticalAlign: 'middle', maxWidth: 260 }}>
-                          <span className="text-[16px] text-[#697498]">{r.remarks}</span>
-                        </td>
-                        <td style={{ background: '#fff', padding: '14px 12px', verticalAlign: 'middle' }}>
-                          <span className="inline-flex items-center px-[10px] py-[3px] rounded-[4px] text-[16px] font-semibold whitespace-nowrap"
-                            style={{ background: 'rgba(40,167,69,0.12)', color: '#28a745' }}>{r.status}</span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Actions sit under the Payment Details card, centred — Back to Listing first */}
+            {/* Centred actions — the payment breakdown lives in the View Payment Details popup */}
             <div className="flex items-center justify-center gap-4 mt-6">
               <button
                 onClick={() => { setStep('list'); setSelectedRows(new Set()); }}
@@ -1500,6 +1456,16 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               >
                 <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5l-5 5 5 5" strokeLinecap="round" /></svg>
                 Back to Listing
+              </button>
+              <button
+                onClick={() => setInvPayDetails(tx)}
+                className="h-[44px] px-6 rounded-[4px] text-[16px] text-white hover:opacity-90 transition-opacity flex items-center gap-2"
+                style={{ background: '#1360d2', fontFamily: font }}
+              >
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 9h18M7 13h6M7 16h4" strokeLinecap="round" />
+                </svg>
+                View Payment Details
               </button>
               <button
                 onClick={() => setShowReceipt(true)}
@@ -1817,52 +1783,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               </div>
             </div>
 
-            {/* Payment Details card */}
-            <div className="bg-white rounded-[12px] border border-[#e0e8f5] overflow-hidden"
-              style={{ boxShadow: 'rgba(143, 155, 186, 0.16) 0px 5px 32px' }}>
-              <div className="px-6 py-4 border-b border-[#e0e8f5]">
-                <span className="text-[20px] text-[#0e1b3d]" style={{ fontFamily: font, fontWeight: 500 }}>Payment Details</span>
-              </div>
-              <div className="overflow-x-auto">
-                <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 0', fontFamily: font }}>
-                  <thead>
-                    <tr>
-                      {['Payment Type', 'Account No.', 'Amount', 'Receipt No.', 'Remarks', 'Status'].map((h, i) => (
-                        <th key={h} style={{ background: '#a6c2e9', padding: '12px 16px', textAlign: 'left', fontWeight: 500, paddingLeft: i === 0 ? 24 : 12 }}>
-                          <span className="text-[16px] font-medium text-[#051937] whitespace-nowrap">{h}</span>
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedAccsList.map(({ idx, acc }, i) => (
-                      <tr key={idx} style={{ borderBottom: '1px solid #f0f4ff' }}>
-                        <td style={{ background: '#fff', padding: '14px 16px', paddingLeft: 24, verticalAlign: 'middle' }}>
-                          <span className="text-[16px] text-[#0e1b3d]">{acc.type}</span>
-                        </td>
-                        <td style={{ background: '#fff', padding: '14px 12px', verticalAlign: 'middle' }}>
-                          <span className="text-[16px] text-[#0e1b3d]">{acc.account}</span>
-                        </td>
-                        <td style={{ background: '#fff', padding: '14px 12px', verticalAlign: 'middle' }}>
-                          <span className="text-[16px] text-[#0e1b3d] flex items-center gap-[3px]"><DirhamIcon size={14} color="#0e1b3d" />{accPayAmounts[idx] || '0.00'}</span>
-                        </td>
-                        <td style={{ background: '#fff', padding: '14px 12px', verticalAlign: 'middle' }}>
-                          <span className="text-[16px] text-[#0e1b3d]">Z-{12648 + i}</span>
-                        </td>
-                        <td style={{ background: '#fff', padding: '14px 12px', verticalAlign: 'middle', maxWidth: 260 }}>
-                          <span className="text-[16px] text-[#697498]">M1CS 1927058; BPS Transaction for DDR-{acc.account.split(' - ')[0]}</span>
-                        </td>
-                        <td style={{ background: '#fff', padding: '14px 12px', verticalAlign: 'middle' }}>
-                          <span className="inline-flex items-center px-[10px] py-[3px] rounded-[4px] text-[16px] font-semibold whitespace-nowrap"
-                            style={{ background: 'rgba(40,167,69,0.12)', color: '#28a745' }}>Success</span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            {/* Actions sit under the Payment Details card, centred — Back to Listing first */}
+            {/* Centred actions — the payment breakdown lives in the View Payment Details popup */}
             <div className="flex items-center justify-center gap-4 mt-6">
               <button
                 onClick={() => { setAccView('list'); setSelectedAccs(new Set()); setAccPayAmounts({}); }}
@@ -1871,6 +1792,16 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               >
                 <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5l-5 5 5 5" strokeLinecap="round" /></svg>
                 Back to Listing
+              </button>
+              <button
+                onClick={() => setShowAccTxDetails(true)}
+                className="h-[44px] px-6 rounded-[4px] text-[16px] text-white hover:opacity-90 transition-opacity flex items-center gap-2"
+                style={{ background: '#1360d2', fontFamily: font }}
+              >
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 9h18M7 13h6M7 16h4" strokeLinecap="round" />
+                </svg>
+                View Payment Details
               </button>
               <button
                 onClick={() => setShowAccReceipt(true)}
@@ -1885,6 +1816,28 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             </div>
           </div>
         </div>
+
+        {/* Payment Transaction Details — the same popup the invoice confirmation opens */}
+        {showAccTxDetails && (
+          <TransactionModal
+            row={{
+              type: 'Account Top Up', txNo: '13137', txDate: '10-06-2026 12:00:02',
+              invoiceNo: selAccRow.account, status: 'Success',
+              amount: totalAccPayAmount.toFixed(2), txDateFull: '10-06-2026',
+              degTx: '590000237262664', ePayTx: '20021739',
+              initiatedDate: '10-06-2026 12:00:00', initiatedBy: 'crnuser01', mode: 'Credit Card',
+              payMsg: 'Payment Status Remarks: Success',
+              colMsg: 'Collection Status Remarks: Transaction has been processed successfully.',
+              details: selectedAccsList.map(({ idx, acc }, i) => ({
+                type: acc.type, invoiceNo: acc.account, amount: accPayAmounts[idx] || '0.00',
+                receiptNo: `Z-${12648 + i}`,
+                remarks: `M1CS 1927058; BPS Transaction for DDR-${acc.account.split(' - ')[0]}`,
+                status: 'Success',
+              })),
+            }}
+            onClose={() => setShowAccTxDetails(false)}
+          />
+        )}
 
         {/* Account Receipt Modal */}
         {showAccReceipt && (
