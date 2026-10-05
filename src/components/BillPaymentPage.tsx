@@ -681,7 +681,11 @@ function TxAccordion({ tx, index, open, onToggle }: { tx: TxRow; index: number; 
   );
 }
 
-function TransactionModal({ row, rows, onClose }: { row?: TxRow; rows?: typeof PAYMENT_ROWS; onClose: () => void }) {
+function TransactionModal({ row, rows, onClose, showLayoutToggle = false }: {
+  row?: TxRow; rows?: typeof PAYMENT_ROWS; onClose: () => void;
+  /* The alternate accordion layout is offered only from the listings' row menus. */
+  showLayoutToggle?: boolean;
+}) {
   const list = rows && rows.length > 0 ? rows : (row ? [row] : []);
   const [activeIdx, setActiveIdx] = useState(0);
   /* Two presentations of the same data — tabs, or an accordion per transaction. */
@@ -710,20 +714,24 @@ function TransactionModal({ row, rows, onClose }: { row?: TxRow; rows?: typeof P
         </div>
 
         <div className="p-6">
-          {/* Tabs on the left, the layout switch on the right */}
-          <div className="flex items-center justify-between gap-4 mb-5">
-            {layout === 1 && list.length > 1
-              ? <TxTabs count={list.length} active={activeIdx} onChange={setActiveIdx} />
-              : <span />}
-            <button
-              onClick={() => setLayout(l => (l === 1 ? 2 : 1))}
-              data-secondary-btn
-              className="h-[40px] px-5 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white transition-colors flex-shrink-0"
-              style={{ fontFamily: font, fontWeight: 500 }}
-            >
-              {layout === 1 ? 'Layout design - 2' : 'Layout design - 1'}
-            </button>
-          </div>
+          {/* Tabs on the left, the layout switch on the right where it is offered */}
+          {(showLayoutToggle || list.length > 1) && (
+            <div className="flex items-center justify-between gap-4 mb-5">
+              {layout === 1 && list.length > 1
+                ? <TxTabs count={list.length} active={activeIdx} onChange={setActiveIdx} />
+                : <span />}
+              {showLayoutToggle && (
+                <button
+                  onClick={() => setLayout(l => (l === 1 ? 2 : 1))}
+                  data-secondary-btn
+                  className="h-[40px] px-5 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white transition-colors flex-shrink-0"
+                  style={{ fontFamily: font, fontWeight: 500 }}
+                >
+                  {layout === 1 ? 'Layout design - 2' : 'Layout design - 1'}
+                </button>
+              )}
+            </div>
+          )}
 
           {layout === 1 ? (
             <>
@@ -2457,7 +2465,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
           onPageSizeChange={() => {}}
         />
       </div>
-      {invTxDetails && <TransactionModal rows={invTxDetails} onClose={() => setInvTxDetails(null)} />}
+      {invTxDetails && <TransactionModal rows={invTxDetails} onClose={() => setInvTxDetails(null)} showLayoutToggle />}
       {showInvReceipt && <ReceiptModal onClose={() => setShowInvReceipt(false)} rows={invReceiptRows} />}
     </div>
     );
@@ -2849,7 +2857,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
         />
       </div>
       {showPayFlyoutReceipt && <ReceiptModal onClose={() => setShowPayFlyoutReceipt(false)} rows={payFlyoutReceiptRows} />}
-      {invPayDetails && <TransactionModal row={invPayDetails} onClose={() => setInvPayDetails(null)} />}
+      {invPayDetails && <TransactionModal row={invPayDetails} onClose={() => setInvPayDetails(null)} showLayoutToggle />}
     </div>
     );
   };
