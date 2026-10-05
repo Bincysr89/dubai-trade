@@ -473,13 +473,166 @@ function ReceiptModal({ onClose, rows }: { onClose: () => void; rows: typeof PAY
   );
 }
 
-/* ── Payment Transaction Details modal ──────────────────────────────────────── */
-function TransactionModal({ row, rows, onClose }: { row?: typeof PAYMENT_ROWS[0]; rows?: typeof PAYMENT_ROWS; onClose: () => void }) {
+/* ── Payment Transaction Details modal ──────────────────────────────────────── *//* ── Payment Transaction Details modal ──────────────────────────────────────── */
+
+type TxRow = typeof PAYMENT_ROWS[0];
+
+/** Pill tabs, matching the All Records / E-Payment pair on the declaration listing. */
+function TxTabs({ count, active, onChange }: { count: number; active: number; onChange: (i: number) => void }) {
+  return (
+    <div className="bg-white flex items-center gap-[12px] h-[48px] px-[16px] py-[8px] rounded-[6px] flex-shrink-0"
+      style={{ boxShadow: '0px 4px 10px rgba(0,0,0,0.08)' }}>
+      {Array.from({ length: count }, (_, i) => (
+        <button
+          key={i}
+          onClick={() => onChange(i)}
+          className={`h-[40px] px-[16px] rounded-[4px] text-[16px] font-medium transition-colors ${
+            active === i ? 'bg-[#1360d2] text-white' : 'bg-[#f7faff] text-[#697498] border border-[#e5efff]'
+          }`}
+          style={{ fontFamily: font }}
+        >
+          Transaction {i + 1}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** The transaction's own fields, minus whatever the accordion header already shows. */
+function TxFields({ tx, omit = [] }: { tx: TxRow; omit?: string[] }) {
+  const isSuccess = tx.status === 'Success';
+  const pairs: [string, string][] = [
+    ['Transaction No.', tx.txNo],
+    ['Transaction Date', tx.txDateFull],
+    ['DEG Transaction No.', tx.degTx],
+    ['DEG Transaction Date', tx.txDate],
+    ['EPayment Transaction No', tx.ePayTx],
+    ['Initiated Date', tx.initiatedDate],
+    ['Initiated By', tx.initiatedBy],
+    ['Status', tx.status],
+    ['Payment Mode', tx.mode],
+  ];
+  return (
+    <div className="grid grid-cols-4 gap-x-8 gap-y-4">
+      {pairs.filter(([l]) => !omit.includes(l)).map(([label, value]) => (
+        <div key={label}>
+          <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>{label}</span>
+          <p className={`text-[16px] font-semibold mt-[2px] ${label === 'Status' ? (isSuccess ? 'text-[#28a745]' : 'text-[#dc3545]') : 'text-[#0e1b3d]'}`}
+            style={{ fontFamily: font }}>{value}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function TxMessage({ tx }: { tx: TxRow }) {
+  return (
+    <div className="mt-4 pt-4 border-t border-[#d5ddfb]">
+      <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>Message</span>
+      <p className="text-[16px] text-[#1360d2] mt-1" style={{ fontFamily: font }}>{tx.payMsg}</p>
+      {tx.colMsg && <p className="text-[16px] text-[#dc3545] mt-1 font-medium" style={{ fontFamily: font }}>{tx.colMsg}</p>}
+    </div>
+  );
+}
+
+function TxPaymentTable({ tx }: { tx: TxRow }) {
+  return (
+    <div className="rounded-[8px] border border-[#d5ddfb] overflow-hidden">
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: font }}>
+        <thead>
+          <tr>
+            {['Payment Type', 'Invoice / Account No.', 'Amount', 'Receipt No.', 'Remarks', 'Status'].map((h, i, arr) => (
+              <th key={h} style={{
+                background: '#a6c2e9', padding: '11px 14px', textAlign: 'left', fontWeight: 500,
+                borderTopLeftRadius: i === 0 ? 8 : 0,
+                borderTopRightRadius: i === arr.length - 1 ? 8 : 0,
+              }}>
+                <span className="text-[15px] font-medium text-[#051937]">{h}</span>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {tx.details.map((d, i) => (
+            <tr key={i} style={{ borderBottom: '1px solid #e8eef8' }}>
+              <td className="py-3 px-[14px] text-[15px] text-[#0e1b3d]">{d.type}</td>
+              <td className="py-3 px-[14px] text-[15px] text-[#0e1b3d]">{d.invoiceNo}</td>
+              <td className="py-3 px-[14px] text-[15px] text-[#0e1b3d] whitespace-nowrap"><DirhamIcon size={13} color="#0e1b3d" />&nbsp;{d.amount}</td>
+              <td className="py-3 px-[14px] text-[15px] text-[#0e1b3d]">{d.receiptNo}</td>
+              <td className="py-3 px-[14px] text-[15px] text-[#0e1b3d]">{d.remarks}</td>
+              <td className="py-3 px-[14px] text-[16px]">
+                <span className={`font-medium ${d.status === 'Success' ? 'text-[#28a745]' : d.status === 'Unpaid' ? 'text-[#dc3545]' : 'text-[#1360d2]'}`}>{d.status}</span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/** Layout 2 — one accordion per transaction, a summary on the header and the rest inside. */
+function TxAccordion({ tx, index, open, onToggle }: { tx: TxRow; index: number; open: boolean; onToggle: () => void }) {
+  const isSuccess = tx.status === 'Success';
+  const headerPairs: [string, string][] = [
+    ['Transaction No.', tx.txNo],
+    ['Transaction Date', tx.txDateFull],
+    ['Payment Mode', tx.mode],
+    ['Status', tx.status],
+  ];
+  return (
+    <div className="rounded-[8px] border border-[#d5ddfb] overflow-hidden mb-4" style={{ background: 'white' }}>
+      <button
+        onClick={onToggle}
+        aria-expanded={open}
+        className="w-full flex items-center gap-6 px-5 py-4 text-left transition-colors hover:bg-[#f8fafd]"
+        style={{ background: open ? '#f4f7fc' : 'white' }}
+      >
+        <span className="text-[16px] font-semibold text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: font }}>
+          Transaction {index + 1}
+        </span>
+        <span className="flex-1 min-w-0 grid grid-cols-4 gap-x-8">
+          {headerPairs.map(([label, value]) => (
+            <span key={label} className="flex flex-col">
+              <span className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>{label}</span>
+              <span className={`text-[16px] font-semibold ${label === 'Status' ? (isSuccess ? 'text-[#28a745]' : 'text-[#dc3545]') : 'text-[#0e1b3d]'}`}
+                style={{ fontFamily: font }}>{value}</span>
+            </span>
+          ))}
+        </span>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1360d2" strokeWidth="2.2" strokeLinecap="round"
+          className="flex-shrink-0" style={{ transform: open ? 'rotate(180deg)' : undefined, transition: 'transform 0.15s' }}>
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="px-5 pb-5 pt-4" style={{ borderTop: '1px solid #d5ddfb' }}>
+          <TxFields tx={tx} omit={['Transaction No.', 'Transaction Date', 'Payment Mode', 'Status']} />
+          <TxMessage tx={tx} />
+          <p className="text-[#0e1b3d] text-[20px] font-bold mt-5 mb-3" style={{ fontFamily: font }}>Payment Details</p>
+          <TxPaymentTable tx={tx} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TransactionModal({ row, rows, onClose }: { row?: TxRow; rows?: typeof PAYMENT_ROWS; onClose: () => void }) {
   const list = rows && rows.length > 0 ? rows : (row ? [row] : []);
   const [activeIdx, setActiveIdx] = useState(0);
+  /* Two presentations of the same data — tabs, or an accordion per transaction. */
+  const [layout, setLayout] = useState<1 | 2>(1);
+  const [openRows, setOpenRows] = useState<Set<number>>(() => new Set([0]));
   const active = list[activeIdx] ?? list[0];
   if (!active) return null;
-  const isSuccess = active.status === 'Success';
+
+  const toggleRow = (i: number) => setOpenRows(prev => {
+    const next = new Set(prev);
+    next.has(i) ? next.delete(i) : next.add(i);
+    return next;
+  });
+
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center" style={{ background: 'rgba(14,27,61,0.5)' }}>
       <div className="bg-white rounded-[8px] overflow-hidden max-h-[90vh] overflow-y-auto shadow-2xl" style={{ width: 1100 }}>
@@ -492,87 +645,37 @@ function TransactionModal({ row, rows, onClose }: { row?: typeof PAYMENT_ROWS[0]
             </svg>
           </button>
         </div>
+
         <div className="p-6">
-          {/* Transaction tabs — one per payment made against this invoice/account */}
-          {list.length > 1 && (
-            <div className="flex items-center gap-[6px] mb-5 border-b border-[#eef1f6]">
-              {list.map((_, i) => (
-                <button key={i} onClick={() => setActiveIdx(i)}
-                  className="px-[18px] py-[10px] text-[16px] transition-colors"
-                  style={{
-                    fontFamily: font, fontWeight: i === activeIdx ? 600 : 400,
-                    color: i === activeIdx ? '#1360d2' : '#697498',
-                    borderBottom: `2px solid ${i === activeIdx ? '#1360d2' : 'transparent'}`,
-                    background: 'none', cursor: 'pointer',
-                  }}>
-                  Transaction {i + 1}
-                </button>
-              ))}
-            </div>
-          )}
-          {/* Transaction Details Card */}
-          <div className="rounded-[8px] border border-[#d5ddfb] p-5 mb-5" style={{ background: 'white' }}>
-            <div className="grid grid-cols-4 gap-x-8 gap-y-4">
-              {[
-                ['Transaction No.',         active.txNo,          'Transaction Date',     active.txDateFull],
-                ['DEG Transaction No.',     active.degTx,         'DEG Transaction Date', active.txDate],
-                ['EPayment Transaction No', active.ePayTx,        'Initiated Date',       active.initiatedDate],
-                ['Initiated By',            active.initiatedBy,   'Status',               active.status],
-                ['Payment Mode',            active.mode,          '',                     ''],
-              ].flatMap(([l1, v1, l2, v2]) => [
-                <div key={l1}>
-                  <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>{l1}</span>
-                  <p className="text-[16px] font-semibold text-[#0e1b3d] mt-[2px]" style={{ fontFamily: font }}>{v1}</p>
-                </div>,
-                <div key={l2 || '_empty'}>
-                  {l2 && <>
-                    <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>{l2}</span>
-                    <p className={`text-[16px] font-semibold mt-[2px] ${l2 === 'Status' ? (isSuccess ? 'text-[#28a745]' : 'text-[#dc3545]') : 'text-[#0e1b3d]'}`} style={{ fontFamily: font }}>{v2}</p>
-                  </>}
-                </div>,
-              ])}
-            </div>
-            {/* Message */}
-            <div className="mt-4 pt-4 border-t border-[#d5ddfb]">
-              <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>Message</span>
-              <p className="text-[16px] text-[#1360d2] mt-1" style={{ fontFamily: font }}>{active.payMsg}</p>
-              {active.colMsg && <p className="text-[16px] text-[#dc3545] mt-1 font-medium" style={{ fontFamily: font }}>{active.colMsg}</p>}
-            </div>
+          {/* Tabs on the left, the layout switch on the right */}
+          <div className="flex items-center justify-between gap-4 mb-5">
+            {layout === 1 && list.length > 1
+              ? <TxTabs count={list.length} active={activeIdx} onChange={setActiveIdx} />
+              : <span />}
+            <button
+              onClick={() => setLayout(l => (l === 1 ? 2 : 1))}
+              data-secondary-btn
+              className="h-[40px] px-5 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white transition-colors flex-shrink-0"
+              style={{ fontFamily: font, fontWeight: 500 }}
+            >
+              {layout === 1 ? 'Layout design - 2' : 'Layout design - 1'}
+            </button>
           </div>
 
-          {/* Payment Details Table */}
-          <p className="text-[#0e1b3d] text-[20px] font-bold mb-3" style={{ fontFamily: font }}>Payment Details</p>
-          <div className="rounded-[8px] border border-[#d5ddfb] overflow-hidden">
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: font }}>
-              <thead>
-                <tr>
-                  {['Payment Type', 'Invoice / Account No.', 'Amount', 'Receipt No.', 'Remarks', 'Status'].map((h, i, arr) => (
-                    <th key={h} style={{
-                      background: '#a6c2e9', padding: '11px 14px', textAlign: 'left', fontWeight: 500,
-                      borderTopLeftRadius: i === 0 ? 8 : 0,
-                      borderTopRightRadius: i === arr.length - 1 ? 8 : 0,
-                    }}>
-                      <span className="text-[15px] font-medium text-[#051937]">{h}</span>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {active.details.map((d, i) => (
-                  <tr key={i} style={{ borderBottom: '1px solid #e8eef8' }}>
-                    <td className="py-3 px-[14px] text-[15px] text-[#0e1b3d]">{d.type}</td>
-                    <td className="py-3 px-[14px] text-[15px] text-[#0e1b3d]">{d.invoiceNo}</td>
-                    <td className="py-3 px-[14px] text-[15px] text-[#0e1b3d] whitespace-nowrap"><DirhamIcon size={13} color="#0e1b3d" />&nbsp;{d.amount}</td>
-                    <td className="py-3 px-[14px] text-[15px] text-[#0e1b3d]">{d.receiptNo}</td>
-                    <td className="py-3 px-[14px] text-[15px] text-[#0e1b3d]">{d.remarks}</td>
-                    <td className="py-3 px-[14px] text-[16px]">
-                      <span className={`font-medium ${d.status === 'Success' ? 'text-[#28a745]' : d.status === 'Unpaid' ? 'text-[#dc3545]' : 'text-[#1360d2]'}`}>{d.status}</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {layout === 1 ? (
+            <>
+              <div className="rounded-[8px] border border-[#d5ddfb] p-5 mb-5" style={{ background: 'white' }}>
+                <TxFields tx={active} />
+                <TxMessage tx={active} />
+              </div>
+              <p className="text-[#0e1b3d] text-[20px] font-bold mb-3" style={{ fontFamily: font }}>Payment Details</p>
+              <TxPaymentTable tx={active} />
+            </>
+          ) : (
+            list.map((tx, i) => (
+              <TxAccordion key={i} tx={tx} index={i} open={openRows.has(i)} onToggle={() => toggleRow(i)} />
+            ))
+          )}
 
           {/* Footer buttons — same pair as the account top-up receipt */}
           <div className="flex items-center justify-center gap-3 mt-6">
@@ -1377,6 +1480,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   /* ── Success / Transaction Details screen ───────────────────────────────── */
   if (step === 'success') {
     const tx = PAYMENT_ROWS[1];
+    /* A payment can settle across more than one transaction, so the popup tabs them. */
+    const confirmationTxs = PAYMENT_ROWS.filter(r => r.status === 'Success').slice(0, 2);
     const detailRows = selectedList.length > 0
       ? selectedList.map((r, i) => ({ type: r.type, invoiceNo: r.number, amount: r.balance, receiptNo: `Z-${12645 + i}`, remarks: `M1CS 1927055; BPS Transaction for ECM-${r.number}`, status: 'Success' }))
       : tx.details;
@@ -1458,7 +1563,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 Back to Listing
               </button>
               <button
-                onClick={() => setInvPayDetails(tx)}
+                onClick={() => setInvTxDetails(confirmationTxs)}
                 className="h-[44px] px-6 rounded-[4px] text-[16px] text-white hover:opacity-90 transition-opacity flex items-center gap-2"
                 style={{ background: '#1360d2', fontFamily: font }}
               >
@@ -1488,6 +1593,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
           />
         )}
         {invPayDetails && <TransactionModal row={invPayDetails} onClose={() => setInvPayDetails(null)} />}
+        {invTxDetails && <TransactionModal rows={invTxDetails} onClose={() => setInvTxDetails(null)} />}
       </div>
     );
   }
