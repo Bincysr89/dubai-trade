@@ -508,7 +508,6 @@ function TxTabs({ count, active, onChange }: { count: number; active: number; on
   }, [active]);
 
   const nudge = (dir: -1 | 1) => scrollRef.current?.scrollBy({ left: dir * 200, behavior: 'smooth' });
-  const overflowing = arrows.left || arrows.right;
 
   const arrowBtn = (dir: -1 | 1, enabled: boolean) => (
     <button
@@ -531,14 +530,14 @@ function TxTabs({ count, active, onChange }: { count: number; active: number; on
   );
 
   return (
-    <div className="bg-white flex items-center gap-[12px] h-[48px] px-[16px] py-[8px] rounded-[6px] flex-shrink min-w-0"
+    <div className="bg-white flex items-center gap-[12px] h-[48px] px-[16px] py-[8px] rounded-[6px] w-full"
       style={{ boxShadow: '0px 4px 10px rgba(0,0,0,0.08)' }}>
-      {overflowing && arrowBtn(-1, arrows.left)}
+      {arrowBtn(-1, arrows.left)}
       <div
         ref={scrollRef}
         onScroll={sync}
-        className="flex items-center gap-[12px] overflow-x-auto no-scrollbar"
-        style={{ maxWidth: 520, scrollbarWidth: 'none' }}
+        className="flex-1 min-w-0 flex items-center gap-[12px] overflow-x-auto no-scrollbar"
+        style={{ scrollbarWidth: 'none' }}
       >
         {Array.from({ length: count }, (_, i) => (
           <button
@@ -553,7 +552,7 @@ function TxTabs({ count, active, onChange }: { count: number; active: number; on
           </button>
         ))}
       </div>
-      {overflowing && arrowBtn(1, arrows.right)}
+      {arrowBtn(1, arrows.right)}
     </div>
   );
 }
@@ -714,13 +713,11 @@ function TransactionModal({ row, rows, onClose, showLayoutToggle = false }: {
         </div>
 
         <div className="p-6">
-          {/* Tabs on the left, the layout switch on the right where it is offered */}
-          {(showLayoutToggle || list.length > 1) && (
-            <div className="flex items-center justify-between gap-4 mb-5">
-              {layout === 1 && list.length > 1
-                ? <TxTabs count={list.length} active={activeIdx} onChange={setActiveIdx} />
-                : <span />}
-              {showLayoutToggle && (
+          {/* The listings' popups get the layout switch and the full-width tab strip;
+              the payment confirmation ones show a single transaction and neither. */}
+          {showLayoutToggle && (
+            <>
+              <div className="flex items-center justify-end mb-3">
                 <button
                   onClick={() => setLayout(l => (l === 1 ? 2 : 1))}
                   data-secondary-btn
@@ -729,8 +726,13 @@ function TransactionModal({ row, rows, onClose, showLayoutToggle = false }: {
                 >
                   {layout === 1 ? 'Layout design - 2' : 'Layout design - 1'}
                 </button>
+              </div>
+              {layout === 1 && list.length > 1 && (
+                <div className="mb-5">
+                  <TxTabs count={list.length} active={activeIdx} onChange={setActiveIdx} />
+                </div>
               )}
-            </div>
+            </>
           )}
 
           {layout === 1 ? (
@@ -1551,8 +1553,6 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   /* ── Success / Transaction Details screen ───────────────────────────────── */
   if (step === 'success') {
     const tx = PAYMENT_ROWS[1];
-    /* A payment can settle across several transactions, so the popup tabs them. */
-    const confirmationTxs = PAYMENT_ROWS.filter(r => r.status === 'Success').slice(0, 5);
     const detailRows = selectedList.length > 0
       ? selectedList.map((r, i) => ({ type: r.type, invoiceNo: r.number, amount: r.balance, receiptNo: `Z-${12645 + i}`, remarks: `M1CS 1927055; BPS Transaction for ECM-${r.number}`, status: 'Success' }))
       : tx.details;
@@ -1634,7 +1634,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 Back to Listing
               </button>
               <button
-                onClick={() => setInvTxDetails(confirmationTxs)}
+                onClick={() => setInvPayDetails(tx)}
                 className="h-[44px] px-6 rounded-[4px] text-[16px] text-white hover:opacity-90 transition-opacity flex items-center gap-2"
                 style={{ background: '#1360d2', fontFamily: font }}
               >
