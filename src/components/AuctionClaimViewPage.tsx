@@ -3,6 +3,7 @@ import Dh from './Dh';
 import ClaimHeaderDetails from './ClaimHeaderDetails';
 import ChargesBreakupModal from './ChargesBreakupModal';
 import ClaimApprovalDetailsModal from './ClaimApprovalDetailsModal';
+import ClaimRequestVersions, { type ClaimVersionRow } from './ClaimRequestVersions';
 import MoreIcon from './MoreIcon';
 import RowFlyout, { anchorFrom, type FlyoutAnchor, type FlyoutItem } from './declaration/RowFlyout';
 import { UploadedDocsByDeclaration, type UploadedDoc } from './NonRemittanceDocumentsPage';
@@ -10,6 +11,10 @@ import type { AuctionLotRow } from './AuctionLotDetailsPage';
 import type { AuctionClaimDetail, TransportEntry, ContainerEntry } from './AuctionClaimDetailsPage';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
+
+const versionRows: ClaimVersionRow[] = [
+  { version: 'Version 1', submittedDate: '29/06/2026, 10:14', submittedBy: 'crnuser01', status: 'Under Processing', isCurrentlyViewing: true },
+];
 
 /* ─── A claimed lot's row menu — the lot's own detail, and what was approved on it. ─── */
 const LOT_MENU_WIDTH = 260;
@@ -299,6 +304,11 @@ export default function AuctionClaimViewPage({
                 </tbody>
               </table>
             </div>
+          </Section>
+
+          {/* Claim Request Versions */}
+          <Section title="Claim Request Versions">
+            <ClaimRequestVersions rows={versionRows} />
           </Section>
 
           {/* Uploaded Documents — one accordion per auction lot; also serves as "View Attachments" */}
