@@ -546,15 +546,24 @@ export default function RefundDepositsClaimViewPage({
           {/* Claim Header Details */}
           <Section title="Claim Header Details">
             <div className="flex flex-wrap">
-              <FieldItem label="Claim No. & Version" value={`${claimNo}-1`} />
+              <FieldItem label="Request No." value="232803" />
+              <FieldItem label="Request Date" value={submissionDate} />
+              <FieldItem label="Request Status" value={claimStatus} />
               <FieldItem label="Claim Type" value={claimType} />
-              <FieldItem label="Claim Registration Date" value={submissionDate} />
-              <FieldItem label="Claim Status" value={claimStatus} />
+            </div>
+            <Divider />
+            <div className="flex flex-wrap">
+              <FieldItem label="Submission Date" value={submissionDate} />
+              <FieldItem label="Registration Date" value={submissionDate} />
+              <FieldItem label="Claim No." value={claimNo} />
+              <FieldItem label="Claim Version" value="1" />
             </div>
             <Divider />
             <div className="flex flex-wrap">
               <FieldItem label="Claimant" value="CONSOLIDATED SHIPPING SERVICES L.L.C (Business - AE-1019056)" />
               <FieldItem label="Beneficiary" value="CONSOLIDATED SHIPPING SERVICES L.L.C (Business - AE-1019056)" />
+              <FieldItem label="Claim Status" value={claimStatus} />
+              <FieldItem label="Customs Broker" value="M&M's special holding private company associated with 1900 Waverly Co United arab emirates L.L.C (AE-8122451)" />
             </div>
           </Section>
 

@@ -171,15 +171,24 @@ export default function NonRemittanceClaimViewPage({ onBack, selectedRows, uploa
           {/* Claim Header Details — 4 attrs in one row */}
           <Section title="Claim Header Details">
             <div className="flex flex-wrap">
-              <FieldItem label="Claim No. & Version" value="2420390-1" />
+              <FieldItem label="Request No." value="232803" />
+              <FieldItem label="Request Date" value="29/06/2026" />
+              <FieldItem label="Request Status" value="Under Processing" />
               <FieldItem label="Claim Type" value="Non Remittance Claim" />
-              <FieldItem label="Claim Registration Date" value="29/06/2026" />
-              <FieldItem label="Claim Status" value="Under Processing" />
+            </div>
+            <Divider />
+            <div className="flex flex-wrap">
+              <FieldItem label="Submission Date" value="29/06/2026" />
+              <FieldItem label="Registration Date" value="29/06/2026" />
+              <FieldItem label="Claim No." value="2420390" />
+              <FieldItem label="Claim Version" value="1" />
             </div>
             <Divider />
             <div className="flex flex-wrap">
               <FieldItem label="Claimant" value="SW Logistics LLC (Business - AE-9106286)" />
               <FieldItem label="Beneficiary" value="SW Logistics LLC (Business - AE-9106286)" />
+              <FieldItem label="Claim Status" value="Under Processing" />
+              <FieldItem label="Customs Broker" value="M&M's special holding private company associated with 1900 Waverly Co United arab emirates L.L.C (AE-8122451)" />
             </div>
           </Section>
 
