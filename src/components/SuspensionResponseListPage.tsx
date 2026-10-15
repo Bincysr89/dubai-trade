@@ -1,4 +1,5 @@
 import React from 'react';
+import InfoNote from './InfoNote';
 import { ColumnFilter } from './ColumnFilter';
 
 const font = "'Dubai', sans-serif";
@@ -20,12 +21,14 @@ type Props = {
   onBack: () => void;
   onBackToListing?: () => void;
   onProvideResponse: (declNo: string) => void;
+  /** Days the claimant has to respond before the request is rejected. */
+  responseWindowDays?: number;
 };
 
 /** Multi-declaration list shown before the actual Suspension Response form — reached from the
     claims listing's Action menu when the user has not already narrowed to one declaration via
     a Declaration Number search (see DeclarationListPage's onSuspensionResponse wiring). */
-export default function SuspensionResponseListPage({ title = 'Suspension Response', requestNo, claimType, chargeType, declarations, onBack, onBackToListing, onProvideResponse }: Props) {
+export default function SuspensionResponseListPage({ title = 'Suspension Response', requestNo, claimType, chargeType, declarations, onBack, onBackToListing, onProvideResponse, responseWindowDays = 10 }: Props) {
   const rows: SuspensionRequestRow[] = declarations.map((d, i) => ({
     requestNo: `${requestNo}-${i + 1}`,
     declNo: d.declNo,
@@ -56,9 +59,14 @@ export default function SuspensionResponseListPage({ title = 'Suspension Respons
             {title} — {claimType} — {requestNo}
           </h1>
         </div>
-        <p className="text-[16px] text-[#697498] mb-[20px]" style={{ fontFamily: font }}>
+        <p className="text-[16px] text-[#697498] mb-[16px]" style={{ fontFamily: font }}>
           This claim has {rows.length} declaration{rows.length !== 1 ? 's' : ''} under suspension. Select a request to provide the response.
         </p>
+
+        {/* How long the claimant has to answer before the requests lapse */}
+        <InfoNote className="mb-[20px]">
+          The Claim Request will be rejected if response not provided within {responseWindowDays} days
+        </InfoNote>
 
         <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '1px 2px 12px rgba(0,0,0,0.06)' }}>
           <div className="overflow-x-auto px-[16px] py-[16px]">
