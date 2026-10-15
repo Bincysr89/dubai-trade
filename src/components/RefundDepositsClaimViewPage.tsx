@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import Dh from './Dh';
+import ClaimHeaderDetails from './ClaimHeaderDetails';
 import {
   hasFullRefundOptions, hasDutyRefundOptions, hasNaRefundType, getInvoices, obKey,
   type ChargeDetail, type OutboundState, type OutboundDetail,
@@ -545,26 +546,23 @@ export default function RefundDepositsClaimViewPage({
         <div className="flex flex-col gap-[24px]">
           {/* Claim Header Details */}
           <Section title="Claim Header Details">
-            <div className="flex flex-wrap">
-              <FieldItem label="Request No." value="232803" />
-              <FieldItem label="Request Date" value={submissionDate} />
-              <FieldItem label="Request Status" value={claimStatus} />
-              <FieldItem label="Claim Type" value={claimType} />
-            </div>
-            <Divider />
-            <div className="flex flex-wrap">
-              <FieldItem label="Submission Date" value={submissionDate} />
-              <FieldItem label="Registration Date" value={submissionDate} />
-              <FieldItem label="Claim No." value={claimNo} />
-              <FieldItem label="Claim Version" value="1" />
-            </div>
-            <Divider />
-            <div className="flex flex-wrap">
-              <FieldItem label="Claimant" value="CONSOLIDATED SHIPPING SERVICES L.L.C (Business - AE-1019056)" />
-              <FieldItem label="Beneficiary" value="CONSOLIDATED SHIPPING SERVICES L.L.C (Business - AE-1019056)" />
-              <FieldItem label="Claim Status" value={claimStatus} />
-              <FieldItem label="Customs Broker" value="M&M's special holding private company associated with 1900 Waverly Co United arab emirates L.L.C (AE-8122451)" />
-            </div>
+            <ClaimHeaderDetails
+              claimType={claimType}
+              claimNo={claimNo}
+              claimStatus={claimStatus}
+              requestStatus={claimStatus}
+              requestDate={submissionDate}
+              submissionDate={submissionDate}
+              registrationDate={submissionDate}
+              claimant="CONSOLIDATED SHIPPING SERVICES L.L.C (Business - AE-1019056)"
+              beneficiary="CONSOLIDATED SHIPPING SERVICES L.L.C (Business - AE-1019056)"
+              depositMethod="Debit Account"
+              depositAccountNo="A-100004120"
+              depositAccountName="CONSOLIDATED SHIPPING SERVICES L.L.C"
+              refundMode="Credit Account"
+              refundAccountNo="A-100004121"
+              refundAccountName="CONSOLIDATED SHIPPING SERVICES L.L.C"
+            />
           </Section>
 
           {/* Charges And Payment Details */}
