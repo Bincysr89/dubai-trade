@@ -52,6 +52,8 @@ type InvoiceGroup = { invoiceNo: string; hsLines: HsLine[] };
 type DeclLine = {
   declarationNo: string; actualDepartureDate: string; declarationType: string; chargeType: string;
   depositMethod: string; accountNumber: string; depositAmount: string;
+  /* Where this declaration's refund is paid out — a declaration-level choice. */
+  refundMode: string; refundAccountNo: string; refundAccountName: string;
   refundType: string; claimAmount: string; invoices: InvoiceGroup[];
   refType?: string; refCode?: string; refNo?: string;
 };
@@ -97,6 +99,7 @@ function buildDeclLinesFromCharges(chargeDetails: ChargeDetail[], rows: Row[] | 
       chargeType: d.chargeType,
       depositMethod: d.depositMethod,
       accountNumber: row?.accountNumber ?? '—',
+      refundMode: REFUND_MODE, refundAccountNo: REFUND_ACCOUNT_NO, refundAccountName: REFUND_ACCOUNT_NAME,
       depositAmount: d.depositAmount === 'N/A' ? 'N/A' : d.depositAmount.replace(/^Dh\s*/, ''),
       refundType: REFUND_TYPE_LABELS[d.refundType] ?? (d.refundType || '—'),
       claimAmount: d.claimAmount || '0',
@@ -107,6 +110,12 @@ function buildDeclLinesFromCharges(chargeDetails: ChargeDetail[], rows: Row[] | 
 }
 
 type IncomingDecl = { declNo: string; date: string; category: string; ownerCode: string; claimExpiry: string; exportExpiry: string };
+
+/* Demo refund-mode values — in the real flow these come from the declaration's own
+   refund details, which is why they are shown per declaration and not on the claim. */
+const REFUND_MODE = 'Credit Account';
+const REFUND_ACCOUNT_NO = 'A-100004121';
+const REFUND_ACCOUNT_NAME = 'CONSOLIDATED SHIPPING SERVICES L.L.C';
 
 /* Default demo declaration — used when the page is opened without a specific claim's data
    (e.g. the "View Claim" link nested inside ClaimCancelFlow). */
@@ -139,6 +148,7 @@ function buildDeclLine(d: IncomingDecl, chargeType: string): DeclLine {
     chargeType,
     depositMethod: outbound ? 'Standing Guarantee' : 'N/A',
     accountNumber: outbound ? 'ACC-100234' : '—',
+    refundMode: REFUND_MODE, refundAccountNo: REFUND_ACCOUNT_NO, refundAccountName: REFUND_ACCOUNT_NAME,
     depositAmount: '1,000.00',
     refundType: isNa ? 'NA' : outbound ? 'Full Export' : 'Refund',
     claimAmount: '1,000.00',
@@ -239,6 +249,9 @@ type DeclarationGroup = {
   declarationType: string;
   depositMethod: string;
   accountNumber: string;
+  refundMode: string;
+  refundAccountNo: string;
+  refundAccountName: string;
   subClaims: DeclLine[];
 };
 
@@ -259,6 +272,9 @@ function groupByDeclaration(lines: DeclLine[]): DeclarationGroup[] {
       /* The deposit sits against the declaration, so the first sub-claim speaks for all. */
       depositMethod: first.depositMethod,
       accountNumber: first.accountNumber,
+      refundMode: first.refundMode,
+      refundAccountNo: first.refundAccountNo,
+      refundAccountName: first.refundAccountName,
       subClaims,
     };
   });
@@ -329,8 +345,8 @@ function OutboundHsTable({ d, onViewOb }: { d: DeclLine; onViewOb: (obs: Outboun
     </div>
   );
 }
-
-/** One sub-claim: the charge type claimed, what it is worth, and its outbound details. */
+/** One sub-claim — a charge type claimed against the declaration, with whatever detail
+    that charge type carries nested inside its own card so the nesting is unmistakable. */
 function SubClaimBlock({ d, n, open, onToggle, onViewOb }: {
   d: DeclLine; n: number; open: boolean; onToggle: () => void; onViewOb: (obs: OutboundDetail[]) => void;
 }) {
@@ -340,10 +356,13 @@ function SubClaimBlock({ d, n, open, onToggle, onViewOb }: {
   const expandable = outbound || isCdm;
 
   return (
-    <div style={{ borderTop: '1px solid #eef1f6' }}>
-      <div className="flex flex-wrap items-center gap-x-[24px] gap-y-[8px] px-[16px] py-[10px]" style={{ background: '#fbfcfe' }}>
+    <div className="bg-white rounded-[8px] overflow-hidden"
+      style={{ border: `1px solid ${open ? '#1360d2' : '#e3e9f3'}`, boxShadow: '0px 1px 3px rgba(143,155,186,0.10)' }}>
+
+      {/* Sub-claim summary */}
+      <div className="flex flex-wrap items-center gap-x-[20px] gap-y-[8px] px-[14px] py-[10px]">
         <span className="inline-flex items-center justify-center size-[26px] rounded-full text-[14px] flex-shrink-0"
-          style={{ background: '#e2ebf9', color: '#1360d2', fontWeight: 600, fontFamily: font }}>{n}</span>
+          style={{ background: '#1360d2', color: '#fff', fontWeight: 600, fontFamily: font }}>{n}</span>
         <FieldItem label="Charge Type" value={d.chargeType} />
         <FieldItem label="Refund Type" value={d.refundType} />
         <FieldItem label="Status" value="Registered" />
@@ -359,57 +378,61 @@ function SubClaimBlock({ d, n, open, onToggle, onViewOb }: {
         ))}
       </div>
 
-      {/* Charge types with export linkage (Alternative Duty Deposit, Duty) expand to the
-          Invoice/HS Code table; CDM Deposit to a read-only reference summary; the rest —
-          Missing Document, Cargo Transfer, Declaration Amendment/Cancellation — to nothing. */}
+      {/* What this charge type carries. Export-linked types (Alternative Duty Deposit, Duty)
+          get the Invoice/HS Code table; CDM Deposit a reference summary; the rest nothing. */}
       {expandable && (
-        <button type="button" onClick={onToggle}
-          className={`w-full flex items-center gap-[10px] px-[20px] py-[10px] text-left transition-colors ${open ? '' : 'hover:bg-[#f8fafd]'}`}
-          style={{ border: 'none', borderTop: '1px solid #f5f7fc', background: open ? '#e2ebf9' : 'transparent', cursor: 'pointer', fontFamily: font }}>
-          <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="#697498" strokeWidth="2.2" strokeLinecap="round"
-            style={{ transition: 'transform 0.15s', transform: open ? 'rotate(90deg)' : 'rotate(0deg)', flexShrink: 0 }}>
-            <path d="M5 3l4 4-4 4" />
-          </svg>
-          <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>
-            {isCdm ? 'Additional Reference Details' : 'Outbound Declaration Details'}
-          </span>
-          {!isCdm && (
-            <span className="text-[14px] px-[10px] py-[3px] rounded-[12px]" style={{ background: open ? '#fff' : '#e2ebf9', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: font }}>
-              {allHs.length} HS Code{allHs.length !== 1 ? 's' : ''}
+        <div style={{ borderTop: '1px solid #eef1f6', background: '#fbfcfe' }}>
+          <button type="button" onClick={onToggle} aria-expanded={open}
+            className="w-full flex items-center gap-[10px] pl-[52px] pr-[16px] py-[10px] text-left transition-colors hover:bg-[#f2f6fd]"
+            style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: font }}>
+            {/* The rail ties this strip back to the sub-claim above it */}
+            <span aria-hidden className="flex-shrink-0" style={{ position: 'absolute', marginLeft: -26, width: 14, height: 1, background: '#c8d6ea' }} />
+            <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="#1360d2" strokeWidth="2.2" strokeLinecap="round"
+              style={{ transition: 'transform 0.15s', transform: open ? 'rotate(90deg)' : 'rotate(0deg)', flexShrink: 0 }}>
+              <path d="M5 3l4 4-4 4" />
+            </svg>
+            <span className="text-[15px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>
+              {isCdm ? 'Additional Reference Details' : 'Outbound Declaration Details'}
             </span>
+            {!isCdm && (
+              <span className="text-[13px] px-[9px] py-[2px] rounded-[12px]"
+                style={{ background: '#e2ebf9', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: font }}>
+                {allHs.length} HS Code{allHs.length !== 1 ? 's' : ''}
+              </span>
+            )}
+            <span className="text-[13px] text-[#697498] ml-auto" style={{ fontFamily: font, flexShrink: 0 }}>{open ? 'Collapse' : 'Expand'}</span>
+          </button>
+
+          {open && (
+            <div className="pl-[52px] pr-[16px] pb-[16px] pt-[14px]" style={{ borderTop: '1px solid #eef1f6', background: '#fff' }}>
+              {isCdm ? (
+                <div className="flex flex-wrap" style={{ margin: '0 -16px' }}>
+                  <FieldItem label="Reference Type" value={d.refType ?? ''} />
+                  <FieldItem label="Reference Code" value={d.refCode ?? ''} />
+                  <FieldItem label="Reference No." value={d.refNo ?? ''} />
+                </div>
+              ) : (
+                <OutboundHsTable d={d} onViewOb={onViewOb} />
+              )}
+            </div>
           )}
-          <span className="text-[14px] text-[#697498] ml-auto" style={{ fontFamily: font, flexShrink: 0 }}>{open ? 'Collapse' : 'Expand'}</span>
-        </button>
-      )}
-
-      {isCdm && open && (
-        <div className="px-[20px] pb-[16px] pt-[16px]" style={{ borderTop: '1px solid #f5f7fc' }}>
-          <div className="flex flex-wrap" style={{ margin: '0 -16px' }}>
-            <FieldItem label="Reference Type" value={d.refType ?? ''} />
-            <FieldItem label="Reference Code" value={d.refCode ?? ''} />
-            <FieldItem label="Reference No." value={d.refNo ?? ''} />
-          </div>
-        </div>
-      )}
-
-      {outbound && open && (
-        <div className="px-[20px] pb-[16px] pt-[16px]" style={{ borderTop: '1px solid #f5f7fc' }}>
-          <OutboundHsTable d={d} onViewOb={onViewOb} />
         </div>
       )}
     </div>
   );
 }
 
-/* ─── Declaration Details — one card per declaration, holding a sub-claim block for
-       every charge type claimed against it. ─── */
+/* ─── Declaration Details — one card per declaration. The declaration's own particulars
+       sit in the header; the charge types claimed against it are nested inside, each in
+       its own card on a tinted tray so a sub-claim's detail cannot be mistaken for a
+       sibling of the declaration. ─── */
 function DeclarationCard({ g, idx, isOpen, onToggle, onViewOb }: {
   g: DeclarationGroup; idx: number;
   isOpen: (key: string) => boolean; onToggle: (key: string) => void;
   onViewOb: (obs: OutboundDetail[]) => void;
 }) {
   return (
-    <div className="bg-white rounded-[8px] overflow-hidden" style={{ border: '1.5px solid #eef1f6', boxShadow: '0px 2px 8px rgba(143,155,186,0.12)' }}>
+    <div className="bg-white rounded-[8px] overflow-hidden" style={{ border: '1.5px solid #d9e3f2', boxShadow: '0px 2px 8px rgba(143,155,186,0.12)' }}>
       {/* The declaration itself — everything the sub-claims below share */}
       <div className="flex flex-wrap items-center gap-x-[24px] gap-y-[8px] px-[16px] py-[14px]">
         <span className="text-[16px] text-[#455174]" style={{ fontFamily: font }}>{idx + 1}</span>
@@ -418,19 +441,26 @@ function DeclarationCard({ g, idx, isOpen, onToggle, onViewOb }: {
         <FieldItem label="Declaration Type" value={g.declarationType} />
         <FieldItem label="Deposit Method" value={g.depositMethod} />
         <FieldItem label="Account Number" value={g.accountNumber} />
-        <span className="text-[14px] px-[10px] py-[3px] rounded-[12px] ml-auto flex-shrink-0"
-          style={{ background: '#e2ebf9', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: font }}>
-          {g.subClaims.length} sub-claim{g.subClaims.length !== 1 ? 's' : ''}
-        </span>
+        <FieldItem label="Refund Mode" value={g.refundMode} />
+        <FieldItem label={`${g.refundMode} No.`} value={g.refundAccountNo} />
+        <FieldItem label="Account Name" value={g.refundAccountName} />
       </div>
 
-      {g.subClaims.map((d, i) => {
-        const key = `${g.declarationNo}::${d.chargeType}`;
-        return (
-          <SubClaimBlock key={key} d={d} n={i + 1}
-            open={isOpen(key)} onToggle={() => onToggle(key)} onViewOb={onViewOb} />
-        );
-      })}
+      {/* Sub-claims tray — indented and tinted, so the cards inside read as children */}
+      <div className="px-[16px] py-[14px] flex flex-col gap-[12px]"
+        style={{ background: '#f1f5fc', borderTop: '1px solid #e3e9f3' }}>
+        <p className="text-[14px]" style={{ color: '#5a6b8c', fontFamily: font }}>
+          <span style={{ fontWeight: 600 }}>{g.subClaims.length} sub-claim{g.subClaims.length !== 1 ? 's' : ''}</span>
+          {' '}— one per charge type claimed against this declaration
+        </p>
+        {g.subClaims.map((d, i) => {
+          const key = `${g.declarationNo}::${d.chargeType}`;
+          return (
+            <SubClaimBlock key={key} d={d} n={i + 1}
+              open={isOpen(key)} onToggle={() => onToggle(key)} onViewOb={onViewOb} />
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -649,9 +679,9 @@ export default function RefundDepositsClaimViewPage({
               depositMethod="Debit Account"
               depositAccountNo="A-100004120"
               depositAccountName="CONSOLIDATED SHIPPING SERVICES L.L.C"
-              refundMode="Credit Account"
-              refundAccountNo="A-100004121"
-              refundAccountName="CONSOLIDATED SHIPPING SERVICES L.L.C"
+              /* The refund mode is set per declaration, so it is shown on each
+                 declaration card rather than once for the whole claim. */
+              showRefundMode={false}
             />
           </Section>
 

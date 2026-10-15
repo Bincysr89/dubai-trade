@@ -26,6 +26,8 @@ export type ClaimHeaderProps = {
   depositAccountNo?: string;
   depositAccountName?: string;
 
+  /** Hidden where the refund mode belongs to each declaration rather than the claim. */
+  showRefundMode?: boolean;
   refundMode?: RefundMode;
   /** Bank Transfer */
   bankAccountNo?: string;
@@ -77,6 +79,7 @@ export default function ClaimHeaderDetails({
   depositAccountNo = 'SG-100004120',
   depositAccountName = 'SW Logistics LLC',
 
+  showRefundMode = true,
   refundMode = 'Bank Transfer',
   bankAccountNo = '019100458921',
   bankAccountName = 'SW Logistics LLC',
@@ -141,11 +144,15 @@ export default function ClaimHeaderDetails({
         {depositFields.map(([l, v]) => <FieldItem key={l} label={l} value={v} />)}
       </div>
       {/* The refund mode and whatever it needs alongside it get a row of their own */}
-      <Divider />
-      <div className="flex flex-wrap">
-        <FieldItem label="Refund Mode" value={refundMode} />
-        {refundFields.map(([l, v]) => <FieldItem key={l} label={l} value={v} />)}
-      </div>
+      {showRefundMode && (
+        <>
+          <Divider />
+          <div className="flex flex-wrap">
+            <FieldItem label="Refund Mode" value={refundMode} />
+            {refundFields.map(([l, v]) => <FieldItem key={l} label={l} value={v} />)}
+          </div>
+        </>
+      )}
     </>
   );
 }
