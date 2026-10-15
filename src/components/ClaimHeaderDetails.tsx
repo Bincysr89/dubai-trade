@@ -139,16 +139,13 @@ export default function ClaimHeaderDetails({
       <div className="flex flex-wrap">
         <FieldItem label="Deposit Method" value={depositMethod} />
         {depositFields.map(([l, v]) => <FieldItem key={l} label={l} value={v} />)}
-        <FieldItem label="Refund Mode" value={refundMode} />
       </div>
-      {refundFields.length > 0 && (
-        <>
-          <Divider />
-          <div className="flex flex-wrap">
-            {refundFields.map(([l, v]) => <FieldItem key={l} label={l} value={v} />)}
-          </div>
-        </>
-      )}
+      {/* The refund mode and whatever it needs alongside it get a row of their own */}
+      <Divider />
+      <div className="flex flex-wrap">
+        <FieldItem label="Refund Mode" value={refundMode} />
+        {refundFields.map(([l, v]) => <FieldItem key={l} label={l} value={v} />)}
+      </div>
     </>
   );
 }
