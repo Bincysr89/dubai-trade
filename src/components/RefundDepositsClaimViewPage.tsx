@@ -123,11 +123,16 @@ const LEGACY_OUTBOUNDS: OutboundState = {
 };
 
 /* Generic/listing path — used only when no real chargeDetails are available. */
-function buildDeclLines(declarations: IncomingDecl[], chargeType: string): DeclLine[] {
+/* A declaration can be claimed against more than one deposit, so the demo claim carries
+   a second and third charge type alongside the one asked for — enough to show the
+   sub-claim grouping, and to cover the outbound-linked, plain and CDM variants. */
+const DEMO_EXTRA_CHARGE_TYPES = ['Missing Document Deposit', 'CDM Deposit'];
+
+function buildDeclLine(d: IncomingDecl, chargeType: string): DeclLine {
   const outbound = hasOutboundLinkage(chargeType);
   const isNa = hasNaRefundType(chargeType);
   const isCdm = chargeType === 'CDM Deposit';
-  return declarations.map(d => ({
+  return {
     declarationNo: d.declNo,
     actualDepartureDate: '15/01/2025',
     declarationType: d.category,
@@ -139,7 +144,12 @@ function buildDeclLines(declarations: IncomingDecl[], chargeType: string): DeclL
     claimAmount: '1,000.00',
     invoices: buildInvoiceGroups(d.declNo, outbound ? LEGACY_OUTBOUNDS : undefined),
     ...(isCdm ? { refType: 'Exemption Type', refCode: 'EXM-001', refNo: 'REF-2025-0142' } : {}),
-  }));
+  };
+}
+
+function buildDeclLines(declarations: IncomingDecl[], chargeType: string): DeclLine[] {
+  const types = [chargeType, ...DEMO_EXTRA_CHARGE_TYPES.filter(t => t !== chargeType)];
+  return declarations.flatMap(d => types.map(t => buildDeclLine(d, t)));
 }
 
 function buildDefaultDocs(declNo: string, outbound: boolean): ViewDoc[] {
@@ -220,12 +230,109 @@ function OutboundViewPopup({ obs, onClose }: { obs: OutboundDetail[]; onClose: (
     </div>
   );
 }
+/* ─── A declaration's charge-type claims, grouped under the declaration itself. One
+       declaration can be claimed against several deposits (Alternative Duty, Duty,
+       Missing Document …), and each of those is its own sub-claim. ─── */
+type DeclarationGroup = {
+  declarationNo: string;
+  actualDepartureDate: string;
+  declarationType: string;
+  depositMethod: string;
+  accountNumber: string;
+  subClaims: DeclLine[];
+};
 
-/* ─── Declaration Details — one card per declaration, expandable to a read-only
-       Outbound Declaration Details accordion with the Invoice/HS Code table,
-       mirroring the Refund Details step of the create/amend claim flow. ─── */
-function DeclarationCard({ d, idx, open, onToggle, onViewOb }: {
-  d: DeclLine; idx: number; open: boolean; onToggle: () => void; onViewOb: (obs: OutboundDetail[]) => void;
+function groupByDeclaration(lines: DeclLine[]): DeclarationGroup[] {
+  const order: string[] = [];
+  const byDecl = new Map<string, DeclLine[]>();
+  lines.forEach(l => {
+    if (!byDecl.has(l.declarationNo)) { order.push(l.declarationNo); byDecl.set(l.declarationNo, []); }
+    byDecl.get(l.declarationNo)!.push(l);
+  });
+  return order.map(declarationNo => {
+    const subClaims = byDecl.get(declarationNo)!;
+    const first = subClaims[0];
+    return {
+      declarationNo,
+      actualDepartureDate: first.actualDepartureDate,
+      declarationType: first.declarationType,
+      /* The deposit sits against the declaration, so the first sub-claim speaks for all. */
+      depositMethod: first.depositMethod,
+      accountNumber: first.accountNumber,
+      subClaims,
+    };
+  });
+}
+
+/** The Invoice / HS Code table a sub-claim with outbound linkage expands to. */
+function OutboundHsTable({ d, onViewOb }: { d: DeclLine; onViewOb: (obs: OutboundDetail[]) => void }) {
+  const allHs = d.invoices.flatMap(inv => inv.hsLines.map(hs => ({ inv, hs })));
+  return (
+    <div style={{ overflowX: 'auto' }}>
+      <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontFamily: font, minWidth: 1080 }}>
+        <thead>
+          <tr>
+            {['Invoice Number', 'Invoice Line Item No.', 'HS Code', 'Goods Description', 'Outbound Declaration No.', 'Statistical Qty', 'Supplementary Qty', 'Weight'].map(h => (
+              <th key={h} style={{ background: '#a6c2e9', padding: '10px 14px', textAlign: 'left', borderBottom: '1px solid #e8edf5', whiteSpace: 'nowrap' }}>
+                <span className="text-[16px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>{h}</span>
+              </th>
+            ))}
+            <th style={{ background: '#a6c2e9', padding: '10px 14px', textAlign: 'center', borderBottom: '1px solid #e8edf5', position: 'sticky', right: 0, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>
+              <span className="text-[16px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>Action</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {allHs.map(({ inv, hs }) => (
+            <tr key={hs.id} style={{ borderBottom: '1px solid #f0f3fa' }}>
+              <td style={{ padding: '10px 14px' }}><span className="text-[16px] whitespace-nowrap" style={{ color: '#455174', fontFamily: font }}>{inv.invoiceNo}</span></td>
+              <td style={{ padding: '10px 14px', textAlign: 'center' }}><span className="text-[16px]" style={{ color: '#455174', fontFamily: font }}>{hs.lineItemNo}</span></td>
+              <td style={{ padding: '10px 14px' }}><span className="text-[16px] whitespace-nowrap" style={{ color: '#051937', fontFamily: font, fontWeight: 500 }}>{hs.hsCode}</span></td>
+              <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#0e1b3d', fontFamily: font }}>{hs.description}</span></td>
+              <td style={{ padding: '10px 14px' }}>
+                {hs.outbound.length > 0 ? (
+                  hs.outbound.length === 1 ? (
+                    <button type="button" onClick={() => onViewOb(hs.outbound)}
+                      className="text-[16px] hover:underline text-left"
+                      style={{ color: '#1360d2', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontFamily: font, padding: 0, whiteSpace: 'nowrap' }}>
+                      {hs.outbound[0].declarationNo}
+                    </button>
+                  ) : (
+                    <button type="button" title={`${hs.outbound.length} outbound declarations`} onClick={() => onViewOb(hs.outbound)}
+                      className="text-[16px] font-medium inline-flex items-center justify-center hover:opacity-80 transition-opacity"
+                      style={{ background: 'rgba(19,96,210,0.08)', color: '#1360d2', minWidth: 32, height: 24, padding: '0 8px', borderRadius: 12, textDecoration: 'underline', border: 'none', cursor: 'pointer', fontFamily: font }}>
+                      {hs.outbound.length}
+                    </button>
+                  )
+                ) : (
+                  <span className="text-[16px]" style={{ color: '#c0c8d8' }}>—</span>
+                )}
+              </td>
+              <td style={{ padding: '10px 14px', textAlign: 'right' }}><span className="text-[16px] whitespace-nowrap" style={{ color: '#0e1b3d', fontFamily: font }}>{hs.statQty} <span className="text-[14px] text-[#697498]">{hs.unit}</span></span></td>
+              <td style={{ padding: '10px 14px', textAlign: 'right' }}><span className="text-[16px] whitespace-nowrap" style={{ color: '#0e1b3d', fontFamily: font }}>{hs.suppQty} <span className="text-[14px] text-[#697498]">{hs.unit}</span></span></td>
+              <td style={{ padding: '10px 14px', textAlign: 'right' }}><span className="text-[16px] whitespace-nowrap" style={{ color: '#0e1b3d', fontFamily: font }}>{hs.weight} <span className="text-[14px] text-[#697498]">kg</span></span></td>
+              <td style={{ padding: '10px 14px', textAlign: 'center', position: 'sticky', right: 0, background: '#fff', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>
+                <button type="button" title="View outbound declaration details" aria-label="View outbound declaration details"
+                  onClick={() => onViewOb(hs.outbound)} disabled={hs.outbound.length === 0}
+                  className="inline-flex items-center justify-center w-[34px] h-[34px] rounded-[4px] hover:bg-[#e8f0ff] transition-colors"
+                  style={{ border: '1px solid #d5ddfb', color: hs.outbound.length === 0 ? '#c0c8d8' : '#1360d2', cursor: hs.outbound.length === 0 ? 'not-allowed' : 'pointer' }}>
+                  <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/** One sub-claim: the charge type claimed, what it is worth, and its outbound details. */
+function SubClaimBlock({ d, n, open, onToggle, onViewOb }: {
+  d: DeclLine; n: number; open: boolean; onToggle: () => void; onViewOb: (obs: OutboundDetail[]) => void;
 }) {
   const allHs = d.invoices.flatMap(inv => inv.hsLines.map(hs => ({ inv, hs })));
   const outbound = hasOutboundLinkage(d.chargeType);
@@ -233,55 +340,35 @@ function DeclarationCard({ d, idx, open, onToggle, onViewOb }: {
   const expandable = outbound || isCdm;
 
   return (
-    <div className="bg-white rounded-[8px] overflow-hidden" style={{ border: `1.5px solid ${open && expandable ? '#1360d2' : '#eef1f6'}`, boxShadow: '0px 2px 8px rgba(143,155,186,0.12)' }}>
-      {/* Declaration summary row */}
-      <div className="flex flex-wrap items-center gap-x-[24px] gap-y-[8px] px-[16px] py-[14px]">
-        <span className="text-[16px] text-[#455174]" style={{ fontFamily: font }}>{idx + 1}</span>
-        <FieldItem label="Declaration No." value={d.declarationNo} />
-        <FieldItem label="Actual Departure Date" value={d.actualDepartureDate} />
-        <FieldItem label="Declaration Type" value={d.declarationType} />
+    <div style={{ borderTop: '1px solid #eef1f6' }}>
+      <div className="flex flex-wrap items-center gap-x-[24px] gap-y-[8px] px-[16px] py-[10px]" style={{ background: '#fbfcfe' }}>
+        <span className="inline-flex items-center justify-center size-[26px] rounded-full text-[14px] flex-shrink-0"
+          style={{ background: '#e2ebf9', color: '#1360d2', fontWeight: 600, fontFamily: font }}>{n}</span>
         <FieldItem label="Charge Type" value={d.chargeType} />
-        <FieldItem label="Deposit Method" value={d.depositMethod} />
-        <FieldItem label="Account Number" value={d.accountNumber} />
         <FieldItem label="Refund Type" value={d.refundType} />
         <FieldItem label="Status" value="Registered" />
-        {/* The claim amount alongside what was charged and what is actually refundable */}
         {([
           ['Claim Amount (AED)', d.claimAmount],
           ['Amount (AED)', d.claimAmount],
           ['Net Amount (AED)', d.claimAmount],
         ] as [string, string][]).map(([label, amount]) => (
-          <div key={label} className="flex flex-col gap-[4px] py-[12px] px-[16px]" style={{ flex: '1 0 160px', minWidth: 140 }}>
+          <div key={label} className="flex flex-col gap-[4px] py-[12px] px-[16px]" style={{ flex: '1 0 150px', minWidth: 130 }}>
             <span className="text-[16px]" style={{ color: '#455174', fontFamily: font }}>{label}</span>
             <span className="text-[16px] inline-flex items-baseline gap-[3px]" style={{ color: '#051937', fontFamily: font, fontWeight: 500 }}><Dh style={{ fontSize: 15 }} />{amount}</span>
           </div>
         ))}
-        {expandable && (
-          <button type="button" onClick={onToggle} aria-label={open ? 'Collapse outbound details' : 'Expand outbound details'}
-            className="size-[36px] rounded-full inline-flex items-center justify-center transition-colors ml-auto"
-            style={{ background: '#fff', border: '1px solid #e0e6ef', color: '#455174', boxShadow: '0px 1px 4px rgba(19,96,210,0.10)' }}>
-            <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"
-              style={{ transition: 'transform 0.15s', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-              <path d="M5 8l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-        )}
       </div>
 
-      {/* Outbound Declaration Details / Additional Reference Details — read-only accordion
-          toggle bar. Charge types with export/outbound linkage (Alternative Duty Deposit, Duty)
-          get the Invoice/HS Code table; CDM Deposit gets a read-only "Additional Reference
-          Details" summary instead; every other charge type (Missing Document, Cargo Transfer,
-          Declaration Amendment/Cancellation Deposit) has no expandable section at all, same as
-          the create/amend claim flow. */}
+      {/* Charge types with export linkage (Alternative Duty Deposit, Duty) expand to the
+          Invoice/HS Code table; CDM Deposit to a read-only reference summary; the rest —
+          Missing Document, Cargo Transfer, Declaration Amendment/Cancellation — to nothing. */}
       {expandable && (
-      <div style={{ borderTop: '1px solid #eef1f6' }}>
         <button type="button" onClick={onToggle}
-          className={`w-full flex items-center gap-[10px] px-[20px] py-[12px] text-left transition-colors ${open ? '' : 'hover:bg-[#f8fafd]'}`}
-          style={{ border: 'none', background: open ? '#e2ebf9' : 'transparent', cursor: 'pointer', fontFamily: font }}>
+          className={`w-full flex items-center gap-[10px] px-[20px] py-[10px] text-left transition-colors ${open ? '' : 'hover:bg-[#f8fafd]'}`}
+          style={{ border: 'none', borderTop: '1px solid #f5f7fc', background: open ? '#e2ebf9' : 'transparent', cursor: 'pointer', fontFamily: font }}>
           <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="#697498" strokeWidth="2.2" strokeLinecap="round"
             style={{ transition: 'transform 0.15s', transform: open ? 'rotate(90deg)' : 'rotate(0deg)', flexShrink: 0 }}>
-            <path d="M5 3l4 4-4 4"/>
+            <path d="M5 3l4 4-4 4" />
           </svg>
           <span className="text-[16px] text-[#0e1b3d]" style={{ fontWeight: 500 }}>
             {isCdm ? 'Additional Reference Details' : 'Outbound Declaration Details'}
@@ -293,7 +380,6 @@ function DeclarationCard({ d, idx, open, onToggle, onViewOb }: {
           )}
           <span className="text-[14px] text-[#697498] ml-auto" style={{ fontFamily: font, flexShrink: 0 }}>{open ? 'Collapse' : 'Expand'}</span>
         </button>
-      </div>
       )}
 
       {isCdm && open && (
@@ -308,67 +394,43 @@ function DeclarationCard({ d, idx, open, onToggle, onViewOb }: {
 
       {outbound && open && (
         <div className="px-[20px] pb-[16px] pt-[16px]" style={{ borderTop: '1px solid #f5f7fc' }}>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontFamily: font, minWidth: 1080 }}>
-              <thead>
-                <tr>
-                  {['Invoice Number', 'Invoice Line Item No.', 'HS Code', 'Goods Description', 'Outbound Declaration No.', 'Statistical Qty', 'Supplementary Qty', 'Weight'].map(h => (
-                    <th key={h} style={{ background: '#a6c2e9', padding: '10px 14px', textAlign: 'left', borderBottom: '1px solid #e8edf5', whiteSpace: 'nowrap' }}>
-                      <span className="text-[16px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>{h}</span>
-                    </th>
-                  ))}
-                  <th style={{ background: '#a6c2e9', padding: '10px 14px', textAlign: 'center', borderBottom: '1px solid #e8edf5', position: 'sticky', right: 0, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>
-                    <span className="text-[16px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>Action</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {allHs.map(({ inv, hs }) => (
-                  <tr key={hs.id} style={{ borderBottom: '1px solid #f0f3fa' }}>
-                    <td style={{ padding: '10px 14px' }}><span className="text-[16px] whitespace-nowrap" style={{ color: '#455174', fontFamily: font }}>{inv.invoiceNo}</span></td>
-                    <td style={{ padding: '10px 14px', textAlign: 'center' }}><span className="text-[16px]" style={{ color: '#455174', fontFamily: font }}>{hs.lineItemNo}</span></td>
-                    <td style={{ padding: '10px 14px' }}><span className="text-[16px] whitespace-nowrap" style={{ color: '#051937', fontFamily: font, fontWeight: 500 }}>{hs.hsCode}</span></td>
-                    <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#0e1b3d', fontFamily: font }}>{hs.description}</span></td>
-                    <td style={{ padding: '10px 14px' }}>
-                      {hs.outbound.length > 0 ? (
-                        hs.outbound.length === 1 ? (
-                          <button type="button" onClick={() => onViewOb(hs.outbound)}
-                            className="text-[16px] hover:underline text-left"
-                            style={{ color: '#1360d2', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontFamily: font, padding: 0, whiteSpace: 'nowrap' }}>
-                            {hs.outbound[0].declarationNo}
-                          </button>
-                        ) : (
-                          <button type="button" title={`${hs.outbound.length} outbound declarations`} onClick={() => onViewOb(hs.outbound)}
-                            className="text-[16px] font-medium inline-flex items-center justify-center hover:opacity-80 transition-opacity"
-                            style={{ background: 'rgba(19,96,210,0.08)', color: '#1360d2', minWidth: 32, height: 24, padding: '0 8px', borderRadius: 12, textDecoration: 'underline', border: 'none', cursor: 'pointer', fontFamily: font }}>
-                            {hs.outbound.length}
-                          </button>
-                        )
-                      ) : (
-                        <span className="text-[16px]" style={{ color: '#c0c8d8' }}>—</span>
-                      )}
-                    </td>
-                    <td style={{ padding: '10px 14px', textAlign: 'right' }}><span className="text-[16px] whitespace-nowrap" style={{ color: '#0e1b3d', fontFamily: font }}>{hs.statQty} <span className="text-[14px] text-[#697498]">{hs.unit}</span></span></td>
-                    <td style={{ padding: '10px 14px', textAlign: 'right' }}><span className="text-[16px] whitespace-nowrap" style={{ color: '#0e1b3d', fontFamily: font }}>{hs.suppQty} <span className="text-[14px] text-[#697498]">{hs.unit}</span></span></td>
-                    <td style={{ padding: '10px 14px', textAlign: 'right' }}><span className="text-[16px] whitespace-nowrap" style={{ color: '#0e1b3d', fontFamily: font }}>{hs.weight} <span className="text-[14px] text-[#697498]">kg</span></span></td>
-                    <td style={{ padding: '10px 14px', textAlign: 'center', position: 'sticky', right: 0, background: '#fff', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>
-                      <button type="button" title="View outbound declaration details" aria-label="View outbound declaration details"
-                        onClick={() => onViewOb(hs.outbound)} disabled={hs.outbound.length === 0}
-                        className="inline-flex items-center justify-center w-[34px] h-[34px] rounded-[4px] hover:bg-[#e8f0ff] transition-colors"
-                        style={{ border: '1px solid #d5ddfb', color: hs.outbound.length === 0 ? '#c0c8d8' : '#1360d2', cursor: hs.outbound.length === 0 ? 'not-allowed' : 'pointer' }}>
-                        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" />
-                          <circle cx="12" cy="12" r="3" />
-                        </svg>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <OutboundHsTable d={d} onViewOb={onViewOb} />
         </div>
       )}
+    </div>
+  );
+}
+
+/* ─── Declaration Details — one card per declaration, holding a sub-claim block for
+       every charge type claimed against it. ─── */
+function DeclarationCard({ g, idx, isOpen, onToggle, onViewOb }: {
+  g: DeclarationGroup; idx: number;
+  isOpen: (key: string) => boolean; onToggle: (key: string) => void;
+  onViewOb: (obs: OutboundDetail[]) => void;
+}) {
+  return (
+    <div className="bg-white rounded-[8px] overflow-hidden" style={{ border: '1.5px solid #eef1f6', boxShadow: '0px 2px 8px rgba(143,155,186,0.12)' }}>
+      {/* The declaration itself — everything the sub-claims below share */}
+      <div className="flex flex-wrap items-center gap-x-[24px] gap-y-[8px] px-[16px] py-[14px]">
+        <span className="text-[16px] text-[#455174]" style={{ fontFamily: font }}>{idx + 1}</span>
+        <FieldItem label="Declaration No." value={g.declarationNo} />
+        <FieldItem label="Actual Departure Date" value={g.actualDepartureDate} />
+        <FieldItem label="Declaration Type" value={g.declarationType} />
+        <FieldItem label="Deposit Method" value={g.depositMethod} />
+        <FieldItem label="Account Number" value={g.accountNumber} />
+        <span className="text-[14px] px-[10px] py-[3px] rounded-[12px] ml-auto flex-shrink-0"
+          style={{ background: '#e2ebf9', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: font }}>
+          {g.subClaims.length} sub-claim{g.subClaims.length !== 1 ? 's' : ''}
+        </span>
+      </div>
+
+      {g.subClaims.map((d, i) => {
+        const key = `${g.declarationNo}::${d.chargeType}`;
+        return (
+          <SubClaimBlock key={key} d={d} n={i + 1}
+            open={isOpen(key)} onToggle={() => onToggle(key)} onViewOb={onViewOb} />
+        );
+      })}
     </div>
   );
 }
@@ -387,20 +449,26 @@ export function DeclarationDetailsSection({ chargeDetails, rows, outbounds, decl
       : buildDeclLines(declarations ?? DEFAULT_DECLARATIONS, chargeType ?? 'Alternative Duty Deposit'),
     [hasRealData, chargeDetails, rows, outbounds, declarations, chargeType]
   );
-  const [openDeclIds, setOpenDeclIds] = useState<Set<string>>(() => new Set([declLines[0]?.declarationNo].filter(Boolean) as string[]));
-  const toggleDecl = (declarationNo: string) => setOpenDeclIds(prev => {
+  const groups = useMemo(() => groupByDeclaration(declLines), [declLines]);
+  /* Expansion is per sub-claim now, so the key carries the charge type too. */
+  const [openSubClaims, setOpenSubClaims] = useState<Set<string>>(() => {
+    const first = declLines[0];
+    return new Set(first ? [`${first.declarationNo}::${first.chargeType}`] : []);
+  });
+  const toggleSubClaim = (key: string) => setOpenSubClaims(prev => {
     const next = new Set(prev);
-    next.has(declarationNo) ? next.delete(declarationNo) : next.add(declarationNo);
+    next.has(key) ? next.delete(key) : next.add(key);
     return next;
   });
   const [viewOb, setViewOb] = useState<OutboundDetail[] | null>(null);
 
   return (
     <>
-      <Section title="Declaration Details" badge={`${declLines.length} declaration${declLines.length !== 1 ? 's' : ''}`}>
+      <Section title="Declaration Details" badge={`${groups.length} declaration${groups.length !== 1 ? 's' : ''}`}>
         <div className="flex flex-col gap-[16px]">
-          {declLines.map((d, i) => (
-            <DeclarationCard key={d.declarationNo} d={d} idx={i} open={openDeclIds.has(d.declarationNo)} onToggle={() => toggleDecl(d.declarationNo)} onViewOb={setViewOb} />
+          {groups.map((g, i) => (
+            <DeclarationCard key={g.declarationNo} g={g} idx={i}
+              isOpen={(key) => openSubClaims.has(key)} onToggle={toggleSubClaim} onViewOb={setViewOb} />
           ))}
         </div>
       </Section>
