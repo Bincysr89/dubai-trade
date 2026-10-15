@@ -6,8 +6,10 @@ const font = "'Dubai', sans-serif";
 type Props = {
   open: boolean;
   onClose: () => void;
-  /** One row per declaration the claim covers. */
+  /** One row per declaration — or auction lot — the claim covers. */
   declarations?: string[];
+  /** Heading for that first column; an auction claim lists lots, not declarations. */
+  itemLabel?: string;
   /** Per-declaration charges; the totals are worked out from these. */
   registrationCharge?: number;
   knowledgeDirham?: number;
@@ -32,7 +34,7 @@ function Amount({ value, bold }: { value: number; bold?: boolean }) {
  * Details card is made of, one line per declaration in the claim.
  */
 export default function ChargesBreakupModal({
-  open, onClose, declarations = SAMPLE_DECLARATIONS,
+  open, onClose, declarations = SAMPLE_DECLARATIONS, itemLabel = 'Declaration No.',
   registrationCharge = 50, knowledgeDirham = 20,
 }: Props) {
   useEffect(() => {
@@ -86,7 +88,7 @@ export default function ChargesBreakupModal({
             <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
               <thead>
                 <tr>
-                  <th style={th}><span className="text-[16px]" style={{ color: '#000', fontWeight: 600 }}>Declaration No.</span></th>
+                  <th style={th}><span className="text-[16px]" style={{ color: '#000', fontWeight: 600 }}>{itemLabel}</span></th>
                   <th style={{ ...th, textAlign: 'right' }}><span className="text-[16px]" style={{ color: '#000', fontWeight: 600 }}>Claim Registration Charge</span></th>
                   <th style={{ ...th, textAlign: 'right' }}><span className="text-[16px]" style={{ color: '#000', fontWeight: 600 }}>Knowledge and Innovation Dirham</span></th>
                 </tr>

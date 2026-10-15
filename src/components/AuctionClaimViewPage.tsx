@@ -293,7 +293,7 @@ export default function AuctionClaimViewPage({
 
       <ChargesBreakupModal open={breakupOpen} onClose={() => setBreakupOpen(false)}
 
-        declarations={breakupDeclarations} />
+        declarations={breakupDeclarations} itemLabel="Lot Number" />
 
 
       {/* Bottom bar */}
