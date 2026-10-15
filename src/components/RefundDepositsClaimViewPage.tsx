@@ -451,14 +451,13 @@ function DeclarationCard({ g, idx, isOpen, onToggle, onViewOb, onViewDeclaration
         </div>
         <FieldItem label="Actual Departure Date" value={g.actualDepartureDate} />
         <FieldItem label="Declaration Type" value={g.declarationType} />
-        <FieldItem label="Refund Mode" value={g.refundMode} />
-        <FieldItem label={`${g.refundMode} No.`} value={g.refundAccountNo} />
-        <FieldItem label="Account Name" value={g.refundAccountName} />
-        <span className="flex items-center gap-[20px] px-[16px] py-[12px] flex-wrap">
+        <span className="flex items-center gap-[14px] px-[16px] py-[12px] flex-wrap">
           <button type="button" onClick={onViewDeclaration}
             className="text-[16px] hover:underline" style={{ color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
             View Declaration
           </button>
+          {/* Short rule keeping the two links apart */}
+          <span aria-hidden style={{ width: 1, height: 16, background: '#c8d6ea', flexShrink: 0 }} />
           <button type="button" onClick={onViewPrivileges}
             className="text-[16px] hover:underline" style={{ color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
             View Privileges &amp; Benefits
