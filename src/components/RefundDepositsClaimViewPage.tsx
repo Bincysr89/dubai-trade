@@ -241,10 +241,18 @@ function DeclarationCard({ d, idx, open, onToggle, onViewOb }: {
         <FieldItem label="Deposit Method" value={d.depositMethod} />
         <FieldItem label="Account Number" value={d.accountNumber} />
         <FieldItem label="Refund Type" value={d.refundType} />
-        <div className="flex flex-col gap-[4px] py-[12px] px-[16px]" style={{ flex: '1 0 160px', minWidth: 140 }}>
-          <span className="text-[16px]" style={{ color: '#455174', fontFamily: font }}>Claim Amount (AED)</span>
-          <span className="text-[16px] inline-flex items-baseline gap-[3px]" style={{ color: '#051937', fontFamily: font, fontWeight: 500 }}><Dh style={{ fontSize: 15 }} />{d.claimAmount}</span>
-        </div>
+        <FieldItem label="Status" value="Registered" />
+        {/* The claim amount alongside what was charged and what is actually refundable */}
+        {([
+          ['Claim Amount (AED)', d.claimAmount],
+          ['Amount (AED)', d.claimAmount],
+          ['Net Amount (AED)', d.claimAmount],
+        ] as [string, string][]).map(([label, amount]) => (
+          <div key={label} className="flex flex-col gap-[4px] py-[12px] px-[16px]" style={{ flex: '1 0 160px', minWidth: 140 }}>
+            <span className="text-[16px]" style={{ color: '#455174', fontFamily: font }}>{label}</span>
+            <span className="text-[16px] inline-flex items-baseline gap-[3px]" style={{ color: '#051937', fontFamily: font, fontWeight: 500 }}><Dh style={{ fontSize: 15 }} />{amount}</span>
+          </div>
+        ))}
         {expandable && (
           <button type="button" onClick={onToggle} aria-label={open ? 'Collapse outbound details' : 'Expand outbound details'}
             className="size-[36px] rounded-full inline-flex items-center justify-center transition-colors ml-auto"

@@ -235,7 +235,7 @@ export default function NonRemittanceClaimViewPage({ onBack, selectedRows, uploa
               <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontFamily: font }}>
                 <thead>
                   <tr>
-                    {['S.No', 'Declaration Number', 'Declaration Clearance Date', 'Declaration Type', 'Owner Code'].map((h) => (
+                    {['S.No', 'Declaration Number', 'Declaration Clearance Date', 'Declaration Type', 'Owner Code', 'Refund Type', 'Status'].map((h) => (
                       <th key={h} style={{ background: '#a6c2e9', padding: '10px 14px', textAlign: 'left', borderBottom: '1px solid #e8edf5', whiteSpace: 'nowrap' }}>
                         <span className="text-[16px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>{h}</span>
                       </th>
@@ -250,6 +250,11 @@ export default function NonRemittanceClaimViewPage({ onBack, selectedRows, uploa
                       <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.declarationDate || '—'}</span></td>
                       <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.declarationCategory ?? 'Freezone Export'}</span></td>
                       <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.importerCode || '—'}</span></td>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>N/A</span></td>
+                      <td style={{ padding: '10px 14px' }}>
+                        <span className="inline-flex items-center px-[10px] py-[3px] rounded-[4px] text-[16px] whitespace-nowrap"
+                          style={{ background: 'rgba(40,167,69,0.10)', color: '#28a745', fontWeight: 500, fontFamily: font }}>Settled</span>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
