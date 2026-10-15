@@ -12,6 +12,18 @@ export function fmtDate(iso: string): string {
   return `${p2(d)}-${p2(m)}-${y}`;
 }
 
+/** Parse what the user typed — "05-06-2026", "05/06/2026" or "5-6-26" — back to YYYY-MM-DD.
+    Returns '' when it is not a date yet, so a half-typed field is simply not committed. */
+export function parseTypedDate(text: string): string {
+  const m = text.trim().match(/^(\d{1,2})[-/. ](\d{1,2})[-/. ](\d{2}|\d{4})$/);
+  if (!m) return '';
+  const day = +m[1], month = +m[2];
+  const year = m[3].length === 2 ? 2000 + +m[3] : +m[3];
+  if (month < 1 || month > 12 || day < 1) return '';
+  if (day > new Date(year, month, 0).getDate()) return '';
+  return `${year}-${p2(month)}-${p2(day)}`;
+}
+
 /** Format "YYYY-MM-DD HH:mm" → "05-06-2026 14:30" */
 export function fmtDateTime(val: string): string {
   if (!val) return '';
@@ -146,7 +158,12 @@ export function DateTimePicker({
           const isSel = isCur && selDay === cell.day;
           return (
             <button key={i} type="button"
-              onClick={() => { if (isCur) setSelDay(cell.day); }}
+              onClick={() => {
+                if (!isCur) return;
+                setSelDay(cell.day);
+                /* With no time to set, the day itself is the answer — no Confirm needed. */
+                if (!showTime) onConfirm(`${viewYear}-${p2(viewMonth + 1)}-${p2(cell.day)}`);
+              }}
               style={{
                 height: 36, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 13, borderRadius: '50%', border: 'none',
@@ -246,7 +263,6 @@ export function DateTimePicker({
     <div style={{ width: 300, fontFamily: FONT }}>
       {header}
       {mode === 'month' ? monthGrid : mode === 'year' ? yearGrid : dayGrid}
-      {confirmBtn()}
     </div>
   );
 }
@@ -305,6 +321,21 @@ export function DateInput({
   const [hovered, setHovered] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
 
+  const hasVal = !!value;
+  const displayVal = hasVal ? (showTime ? fmtDateTime(value) : fmtDate(value)) : '';
+
+  /* What the user is typing, until it parses into a date. */
+  const [typed, setTyped] = useState<string | null>(null);
+  const [focused, setFocused] = useState(false);
+  const shown = typed ?? displayVal;
+
+  const commit = (text: string) => {
+    if (!text.trim()) { onChange(''); setTyped(null); return; }
+    const iso = parseTypedDate(text);
+    if (iso) { onChange(showTime && value.includes(' ') ? `${iso} ${value.split(' ')[1]}` : iso); setTyped(null); }
+    else setTyped(displayVal);   /* not a date — put the field back */
+  };
+
   useEffect(() => {
     if (!open) return;
     const h = (e: MouseEvent) => {
@@ -314,11 +345,8 @@ export function DateInput({
     return () => document.removeEventListener('mousedown', h);
   }, [open]);
 
-  const hasVal = !!value;
-  const displayVal = hasVal ? (showTime ? fmtDateTime(value) : fmtDate(value)) : '';
-
   /* floating label — sits on the border line when active, centred in field when empty */
-  const floated = hasVal || open;
+  const floated = hasVal || open || focused || !!typed;
   const labelStyle: React.CSSProperties = {
     position: 'absolute',
     left: 10,
@@ -342,22 +370,41 @@ export function DateInput({
       onMouseLeave={() => setHovered(false)}>
       {/* Trigger field */}
       <div
-        onClick={() => { if (!disabled) setOpen(o => !o); }}
         style={{
-          height: 56, border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}`,
+          height: 56, border: `1px solid ${open || focused ? '#1360d2' : '#d5ddfb'}`,
           borderRadius: 4, background: disabled ? '#f2f4f8' : '#fff', display: 'flex', alignItems: 'center',
-          paddingLeft: 12, paddingRight: 12, cursor: disabled ? 'not-allowed' : 'pointer',
+          paddingLeft: 12, paddingRight: 12, cursor: disabled ? 'not-allowed' : 'text',
           justifyContent: 'space-between', boxSizing: 'border-box',
           transition: 'border-color 0.15s', opacity: disabled ? 0.65 : 1,
         }}>
-        <span style={{ fontSize: 16, color: hasVal ? '#0e1b3d' : 'transparent', fontFamily: FONT, lineHeight: 1, flex: 1 }}>
-          {displayVal || 'placeholder'}
-        </span>
+        {/* Typable — the calendar is one way in, the keyboard is the other */}
+        <input
+          type="text"
+          value={shown}
+          disabled={disabled}
+          placeholder={focused ? (showTime ? 'DD-MM-YYYY HH:mm' : 'DD-MM-YYYY') : ''}
+          onChange={e => setTyped(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={e => { setFocused(false); commit(e.target.value); }}
+          onKeyDown={e => {
+            if (e.key === 'Enter') { commit((e.target as HTMLInputElement).value); setOpen(false); }
+            if (e.key === 'Escape') { setTyped(null); setOpen(false); }
+          }}
+          style={{
+            fontSize: 16, color: '#0e1b3d', fontFamily: FONT, flex: 1, minWidth: 0,
+            border: 'none', outline: 'none', background: 'transparent', padding: 0,
+            cursor: disabled ? 'not-allowed' : 'text',
+          }}
+        />
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingBottom: 0 }}>
           {hasVal && hovered && !disabled && (
-            <XIcon onClear={e => { e.stopPropagation(); onChange(''); }} />
+            <XIcon onClear={e => { e.stopPropagation(); onChange(''); setTyped(null); }} />
           )}
-          <CalIcon />
+          <button type="button" aria-label={`Open ${label} calendar`} disabled={disabled}
+            onClick={() => { if (!disabled) setOpen(o => !o); }}
+            style={{ background: 'none', border: 'none', padding: 0, display: 'flex', cursor: disabled ? 'not-allowed' : 'pointer' }}>
+            <CalIcon />
+          </button>
         </div>
       </div>
       {/* Floating label */}
@@ -416,8 +463,16 @@ export function DateInputOutlined({
 }) {
   const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
+  const [typed, setTyped] = useState<string | null>(null);
+  const [focused, setFocused] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const f = fontOverride ?? FONT;
+
+  const commit = (text: string) => {
+    if (!text.trim()) { onChange(''); setTyped(null); return; }
+    const iso = parseTypedDate(text);
+    if (iso) { onChange(iso); setTyped(null); } else setTyped(fmtDate(value));
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -435,18 +490,31 @@ export function DateInputOutlined({
       <div style={{
         height: 56, border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}`,
         borderRadius: 4, background: '#fff', display: 'flex', alignItems: 'center',
-        paddingLeft: 16, paddingRight: 0, cursor: 'pointer', boxSizing: 'border-box',
+        paddingLeft: 16, paddingRight: 0, cursor: 'text', boxSizing: 'border-box',
         transition: 'border-color 0.15s',
-      }}
-        onClick={() => setOpen(o => !o)}>
-        <span style={{ flex: 1, fontSize: 16, color: value ? '#051937' : '#b0b8d0', fontFamily: f }}>
-          {value ? fmtDate(value) : ''}
-        </span>
+      }}>
+        <input
+          type="text"
+          value={typed ?? (value ? fmtDate(value) : '')}
+          placeholder={focused ? 'DD-MM-YYYY' : ''}
+          onChange={e => setTyped(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={e => { setFocused(false); commit(e.target.value); }}
+          onKeyDown={e => {
+            if (e.key === 'Enter') { commit((e.target as HTMLInputElement).value); setOpen(false); }
+            if (e.key === 'Escape') { setTyped(null); setOpen(false); }
+          }}
+          style={{ flex: 1, minWidth: 0, fontSize: 16, color: '#051937', fontFamily: f, border: 'none', outline: 'none', background: 'transparent', padding: 0 }}
+        />
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingRight: 12, flexShrink: 0 }}>
           {value && hovered && (
-            <XIcon onClear={e => { e.stopPropagation(); onChange(''); }} />
+            <XIcon onClear={e => { e.stopPropagation(); onChange(''); setTyped(null); }} />
           )}
-          <CalIcon />
+          <button type="button" aria-label={`Open ${label} calendar`}
+            onClick={() => setOpen(o => !o)}
+            style={{ background: 'none', border: 'none', padding: 0, display: 'flex', cursor: 'pointer' }}>
+            <CalIcon />
+          </button>
         </div>
       </div>
       <label style={{

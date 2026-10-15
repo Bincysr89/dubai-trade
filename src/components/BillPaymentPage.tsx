@@ -2786,13 +2786,12 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                           {openFlyout === absIdx + 100 && (
                             <div className="fixed z-[9999] bg-white rounded-[8px] py-[4px] overflow-hidden"
                               style={{ top: flyoutPos?.top, bottom: flyoutPos?.bottom, right: flyoutPos?.right, width: 210, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
-                              {['View Payment Details', 'View & Print Receipt', 'Make Payment', 'Recheck', 'Payment History'].map(item => (
+                              {['View Payment Details', 'View & Print Receipt', 'Recheck', 'Payment History'].map(item => (
                                 <button key={item} className="group w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
                                   onClick={() => {
                                     setOpenFlyout(null);
                                     if (item === 'View Payment Details') { setInvPayDetails(row); }
                                     else if (item === 'View & Print Receipt') { setPayFlyoutReceiptRows(row.details); setShowPayFlyoutReceipt(true); }
-                                    else if (item === 'Make Payment') { setActiveMenu('Invoices'); }
                                     else if (item === 'Recheck') { setRecheckIdx(absIdx); setRecheckOpen(true); }
                                     else if (item === 'Payment History') { setHistoryFor(row.invoiceNo || row.details[0]?.invoiceNo || ''); }
                                   }}>
