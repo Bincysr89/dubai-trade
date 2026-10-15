@@ -43,9 +43,13 @@ export type ClaimHeaderProps = {
   cardType?: string;
 };
 
+/** Four columns on a wide card, two on a narrow one — the same grid for every row,
+    so the second field of one row sits under the second field of the row above. */
+const ROW = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4';
+
 function FieldItem({ label, value }: { label: string; value?: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-[4px] py-[12px] px-[16px]" style={{ flex: '1 0 200px', minWidth: 180 }}>
+    <div className="flex flex-col gap-[4px] py-[12px] px-[16px] min-w-0">
       <span className="text-[16px]" style={{ color: '#455174', fontFamily: font }}>{label}</span>
       <span className="text-[16px]" style={{ color: '#051937', fontFamily: font, fontWeight: 500 }}>{value || '—'}</span>
     </div>
@@ -118,28 +122,28 @@ export default function ClaimHeaderDetails({
 
   return (
     <>
-      <div className="flex flex-wrap">
+      <div className={ROW}>
         <FieldItem label="Request No." value={requestNo} />
         <FieldItem label="Request Date" value={requestDate} />
         <FieldItem label="Request Status" value={requestStatus} />
         <FieldItem label="Claim Type" value={claimType} />
       </div>
       <Divider />
-      <div className="flex flex-wrap">
+      <div className={ROW}>
         <FieldItem label="Submission Date" value={submissionDate} />
         <FieldItem label="Registration Date" value={registrationDate} />
         <FieldItem label="Claim No." value={claimNo} />
         <FieldItem label="Claim Version" value={claimVersion} />
       </div>
       <Divider />
-      <div className="flex flex-wrap">
+      <div className={ROW}>
         <FieldItem label="Claimant" value={claimant} />
         <FieldItem label="Beneficiary" value={beneficiary} />
         <FieldItem label="Claim Status" value={claimStatus} />
         <FieldItem label="Customs Broker" value={customsBroker} />
       </div>
       <Divider />
-      <div className="flex flex-wrap">
+      <div className={ROW}>
         <FieldItem label="Deposit Method" value={depositMethod} />
         {depositFields.map(([l, v]) => <FieldItem key={l} label={l} value={v} />)}
       </div>
@@ -147,7 +151,7 @@ export default function ClaimHeaderDetails({
       {showRefundMode && (
         <>
           <Divider />
-          <div className="flex flex-wrap">
+          <div className={ROW}>
             <FieldItem label="Refund Mode" value={refundMode} />
             {refundFields.map(([l, v]) => <FieldItem key={l} label={l} value={v} />)}
           </div>

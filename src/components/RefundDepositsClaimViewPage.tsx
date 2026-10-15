@@ -235,17 +235,23 @@ const versionRows = [
 ];
 
 /* ─── Outbound Declaration — read-only view popup ─── */
-const OB_FIELDS: { label: string; get: (ob: OutboundDetail) => string }[] = [
+const OB_FIELDS: { label: string; get: (ob: OutboundDetail) => string; total?: boolean }[] = [
   { label: 'Customs Authority',     get: ob => ob.customsAuthority },
   { label: 'Outbound Declaration No.', get: ob => ob.declarationNo },
   { label: 'Declaration Type',      get: ob => ob.declarationType },
   { label: 'Exit Point',            get: ob => ob.exitPoint },
   { label: 'Actual Departure Date', get: ob => ob.actualDepartureDate },
   { label: 'Re-Export To',          get: ob => ob.reExportTo },
-  { label: 'Statistical Qty',       get: ob => ob.statQty },
-  { label: 'Supplementary Qty',     get: ob => ob.suppQty },
-  { label: 'Weight (kg)',           get: ob => ob.weight },
+  { label: 'Statistical Qty',       get: ob => ob.statQty, total: true },
+  { label: 'Supplementary Qty',     get: ob => ob.suppQty, total: true },
+  { label: 'Weight (kg)',           get: ob => ob.weight,  total: true },
 ];
+
+/** Adds up a column, keeping whole numbers whole. */
+function sumColumn(values: (string | undefined)[]): string {
+  const total = values.reduce<number>((sum, v) => sum + (parseFloat(v ?? '') || 0), 0);
+  return Number.isInteger(total) ? String(total) : total.toFixed(2);
+}
 function OutboundViewPopup({ obs, onClose }: { obs: OutboundDetail[]; onClose: () => void }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(14,27,61,0.45)', padding: 24 }}>
@@ -282,6 +288,15 @@ function OutboundViewPopup({ obs, onClose }: { obs: OutboundDetail[]; onClose: (
                     ))}
                   </tr>
                 ))}
+                {/* What the outbound declarations add up to */}
+                <tr style={{ borderTop: '1px solid #eef1f6', background: '#dce8f7' }}>
+                  <td style={{ padding: '12px' }} />
+                  {OB_FIELDS.map((c, i) => (
+                    <td key={c.label} className="text-[16px]" style={{ padding: '12px', whiteSpace: 'nowrap', color: '#051937', fontWeight: 700 }}>
+                      {c.total ? sumColumn(obs.map(c.get)) : i === OB_FIELDS.findIndex(f => f.total) - 1 ? 'Total' : ''}
+                    </td>
+                  ))}
+                </tr>
               </tbody>
             </table>
           </div>
@@ -453,6 +468,29 @@ function OutboundHsTable({ d, onViewOb }: { d: DeclLine; onViewOb: (obs: Outboun
             </tr>
           );
           })}
+          {/* The exported quantities this sub-claim adds up to */}
+          <tr style={{ background: '#dce8f7' }}>
+            <td style={{ padding: '10px 14px' }} />
+            <td style={{ padding: '10px 14px' }} />
+            <td style={{ padding: '10px 14px' }} />
+            <td style={{ padding: '10px 14px' }} />
+            <td style={{ padding: '10px 14px', textAlign: 'right' }}>
+              <span className="text-[16px]" style={{ color: '#051937', fontFamily: font, fontWeight: 700 }}>Total</span>
+            </td>
+            {([
+              sumColumn(allHs.map(({ hs }) => hs.statQty)),
+              sumColumn(allHs.map(({ hs }) => hs.suppQty)),
+              sumColumn(allHs.map(({ hs }) => hs.weight)),
+            ]).map((total, i) => (
+              <td key={i} style={{ padding: '10px 14px', textAlign: 'right' }}>
+                <span className="text-[16px] whitespace-nowrap" style={{ color: '#051937', fontFamily: font, fontWeight: 700 }}>
+                  {total}{i === 2 && <span className="text-[14px] text-[#697498]"> kg</span>}
+                </span>
+              </td>
+            ))}
+            {partial && <><td style={{ padding: '10px 14px' }} /><td style={{ padding: '10px 14px' }} /><td style={{ padding: '10px 14px' }} /></>}
+            <td style={{ padding: '10px 14px', position: 'sticky', right: 0, background: '#dce8f7', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }} />
+          </tr>
         </tbody>
       </table>
       {rowMenu && (
