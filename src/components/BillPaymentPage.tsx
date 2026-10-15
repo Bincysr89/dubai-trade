@@ -5,6 +5,7 @@ import Pagination from './Pagination';
 import infoIconSrc from '../assets/icon-info.svg';
 import { DateTimePicker, DateInput, StatusAsOnBadge } from './DatePicker';
 import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
+import PaymentHistoryPage, { type PaymentHistoryRow } from './PaymentHistoryPage';
 
 const font = "'Dubai', sans-serif";
 
@@ -1013,6 +1014,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const [panelCollapsed, setPanelCollapsed] = useState(false);
   const [activeMenu, setActiveMenu]         = useState<Menu>('Overview');
   const [step, setStep]                     = useState<InvStep>('list');
+  /* Payment History — opened from either listing's row menu, for one invoice. */
+  const [historyFor, setHistoryFor]         = useState<string | null>(null);
   const [showFilters, setShowFilters]       = useState(false);
   const [selectedRows, setSelectedRows]     = useState<Set<number>>(new Set());
   const [openFlyout, setOpenFlyout]         = useState<number | null>(null);
@@ -1377,6 +1380,47 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
     if (allSelected) return new Set([...prev].filter(i => !filteredInvIdxs.includes(i)));
     return new Set([...prev, ...filteredInvIdxs]);
   });
+
+  /* ── Payment History ─────────────────────────────────────────────────────── */
+  if (historyFor !== null) {
+    const historyRows: PaymentHistoryRow[] = PAYMENT_ROWS
+      .filter(r => !historyFor || r.invoiceNo === historyFor || r.details.some(d => d.invoiceNo === historyFor))
+      .map(r => {
+        const line = r.details.find(d => d.invoiceNo === historyFor) ?? r.details[0];
+        return {
+          txDate: r.txDate,
+          txNo: r.txNo,
+          receiptNo: line?.receiptNo ?? '',
+          invoiceType: r.type,
+          invoiceNo: historyFor || r.invoiceNo || line?.invoiceNo || '',
+          mode: r.mode,
+          amount: line?.amount ?? r.amount,
+          initiatedBy: r.initiatedBy,
+          status: r.status,
+        };
+      });
+    return (
+      <div className="fixed inset-0 z-50 bg-[#f8fafd] flex flex-col overflow-hidden">
+        <div className="flex-shrink-0"><Header onServiceCatalogue={onBack} onHome={handleHome} /></div>
+        <div className="flex-1 overflow-hidden">
+          <PaymentHistoryPage
+            subject={historyFor || undefined}
+            rows={historyRows}
+            onHome={handleHome}
+            onBack={() => setHistoryFor(null)}
+            onAction={(action, row) => {
+              const tx = PAYMENT_ROWS.find(p => p.txNo === row.txNo);
+              if (!tx) return;
+              if (action === 'viewDetails') { setHistoryFor(null); setInvPayDetails(tx); }
+              else if (action === 'viewReceipt' || action === 'downloadReceipt') {
+                setHistoryFor(null); setPayFlyoutReceiptRows(tx.details); setShowPayFlyoutReceipt(true);
+              }
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
 
   /* ── Pay screen ──────────────────────────────────────────────────────────── */
   if (step === 'pay') {
@@ -2432,7 +2476,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                                 onClick={() => {
                                   if (disabled) return;
                                   setOpenFlyout(null);
-                                  if (item === 'Initiate Payment') { setSelectedRows(new Set([absIdx])); setStep('pay'); }
+                                  if (item === 'Payment History') { setHistoryFor(row.number); }
+                                  else if (item === 'Initiate Payment') { setSelectedRows(new Set([absIdx])); setStep('pay'); }
                                   else if (item === 'View Payment Details' && payRows.length > 0) { setInvTxDetails(payRows); }
                                   else if (item === 'View & Print Receipt') {
                                     const rows = payRows[0]?.details ?? [{ type: row.type, invoiceNo: row.number, amount: row.balance, receiptNo: '—', remarks: '', status: row.status }];
@@ -2749,7 +2794,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                                     else if (item === 'View & Print Receipt') { setPayFlyoutReceiptRows(row.details); setShowPayFlyoutReceipt(true); }
                                     else if (item === 'Make Payment') { setActiveMenu('Invoices'); }
                                     else if (item === 'Recheck') { setRecheckIdx(absIdx); setRecheckOpen(true); }
-                                    else if (item === 'Payment History') { setActiveMenu('Payments'); }
+                                    else if (item === 'Payment History') { setHistoryFor(row.invoiceNo || row.details[0]?.invoiceNo || ''); }
                                   }}>
                                   <span className="text-[15px] text-[#111838] group-hover:text-white" style={{ fontFamily: font }}>{item}</span>
                                 </button>
