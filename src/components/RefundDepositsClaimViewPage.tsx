@@ -11,6 +11,7 @@ import { mergeDocsByBatch, type UploadedDoc } from './NonRemittanceDocumentsPage
 import type { Row } from './EligibleDeclarationsPage';
 import PrivilegesBenefitsModal, { AeoLogo, WlpLogo } from './PrivilegesBenefitsModal';
 import ClaimApprovalDetailsModal from './ClaimApprovalDetailsModal';
+import ModalShell, { ModalTable, ModalTh, modalTd } from './ModalShell';
 import WaiverDetailsModal from './WaiverDetailsModal';
 import ViewDeclarationPage from './declaration/ViewDeclarationPage';
 import MoreIcon from './MoreIcon';
@@ -326,12 +327,7 @@ function OutboundHsTable({ d, onViewOb }: { d: DeclLine; onViewOb: (obs: Outboun
   /* Partial Export claims only part of the line, so it also carries the unit price the
      claimed quantity was valued at — one price, or a split across several. */
   const partial = d.refundType === 'Partial Export';
-  const [openPrices, setOpenPrices] = useState<Set<string>>(() => new Set());
-  const togglePrices = (id: string) => setOpenPrices(prev => {
-    const next = new Set(prev);
-    next.has(id) ? next.delete(id) : next.add(id);
-    return next;
-  });
+  const [priceCtx, setPriceCtx] = useState<HsLine | null>(null);
   const columns = [
     'Invoice Number', 'Invoice Line Item No.', 'HS Code', 'Goods Description', 'Outbound Declaration No.',
     'Statistical Qty', 'Supplementary Qty', 'Weight',
@@ -355,11 +351,9 @@ function OutboundHsTable({ d, onViewOb }: { d: DeclLine; onViewOb: (obs: Outboun
         <tbody>
           {allHs.map(({ inv, hs }) => {
             const splits = hs.unitPrices ?? [];
-            const showSplits = partial && splits.length > 0;
-            const pricesOpen = openPrices.has(hs.id);
+            const isMultiple = partial && hs.allocationMethod === 'Multiple';
             return (
-            <React.Fragment key={hs.id}>
-            <tr style={{ borderBottom: showSplits && pricesOpen ? 'none' : '1px solid #f0f3fa' }}>
+            <tr key={hs.id} style={{ borderBottom: '1px solid #f0f3fa' }}>
               <td style={{ padding: '10px 14px' }}><span className="text-[16px] whitespace-nowrap" style={{ color: '#455174', fontFamily: font }}>{inv.invoiceNo}</span></td>
               <td style={{ padding: '10px 14px', textAlign: 'center' }}><span className="text-[16px]" style={{ color: '#455174', fontFamily: font }}>{hs.lineItemNo}</span></td>
               <td style={{ padding: '10px 14px' }}><span className="text-[16px] whitespace-nowrap" style={{ color: '#051937', fontFamily: font, fontWeight: 500 }}>{hs.hsCode}</span></td>
@@ -389,26 +383,22 @@ function OutboundHsTable({ d, onViewOb }: { d: DeclLine; onViewOb: (obs: Outboun
               {partial && (
                 <>
                   <td style={{ padding: '10px 14px' }}>
-                    {showSplits ? (
-                      <button type="button" onClick={() => togglePrices(hs.id)} aria-expanded={pricesOpen}
-                        className="text-[16px] inline-flex items-center gap-[6px] hover:underline"
-                        style={{ color: '#1360d2', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: font, fontWeight: 500, whiteSpace: 'nowrap' }}>
-                        <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"
-                          style={{ transition: 'transform 0.15s', transform: pricesOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}>
-                          <path d="M5 3l4 4-4 4" />
-                        </svg>
-                        {hs.allocationMethod}
-                        <span className="text-[13px] px-[8px] py-[1px] rounded-[10px]"
-                          style={{ background: '#e2ebf9', color: '#1360d2', fontWeight: 500 }}>{splits.length}</span>
-                      </button>
-                    ) : (
-                      <span className="text-[16px] whitespace-nowrap" style={{ color: '#0e1b3d', fontFamily: font }}>{hs.allocationMethod ?? '—'}</span>
-                    )}
+                    <span className="text-[16px] whitespace-nowrap" style={{ color: '#0e1b3d', fontFamily: font }}>{hs.allocationMethod ?? '—'}</span>
                   </td>
-                  <td style={{ padding: '10px 14px', textAlign: 'right' }}>
-                    {hs.unitPrice
-                      ? <span className="text-[16px] inline-flex items-baseline gap-[3px] whitespace-nowrap" style={{ color: '#0e1b3d', fontFamily: font }}><Dh style={{ fontSize: 15 }} />{hs.unitPrice}</span>
-                      : <span className="text-[16px]" style={{ color: '#c0c8d8' }}>—</span>}
+                  <td style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}>
+                    {isMultiple ? (
+                      /* Same control the flow uses for a split line — it opens the breakdown */
+                      <button type="button" onClick={() => setPriceCtx(hs)}
+                        className="inline-flex items-center gap-[6px] h-[36px] px-[14px] rounded-[4px] text-[14px] transition-colors hover:bg-[#e8f0ff]"
+                        style={{ border: '1.5px solid #1360d2', color: '#1360d2', fontFamily: font, fontWeight: 500, background: '#fff' }}>
+                        <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M3 8l3 3 7-7" /></svg>
+                        {splits.length} entr{splits.length !== 1 ? 'ies' : 'y'}
+                      </button>
+                    ) : hs.unitPrice ? (
+                      <span className="text-[16px] inline-flex items-baseline gap-[3px]" style={{ color: '#0e1b3d', fontFamily: font }}><Dh style={{ fontSize: 15 }} />{hs.unitPrice}</span>
+                    ) : (
+                      <span className="text-[16px]" style={{ color: '#c0c8d8' }}>—</span>
+                    )}
                   </td>
                   <td style={{ padding: '10px 14px' }}><span className="text-[16px] whitespace-nowrap" style={{ color: '#0e1b3d', fontFamily: font }}>{hs.currency ?? '—'}</span></td>
                 </>
@@ -425,58 +415,64 @@ function OutboundHsTable({ d, onViewOb }: { d: DeclLine; onViewOb: (obs: Outboun
                 </button>
               </td>
             </tr>
-            {showSplits && pricesOpen && (
-              <tr style={{ borderBottom: '1px solid #f0f3fa' }}>
-                <td colSpan={columns.length + 1} style={{ padding: '0 14px 14px 56px', background: '#f8fafd' }}>
-                  {/* Pinned to the left edge so the split stays readable however far the row is scrolled */}
-                  <div style={{ position: 'sticky', left: 56, width: 720, maxWidth: '100%' }}>
-                    <UnitPriceDetails lines={splits} unit={hs.unit} currency={hs.currency ?? 'AED'} />
-                  </div>
-                </td>
-              </tr>
-            )}
-            </React.Fragment>
           );
           })}
         </tbody>
       </table>
+      <UnitPriceDetailsModal hs={priceCtx} onClose={() => setPriceCtx(null)} />
     </div>
   );
 }
 
-/** Unit Price Details — the quantity split a "Multiple" allocation was claimed under. */
-function UnitPriceDetails({ lines, unit, currency }: { lines: UnitPriceLine[]; unit: string; currency: string }) {
+/** Unit Price Details — the split a "Multiple" allocation was claimed under, as the
+    create flow's Add Unit Price Details popup records it. */
+function UnitPriceDetailsModal({ hs, onClose }: { hs: HsLine | null; onClose: () => void }) {
+  const lines = hs?.unitPrices ?? [];
   const totalQty = lines.reduce((sum, l) => sum + (parseFloat(l.statQty) || 0), 0);
-  const th = { background: '#cbdef3', padding: '8px 12px', textAlign: 'left' as const, whiteSpace: 'nowrap' as const };
+  const currency = hs?.currency ?? 'AED';
   return (
-    <div className="flex flex-col gap-[8px] pt-[12px]">
-      <p className="text-[15px]" style={{ color: '#0e1b3d', fontFamily: font, fontWeight: 600 }}>Unit Price Details</p>
-      <div className="rounded-[6px] overflow-hidden" style={{ border: '1px solid #e3e9f3', background: '#fff' }}>
-        <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontFamily: font }}>
-          <thead>
-            <tr>
-              {['Statistical Quantity', 'Unit Price (As per the Import)', 'Currency'].map(h => (
-                <th key={h} style={th}><span className="text-[15px]" style={{ color: '#000', fontWeight: 600 }}>{h}</span></th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {lines.map(l => (
-              <tr key={l.id} style={{ borderTop: '1px solid #f0f3fa' }}>
-                <td style={{ padding: '8px 12px' }}><span className="text-[15px]" style={{ color: '#0e1b3d' }}>{l.statQty} <span className="text-[13px] text-[#697498]">{unit}</span></span></td>
-                <td style={{ padding: '8px 12px' }}><span className="text-[15px] inline-flex items-baseline gap-[3px]" style={{ color: '#0e1b3d' }}><Dh style={{ fontSize: 14 }} />{l.unitPrice}</span></td>
-                <td style={{ padding: '8px 12px' }}><span className="text-[15px]" style={{ color: '#0e1b3d' }}>{currency}</span></td>
-              </tr>
+    <ModalShell open={!!hs} onClose={onClose} title="Unit Price Details" maxWidth={720}>
+      {hs && (
+        <>
+          <div className="flex flex-wrap gap-y-[12px]">
+            {([
+              ['HS Code', hs.hsCode],
+              ['Line Item', String(hs.lineItemNo)],
+              ['Total Exported Statistical Quantity', `${hs.statQty} ${hs.unit}`],
+            ] as [string, string][]).map(([label, value]) => (
+              <div key={label} className="flex flex-col gap-[4px]" style={{ flex: '1 0 200px', minWidth: 180 }}>
+                <span className="text-[15px]" style={{ color: '#697498', fontFamily: font }}>{label}</span>
+                <span className="text-[16px]" style={{ color: '#0e1b3d', fontFamily: font, fontWeight: 500 }}>{value}</span>
+              </div>
             ))}
-          </tbody>
-        </table>
-      </div>
-      <p className="text-[14px]" style={{ color: '#697498', fontFamily: font }}>
-        Total Entered Statistical Quantity: <span style={{ color: '#0e1b3d', fontWeight: 600 }}>{totalQty} {unit}</span>
-      </p>
-    </div>
+          </div>
+
+          <ModalTable>
+            <thead>
+              <tr>
+                {['Statistical Quantity', 'Unit Price (As per the Import)', 'Currency'].map(h => <ModalTh key={h} label={h} />)}
+              </tr>
+            </thead>
+            <tbody>
+              {lines.map(l => (
+                <tr key={l.id} style={{ borderBottom: '1px solid #f0f3fa' }}>
+                  <td style={modalTd}><span className="text-[16px]" style={{ color: '#0e1b3d' }}>{l.statQty} <span className="text-[14px] text-[#697498]">{hs.unit}</span></span></td>
+                  <td style={modalTd}><span className="text-[16px] inline-flex items-baseline gap-[3px]" style={{ color: '#0e1b3d' }}><Dh style={{ fontSize: 15 }} />{l.unitPrice}</span></td>
+                  <td style={modalTd}><span className="text-[16px]" style={{ color: '#0e1b3d' }}>{currency}</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </ModalTable>
+
+          <p className="text-[15px]" style={{ color: '#697498', fontFamily: font }}>
+            Total Entered Statistical Quantity: <span style={{ color: '#0e1b3d', fontWeight: 600 }}>{totalQty} {hs.unit}</span>
+          </p>
+        </>
+      )}
+    </ModalShell>
   );
 }
+
 /** One sub-claim — a charge type claimed against the declaration, with whatever detail
     that charge type carries nested inside its own card so the nesting is unmistakable. */
 function SubClaimBlock({ d, n, open, onToggle, onViewOb }: {
