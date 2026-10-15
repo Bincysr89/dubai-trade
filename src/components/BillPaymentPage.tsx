@@ -2437,7 +2437,6 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                             'Download Invoice',
                             'Initiate Payment',
                             'Recheck',
-                            'Payment History',
                             'View & Print Receipt',
                           ].map(item => {
                             const disabled = item === 'View Payment Details' && payRows.length === 0;
@@ -2447,8 +2446,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                                 onClick={() => {
                                   if (disabled) return;
                                   setOpenFlyout(null);
-                                  if (item === 'Payment History') { setHistoryFor(row.number); }
-                                  else if (item === 'Initiate Payment') { setSelectedRows(new Set([absIdx])); setStep('pay'); }
+                                  if (item === 'Initiate Payment') { setSelectedRows(new Set([absIdx])); setStep('pay'); }
                                   else if (item === 'View Payment Details' && payRows.length > 0) { setInvTxDetails(payRows); }
                                   else if (item === 'View & Print Receipt') {
                                     const rows = payRows[0]?.details ?? [{ type: row.type, invoiceNo: row.number, amount: row.balance, receiptNo: '—', remarks: '', status: row.status }];
