@@ -2507,7 +2507,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
           </button>
           {paySearchTypeOpen && (
             <div className="absolute z-[200] top-[50px] left-0 bg-white shadow-lg rounded border border-[#e0e8f5] w-[180px] py-1">
-              {['Transaction No.', 'Invoice Type'].map(opt => (
+              {['Transaction No.', 'Receipt No.', 'Invoice Type'].map(opt => (
                 <button key={opt} className="w-full px-4 py-2 text-left text-[16px] text-[#0e1b3d] hover:bg-[#e2ebf9]" style={{ fontFamily: font }}
                   onClick={() => { setPaySearchType(opt); setPaySearchValue(''); setPaySearchTypeOpen(false); }}>{opt}</button>
               ))}
@@ -2532,7 +2532,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 type="text"
                 value={paySearchValue}
                 onChange={e => setPaySearchValue(e.target.value)}
-                placeholder="Transaction no…"
+                placeholder={paySearchType === 'Receipt No.' ? 'Receipt no…' : 'Transaction no…'}
                 className="flex-1 text-[16px] text-[#0e1b3d] placeholder-[#8f94ae] bg-transparent focus:outline-none min-w-0"
                 style={{ fontFamily: font }}
               />
@@ -2602,31 +2602,42 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
             </svg>
           </button>
-          {/* Row 1: 5 fields */}
-          <div className="grid grid-cols-5 gap-4 mb-4">
-            <FloatDropdown
-              label="Invoice Type"
-              value={paySearchType === 'Invoice Type' ? paySearchValue : ''}
-              options={['Case Management Demand Notice', 'Multiple Bill Settlement']}
-              onChange={v => { setPaySearchType('Invoice Type'); setPaySearchValue(v); }}
-            />
-            <FloatInput
-              label="Invoice / Account No."
-              value={paySearchType === 'Transaction No.' ? paySearchValue : ''}
-              onChange={v => { setPaySearchType('Transaction No.'); setPaySearchValue(v); }}
-            />
-            <FloatDropdown
-              label="Date Filter Type"
-              value={payDateFilterType}
-              options={['Receipt Date', 'Transaction Date']}
-              onChange={v => { setPayDateFilterType(v); if (!v) { setPayFromDate(''); setPayToDate(''); } }}
-            />
-            <DateInput label="From Date" value={payFromDate} onChange={setPayFromDate} disabled={!payDateFilterType} />
-            <DateInput label="To Date" value={payToDate} onChange={setPayToDate} disabled={!payDateFilterType} />
-          </div>
-          {/* Row 2: 1 field + buttons */}
-          <div className="flex items-center gap-4">
-            <div style={{ width: 'calc(25% - 12px)' }}>
+          {/* Dates ahead of the status, as the Invoices panel reads, with the
+              buttons inline after the last field rather than on a row of their own */}
+          <div className="flex items-start gap-4 flex-wrap">
+            <div className="flex-1 min-w-[190px]">
+              <FloatDropdown
+                label="Invoice Type"
+                value={paySearchType === 'Invoice Type' ? paySearchValue : ''}
+                options={['Case Management Demand Notice', 'Multiple Bill Settlement']}
+                onChange={v => { setPaySearchType('Invoice Type'); setPaySearchValue(v); }}
+              />
+            </div>
+            <div className="flex-1 min-w-[190px]">
+              <FloatInput
+                label="Invoice / Account No."
+                value={paySearchType === 'Transaction No.' ? paySearchValue : ''}
+                onChange={v => { setPaySearchType('Transaction No.'); setPaySearchValue(v); }}
+              />
+            </div>
+            <div className="flex-1 min-w-[190px]">
+              <FloatDropdown
+                label="Date Filter Type"
+                value={payDateFilterType}
+                options={['Receipt Date', 'Transaction Date']}
+                onChange={v => { setPayDateFilterType(v); if (!v) { setPayFromDate(''); setPayToDate(''); } }}
+              />
+            </div>
+            {/* The pair wraps together, so a To Date never strands itself on its own row */}
+            <div className="flex gap-4 min-w-[360px]" style={{ flex: '2 1 360px' }}>
+              <div className="flex-1 min-w-0">
+                <DateInput label="From Date" value={payFromDate} onChange={setPayFromDate} disabled={!payDateFilterType} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <DateInput label="To Date" value={payToDate} onChange={setPayToDate} disabled={!payDateFilterType} />
+              </div>
+            </div>
+            <div className="flex-1 min-w-[170px]">
               <FloatDropdown
                 label="Status"
                 value={payStatusFilter}
