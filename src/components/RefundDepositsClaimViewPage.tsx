@@ -493,6 +493,15 @@ export default function RefundDepositsClaimViewPage({
     () => hasRealData ? buildDeclLinesFromCharges(chargeDetails!, rows, outbounds) : buildDeclLines(declarations, chargeType),
     [hasRealData, chargeDetails, rows, outbounds, declarations, chargeType]
   );
+  /* The card's amounts are the per-declaration charges totalled up, so they agree
+     with the sub totals and grand total in the Charges breakup popup. */
+  const breakupDeclarations = declLines.map(d => d.declarationNo);
+  const breakupCount = Math.max(1, breakupDeclarations.length);
+  const chargeRows = [
+    { type: 'Claim Registration Charge', amt: (50 * breakupCount).toFixed(2), receipt: 'A-100650705' },
+    { type: 'Knowledge & Innovation Dirham', amt: (20 * breakupCount).toFixed(2), receipt: 'A-100650706' },
+  ];
+  const chargeTotal = (70 * breakupCount).toFixed(2);
   const outbound = hasRealData ? declLines.some(d => hasOutboundLinkage(d.chargeType)) : hasOutboundLinkage(chargeType);
   const defaultDocs = useMemo(() => buildDefaultDocs(declLines[0]?.declarationNo ?? '—', outbound), [declLines, outbound]);
   const docsSource: ViewDoc[] = (uploadedDocs && uploadedDocs.length > 0)
@@ -581,10 +590,7 @@ export default function RefundDepositsClaimViewPage({
                   </tr>
                 </thead>
                 <tbody>
-                  {[
-                    { type: 'Claim Registration Charge', amt: '50.00', receipt: 'A-100650705' },
-                    { type: 'Knowledge & Innovation Dirham', amt: '20.00', receipt: 'A-100650706' },
-                  ].map((row) => (
+                  {chargeRows.map((row) => (
                     <tr key={row.type} style={{ borderBottom: '1px solid #f0f3fa' }}>
                       <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.type}</span></td>
                       <td style={{ padding: '10px 14px' }}><span className="text-[16px] inline-flex items-baseline gap-[3px]" style={{ color: '#051937', fontFamily: font }}><Dh style={{ fontSize: 15 }} />{row.amt}</span></td>
@@ -595,7 +601,7 @@ export default function RefundDepositsClaimViewPage({
                   ))}
                   <tr style={{ background: '#dce8f7' }}>
                     <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font, fontWeight: 700 }}>Total</span></td>
-                    <td style={{ padding: '10px 14px' }}><span className="text-[16px] inline-flex items-baseline gap-[3px]" style={{ color: '#051937', fontFamily: font, fontWeight: 700 }}><Dh style={{ fontSize: 15 }} />70.00</span></td>
+                    <td style={{ padding: '10px 14px' }}><span className="text-[16px] inline-flex items-baseline gap-[3px]" style={{ color: '#051937', fontFamily: font, fontWeight: 700 }}><Dh style={{ fontSize: 15 }} />{chargeTotal}</span></td>
                     <td colSpan={3} style={{ padding: '10px 14px' }}>
                       <button type="button" onClick={() => setBreakupOpen(true)}
                         className="text-[16px] underline hover:opacity-80 transition-opacity"
@@ -666,7 +672,7 @@ export default function RefundDepositsClaimViewPage({
 
       <ChargesBreakupModal open={breakupOpen} onClose={() => setBreakupOpen(false)}
 
-        declarations={declLines.map(d => d.declarationNo)} />
+        declarations={breakupDeclarations} />
 
 
       {/* Bottom bar */}
