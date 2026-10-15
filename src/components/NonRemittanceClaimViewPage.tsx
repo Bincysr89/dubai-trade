@@ -3,6 +3,7 @@ import type { Row } from './EligibleDeclarationsPage';
 import { mergeDocsByBatch, type UploadedDoc } from './NonRemittanceDocumentsPage';
 import Dh from './Dh';
 import ClaimHeaderDetails from './ClaimHeaderDetails';
+import { claimHeaderDefaultsFor } from './claimHeaderDefaults';
 import ChargesBreakupModal from './ChargesBreakupModal';
 import ClaimRequestVersions from './ClaimRequestVersions';
 
@@ -186,8 +187,7 @@ export default function NonRemittanceClaimViewPage({ onBack, selectedRows, uploa
             <ClaimHeaderDetails
               claimType="Non Remittance Claim"
               claimNo="2420390"
-              depositMethod="Standing Guarantee"
-              refundMode="Bank Transfer"
+              {...claimHeaderDefaultsFor('Non Remittance Claim')}
             />
           </Section>
 

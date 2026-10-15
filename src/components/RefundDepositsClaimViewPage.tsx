@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Dh from './Dh';
 import ClaimHeaderDetails from './ClaimHeaderDetails';
+import { claimHeaderDefaultsFor } from './claimHeaderDefaults';
 import ChargesBreakupModal from './ChargesBreakupModal';
 import ClaimRequestVersions from './ClaimRequestVersions';
 import {
@@ -165,9 +166,10 @@ type IncomingDecl = { declNo: string; date: string; category: string; ownerCode:
 
 /* Demo refund-mode values — in the real flow these come from the declaration's own
    refund details, which is why they are shown per declaration and not on the claim. */
-const REFUND_MODE = 'Credit Account';
-const REFUND_ACCOUNT_NO = 'A-100004121';
-const REFUND_ACCOUNT_NAME = 'CONSOLIDATED SHIPPING SERVICES L.L.C';
+const RD_HEADER = claimHeaderDefaultsFor('Refund of Deposits');
+const REFUND_MODE = RD_HEADER.refundMode;
+const REFUND_ACCOUNT_NO = RD_HEADER.refundAccountNo;
+const REFUND_ACCOUNT_NAME = RD_HEADER.refundAccountName;
 
 /* Default demo declaration — used when the page is opened without a specific claim's data
    (e.g. the "View Claim" link nested inside ClaimCancelFlow). */
@@ -986,9 +988,7 @@ export default function RefundDepositsClaimViewPage({
               registrationDate={submissionDate}
               claimant="CONSOLIDATED SHIPPING SERVICES L.L.C (Business - AE-1019056)"
               beneficiary="CONSOLIDATED SHIPPING SERVICES L.L.C (Business - AE-1019056)"
-              depositMethod="Debit Account"
-              depositAccountNo="A-100004120"
-              depositAccountName="CONSOLIDATED SHIPPING SERVICES L.L.C"
+              {...claimHeaderDefaultsFor(claimType)}
               /* The refund mode is set per declaration, so it is shown on each
                  declaration card rather than once for the whole claim. */
               showRefundMode={false}

@@ -1,5 +1,10 @@
 import React from 'react';
 import type { Row } from './EligibleDeclarationsPage';
+import type { AuctionLotRow } from './AuctionLotDetailsPage';
+import type { AuctionClaimDetail } from './AuctionClaimDetailsPage';
+import { depositFieldsFor, refundFieldsFor, type DepositMethod, type RefundMode } from './ClaimHeaderDetails';
+import { claimHeaderDefaultsFor } from './claimHeaderDefaults';
+import Dh from './Dh';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
 
@@ -9,6 +14,15 @@ function FieldItem({ label, value }: { label: string; value: string }) {
       <span className="text-[14px]" style={{ color: '#455174', fontFamily: font }}>{label}</span>
       <span className="text-[16px]" style={{ color: '#051937', fontFamily: font, fontWeight: 500 }}>{value || '—'}</span>
     </div>
+  );
+}
+
+function Amount({ value, bold }: { value: string; bold?: boolean }) {
+  return (
+    <span className="text-[16px] inline-flex items-baseline gap-[3px] whitespace-nowrap"
+      style={{ color: '#051937', fontFamily: font, fontWeight: bold ? 700 : 400 }}>
+      <Dh style={{ fontSize: 15 }} />{value}
+    </span>
   );
 }
 
@@ -27,10 +41,85 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-type Props = { onBack: () => void; selectedRows: Row[] };
+type Props = {
+  onBack: () => void;
+  selectedRows: Row[];
+  /** Which claim the receipt is for — it decides what the Claim Details table lists. */
+  claimType?: string;
+  /** Auction claims list lots instead of declarations. */
+  auctionLots?: AuctionLotRow[];
+  auctionClaimDetails?: AuctionClaimDetail[];
+  customsBroker?: string;
+  depositMethod?: DepositMethod;
+  depositAccountNo?: string;
+  depositAccountName?: string;
+  refundMode?: RefundMode;
+  bankAccountNo?: string;
+  bankAccountName?: string;
+  bankName?: string;
+  iban?: string;
+  refundAccountNo?: string;
+  refundAccountName?: string;
+  maskedCardNo?: string;
+  cardType?: string;
+  cardHolderName?: string;
+};
 
-export default function NonRemittanceAckPage({ onBack, selectedRows }: Props) {
+/** The claim amount for a declaration line — the flow's own figure where it has one. */
+const DEMO_CLAIM_AMOUNT = '1,000.00';
+const DEMO_CP_ADVICE = 'CP-2026-00418';
+
+/** Props left out must not blank a default out. */
+function stripUndefined<T extends object>(o: T): Partial<T> {
+  return Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as Partial<T>;
+}
+
+function toAmount(value: string) {
+  return parseFloat(String(value).replace(/[^0-9.]/g, '')) || 0;
+}
+
+/** Same 1,000.00 shape the lines above the total use. */
+function formatAmount(value: number) {
+  return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+export default function NonRemittanceAckPage({
+  onBack, selectedRows,
+  claimType = 'Non Remittance Claim',
+  auctionLots = [], auctionClaimDetails = [],
+  ...overrides
+}: Props) {
+  /* The deposit and refund blocks come from the same place the View Claim page reads,
+     so a claim cannot show one refund mode on one page and another on the other. */
+  const {
+    customsBroker, depositMethod, depositAccountNo, depositAccountName, refundMode,
+    bankAccountNo, bankAccountName, bankName, iban,
+    refundAccountNo, refundAccountName, maskedCardNo, cardType, cardHolderName,
+  } = { ...claimHeaderDefaultsFor(claimType), ...stripUndefined(overrides) };
   const displayRows = selectedRows.length > 0 ? selectedRows : [{ declarationNo: '3030004738426', declarationDate: '', depositType: 'Non Remittance Claim', declarationCategory: null, depositAmount: 'N/A', depositMethod: 'N/A', claimExpiry: '', exportExpiry: '', remarks: '', kind: 'request' as const }];
+
+  const isAuction = /auction/i.test(claimType);
+  const depositFields = depositFieldsFor(depositMethod, depositAccountNo, depositAccountName);
+  const refundFields = refundFieldsFor(refundMode, {
+    bankAccountNo, bankAccountName, bankName, iban,
+    refundAccountNo, refundAccountName, maskedCardNo, cardType, cardHolderName,
+  });
+
+  /* Auction claims are listed by lot; every other claim type by declaration. */
+  const lotLines = auctionLots.map((lot, i) => ({
+    key: `${lot.auctionLotNo}-${i}`,
+    auctionNo: lot.auctionNo,
+    auctionLotNo: lot.auctionLotNo,
+    claimAmount: auctionClaimDetails.find(c => c.auctionLotNo === lot.auctionLotNo)?.claimAmount || DEMO_CLAIM_AMOUNT,
+  }));
+  const declLines = displayRows.map((row, i) => ({
+    key: `${row.declarationNo}-${i}`,
+    declarationNo: row.declarationNo,
+    chargeType: row.depositType || claimType,
+    cpAdviceNo: DEMO_CP_ADVICE,
+    claimAmount: row.depositAmount && row.depositAmount !== 'N/A' ? row.depositAmount.replace(/^Dh\s*/, '') : DEMO_CLAIM_AMOUNT,
+  }));
+  const subTotal = (isAuction ? lotLines : declLines).reduce((sum, l) => sum + toAmount(l.claimAmount), 0);
 
   return (
     <div className="flex flex-col h-full bg-[#f8fafd]">
@@ -61,7 +150,7 @@ export default function NonRemittanceAckPage({ onBack, selectedRows }: Props) {
           <Section title="Claim Header Details">
             <div className="flex flex-wrap">
               <FieldItem label="Claim No. & Version" value="2420390-1 (Under Processing)" />
-              <FieldItem label="Claim Type" value="Non Remittance Claim" />
+              <FieldItem label="Claim Type" value={claimType} />
             </div>
             <Divider />
             <div className="flex flex-wrap">
@@ -71,30 +160,60 @@ export default function NonRemittanceAckPage({ onBack, selectedRows }: Props) {
             <Divider />
             <div className="flex flex-wrap">
               <FieldItem label="Claim Registration Date" value="29/06/2026" />
+              <FieldItem label="Customs Broker" value={customsBroker} />
+            </div>
+            <Divider />
+            <div className="flex flex-wrap">
+              <FieldItem label="Deposit Method" value={depositMethod} />
+              {depositFields.map(([l, v]) => <FieldItem key={l} label={l} value={v ?? ''} />)}
+            </div>
+            <Divider />
+            <div className="flex flex-wrap">
+              <FieldItem label="Refund Mode" value={refundMode} />
+              {refundFields.map(([l, v]) => <FieldItem key={l} label={l} value={v ?? ''} />)}
             </div>
           </Section>
 
-          {/* Claim Details */}
+          {/* Claim Details — auction claims are listed by lot, the rest by declaration */}
           <Section title="Claim Details">
             <div className="px-[16px] py-[12px] overflow-x-auto">
-              <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontFamily: font }}>
+              <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontFamily: font, minWidth: 720 }}>
                 <thead>
                   <tr>
-                    {['S.No', 'Declaration No.', 'Charge Type'].map((h) => (
+                    {(isAuction
+                      ? ['Sr. No.', 'Auction Number', 'Auction Lots No.', 'Claim Amount (AED)']
+                      : ['Sl. No.', 'Declaration Number', 'Charge Type', 'CP Advice No.', 'Claim Amount (AED)']
+                    ).map((h) => (
                       <th key={h} style={{ background: '#a6c2e9', padding: '10px 14px', textAlign: 'left', borderBottom: '1px solid #e8edf5' }}>
-                        <span className="text-[16px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>{h}</span>
+                        <span className="text-[16px]" style={{ color: '#000', fontFamily: font, fontWeight: 600, whiteSpace: 'nowrap' }}>{h}</span>
                       </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {displayRows.map((row, i) => (
-                    <tr key={row.declarationNo} style={{ borderBottom: '1px solid #f0f3fa' }}>
+                  {isAuction ? lotLines.map((l, i) => (
+                    <tr key={l.key} style={{ borderBottom: '1px solid #f0f3fa' }}>
                       <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{i + 1}</span></td>
-                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font, fontWeight: 500 }}>{row.declarationNo}</span></td>
-                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>Non Remittance Claim</span></td>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{l.auctionNo}</span></td>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font, fontWeight: 500 }}>{l.auctionLotNo}</span></td>
+                      <td style={{ padding: '10px 14px' }}><Amount value={l.claimAmount} /></td>
+                    </tr>
+                  )) : declLines.map((l, i) => (
+                    <tr key={l.key} style={{ borderBottom: '1px solid #f0f3fa' }}>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{i + 1}</span></td>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font, fontWeight: 500 }}>{l.declarationNo}</span></td>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{l.chargeType}</span></td>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{l.cpAdviceNo}</span></td>
+                      <td style={{ padding: '10px 14px' }}><Amount value={l.claimAmount} /></td>
                     </tr>
                   ))}
+                  {/* What the claim adds up to */}
+                  <tr style={{ background: '#dce8f7' }}>
+                    <td colSpan={isAuction ? 3 : 4} style={{ padding: '10px 14px', textAlign: 'right' }}>
+                      <span className="text-[16px]" style={{ color: '#051937', fontFamily: font, fontWeight: 700 }}>Sub Total</span>
+                    </td>
+                    <td style={{ padding: '10px 14px' }}><Amount value={formatAmount(subTotal)} bold /></td>
+                  </tr>
                 </tbody>
               </table>
             </div>

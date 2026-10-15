@@ -47,6 +47,39 @@ export type ClaimHeaderProps = {
     so the second field of one row sits under the second field of the row above. */
 const ROW = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4';
 
+/** What is listed beside the deposit method depends on where the deposit sits. */
+export function depositFieldsFor(depositMethod?: DepositMethod, accountNo?: string, accountName?: string): [string, string | undefined][] {
+  return depositMethod === 'Standing Guarantee'
+    ? [['Standing Guarantee No.', accountNo], ['Standing Guarantee Name', accountName]]
+    : depositMethod === 'Debit Account'
+    ? [['Debit Account No.', accountNo], ['Debit Account Name', accountName]]
+    : [];
+}
+
+export type RefundModeValues = {
+  bankAccountNo?: string; bankAccountName?: string; bankName?: string; iban?: string;
+  refundAccountNo?: string; refundAccountName?: string;
+  maskedCardNo?: string; cardType?: string; cardHolderName?: string;
+};
+
+/** What is listed beside the refund mode depends on where the money goes. */
+export function refundFieldsFor(refundMode: RefundMode | undefined, v: RefundModeValues): [string, string | undefined][] {
+  return refundMode === 'Bank Transfer'
+    ? [
+        ['Consignee Bank Account Number', v.bankAccountNo],
+        ['Account Name', v.bankAccountName],
+        ['Bank Name', v.bankName],
+        ['IBAN Account No.', v.iban],
+      ]
+    : refundMode === 'Credit Account'
+    ? [['Credit Account No.', v.refundAccountNo], ['Account Name', v.refundAccountName]]
+    : refundMode === 'Debit Account'
+    ? [['Debit Account No.', v.refundAccountNo], ['Account Name', v.refundAccountName]]
+    : refundMode === 'Card'
+    ? [['Masked Card Number', v.maskedCardNo], ['Card Type', v.cardType], ['Card Holder Name', v.cardHolderName]]
+    : [];
+}
+
 function FieldItem({ label, value }: { label: string; value?: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-[4px] py-[12px] px-[16px] min-w-0">
@@ -96,29 +129,8 @@ export default function ClaimHeaderDetails({
   cardType = 'Visa Credit',
 }: ClaimHeaderProps) {
   /* The deposit's account details only apply to some methods — a cash deposit has none. */
-  const depositFields: [string, string | undefined][] =
-    depositMethod === 'Standing Guarantee'
-      ? [['Standing Guarantee No.', depositAccountNo], ['Standing Guarantee Name', depositAccountName]]
-      : depositMethod === 'Debit Account'
-      ? [['Debit Account No.', depositAccountNo], ['Debit Account Name', depositAccountName]]
-      : [];
-
-  /* What is shown alongside the refund mode depends on where the money goes. */
-  const refundFields: [string, string | undefined][] =
-    refundMode === 'Bank Transfer'
-      ? [
-          ['Consignee Bank Account Number', bankAccountNo],
-          ['Account Name', bankAccountName],
-          ['Bank Name', bankName],
-          ['IBAN Account No.', iban],
-        ]
-      : refundMode === 'Credit Account'
-      ? [['Credit Account No.', refundAccountNo], ['Account Name', refundAccountName]]
-      : refundMode === 'Debit Account'
-      ? [['Debit Account No.', refundAccountNo], ['Account Name', refundAccountName]]
-      : refundMode === 'Card'
-      ? [['Masked Card Number', maskedCardNo], ['Card Type', cardType], ['Card Holder Name', cardHolderName]]
-      : [];
+  const depositFields = depositFieldsFor(depositMethod, depositAccountNo, depositAccountName);
+  const refundFields = refundFieldsFor(refundMode, { bankAccountNo, bankAccountName, bankName, iban, refundAccountNo, refundAccountName, maskedCardNo, cardType, cardHolderName });
 
   return (
     <>

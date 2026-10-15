@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Dh from './Dh';
 import ClaimHeaderDetails from './ClaimHeaderDetails';
+import { claimHeaderDefaultsFor } from './claimHeaderDefaults';
 import ChargesBreakupModal from './ChargesBreakupModal';
 import ClaimApprovalDetailsModal from './ClaimApprovalDetailsModal';
 import ClaimRequestVersions, { type ClaimVersionRow } from './ClaimRequestVersions';
@@ -208,8 +209,7 @@ export default function AuctionClaimViewPage({
               registrationDate={submissionDate}
               claimant={claimantName}
               beneficiary={claimantName}
-              depositMethod="Cash"
-              refundMode="Card"
+              {...claimHeaderDefaultsFor('Refund on Auction Proceed')}
             />
           </Section>
 

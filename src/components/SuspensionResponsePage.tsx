@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import HappinessMeterBar from './HappinessMeterBar';
 import { ColumnFilter } from './ColumnFilter';
+import InfoNote from './InfoNote';
 
 const font = "'Dubai', sans-serif";
 
@@ -107,9 +108,11 @@ type Props = {
   successHeading?: string;
   successMessage?: string;
   requestNumber?: string;
+  /** Days the claimant has to respond before the request is rejected. */
+  responseWindowDays?: number;
 };
 
-export default function SuspensionResponsePage({ onBack, onBackToListing, onSubmit, breadcrumbParent = 'Cargo Transfer', title = 'Suspension Response - CT - 601232423898', successHeading, successMessage, requestNumber = '2588017' }: Props) {
+export default function SuspensionResponsePage({ onBack, onBackToListing, onSubmit, breadcrumbParent = 'Cargo Transfer', title = 'Suspension Response - CT - 601232423898', successHeading, successMessage, requestNumber = '2588017', responseWindowDays = 10 }: Props) {
   const [response, setResponse] = useState('');
   const [selectedDocTypes, setSelectedDocTypes] = useState<Set<string>>(new Set());
   const [otherDocType, setOtherDocType] = useState('');
@@ -200,6 +203,11 @@ export default function SuspensionResponsePage({ onBack, onBackToListing, onSubm
           </span>
         </div>
         <div className="flex flex-col gap-[24px]">
+
+          {/* How long the claimant has to answer before the request lapses */}
+          <InfoNote>
+            The Claim Request will be rejected if response not provided within {responseWindowDays} days
+          </InfoNote>
 
           {/* Additional Information Request Details */}
           <div className="flex flex-col gap-[14px]">

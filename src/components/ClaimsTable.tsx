@@ -328,7 +328,8 @@ type Props = {
   onView?: (row: ClaimRow) => void;
   onAmend?: (claimType: string) => void;
   onCancel?: (claimType: string) => void;
-  onPrint?: () => void;
+  /** The receipt differs per claim type, so the printed row goes with it. */
+  onPrint?: (row: ClaimRow) => void;
   onViewDocs?: () => void;
   onHistory?: () => void;
   onSuspensionResponse?: (row: ClaimRow) => void;
@@ -518,8 +519,8 @@ export default function ClaimsTable({ onView, onAmend, onCancel, onPrint, onView
                 if (id === 'viewRequest') onViewRequest?.(row);
                 if (id === 'amend')    onAmend?.(row.claimType);
                 if (id === 'cancel')   onCancel?.(row.claimType);
-                if (id === 'print')       onPrint?.();
-                if (id === 'printReceipt') onPrint?.();
+                if (id === 'print')       onPrint?.(row);
+                if (id === 'printReceipt') onPrint?.(row);
                 if (id === 'viewDocs') onViewDocs?.();
                 if (id === 'history')  onHistory?.();
                 if (id === 'suspensionResponse') onSuspensionResponse?.(row);

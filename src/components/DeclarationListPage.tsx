@@ -392,6 +392,9 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
   const [auctionAmendMode, setAuctionAmendMode] = useState(false);
   const [claimViewReturnStep, setClaimViewReturnStep] = useState<ClaimSubStep>('nonRemittanceSuccess');
   const [ackReturnStep, setAckReturnStep] = useState<ClaimSubStep>('nonRemittanceSuccess');
+  /* The acknowledgement receipt is shared by all three claim flows, and its Claim
+     Details table differs per claim type, so the flow says which one opened it. */
+  const [ackClaimType, setAckClaimType] = useState<string>('Non Remittance Claim');
   const [ackStep, setAckStep] = useState<'list' | 'acceptSuccess' | 'declineSuccess'>('list');
   const [ackSelected, setAckSelected] = useState<Set<number>>(new Set());
   const [ackAcceptOpen, setAckAcceptOpen] = useState(false);
@@ -807,7 +810,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                 ? 'Your Refund of Deposits claim amendment request has been submitted successfully and is currently under processing. Please click on View Claim button for the details.'
                 : `Your ${rdClaimLabel} Claim has been submitted successfully and is currently under processing. Please click on View Claim button for the details.`}
               onBack={exitRdAmend}
-              onViewAck={() => { setAckReturnStep('list'); setClaimStep('nonRemittanceAck'); }}
+              onViewAck={() => { setAckClaimType(rdClaimLabel); setAckReturnStep('list'); setClaimStep('nonRemittanceAck'); }}
               onViewDocs={() => setClaimStep('claimDocs')}
               onViewClaim={() => { setClaimViewReturnStep('list'); setClaimStep('rdClaimView'); }}
             />
@@ -834,7 +837,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
             <NRPaymentSuccessPage
               title={rdFlowTitle}
               onBackToListing={() => setClaimStep('list')}
-              onDownloadAck={() => { setAckReturnStep('list'); setClaimStep('nonRemittanceAck'); }}
+              onDownloadAck={() => { setAckClaimType(rdClaimLabel); setAckReturnStep('list'); setClaimStep('nonRemittanceAck'); }}
               onViewClaim={() => { setClaimViewReturnStep('list'); setClaimStep('rdClaimView'); }}
             />
           )}
@@ -878,14 +881,17 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
           {claimStep === 'nonRemittanceSuccess' && (
             <NonRemittanceSuccessPage
               onBack={() => { setClaimStep('list'); resetNRClaim(); }}
-              onViewAck={() => { setAckReturnStep('nonRemittanceSuccess'); setClaimStep('nonRemittanceAck'); }}
+              onViewAck={() => { setAckClaimType('Non Remittance Claim'); setAckReturnStep('nonRemittanceSuccess'); setClaimStep('nonRemittanceAck'); }}
               onViewDocs={() => setClaimStep('claimDocs')}
               onViewClaim={() => { setClaimViewReturnStep('nonRemittanceSuccess'); setClaimStep('nonRemittanceClaimView'); }}
             />
           )}
           {claimStep === 'nonRemittanceAck' && (
             <NonRemittanceAckPage
-              selectedRows={nonRemittanceRows}
+              claimType={ackClaimType}
+              selectedRows={/auction/i.test(ackClaimType) ? [] : /Refund of (Deposits|Duty)/i.test(ackClaimType) ? claimSelectedRows : nonRemittanceRows}
+              auctionLots={auctionSelectedLots}
+              auctionClaimDetails={auctionClaimDetails}
               onBack={() => setClaimStep(ackReturnStep)}
             />
           )}
@@ -1089,7 +1095,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
           {claimStep === 'nrPaymentSuccess' && (
             <NRPaymentSuccessPage
               onBackToListing={() => { setClaimStep('list'); resetNRClaim(); }}
-              onDownloadAck={() => { setAckReturnStep('nrPaymentSuccess'); setClaimStep('nonRemittanceAck'); }}
+              onDownloadAck={() => { setAckClaimType('Non Remittance Claim'); setAckReturnStep('nrPaymentSuccess'); setClaimStep('nonRemittanceAck'); }}
               onViewClaim={() => { setClaimViewReturnStep('nrPaymentSuccess'); setClaimStep('nonRemittanceClaimView'); }}
             />
           )}
@@ -1192,7 +1198,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                 ? 'Your Refund on Auction Proceed claim amendment request has been submitted successfully and is currently under processing. Please click on View Claim button for the details.'
                 : 'Your Refund on Auction Proceed Claim has been submitted successfully and is currently under processing. Please click on View Claim button for the details.'}
               onBack={exitAuctionAmend}
-              onViewAck={() => { setAckReturnStep('list'); setClaimStep('nonRemittanceAck'); }}
+              onViewAck={() => { setAckClaimType('Refund on Auction Proceed'); setAckReturnStep('list'); setClaimStep('nonRemittanceAck'); }}
               onViewDocs={() => setClaimStep('claimDocs')}
               onViewClaim={() => { setClaimViewReturnStep('list'); setClaimStep('auctionClaimView'); }}
             />
@@ -1218,7 +1224,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
             <NRPaymentSuccessPage
               title="Raise New Claim - Refund on Auction Proceed"
               onBackToListing={() => { setClaimStep('list'); resetAuctionClaim(); }}
-              onDownloadAck={() => { setAckReturnStep('list'); setClaimStep('nonRemittanceAck'); }}
+              onDownloadAck={() => { setAckClaimType('Refund on Auction Proceed'); setAckReturnStep('list'); setClaimStep('nonRemittanceAck'); }}
               onViewClaim={() => { setClaimViewReturnStep('list'); setClaimStep('auctionClaimView'); }}
             />
           )}
@@ -3091,7 +3097,7 @@ export default function DeclarationListPage({ onClose, onServiceCatalogue, autoS
                 setClaimStep(row.declarations.length > 1 ? 'claimSuspensionList' : 'claimSuspension');
               }
             }}
-            onPrint={() => { setAckReturnStep('list'); setClaimStep('nonRemittanceAck'); }}
+            onPrint={(row) => { setAckClaimType(row?.claimType ?? 'Non Remittance Claim'); setAckReturnStep('list'); setClaimStep('nonRemittanceAck'); }}
             onHistory={() => setClaimStep('claimHistory')}
             onDeclarationOpen={(declNo) => { setClaimListDeclNo(declNo); setClaimListDeclViewOpen(true); }}
             onViewRequest={(row) => setViewRequestRow(row)}
