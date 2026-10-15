@@ -2304,11 +2304,6 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 onChange={setFInvType}
               />
             </div>
-            {/* The pair wraps together, so a To Date never strands itself on its own row */}
-            <div className="flex gap-4 min-w-[340px]" style={{ flex: '2 1 340px' }}>
-              <div className="flex-1 min-w-0"><DateInput label="From Date" value={fFromDate} onChange={setFFromDate} /></div>
-              <div className="flex-1 min-w-0"><DateInput label="To Date"   value={fToDate}   onChange={setFToDate}   /></div>
-            </div>
             <div className="flex-1 min-w-[170px]">
               <FloatDropdown
                 label="Source"
@@ -2316,6 +2311,11 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 options={['CDR', 'SGRCS', 'SAS', 'CRNS']}
                 onChange={setFSource}
               />
+            </div>
+            {/* The pair wraps together, so a To Date never strands itself on its own row */}
+            <div className="flex gap-4 min-w-[340px]" style={{ flex: '2 1 340px' }}>
+              <div className="flex-1 min-w-0"><DateInput label="From Date" value={fFromDate} onChange={setFFromDate} /></div>
+              <div className="flex-1 min-w-0"><DateInput label="To Date"   value={fToDate}   onChange={setFToDate}   /></div>
             </div>
             <div className="flex-1 min-w-[170px]">
               <StatusMultiDropdown
