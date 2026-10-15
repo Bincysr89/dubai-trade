@@ -1074,8 +1074,6 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const [fSource,    setFSource]    = useState('');
   const [fInvType,   setFInvType]   = useState('');
   const [fInvNumber, setFInvNumber] = useState('');
-  const [invTypeOpen, setInvTypeOpen] = useState(false);
-  const invTypeRef = useRef<HTMLDivElement>(null);
   /* Invoices tab defaults to showing Unpaid records; multi-select via checkboxes. */
   const [fStatuses,  setFStatuses]  = useState<Set<string>>(() => new Set(['Unpaid']));
   const [statusOpen, setStatusOpen] = useState(false);
@@ -1134,15 +1132,6 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
     document.addEventListener('mousedown', h);
     return () => document.removeEventListener('mousedown', h);
   }, [payExportOpen]);
-
-  useEffect(() => {
-    if (!invTypeOpen) return;
-    const h = (e: MouseEvent) => {
-      if (invTypeRef.current && !invTypeRef.current.contains(e.target as Node)) setInvTypeOpen(false);
-    };
-    document.addEventListener('mousedown', h);
-    return () => document.removeEventListener('mousedown', h);
-  }, [invTypeOpen]);
 
   useEffect(() => {
     if (!accDebitOpen) return;
@@ -2216,36 +2205,6 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
           </svg>
         </button>
 
-        {/* Invoice Type filter */}
-        <div className="relative flex-shrink-0" ref={invTypeRef} style={{ width: 220 }}>
-          <button
-            onClick={() => setInvTypeOpen(o => !o)}
-            className="h-[48px] w-full px-[14px] flex items-center gap-[6px] rounded-[4px] border border-[#d5ddfb] bg-white text-[16px] hover:bg-[#f0f4ff] transition-colors"
-            style={{ fontFamily: font, color: fInvType ? '#1360d2' : '#0e1b3d' }}
-          >
-            <span className="flex-1 text-left truncate">{fInvType || 'Invoice Type'}</span>
-            <svg viewBox="0 0 20 20" width="14" height="14" fill="none" className="flex-shrink-0">
-              <path d="M5 8l5 5 5-5" stroke="#0e1b3d" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-          </button>
-          {invTypeOpen && (
-            <div className="absolute z-20 top-[52px] left-0 bg-white shadow-lg rounded border border-[#e0e8f5] w-[300px] max-h-[320px] overflow-y-auto py-1">
-              <button onClick={() => { setFInvType(''); setInvTypeOpen(false); }}
-                className="w-full px-4 py-2 text-left text-[16px] hover:bg-[#e2ebf9]"
-                style={{ fontFamily: font, color: fInvType === '' ? '#1360d2' : '#0e1b3d', fontWeight: fInvType === '' ? 500 : 400 }}>
-                All types
-              </button>
-              {INVOICE_TYPES.map(t => (
-                <button key={t} onClick={() => { setFInvType(t); setInvTypeOpen(false); }}
-                  className="w-full px-4 py-2 text-left text-[16px] hover:bg-[#e2ebf9]"
-                  style={{ fontFamily: font, color: t === fInvType ? '#1360d2' : '#0e1b3d', fontWeight: t === fInvType ? 500 : 400 }}>
-                  {t}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
         {/* Invoice Number search */}
         <div className="flex items-center h-[48px] rounded-[4px] border border-[#d5ddfb] bg-white px-[12px] gap-[8px] flex-shrink-0" style={{ minWidth: 220 }}>
           <input
@@ -2332,10 +2291,22 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
             </svg>
           </button>
-          <div className="flex items-center gap-4">
-            <div className="flex-1 min-w-0"><DateInput label="From Date" value={fFromDate} onChange={setFFromDate} /></div>
-            <div className="flex-1 min-w-0"><DateInput label="To Date"   value={fToDate}   onChange={setFToDate}   /></div>
-            <div className="flex-1 min-w-0">
+          {/* Wraps rather than squeezing — five fields do not fit a narrow panel */}
+          <div className="flex items-start gap-4 flex-wrap">
+            <div className="flex-1 min-w-[200px]">
+              <FloatDropdown
+                label="Invoice Type"
+                value={fInvType}
+                options={INVOICE_TYPES}
+                onChange={setFInvType}
+              />
+            </div>
+            {/* The pair wraps together, so a To Date never strands itself on its own row */}
+            <div className="flex gap-4 min-w-[340px]" style={{ flex: '2 1 340px' }}>
+              <div className="flex-1 min-w-0"><DateInput label="From Date" value={fFromDate} onChange={setFFromDate} /></div>
+              <div className="flex-1 min-w-0"><DateInput label="To Date"   value={fToDate}   onChange={setFToDate}   /></div>
+            </div>
+            <div className="flex-1 min-w-[170px]">
               <FloatDropdown
                 label="Source"
                 value={fSource}
@@ -2343,7 +2314,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 onChange={setFSource}
               />
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-[170px]">
               <StatusMultiDropdown
                 label="Status"
                 values={fStatuses}
@@ -2552,7 +2523,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
           </button>
           {paySearchTypeOpen && (
             <div className="absolute z-[200] top-[50px] left-0 bg-white shadow-lg rounded border border-[#e0e8f5] w-[180px] py-1">
-              {['Transaction No.', 'Receipt No.', 'Invoice Type'].map(opt => (
+              {['Transaction No.', 'Receipt Number', 'Invoice Type'].map(opt => (
                 <button key={opt} className="w-full px-4 py-2 text-left text-[16px] text-[#0e1b3d] hover:bg-[#e2ebf9]" style={{ fontFamily: font }}
                   onClick={() => { setPaySearchType(opt); setPaySearchValue(''); setPaySearchTypeOpen(false); }}>{opt}</button>
               ))}
@@ -2577,7 +2548,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 type="text"
                 value={paySearchValue}
                 onChange={e => setPaySearchValue(e.target.value)}
-                placeholder={paySearchType === 'Receipt No.' ? 'Receipt no…' : 'Transaction no…'}
+                placeholder={paySearchType === 'Receipt Number' ? 'Receipt number…' : 'Transaction no…'}
                 className="flex-1 text-[16px] text-[#0e1b3d] placeholder-[#8f94ae] bg-transparent focus:outline-none min-w-0"
                 style={{ fontFamily: font }}
               />
