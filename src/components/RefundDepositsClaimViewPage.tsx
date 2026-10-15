@@ -50,7 +50,7 @@ type HsLine = {
 type InvoiceGroup = { invoiceNo: string; hsLines: HsLine[] };
 
 type DeclLine = {
-  declarationNo: string; declarationType: string; chargeType: string;
+  declarationNo: string; actualDepartureDate: string; declarationType: string; chargeType: string;
   depositMethod: string; accountNumber: string; depositAmount: string;
   refundType: string; claimAmount: string; invoices: InvoiceGroup[];
   refType?: string; refCode?: string; refNo?: string;
@@ -92,6 +92,7 @@ function buildDeclLinesFromCharges(chargeDetails: ChargeDetail[], rows: Row[] | 
     const isCdm = d.chargeType === 'CDM Deposit';
     return {
       declarationNo: d.declarationNo,
+      actualDepartureDate: outbounds?.[d.declarationNo]?.[0]?.actualDepartureDate ?? '15/01/2025',
       declarationType: row?.declarationCategory ?? '—',
       chargeType: d.chargeType,
       depositMethod: d.depositMethod,
@@ -128,6 +129,7 @@ function buildDeclLines(declarations: IncomingDecl[], chargeType: string): DeclL
   const isCdm = chargeType === 'CDM Deposit';
   return declarations.map(d => ({
     declarationNo: d.declNo,
+    actualDepartureDate: '15/01/2025',
     declarationType: d.category,
     chargeType,
     depositMethod: outbound ? 'Standing Guarantee' : 'N/A',
@@ -236,6 +238,7 @@ function DeclarationCard({ d, idx, open, onToggle, onViewOb }: {
       <div className="flex flex-wrap items-center gap-x-[24px] gap-y-[8px] px-[16px] py-[14px]">
         <span className="text-[16px] text-[#455174]" style={{ fontFamily: font }}>{idx + 1}</span>
         <FieldItem label="Declaration No." value={d.declarationNo} />
+        <FieldItem label="Actual Departure Date" value={d.actualDepartureDate} />
         <FieldItem label="Declaration Type" value={d.declarationType} />
         <FieldItem label="Charge Type" value={d.chargeType} />
         <FieldItem label="Deposit Method" value={d.depositMethod} />
