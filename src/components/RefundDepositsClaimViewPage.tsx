@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import Dh from './Dh';
 import ClaimHeaderDetails from './ClaimHeaderDetails';
+import ChargesBreakupModal from './ChargesBreakupModal';
 import {
   hasFullRefundOptions, hasDutyRefundOptions, hasNaRefundType, getInvoices, obKey,
   type ChargeDetail, type OutboundState, type OutboundDetail,
@@ -151,7 +152,7 @@ function buildDefaultDocs(declNo: string, outbound: boolean): ViewDoc[] {
 }
 
 const versionRows = [
-  { version: 'Version 1', submittedDate: '29/06/2026, 10:14', status: 'Completed', isCurrentlyViewing: true },
+  { version: 'Version 1', submittedDate: '29/06/2026, 10:14', submittedBy: 'crnuser01', status: 'Completed', isCurrentlyViewing: true },
 ];
 
 /* ─── Outbound Declaration — read-only view popup ─── */
@@ -487,6 +488,7 @@ export default function RefundDepositsClaimViewPage({
   rows, chargeDetails, outbounds, uploadedDocs,
 }: Props) {
   const hasRealData = !!chargeDetails && chargeDetails.length > 0;
+  const [breakupOpen, setBreakupOpen] = useState(false);
   const declLines = useMemo(
     () => hasRealData ? buildDeclLinesFromCharges(chargeDetails!, rows, outbounds) : buildDeclLines(declarations, chargeType),
     [hasRealData, chargeDetails, rows, outbounds, declarations, chargeType]
@@ -594,7 +596,13 @@ export default function RefundDepositsClaimViewPage({
                   <tr style={{ background: '#dce8f7' }}>
                     <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font, fontWeight: 700 }}>Total</span></td>
                     <td style={{ padding: '10px 14px' }}><span className="text-[16px] inline-flex items-baseline gap-[3px]" style={{ color: '#051937', fontFamily: font, fontWeight: 700 }}><Dh style={{ fontSize: 15 }} />70.00</span></td>
-                    <td colSpan={3} />
+                    <td colSpan={3} style={{ padding: '10px 14px' }}>
+                      <button type="button" onClick={() => setBreakupOpen(true)}
+                        className="text-[16px] underline hover:opacity-80 transition-opacity"
+                        style={{ color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
+                        Charges breakup
+                      </button>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -622,7 +630,7 @@ export default function RefundDepositsClaimViewPage({
               <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontFamily: font, minWidth: 600 }}>
                 <thead>
                   <tr>
-                    {['Version', 'Submitted Date', 'Status', 'Currently Viewing'].map((h) => (
+                    {['Version', 'Submitted Date', 'Submitted By', 'Status', 'Currently Viewing'].map((h) => (
                       <th key={h} style={{ background: '#a6c2e9', padding: '10px 14px', textAlign: 'left', borderBottom: '1px solid #e8edf5' }}>
                         <span className="text-[16px]" style={{ color: '#000', fontFamily: font, fontWeight: 600 }}>{h}</span>
                       </th>
@@ -636,6 +644,7 @@ export default function RefundDepositsClaimViewPage({
                         <span className="text-[16px] underline" style={{ color: '#1360d2', cursor: 'pointer', fontFamily: font }}>{row.version}</span>
                       </td>
                       <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.submittedDate}</span></td>
+                      <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{row.submittedBy}</span></td>
                       <td style={{ padding: '10px 14px' }}>
                         <span className="inline-flex items-center px-[10px] py-[3px] rounded-[20px] text-[16px]" style={{ background: '#e2ebf9', color: '#1360d2', fontWeight: 500, fontFamily: font }}>
                           {row.status}
@@ -654,6 +663,11 @@ export default function RefundDepositsClaimViewPage({
           </Section>
         </div>
       </div>
+
+      <ChargesBreakupModal open={breakupOpen} onClose={() => setBreakupOpen(false)}
+
+        declarations={declLines.map(d => d.declarationNo)} />
+
 
       {/* Bottom bar */}
       <div className="flex-shrink-0 bg-white px-4 sm:px-10 py-[20px] flex items-center gap-[12px]" style={{ boxShadow: '0px -1px 20px rgba(0,0,0,0.08)' }}>

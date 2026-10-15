@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Dh from './Dh';
 import ClaimHeaderDetails from './ClaimHeaderDetails';
+import ChargesBreakupModal from './ChargesBreakupModal';
 import { UploadedDocsByDeclaration, type UploadedDoc } from './NonRemittanceDocumentsPage';
 import type { AuctionLotRow } from './AuctionLotDetailsPage';
 import type { AuctionClaimDetail, TransportEntry, ContainerEntry } from './AuctionClaimDetailsPage';
@@ -139,6 +140,7 @@ export default function AuctionClaimViewPage({
   claimNo = '3842200', claimStatus = 'Under Processing', submissionDate = '29/06/2026', claimantName = 'SW LOGISTICS LLC',
 }: Props) {
   const [viewLot, setViewLot] = useState<{ lotNo: string; transportDocs: TransportEntry[]; containerNos: ContainerEntry[] } | null>(null);
+  const [breakupOpen, setBreakupOpen] = useState(false);
   const docDeclNos = selectedLots.map(l => l.auctionLotNo);
 
   return (
@@ -210,7 +212,13 @@ export default function AuctionClaimViewPage({
                   <tr style={{ background: '#dce8f7' }}>
                     <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font, fontWeight: 700 }}>Total</span></td>
                     <td style={{ padding: '10px 14px' }}><span className="text-[16px] inline-flex items-baseline gap-[3px]" style={{ color: '#051937', fontFamily: font, fontWeight: 700 }}><Dh style={{ fontSize: 15 }} />70.00</span></td>
-                    <td colSpan={3} />
+                    <td colSpan={3} style={{ padding: '10px 14px' }}>
+                      <button type="button" onClick={() => setBreakupOpen(true)}
+                        className="text-[16px] underline hover:opacity-80 transition-opacity"
+                        style={{ color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
+                        Charges breakup
+                      </button>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -276,6 +284,11 @@ export default function AuctionClaimViewPage({
           <UploadedDocsByDeclaration docs={uploadedDocs} declOrder={docDeclNos} itemLabel="Auction Lot" />
         </div>
       </div>
+
+      <ChargesBreakupModal open={breakupOpen} onClose={() => setBreakupOpen(false)}
+
+        declarations={selectedLots.map(l => l.auctionLotNo)} />
+
 
       {/* Bottom bar */}
       <div className="flex-shrink-0 bg-white px-4 sm:px-10 py-[20px] flex items-center gap-[12px]" style={{ boxShadow: '0px -1px 20px rgba(0,0,0,0.08)' }}>
