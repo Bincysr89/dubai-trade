@@ -2,11 +2,25 @@ import React, { useState } from 'react';
 import Dh from './Dh';
 import ClaimHeaderDetails from './ClaimHeaderDetails';
 import ChargesBreakupModal from './ChargesBreakupModal';
+import ClaimApprovalDetailsModal from './ClaimApprovalDetailsModal';
+import MoreIcon from './MoreIcon';
+import RowFlyout, { anchorFrom, type FlyoutAnchor, type FlyoutItem } from './declaration/RowFlyout';
 import { UploadedDocsByDeclaration, type UploadedDoc } from './NonRemittanceDocumentsPage';
 import type { AuctionLotRow } from './AuctionLotDetailsPage';
 import type { AuctionClaimDetail, TransportEntry, ContainerEntry } from './AuctionClaimDetailsPage';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
+
+/* ─── A claimed lot's row menu — the lot's own detail, and what was approved on it. ─── */
+const LOT_MENU_WIDTH = 260;
+const lotMenuIcons = {
+  claim: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M5 2.5h7l3.5 3.5v11.5H5z" /><path d="M12 2.5V6h3.5M7.5 10h5M7.5 13h3.5" /></svg>,
+  approval: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="10" cy="10" r="7.5" /><path d="M6.5 10.2l2.4 2.4 4.6-4.9" /></svg>,
+};
+const LOT_MENU: FlyoutItem[] = [
+  { label: 'View Claim Details',          icon: lotMenuIcons.claim },
+  { label: 'View Claim Approval Details', icon: lotMenuIcons.approval },
+];
 
 function FieldItem({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -141,6 +155,8 @@ export default function AuctionClaimViewPage({
 }: Props) {
   const [viewLot, setViewLot] = useState<{ lotNo: string; transportDocs: TransportEntry[]; containerNos: ContainerEntry[] } | null>(null);
   const [breakupOpen, setBreakupOpen] = useState(false);
+  const [lotMenu, setLotMenu] = useState<{ at: FlyoutAnchor; lotNo: string; transportDocs: TransportEntry[]; containerNos: ContainerEntry[] } | null>(null);
+  const [approvalLot, setApprovalLot] = useState<string | null>(null);
   /* The card's amounts are the per-declaration charges totalled up, so they agree
      with the sub totals and grand total in the Charges breakup popup. */
   const breakupDeclarations = selectedLots.map(l => l.auctionLotNo);
@@ -249,7 +265,6 @@ export default function AuctionClaimViewPage({
                     const d = claimDetails.find(c => c.auctionLotNo === lot.auctionLotNo);
                     const transportDocs = d?.transportDocs ?? [];
                     const containerNos = d?.containerNos ?? [];
-                    const hasEntries = transportDocs.length > 0 || containerNos.length > 0;
                     return (
                       <tr key={lot.auctionLotNo} style={{ borderBottom: '1px solid #f0f3fa' }}>
                         <td style={{ padding: '10px 14px' }}><span className="text-[16px]" style={{ color: '#051937', fontFamily: font }}>{lot.auctionNo}</span></td>
@@ -271,11 +286,11 @@ export default function AuctionClaimViewPage({
                             Submitted
                           </span>
                         </td>
-                        <td style={{ padding: '10px 14px' }}>
-                          <button type="button" onClick={() => setViewLot({ lotNo: lot.auctionLotNo, transportDocs, containerNos })} disabled={!hasEntries}
-                            className="text-[16px] hover:underline text-left"
-                            style={{ color: !hasEntries ? '#c0c8d8' : '#1360d2', fontWeight: 600, background: 'none', border: 'none', cursor: !hasEntries ? 'not-allowed' : 'pointer', fontFamily: font, padding: 0, whiteSpace: 'nowrap' }}>
-                            View Claim Details
+                        <td style={{ padding: '10px 14px', textAlign: 'center' }}>
+                          <button type="button" aria-label={`Lot ${lot.auctionLotNo} actions`}
+                            onClick={(e) => { e.stopPropagation(); setLotMenu({ at: anchorFrom(e, LOT_MENU.length, LOT_MENU_WIDTH), lotNo: lot.auctionLotNo, transportDocs, containerNos }); }}
+                            className="size-[32px] inline-flex items-center justify-center rounded hover:bg-[#f0f4ff] transition-colors">
+                            <MoreIcon />
                           </button>
                         </td>
                       </tr>
@@ -290,6 +305,18 @@ export default function AuctionClaimViewPage({
           <UploadedDocsByDeclaration docs={uploadedDocs} declOrder={docDeclNos} itemLabel="Auction Lot" />
         </div>
       </div>
+
+      {lotMenu && (
+        <RowFlyout items={LOT_MENU} at={lotMenu.at} width={LOT_MENU_WIDTH}
+          onPick={(label) => {
+            if (label === 'View Claim Details') setViewLot({ lotNo: lotMenu.lotNo, transportDocs: lotMenu.transportDocs, containerNos: lotMenu.containerNos });
+            else setApprovalLot(lotMenu.lotNo);
+          }}
+          onClose={() => setLotMenu(null)} />
+      )}
+
+      <ClaimApprovalDetailsModal open={!!approvalLot} subject={approvalLot ?? undefined}
+        onClose={() => setApprovalLot(null)} />
 
       <ChargesBreakupModal open={breakupOpen} onClose={() => setBreakupOpen(false)}
 
