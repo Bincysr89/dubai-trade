@@ -21,12 +21,28 @@ import RowFlyout, { anchorFrom, type FlyoutAnchor, type FlyoutItem } from './dec
 const font = "'Dubai', 'Segoe UI', sans-serif";
 
 /* ─── Shared presentational helpers — mirror NonRemittanceClaimViewPage's look ─── */
-function FieldItem({ label, value }: { label: string; value: string }) {
+/** The one field cell the claim view uses — every label lines up with every other. */
+function FieldCell({ label, tag, children }: { label: string; tag?: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-[4px] py-[12px] px-[16px]" style={{ flex: '1 0 200px', minWidth: 180 }}>
-      <span className="text-[16px]" style={{ color: '#455174', fontFamily: font }}>{label}</span>
-      <span className="text-[16px]" style={{ color: '#051937', fontFamily: font, fontWeight: 500 }}>{value || '—'}</span>
+      <span className="flex items-center gap-[8px] flex-wrap">
+        <span className="text-[16px]" style={{ color: '#455174', fontFamily: font }}>{label}</span>
+        {tag && (
+          <span className="text-[13px] px-[8px] py-[1px] rounded-[10px] whitespace-nowrap"
+            style={{ background: 'rgba(19,96,210,0.10)', color: '#1360d2', fontWeight: 500, fontFamily: font }}>
+            {tag}
+          </span>
+        )}
+      </span>
+      {children}
     </div>
+  );
+}
+function FieldItem({ label, value }: { label: string; value: string }) {
+  return (
+    <FieldCell label={label}>
+      <span className="text-[16px]" style={{ color: '#051937', fontFamily: font, fontWeight: 500 }}>{value || '—'}</span>
+    </FieldCell>
   );
 }
 function Divider() {
@@ -328,6 +344,16 @@ function OutboundHsTable({ d, onViewOb }: { d: DeclLine; onViewOb: (obs: Outboun
      claimed quantity was valued at — one price, or a split across several. */
   const partial = d.refundType === 'Partial Export';
   const [priceCtx, setPriceCtx] = useState<HsLine | null>(null);
+  /* Partial Export rows carry two views, so the eye gives way to the usual row menu. */
+  const [rowMenu, setRowMenu] = useState<{ hs: HsLine; at: FlyoutAnchor; items: FlyoutItem[] } | null>(null);
+  const openRowMenu = (hs: HsLine) => (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const items: FlyoutItem[] = [];
+    if (hs.outbound.length > 0) items.push({ label: 'View Declaration', icon: lineMenuIcons.declaration });
+    if ((hs.unitPrices ?? []).length > 0) items.push({ label: 'View Unit Price Details', icon: lineMenuIcons.unitPrice });
+    if (items.length === 0) return;
+    setRowMenu({ hs, at: anchorFrom(e, items.length, LINE_MENU_WIDTH), items });
+  };
   const columns = [
     'Invoice Number', 'Invoice Line Item No.', 'HS Code', 'Goods Description', 'Outbound Declaration No.',
     'Statistical Qty', 'Supplementary Qty', 'Weight',
@@ -404,21 +430,39 @@ function OutboundHsTable({ d, onViewOb }: { d: DeclLine; onViewOb: (obs: Outboun
                 </>
               )}
               <td style={{ padding: '10px 14px', textAlign: 'center', position: 'sticky', right: 0, background: '#fff', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>
-                <button type="button" title="View outbound declaration details" aria-label="View outbound declaration details"
-                  onClick={() => onViewOb(hs.outbound)} disabled={hs.outbound.length === 0}
-                  className="inline-flex items-center justify-center w-[34px] h-[34px] rounded-[4px] hover:bg-[#e8f0ff] transition-colors"
-                  style={{ border: '1px solid #d5ddfb', color: hs.outbound.length === 0 ? '#c0c8d8' : '#1360d2', cursor: hs.outbound.length === 0 ? 'not-allowed' : 'pointer' }}>
-                  <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
-                </button>
+                {partial ? (
+                  <button type="button" aria-label={`Line item ${hs.lineItemNo} actions`}
+                    onClick={openRowMenu(hs)}
+                    disabled={hs.outbound.length === 0 && splits.length === 0}
+                    className="size-[32px] inline-flex items-center justify-center rounded hover:bg-[#f0f4ff] transition-colors"
+                    style={{ cursor: hs.outbound.length === 0 && splits.length === 0 ? 'not-allowed' : 'pointer' }}>
+                    <MoreIcon color={hs.outbound.length === 0 && splits.length === 0 ? '#c0c8d8' : '#0e1b3d'} />
+                  </button>
+                ) : (
+                  <button type="button" title="View outbound declaration details" aria-label="View outbound declaration details"
+                    onClick={() => onViewOb(hs.outbound)} disabled={hs.outbound.length === 0}
+                    className="inline-flex items-center justify-center w-[34px] h-[34px] rounded-[4px] hover:bg-[#e8f0ff] transition-colors"
+                    style={{ border: '1px solid #d5ddfb', color: hs.outbound.length === 0 ? '#c0c8d8' : '#1360d2', cursor: hs.outbound.length === 0 ? 'not-allowed' : 'pointer' }}>
+                    <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  </button>
+                )}
               </td>
             </tr>
           );
           })}
         </tbody>
       </table>
+      {rowMenu && (
+        <RowFlyout items={rowMenu.items} at={rowMenu.at} width={LINE_MENU_WIDTH}
+          onPick={(label) => {
+            if (label === 'View Declaration') onViewOb(rowMenu.hs.outbound);
+            else setPriceCtx(rowMenu.hs);
+          }}
+          onClose={() => setRowMenu(null)} />
+      )}
       <UnitPriceDetailsModal hs={priceCtx} onClose={() => setPriceCtx(null)} />
     </div>
   );
@@ -488,25 +532,26 @@ function SubClaimBlock({ d, n, open, onToggle, onViewOb }: {
       style={{ border: `1px solid ${open ? '#1360d2' : '#e3e9f3'}`, boxShadow: '0px 1px 3px rgba(143,155,186,0.10)' }}>
 
       {/* Sub-claim summary */}
-      <div className="flex flex-wrap items-center gap-x-[20px] gap-y-[8px] px-[14px] py-[10px]">
-        <span className="inline-flex items-center justify-center size-[26px] rounded-full text-[14px] flex-shrink-0"
+      <div className="flex items-start gap-[10px] px-[14px] py-[10px]">
+        <span className="inline-flex items-center justify-center size-[26px] rounded-full text-[14px] flex-shrink-0 mt-[14px]"
           style={{ background: '#1360d2', color: '#fff', fontWeight: 600, fontFamily: font }}>{n}</span>
+        {/* The fields keep a column of their own, so a wrapped row lines up with the first */}
+        <div className="flex flex-wrap items-center flex-1 min-w-0">
         <FieldItem label="Charge Type" value={d.chargeType} />
         <FieldItem label="Refund Type" value={d.refundType} />
         {([
           ['Claim Amount (AED)', d.claimAmount],
           ['Amount (AED)', d.claimAmount],
-          ['Net Amount (AED)', d.claimAmount],
-        ] as [string, string][]).map(([label, amount]) => (
-          <div key={label} className="flex flex-col gap-[4px] py-[12px] px-[16px]" style={{ flex: '1 0 150px', minWidth: 130 }}>
-            <span className="text-[16px]" style={{ color: '#455174', fontFamily: font }}>{label}</span>
+          ['Net Amount (AED)', d.claimAmount, 'Payable/Receivable'],
+        ] as [string, string, string?][]).map(([label, amount, tag]) => (
+          <FieldCell key={label} label={label} tag={tag}>
             <span className="text-[16px] inline-flex items-baseline gap-[3px]" style={{ color: '#051937', fontFamily: font, fontWeight: 500 }}><Dh style={{ fontSize: 15 }} />{amount}</span>
-          </div>
+          </FieldCell>
         ))}
         {/* Status reads last, as the chip it is everywhere else */}
-        <div className="flex flex-col gap-[4px] py-[12px] px-[16px]" style={{ flex: '1 0 150px', minWidth: 130 }}>
-          <span className="text-[16px]" style={{ color: '#455174', fontFamily: font }}>Status</span>
+        <FieldCell label="Status">
           <span><StatusChip status="Registered" /></span>
+        </FieldCell>
         </div>
       </div>
 
@@ -565,6 +610,13 @@ const menuIcons = {
   waiver:      <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 3.5h8.5L16 7v9.5H4z" /><path d="M12.5 3.5V7H16" /><path d="M6.8 12.2l1.9 1.9 4-4.3" /></svg>,
 };
 
+/* ─── A Partial Export line item's row menu ─── */
+const LINE_MENU_WIDTH = 240;
+const lineMenuIcons = {
+  declaration: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M5 2.5h7l3.5 3.5v11.5H5z" /><path d="M12 2.5V6h3.5M7.5 10h5M7.5 13h3.5" /></svg>,
+  unitPrice:   <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3.5 4.5h13v11h-13z" /><path d="M3.5 8.5h13M8 8.5v7" /></svg>,
+};
+
 const DECLARATION_MENU: FlyoutItem[] = [
   { label: 'View Declaration',            icon: menuIcons.declaration },
   { label: 'View Privileges & Benefits',  icon: menuIcons.privileges },
@@ -588,23 +640,24 @@ function DeclarationCard({ g, idx, isOpen, onToggle, onViewOb, onAction }: {
   return (
     <div className="bg-white rounded-[8px] overflow-hidden" style={{ border: '1.5px solid #d9e3f2', boxShadow: '0px 2px 8px rgba(143,155,186,0.12)' }}>
       {/* The declaration itself — everything the sub-claims below share */}
-      <div className="flex flex-wrap items-center gap-x-[24px] gap-y-[8px] px-[16px] py-[14px]">
-        <span className="text-[16px] text-[#455174]" style={{ fontFamily: font }}>{idx + 1}</span>
+      <div className="flex items-start gap-[10px] px-[16px] py-[14px]">
+        <span className="text-[16px] text-[#455174] flex-shrink-0 mt-[16px]" style={{ fontFamily: font }}>{idx + 1}</span>
+        <div className="flex flex-wrap items-center flex-1 min-w-0">
         {/* The declaration number carries the owner's privilege marks */}
-        <div className="flex flex-col gap-[4px] py-[12px] px-[16px]" style={{ flex: '1 0 150px', minWidth: 130 }}>
-          <span className="text-[16px]" style={{ color: '#455174', fontFamily: font }}>Declaration No.</span>
+        <FieldCell label="Declaration No.">
           <span className="flex items-center gap-[10px] flex-wrap">
             <span className="text-[16px]" style={{ color: '#051937', fontFamily: font, fontWeight: 500 }}>{g.declarationNo}</span>
             <AeoLogo />
             <WlpLogo />
           </span>
-        </div>
+        </FieldCell>
         <FieldItem label="Actual Departure Date" value={g.actualDepartureDate} />
         <FieldItem label="Declaration Type" value={g.declarationType} />
+        </div>
         {/* Everything this declaration can be looked at through, in one menu */}
         <button type="button" aria-label={`Declaration ${g.declarationNo} actions`}
           onClick={(e) => { e.stopPropagation(); setMenuAt(anchorFrom(e, DECLARATION_MENU.length, MENU_WIDTH)); }}
-          className="size-[32px] inline-flex items-center justify-center rounded ml-auto mr-[8px] hover:bg-[#f0f4ff] transition-colors">
+          className="size-[32px] inline-flex items-center justify-center rounded flex-shrink-0 mt-[10px] hover:bg-[#f0f4ff] transition-colors">
           <MoreIcon />
         </button>
       </div>
