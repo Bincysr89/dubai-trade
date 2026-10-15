@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Dh from './Dh';
 import ClaimHeaderDetails from './ClaimHeaderDetails';
 import ChargesBreakupModal from './ChargesBreakupModal';
@@ -8,6 +9,8 @@ import {
 } from './RDChargeFlowPage';
 import { mergeDocsByBatch, type UploadedDoc } from './NonRemittanceDocumentsPage';
 import type { Row } from './EligibleDeclarationsPage';
+import PrivilegesBenefitsModal, { AeoLogo, WlpLogo } from './PrivilegesBenefitsModal';
+import ViewDeclarationPage from './declaration/ViewDeclarationPage';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
 
@@ -381,10 +384,10 @@ function SubClaimBlock({ d, n, open, onToggle, onViewOb }: {
       {/* What this charge type carries. Export-linked types (Alternative Duty Deposit, Duty)
           get the Invoice/HS Code table; CDM Deposit a reference summary; the rest nothing. */}
       {expandable && (
-        <div style={{ borderTop: '1px solid #eef1f6', background: '#fbfcfe' }}>
+        <div style={{ borderTop: '1px solid #eef1f6' }}>
           <button type="button" onClick={onToggle} aria-expanded={open}
-            className="w-full flex items-center gap-[10px] pl-[52px] pr-[16px] py-[10px] text-left transition-colors hover:bg-[#f2f6fd]"
-            style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: font }}>
+            className="w-full flex items-center gap-[10px] pl-[52px] pr-[16px] py-[10px] text-left transition-colors"
+            style={{ border: 'none', background: open ? '#e2ebf9' : 'transparent', cursor: 'pointer', fontFamily: font }}>
             {/* The rail ties this strip back to the sub-claim above it */}
             <span aria-hidden className="flex-shrink-0" style={{ position: 'absolute', marginLeft: -26, width: 14, height: 1, background: '#c8d6ea' }} />
             <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="#1360d2" strokeWidth="2.2" strokeLinecap="round"
@@ -396,7 +399,7 @@ function SubClaimBlock({ d, n, open, onToggle, onViewOb }: {
             </span>
             {!isCdm && (
               <span className="text-[13px] px-[9px] py-[2px] rounded-[12px]"
-                style={{ background: '#e2ebf9', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: font }}>
+                style={{ background: open ? '#fff' : '#e2ebf9', color: '#1360d2', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: font }}>
                 {allHs.length} HS Code{allHs.length !== 1 ? 's' : ''}
               </span>
             )}
@@ -426,24 +429,41 @@ function SubClaimBlock({ d, n, open, onToggle, onViewOb }: {
        sit in the header; the charge types claimed against it are nested inside, each in
        its own card on a tinted tray so a sub-claim's detail cannot be mistaken for a
        sibling of the declaration. ─── */
-function DeclarationCard({ g, idx, isOpen, onToggle, onViewOb }: {
+function DeclarationCard({ g, idx, isOpen, onToggle, onViewOb, onViewDeclaration, onViewPrivileges }: {
   g: DeclarationGroup; idx: number;
   isOpen: (key: string) => boolean; onToggle: (key: string) => void;
   onViewOb: (obs: OutboundDetail[]) => void;
+  onViewDeclaration: () => void; onViewPrivileges: () => void;
 }) {
   return (
     <div className="bg-white rounded-[8px] overflow-hidden" style={{ border: '1.5px solid #d9e3f2', boxShadow: '0px 2px 8px rgba(143,155,186,0.12)' }}>
       {/* The declaration itself — everything the sub-claims below share */}
       <div className="flex flex-wrap items-center gap-x-[24px] gap-y-[8px] px-[16px] py-[14px]">
         <span className="text-[16px] text-[#455174]" style={{ fontFamily: font }}>{idx + 1}</span>
-        <FieldItem label="Declaration No." value={g.declarationNo} />
+        {/* The declaration number carries the owner's privilege marks */}
+        <div className="flex flex-col gap-[4px] py-[12px] px-[16px]" style={{ flex: '1 0 150px', minWidth: 130 }}>
+          <span className="text-[16px]" style={{ color: '#455174', fontFamily: font }}>Declaration No.</span>
+          <span className="flex items-center gap-[10px] flex-wrap">
+            <span className="text-[16px]" style={{ color: '#051937', fontFamily: font, fontWeight: 500 }}>{g.declarationNo}</span>
+            <AeoLogo />
+            <WlpLogo />
+          </span>
+        </div>
         <FieldItem label="Actual Departure Date" value={g.actualDepartureDate} />
         <FieldItem label="Declaration Type" value={g.declarationType} />
-        <FieldItem label="Deposit Method" value={g.depositMethod} />
-        <FieldItem label="Account Number" value={g.accountNumber} />
         <FieldItem label="Refund Mode" value={g.refundMode} />
         <FieldItem label={`${g.refundMode} No.`} value={g.refundAccountNo} />
         <FieldItem label="Account Name" value={g.refundAccountName} />
+        <span className="flex items-center gap-[20px] px-[16px] py-[12px] flex-wrap">
+          <button type="button" onClick={onViewDeclaration}
+            className="text-[16px] hover:underline" style={{ color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
+            View Declaration
+          </button>
+          <button type="button" onClick={onViewPrivileges}
+            className="text-[16px] hover:underline" style={{ color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
+            View Privileges &amp; Benefits
+          </button>
+        </span>
       </div>
 
       {/* Sub-claims tray — indented and tinted, so the cards inside read as children */}
@@ -462,6 +482,39 @@ function DeclarationCard({ g, idx, isOpen, onToggle, onViewOb }: {
         })}
       </div>
     </div>
+  );
+}
+
+/** The declaration itself, opened over the claim from a declaration card's "View Declaration". */
+function DeclarationViewOverlay({ declNo, onClose }: { declNo: string; onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = ''; };
+  }, [onClose]);
+
+  return createPortal(
+    <div className="fixed inset-0 z-[1000] overflow-y-auto" style={{ background: '#f4f7fc', fontFamily: font }}>
+      <div className="sticky top-0 z-[2] bg-white flex items-center justify-between gap-[16px] px-[24px] py-[14px]"
+        style={{ borderBottom: '1px solid #e3e9f3' }}>
+        <p className="text-[16px]" style={{ color: '#455174' }}>
+          Declaration <span style={{ color: '#051937', fontWeight: 600 }}>{declNo}</span>
+        </p>
+        <button type="button" onClick={onClose} data-secondary-btn
+          className="h-[40px] px-[20px] rounded-[4px] border bg-white text-[16px] inline-flex items-center gap-[8px]"
+          style={{ borderColor: '#1360d2', color: '#1360d2', fontWeight: 500 }}>
+          <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 4l-6 6 6 6" />
+          </svg>
+          Back to Claim
+        </button>
+      </div>
+      <div className="px-[24px] py-[24px]">
+        <ViewDeclarationPage />
+      </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -491,6 +544,9 @@ export function DeclarationDetailsSection({ chargeDetails, rows, outbounds, decl
     return next;
   });
   const [viewOb, setViewOb] = useState<OutboundDetail[] | null>(null);
+  /* Both links open over the claim, so the claim is still there when they are closed. */
+  const [viewDecl, setViewDecl] = useState<string | null>(null);
+  const [viewPrivileges, setViewPrivileges] = useState<string | null>(null);
 
   return (
     <>
@@ -498,11 +554,16 @@ export function DeclarationDetailsSection({ chargeDetails, rows, outbounds, decl
         <div className="flex flex-col gap-[16px]">
           {groups.map((g, i) => (
             <DeclarationCard key={g.declarationNo} g={g} idx={i}
-              isOpen={(key) => openSubClaims.has(key)} onToggle={toggleSubClaim} onViewOb={setViewOb} />
+              isOpen={(key) => openSubClaims.has(key)} onToggle={toggleSubClaim} onViewOb={setViewOb}
+              onViewDeclaration={() => setViewDecl(g.declarationNo)}
+              onViewPrivileges={() => setViewPrivileges(g.declarationNo)} />
           ))}
         </div>
       </Section>
       {viewOb && <OutboundViewPopup obs={viewOb} onClose={() => setViewOb(null)} />}
+      {viewDecl && <DeclarationViewOverlay declNo={viewDecl} onClose={() => setViewDecl(null)} />}
+      <PrivilegesBenefitsModal open={!!viewPrivileges} declarationNo={viewPrivileges ?? undefined}
+        onClose={() => setViewPrivileges(null)} />
     </>
   );
 }
