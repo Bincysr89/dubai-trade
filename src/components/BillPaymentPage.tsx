@@ -2282,15 +2282,18 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
 
       {/* Advanced Filters panel */}
       {showFilters && (
-        <div className="relative bg-white rounded-[8px] border border-[#d5ddfb] p-5 mb-[10px]"
-          style={{ boxShadow: 'rgba(0, 0, 0, 0.12) 4px 4px 30px 0px' }}>
-          {/* Close button */}
-          <button onClick={() => setShowFilters(false)}
-            className="absolute top-3 right-3 z-10 size-[28px] flex items-center justify-center rounded-full hover:bg-[#f0f4ff] transition-colors text-[#697498] hover:text-[#0e1b3d]">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2">
-              <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
-            </svg>
-          </button>
+        <div className="bg-white rounded-[8px] p-[20px] mb-[10px]"
+          style={{ boxShadow: '4px 4px 30px 0px rgba(0,0,0,0.12)' }}>
+          {/* Titled header with its close, as the Refund & Claims panel carries */}
+          <div className="flex items-center justify-between mb-[20px]">
+            <span className="text-[16px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>Advance Filters</span>
+            <button onClick={() => setShowFilters(false)} aria-label="Close advance filters"
+              className="size-[28px] flex items-center justify-center rounded hover:bg-[#f0f4ff] transition-colors">
+              <svg viewBox="0 0 18 18" width="18" height="18" fill="none" stroke="#697498" strokeWidth="1.8" strokeLinecap="round">
+                <path d="M2 2l14 14M16 2L2 16" />
+              </svg>
+            </button>
+          </div>
           {/* Wraps rather than squeezing — five fields do not fit a narrow panel */}
           <div className="flex items-start gap-4 flex-wrap">
             <div className="flex-1 min-w-[200px]">
@@ -2606,16 +2609,18 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
 
       {/* Advance Filters panel */}
       {payAdvFilters && (
-        <div className="relative bg-white rounded-[8px] border border-[#d5ddfb] p-5 mb-[10px]"
-          style={{ boxShadow: 'rgba(0, 0, 0, 0.12) 4px 4px 30px 0px' }}>
-          {/* Close button — floats above the panel's top-right corner so it never overlaps the field row */}
-          <button onClick={() => setPayAdvFilters(false)}
-            className="absolute z-10 size-[28px] flex items-center justify-center rounded-full bg-white hover:bg-[#f0f4ff] transition-colors text-[#697498] hover:text-[#0e1b3d]"
-            style={{ top: -14, right: -10, border: '1px solid #e0e8f5', boxShadow: '0 2px 8px rgba(14,27,61,0.12)' }}>
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2">
-              <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
-            </svg>
-          </button>
+        <div className="bg-white rounded-[8px] p-[20px] mb-[10px]"
+          style={{ boxShadow: '4px 4px 30px 0px rgba(0,0,0,0.12)' }}>
+          {/* Titled header with its close, as the Refund & Claims panel carries */}
+          <div className="flex items-center justify-between mb-[20px]">
+            <span className="text-[16px] font-semibold text-[#0e1b3d]" style={{ fontFamily: font }}>Advance Filters</span>
+            <button onClick={() => setPayAdvFilters(false)} aria-label="Close advance filters"
+              className="size-[28px] flex items-center justify-center rounded hover:bg-[#f0f4ff] transition-colors">
+              <svg viewBox="0 0 18 18" width="18" height="18" fill="none" stroke="#697498" strokeWidth="1.8" strokeLinecap="round">
+                <path d="M2 2l14 14M16 2L2 16" />
+              </svg>
+            </button>
+          </div>
           {/* Dates ahead of the status, as the Invoices panel reads, with the
               buttons inline after the last field rather than on a row of their own */}
           <div className="flex items-start gap-4 flex-wrap">
