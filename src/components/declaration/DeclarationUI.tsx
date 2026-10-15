@@ -348,7 +348,7 @@ export const STATUS_TINTS: Record<string, { bg: string; color: string }> = {
   'New':              { bg: 'rgba(19,96,210,0.10)',   color: '#1360d2' },
   'Payment Pending':  { bg: 'rgba(255,169,26,0.16)',  color: '#b45309' },
   'Pending':          { bg: 'rgba(255,169,26,0.16)',  color: '#b45309' },
-  'Registered':       { bg: 'rgba(124,58,237,0.10)',  color: '#7c3aed' },
+  'Registered':       { bg: 'rgba(19,96,210,0.10)',   color: '#1360d2' },
 };
 
 export function StatusChip({ status }: { status: string }) {

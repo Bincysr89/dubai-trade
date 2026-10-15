@@ -10,7 +10,12 @@ import {
 import { mergeDocsByBatch, type UploadedDoc } from './NonRemittanceDocumentsPage';
 import type { Row } from './EligibleDeclarationsPage';
 import PrivilegesBenefitsModal, { AeoLogo, WlpLogo } from './PrivilegesBenefitsModal';
+import ClaimApprovalDetailsModal from './ClaimApprovalDetailsModal';
+import WaiverDetailsModal from './WaiverDetailsModal';
 import ViewDeclarationPage from './declaration/ViewDeclarationPage';
+import MoreIcon from './MoreIcon';
+import { StatusChip } from './declaration/DeclarationUI';
+import RowFlyout, { anchorFrom, type FlyoutAnchor, type FlyoutItem } from './declaration/RowFlyout';
 
 const font = "'Dubai', 'Segoe UI', sans-serif";
 
@@ -368,7 +373,6 @@ function SubClaimBlock({ d, n, open, onToggle, onViewOb }: {
           style={{ background: '#1360d2', color: '#fff', fontWeight: 600, fontFamily: font }}>{n}</span>
         <FieldItem label="Charge Type" value={d.chargeType} />
         <FieldItem label="Refund Type" value={d.refundType} />
-        <FieldItem label="Status" value="Registered" />
         {([
           ['Claim Amount (AED)', d.claimAmount],
           ['Amount (AED)', d.claimAmount],
@@ -379,6 +383,11 @@ function SubClaimBlock({ d, n, open, onToggle, onViewOb }: {
             <span className="text-[16px] inline-flex items-baseline gap-[3px]" style={{ color: '#051937', fontFamily: font, fontWeight: 500 }}><Dh style={{ fontSize: 15 }} />{amount}</span>
           </div>
         ))}
+        {/* Status reads last, as the chip it is everywhere else */}
+        <div className="flex flex-col gap-[4px] py-[12px] px-[16px]" style={{ flex: '1 0 150px', minWidth: 130 }}>
+          <span className="text-[16px]" style={{ color: '#455174', fontFamily: font }}>Status</span>
+          <span><StatusChip status="Registered" /></span>
+        </div>
       </div>
 
       {/* What this charge type carries. Export-linked types (Alternative Duty Deposit, Duty)
@@ -425,16 +434,37 @@ function SubClaimBlock({ d, n, open, onToggle, onViewOb }: {
   );
 }
 
+/* ─── The declaration card's row menu — everything the declaration can be viewed
+       through, each opening its own popup (bar the declaration itself). ─── */
+const MENU_WIDTH = 290;
+
+const menuIcons = {
+  declaration: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M5 2.5h7l3.5 3.5v11.5H5z" /><path d="M12 2.5V6h3.5M7.5 10h5M7.5 13h3.5" /></svg>,
+  privileges:  <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="10" cy="7.5" r="4.5" /><path d="M7 11.5L6 18l4-2 4 2-1-6.5" /></svg>,
+  approval:    <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="10" cy="10" r="7.5" /><path d="M6.5 10.2l2.4 2.4 4.6-4.9" /></svg>,
+  waiver:      <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 3.5h8.5L16 7v9.5H4z" /><path d="M12.5 3.5V7H16" /><path d="M6.8 12.2l1.9 1.9 4-4.3" /></svg>,
+};
+
+const DECLARATION_MENU: FlyoutItem[] = [
+  { label: 'View Declaration',            icon: menuIcons.declaration },
+  { label: 'View Privileges & Benefits',  icon: menuIcons.privileges },
+  { label: 'View Claim Approval Details', icon: menuIcons.approval },
+  { label: 'View Waiver Details',         icon: menuIcons.waiver },
+];
+
+type DeclarationMenuLabel = (typeof DECLARATION_MENU)[number]['label'];
+
 /* ─── Declaration Details — one card per declaration. The declaration's own particulars
        sit in the header; the charge types claimed against it are nested inside, each in
        its own card on a tinted tray so a sub-claim's detail cannot be mistaken for a
        sibling of the declaration. ─── */
-function DeclarationCard({ g, idx, isOpen, onToggle, onViewOb, onViewDeclaration, onViewPrivileges }: {
+function DeclarationCard({ g, idx, isOpen, onToggle, onViewOb, onAction }: {
   g: DeclarationGroup; idx: number;
   isOpen: (key: string) => boolean; onToggle: (key: string) => void;
   onViewOb: (obs: OutboundDetail[]) => void;
-  onViewDeclaration: () => void; onViewPrivileges: () => void;
+  onAction: (label: DeclarationMenuLabel) => void;
 }) {
+  const [menuAt, setMenuAt] = useState<FlyoutAnchor | null>(null);
   return (
     <div className="bg-white rounded-[8px] overflow-hidden" style={{ border: '1.5px solid #d9e3f2', boxShadow: '0px 2px 8px rgba(143,155,186,0.12)' }}>
       {/* The declaration itself — everything the sub-claims below share */}
@@ -451,19 +481,17 @@ function DeclarationCard({ g, idx, isOpen, onToggle, onViewOb, onViewDeclaration
         </div>
         <FieldItem label="Actual Departure Date" value={g.actualDepartureDate} />
         <FieldItem label="Declaration Type" value={g.declarationType} />
-        <span className="flex items-center gap-[14px] px-[16px] py-[12px] flex-wrap">
-          <button type="button" onClick={onViewDeclaration}
-            className="text-[16px] hover:underline" style={{ color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
-            View Declaration
-          </button>
-          {/* Short rule keeping the two links apart */}
-          <span aria-hidden style={{ width: 1, height: 16, background: '#c8d6ea', flexShrink: 0 }} />
-          <button type="button" onClick={onViewPrivileges}
-            className="text-[16px] hover:underline" style={{ color: '#1360d2', fontFamily: font, fontWeight: 500 }}>
-            View Privileges &amp; Benefits
-          </button>
-        </span>
+        {/* Everything this declaration can be looked at through, in one menu */}
+        <button type="button" aria-label={`Declaration ${g.declarationNo} actions`}
+          onClick={(e) => { e.stopPropagation(); setMenuAt(anchorFrom(e, DECLARATION_MENU.length, MENU_WIDTH)); }}
+          className="size-[32px] inline-flex items-center justify-center rounded ml-auto mr-[8px] hover:bg-[#f0f4ff] transition-colors">
+          <MoreIcon />
+        </button>
       </div>
+      {menuAt && (
+        <RowFlyout items={DECLARATION_MENU} at={menuAt} width={MENU_WIDTH}
+          onPick={(label) => onAction(label as DeclarationMenuLabel)} onClose={() => setMenuAt(null)} />
+      )}
 
       {/* Sub-claims tray — indented and tinted, so the cards inside read as children */}
       <div className="px-[16px] py-[14px] flex flex-col gap-[12px]"
@@ -543,9 +571,11 @@ export function DeclarationDetailsSection({ chargeDetails, rows, outbounds, decl
     return next;
   });
   const [viewOb, setViewOb] = useState<OutboundDetail[] | null>(null);
-  /* Both links open over the claim, so the claim is still there when they are closed. */
+  /* Each menu item opens over the claim, so the claim is still there when it closes. */
   const [viewDecl, setViewDecl] = useState<string | null>(null);
   const [viewPrivileges, setViewPrivileges] = useState<string | null>(null);
+  const [viewApproval, setViewApproval] = useState<string | null>(null);
+  const [viewWaiver, setViewWaiver] = useState<string | null>(null);
 
   return (
     <>
@@ -554,8 +584,12 @@ export function DeclarationDetailsSection({ chargeDetails, rows, outbounds, decl
           {groups.map((g, i) => (
             <DeclarationCard key={g.declarationNo} g={g} idx={i}
               isOpen={(key) => openSubClaims.has(key)} onToggle={toggleSubClaim} onViewOb={setViewOb}
-              onViewDeclaration={() => setViewDecl(g.declarationNo)}
-              onViewPrivileges={() => setViewPrivileges(g.declarationNo)} />
+              onAction={(label) => {
+                if (label === 'View Declaration') setViewDecl(g.declarationNo);
+                else if (label === 'View Privileges & Benefits') setViewPrivileges(g.declarationNo);
+                else if (label === 'View Claim Approval Details') setViewApproval(g.declarationNo);
+                else setViewWaiver(g.declarationNo);
+              }} />
           ))}
         </div>
       </Section>
@@ -563,6 +597,10 @@ export function DeclarationDetailsSection({ chargeDetails, rows, outbounds, decl
       {viewDecl && <DeclarationViewOverlay declNo={viewDecl} onClose={() => setViewDecl(null)} />}
       <PrivilegesBenefitsModal open={!!viewPrivileges} declarationNo={viewPrivileges ?? undefined}
         onClose={() => setViewPrivileges(null)} />
+      <ClaimApprovalDetailsModal open={!!viewApproval} subject={viewApproval ?? undefined}
+        onClose={() => setViewApproval(null)} />
+      <WaiverDetailsModal open={!!viewWaiver} subject={viewWaiver ?? undefined}
+        onClose={() => setViewWaiver(null)} />
     </>
   );
 }
