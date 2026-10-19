@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Header from './Header';
 import Pagination from './Pagination';
 import infoIconSrc from '../assets/icon-info.svg';
-import { DateTimePicker, DateInput, StatusAsOnBadge } from './DatePicker';
+import { DateTimePicker, DateInput, StatusAsOnBadge, fmtDate } from './DatePicker';
 import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
 import PaymentHistoryPage, { type PaymentHistoryRow } from './PaymentHistoryPage';
 import ActionPage from './declaration/ActionPage';
@@ -894,6 +894,31 @@ function FloatInput({ label, value, onChange }: { label: string; value: string; 
 }
 
 /* Toolbar-height select with a floating label — the Invoices toolbar's own control. */
+/* Applied filters, as the Refund & Claims listing shows them: one chip per field in
+   play, kept visible once the panel is closed, with a Reset beside them. */
+function FilterTags({ tags, onReset }: { tags: { label: string; value: string }[]; onReset: () => void }) {
+  if (tags.length === 0) return null;
+  return (
+    <div className="flex items-center flex-wrap gap-[10px] mb-[12px]">
+      {tags.map(t => (
+        <span key={t.label} title={t.value}
+          className="inline-flex items-center h-[36px] px-[14px] rounded-[4px] text-[15px] text-[#0e1b3d] whitespace-nowrap"
+          style={{ background: '#cfe0f7', fontFamily: font }}>
+          {t.label}
+        </span>
+      ))}
+      <button type="button" onClick={onReset}
+        className="inline-flex items-center gap-[6px] text-[16px] text-[#1360d2] font-medium hover:opacity-70 transition-opacity"
+        style={{ fontFamily: font }}>
+        Reset
+        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M17 10a7 7 0 1 1-2.05-4.95" /><path d="M17 3v4h-4" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
 function ToolbarSelect({ label, value, options, onChange, required = false }: {
   label: string; value: string; options: string[]; onChange: (v: string) => void; required?: boolean;
 }) {
@@ -906,12 +931,23 @@ function ToolbarSelect({ label, value, options, onChange, required = false }: {
   }, []);
   return (
     <div className="relative" ref={ref}>
-      <button type="button" onClick={() => setOpen(o => !o)}
+      <button type="button" onClick={() => setOpen(o => !o)} title={value || undefined}
         className="h-[48px] w-full rounded-[4px] px-[12px] flex items-center gap-[6px] text-left bg-white hover:bg-[#f7faff] transition-colors"
         style={{ border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}`, fontFamily: font }}>
         <span className="flex-1 truncate text-[16px]" style={{ color: value ? '#1360d2' : '#8f94ae', fontWeight: value ? 500 : 400 }}>
           {value || `Select ${label.toLowerCase()}`}
         </span>
+        {value && (
+          <span role="button" aria-label={`Clear ${label}`}
+            onClick={e => { e.stopPropagation(); onChange(''); setOpen(false); }}
+            className="flex items-center justify-center flex-shrink-0 hover:opacity-80"
+            style={{ width: 20, height: 20, borderRadius: '50%', background: '#b0b8d0', cursor: 'pointer' }}>
+            <svg viewBox="0 0 10 10" width="9" height="9" fill="none">
+              <line x1="2" y1="2" x2="8" y2="8" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" />
+              <line x1="8" y1="2" x2="2" y2="8" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
+          </span>
+        )}
         <svg viewBox="0 0 24 24" className={`size-[16px] text-[#697498] flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M6 9l6 6 6-6" /></svg>
       </button>
       <span className="absolute text-[12px] px-[4px] bg-white pointer-events-none"
@@ -920,7 +956,7 @@ function ToolbarSelect({ label, value, options, onChange, required = false }: {
       </span>
       {open && (
         <div className="absolute z-[90] top-[52px] left-0 bg-white rounded-[8px] py-[4px] overflow-y-auto"
-          style={{ minWidth: '100%', maxWidth: 320, maxHeight: 280, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
+          style={{ minWidth: '100%', width: 'max-content', maxWidth: 'min(560px, 80vw)', maxHeight: 300, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
           {!required && (
             <button onClick={() => { onChange(''); setOpen(false); }}
               className="block w-full text-left px-[14px] py-[8px] text-[16px] hover:bg-[#e2ebf9] whitespace-nowrap"
@@ -1457,6 +1493,23 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
 
   const selectedList = Array.from(selectedRows).map(i => INVOICE_ROWS[i]).filter(Boolean);
   const totalAmt     = selectedList.reduce((s, r) => s + parseFloat(r.balance.replace(',', '')), 0);
+
+  /* What the invoices listing is currently filtered by — one chip per field. */
+  const invFilterTags = [
+    fInvType  && { label: 'Invoice Type',  value: fInvType },
+    fLocation && { label: 'Location',      value: fLocation },
+    fInvNumber && { label: 'Invoice Number', value: fInvNumber },
+    fSource   && { label: 'Source',        value: fSource },
+    fFromDate && { label: 'From Date',     value: fmtDate(fFromDate) },
+    fToDate   && { label: 'To Date',       value: fmtDate(fToDate) },
+    fStatuses.size > 0 && { label: 'Status', value: [...fStatuses].join(', ') },
+    fDueFilter && { label: 'Due',          value: fDueFilter === 'overdue' ? 'Overdue' : 'Due Soon' },
+  ].filter(Boolean) as { label: string; value: string }[];
+
+  const resetInvFilters = () => {
+    setFInvType(''); setFLocation(''); setFInvNumber(''); setFSource('');
+    setFFromDate(''); setFToDate(''); setFStatuses(new Set()); setFDueFilter('');
+  };
 
   /* The picked location gives the invoice numbers their prefix. */
   const invPrefix = LOCATIONS.find(l => l.name === fLocation)?.prefix ?? '';
@@ -2322,8 +2375,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
     const { scrollRef: invScrollRef, atScrollStart: invAtScrollStart, atScrollEnd: invAtScrollEnd, handleScroll: invHandleScroll, scrollToStart: invScrollToStart, scrollToEnd: invScrollToEnd } = useTableBehaviors();
     return (
     <div className="flex-1 flex flex-col min-w-0">
-      {/* Row 1 — Toolbar */}
-      <div className="flex items-center gap-[10px] mb-[10px]">
+      {/* Row 1 — Toolbar. The padding keeps the selects' floating labels from being clipped. */}
+      <div className="flex items-center gap-[10px] mb-[10px] pt-[10px]">
         {/* Advance Filters */}
         <button
           onClick={() => setShowFilters(f => !f)}
@@ -2355,7 +2408,10 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
           style={{ minWidth: 220, borderColor: '#d5ddfb', background: fInvType ? '#fff' : '#f2f4f8', opacity: fInvType ? 1 : 0.7 }}
           title={fInvType ? undefined : 'Select an invoice type first'}>
           {invPrefix && (
-            <span className="text-[16px] flex-shrink-0" style={{ color: '#697498', fontFamily: font }}>{invPrefix} -</span>
+            <span className="text-[15px] flex-shrink-0 inline-flex items-center rounded-[4px]"
+              style={{ background: '#e2ebf9', color: '#1360d2', fontWeight: 600, fontFamily: font, padding: '3px 8px' }}>
+              {invPrefix} -
+            </span>
           )}
           <input
             type="text"
@@ -2482,6 +2538,9 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
           </div>
         </div>
       )}
+
+      {/* Applied filters — kept outside the panel so they stay visible once it is closed */}
+      <FilterTags tags={invFilterTags} onReset={resetInvFilters} />
 
       {/* Info bar — totals / selection summary */}
       <div className="flex items-center gap-[6px] mb-[8px] text-[15px]" style={{ fontFamily: font }}>
@@ -2637,6 +2696,21 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
       {showInvReceipt && <ReceiptModal onClose={() => setShowInvReceipt(false)} rows={invReceiptRows} />}
     </div>
     );
+  };
+
+  /* What the payments listing is currently filtered by. The date filter type always
+     holds a value, so it is only worth a chip once a range is actually set. */
+  const payFilterTags = [
+    (payFromDate || payToDate) && { label: 'Date Filter Type', value: payDateFilterType },
+    payFromDate && { label: 'From Date', value: fmtDate(payFromDate) },
+    payToDate   && { label: 'To Date',   value: fmtDate(payToDate) },
+    paySearchValue && { label: paySearchType, value: paySearchValue },
+    payStatusFilter && { label: 'Status', value: payStatusFilter },
+  ].filter(Boolean) as { label: string; value: string }[];
+
+  const resetPayFilters = () => {
+    setPayFromDate(''); setPayToDate(''); setPayDateFilterType('Transaction Date');
+    setPayStatusFilter(''); setPaySearchValue('');
   };
 
   /* ── Payments content ───────────────────────────────────────────────────── */
@@ -2822,6 +2896,9 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
           </div>
         </div>
       )}
+
+      {/* Applied filters — kept outside the panel so they stay visible once it is closed */}
+      <FilterTags tags={payFilterTags} onReset={resetPayFilters} />
 
       {/* Row 2 — Transaction Date As On badge */}
       <div className="flex justify-center mb-[10px]">
