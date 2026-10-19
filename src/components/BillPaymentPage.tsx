@@ -945,21 +945,39 @@ function ToolbarSelect({ label, value, options, onChange, required = false }: {
   label: string; value: string; options: string[]; onChange: (v: string) => void; required?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  /* Typing narrows the list — long option lists are hard to pick from otherwise. */
+  const [query, setQuery] = useState('');
   const ref = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
-    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) { setOpen(false); setQuery(''); } };
     document.addEventListener('mousedown', h);
     return () => document.removeEventListener('mousedown', h);
   }, []);
+  useEffect(() => { if (open) inputRef.current?.focus(); }, [open]);
+  const shown = options.filter(o => o.toLowerCase().includes(query.trim().toLowerCase()));
+  const pick = (v: string) => { onChange(v); setOpen(false); setQuery(''); };
   return (
     <div className="relative" ref={ref}>
-      <button type="button" onClick={() => setOpen(o => !o)} title={value || undefined}
-        className="h-[48px] w-full rounded-[4px] px-[12px] flex items-center gap-[6px] text-left bg-white hover:bg-[#f7faff] transition-colors"
+      <div onClick={() => setOpen(o => !o)} title={value || undefined}
+        className="h-[48px] w-full rounded-[4px] px-[12px] flex items-center gap-[6px] text-left bg-white hover:bg-[#f7faff] transition-colors cursor-pointer"
         style={{ border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}`, fontFamily: font }}>
-        <span className="flex-1 truncate text-[16px]" style={{ color: value ? '#1360d2' : '#8f94ae', fontWeight: value ? 500 : 400 }}>
-          {value || `Select ${label.toLowerCase()}`}
-        </span>
-        {value && (
+        {open ? (
+          <input ref={inputRef} type="text" value={query} onChange={e => setQuery(e.target.value)}
+            placeholder={value || `Search ${label.toLowerCase()}…`}
+            onClick={e => e.stopPropagation()}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && shown.length > 0) pick(shown[0]);
+              if (e.key === 'Escape') { setOpen(false); setQuery(''); }
+            }}
+            className="flex-1 min-w-0 bg-transparent focus:outline-none text-[16px] text-[#0e1b3d] placeholder-[#8f94ae]"
+            style={{ fontFamily: font }} />
+        ) : (
+          <span className="flex-1 truncate text-[16px]" style={{ color: value ? '#1360d2' : '#8f94ae', fontWeight: value ? 500 : 400 }}>
+            {value || `Select ${label.toLowerCase()}`}
+          </span>
+        )}
+        {value && !open && (
           <span role="button" aria-label={`Clear ${label}`}
             onClick={e => { e.stopPropagation(); onChange(''); setOpen(false); }}
             className="flex items-center justify-center flex-shrink-0 hover:opacity-80"
@@ -971,7 +989,7 @@ function ToolbarSelect({ label, value, options, onChange, required = false }: {
           </span>
         )}
         <svg viewBox="0 0 24 24" className={`size-[16px] text-[#697498] flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M6 9l6 6 6-6" /></svg>
-      </button>
+      </div>
       <span className="absolute text-[12px] px-[4px] bg-white pointer-events-none"
         style={{ left: 9, top: -8, color: '#060c28', fontFamily: font }}>
         {required && <span style={{ color: '#e8212e' }}>*</span>}{label}
@@ -979,13 +997,15 @@ function ToolbarSelect({ label, value, options, onChange, required = false }: {
       {open && (
         <div className="absolute z-[90] top-[52px] left-0 bg-white rounded-[8px] py-[4px] overflow-y-auto"
           style={{ minWidth: '100%', width: 'max-content', maxWidth: 'min(560px, 80vw)', maxHeight: 300, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
-          {!required && (
-            <button onClick={() => { onChange(''); setOpen(false); }}
+          {!required && !query && (
+            <button onClick={() => pick('')}
               className="block w-full text-left px-[14px] py-[8px] text-[16px] hover:bg-[#e2ebf9] whitespace-nowrap"
               style={{ color: value === '' ? '#1360d2' : '#697498', fontFamily: font }}>All</button>
           )}
-          {options.map(opt => (
-            <button key={opt} onClick={() => { onChange(opt); setOpen(false); }}
+          {shown.length === 0 ? (
+            <p className="px-[14px] py-[10px] text-[15px] text-[#697498] whitespace-nowrap" style={{ fontFamily: font }}>No matches</p>
+          ) : shown.map(opt => (
+            <button key={opt} onClick={() => pick(opt)}
               className="block w-full text-left px-[14px] py-[8px] text-[16px] hover:bg-[#e2ebf9] whitespace-nowrap"
               style={{ color: opt === value ? '#1360d2' : '#0e1b3d', fontFamily: font, fontWeight: opt === value ? 500 : 400 }}>{opt}</button>
           ))}
@@ -999,24 +1019,41 @@ function FloatDropdown({ label, value, options, onChange, allowAll = true }: { l
   const [open, setOpen] = useState(false);
   const [focused, setFocused] = useState(false);
   const [hovered, setHovered] = useState(false);
+  /* Typing narrows the list — long option lists are hard to pick from otherwise. */
+  const [query, setQuery] = useState('');
   const ref = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
-    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) { setOpen(false); setFocused(false); } };
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) { setOpen(false); setFocused(false); setQuery(''); } };
     document.addEventListener('mousedown', h);
     return () => document.removeEventListener('mousedown', h);
   }, []);
+  useEffect(() => { if (open) inputRef.current?.focus(); }, [open]);
   const active = open || focused || value !== '';
   const showX = !!(value && hovered);
+  const shown = options.filter(o => o.toLowerCase().includes(query.trim().toLowerCase()));
+  const pick = (v: string) => { onChange(v); setOpen(false); setFocused(false); setQuery(''); };
   return (
     <div className="relative" ref={ref} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-      <button
-        type="button"
+      <div
         onClick={() => { setOpen(o => !o); setFocused(true); }}
-        className="h-[56px] w-full rounded-[4px] px-[12px] flex items-center gap-[6px] text-[16px] text-[#0e1b3d] focus:outline-none bg-white text-left"
+        className="h-[56px] w-full rounded-[4px] px-[12px] flex items-center gap-[6px] text-[16px] text-[#0e1b3d] bg-white cursor-pointer"
         style={{ fontFamily: font, border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}` }}
       >
-        <span className="flex-1 truncate">{value}</span>
-        {showX && allowAll && (
+        {open ? (
+          <input ref={inputRef} type="text" value={query} onChange={e => setQuery(e.target.value)}
+            placeholder={value || `Search ${label.toLowerCase()}…`}
+            onClick={e => e.stopPropagation()}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && shown.length > 0) pick(shown[0]);
+              if (e.key === 'Escape') { setOpen(false); setQuery(''); }
+            }}
+            className="flex-1 min-w-0 bg-transparent focus:outline-none text-[16px] text-[#0e1b3d] placeholder-[#8f94ae]"
+            style={{ fontFamily: font }} />
+        ) : (
+          <span className="flex-1 truncate">{value}</span>
+        )}
+        {showX && allowAll && !open && (
           <span onClick={e => { e.stopPropagation(); onChange(''); setOpen(false); setFocused(false); }}
             style={{ width: 22, height: 22, borderRadius: '50%', background: '#b0b8d0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: 'pointer' }}>
             <svg viewBox="0 0 10 10" width="10" height="10" fill="none">
@@ -1026,17 +1063,19 @@ function FloatDropdown({ label, value, options, onChange, allowAll = true }: { l
           </span>
         )}
         <svg viewBox="0 0 24 24" className={`size-[18px] text-[#697498] flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 9l6 6 6-6" /></svg>
-      </button>
+      </div>
       <span style={floatLabel(active, open)}>{label}</span>
       {open && (
-        <div className="absolute z-[90] top-[60px] left-0 right-0 bg-white rounded-[8px] py-[4px] overflow-hidden" style={{ boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
-          {allowAll && (
-            <button onClick={() => { onChange(''); setOpen(false); setFocused(false); }}
+        <div className="absolute z-[90] top-[60px] left-0 right-0 bg-white rounded-[8px] py-[4px] overflow-y-auto" style={{ maxHeight: 280, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
+          {allowAll && !query && (
+            <button onClick={() => pick('')}
               className="block w-full text-left px-[14px] py-[8px] text-[16px] hover:bg-[#e2ebf9]"
               style={{ color: value === '' ? '#1360d2' : '#697498', fontFamily: font }}>All</button>
           )}
-          {options.map(opt => (
-            <button key={opt} onClick={() => { onChange(opt); setOpen(false); setFocused(false); }}
+          {shown.length === 0 ? (
+            <p className="px-[14px] py-[10px] text-[15px] text-[#697498]" style={{ fontFamily: font }}>No matches</p>
+          ) : shown.map(opt => (
+            <button key={opt} onClick={() => pick(opt)}
               className="block w-full text-left px-[14px] py-[8px] text-[16px] hover:bg-[#e2ebf9]"
               style={{ color: opt === value ? '#1360d2' : '#0e1b3d', fontFamily: font, fontWeight: opt === value ? 500 : 400 }}
             >{opt}</button>
@@ -2525,40 +2564,33 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               </svg>
             </button>
           </div>
-          {/* Dates first, then what narrows them. Wraps rather than squeezing. */}
-          <div className="flex items-start gap-4 flex-wrap">
-            {/* The pair wraps together, so a To Date never strands itself on its own row */}
-            <div className="flex gap-4 min-w-[340px]" style={{ flex: '2 1 340px' }}>
-              <div className="flex-1 min-w-0"><DateInput label="From Date" value={fFromDate} onChange={setFFromDate} /></div>
-              <div className="flex-1 min-w-0"><DateInput label="To Date"   value={fToDate}   onChange={setFToDate}   /></div>
+          {/* Four equal fields to a row, with the buttons in the cell after the last one */}
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-start">
+            <DateInput label="From Date" value={fFromDate} onChange={setFFromDate} />
+            <DateInput label="To Date"   value={fToDate}   onChange={setFToDate}   />
+            <FloatDropdown
+              label="Source"
+              value={fSource}
+              options={['CDR', 'SGRCS', 'SAS', 'CRNS']}
+              onChange={setFSource}
+            />
+            <FloatDropdown
+              label="Invoice Type"
+              value={fInvType}
+              options={INVOICE_TYPES}
+              onChange={setFInvType}
+            />
+            <StatusMultiDropdown
+              label="Status"
+              values={fStatuses}
+              options={Object.keys(INV_STATUS)}
+              onChange={setFStatuses}
+            />
+            <div className="flex items-center gap-3">
+              <button className="h-[56px] px-6 rounded-[4px] text-[16px] text-white flex-1" style={{ background: '#1360d2', fontFamily: font }}>Search</button>
+              <button onClick={resetInvFilters}
+                data-secondary-btn className="h-[56px] px-6 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white flex-1" style={{ fontFamily: font }}>Reset</button>
             </div>
-            <div className="flex-1 min-w-[170px]">
-              <FloatDropdown
-                label="Source"
-                value={fSource}
-                options={['CDR', 'SGRCS', 'SAS', 'CRNS']}
-                onChange={setFSource}
-              />
-            </div>
-            <div className="flex-1 min-w-[200px]">
-              <FloatDropdown
-                label="Invoice Type"
-                value={fInvType}
-                options={INVOICE_TYPES}
-                onChange={setFInvType}
-              />
-            </div>
-            <div className="flex-1 min-w-[170px]">
-              <StatusMultiDropdown
-                label="Status"
-                values={fStatuses}
-                options={Object.keys(INV_STATUS)}
-                onChange={setFStatuses}
-              />
-            </div>
-            <button className="h-[56px] px-6 rounded-[4px] text-[16px] text-white flex-shrink-0" style={{ background: '#1360d2', fontFamily: font }}>Search</button>
-            <button onClick={() => { setFFromDate(''); setFToDate(''); setFSource(''); setFInvType(''); setFInvNumber(''); setFStatuses(new Set()); setFDueFilter(''); }}
-              data-secondary-btn className="h-[56px] px-6 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white flex-shrink-0" style={{ fontFamily: font }}>Reset</button>
           </div>
         </div>
       )}
@@ -2870,53 +2902,40 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               </svg>
             </button>
           </div>
-          {/* Date filter type first — it says which dates the range means — then the
-              range itself, then what narrows it. Buttons sit inline after the last field. */}
-          <div className="flex items-start gap-4 flex-wrap">
-            <div className="flex-1 min-w-[190px]">
-              <FloatDropdown
-                label="Date Filter Type"
-                value={payDateFilterType}
-                options={['Transaction Date', 'Receipt Date']}
-                allowAll={false}
-                onChange={v => setPayDateFilterType(v || 'Transaction Date')}
-              />
+          {/* Four equal fields to a row, with the buttons in the cell after the last one.
+              The date filter type leads — it says which dates the range means. */}
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-start">
+            <FloatDropdown
+              label="Date Filter Type"
+              value={payDateFilterType}
+              options={['Transaction Date', 'Receipt Date']}
+              allowAll={false}
+              onChange={v => setPayDateFilterType(v || 'Transaction Date')}
+            />
+            <DateInput label="From Date" value={payFromDate} onChange={setPayFromDate} />
+            <DateInput label="To Date" value={payToDate} onChange={setPayToDate} />
+            <FloatDropdown
+              label="Transaction Type"
+              value={paySearchType === 'Transaction Type' ? paySearchValue : ''}
+              options={['Case Management Demand Notice', 'Multiple Bill Settlement']}
+              onChange={v => { setPaySearchType('Transaction Type'); setPaySearchValue(v); }}
+            />
+            <FloatInput
+              label="Invoice / Account No."
+              value={paySearchType === 'Transaction No.' ? paySearchValue : ''}
+              onChange={v => { setPaySearchType('Transaction No.'); setPaySearchValue(v); }}
+            />
+            <FloatDropdown
+              label="Status"
+              value={payStatusFilter}
+              options={['Success', 'Initiated', 'Failed']}
+              onChange={setPayStatusFilter}
+            />
+            <div className="flex items-center gap-3">
+              <button className="h-[56px] px-6 rounded-[4px] text-[16px] text-white flex-1" style={{ background: '#1360d2', fontFamily: font }}>Search</button>
+              <button onClick={resetPayFilters}
+                data-secondary-btn className="h-[56px] px-6 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white flex-1" style={{ fontFamily: font }}>Reset</button>
             </div>
-            {/* The pair wraps together, so a To Date never strands itself on its own row */}
-            <div className="flex gap-4 min-w-[340px]" style={{ flex: '2 1 340px' }}>
-              <div className="flex-1 min-w-0">
-                <DateInput label="From Date" value={payFromDate} onChange={setPayFromDate} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <DateInput label="To Date" value={payToDate} onChange={setPayToDate} />
-              </div>
-            </div>
-            <div className="flex-1 min-w-[190px]">
-              <FloatDropdown
-                label="Transaction Type"
-                value={paySearchType === 'Transaction Type' ? paySearchValue : ''}
-                options={['Case Management Demand Notice', 'Multiple Bill Settlement']}
-                onChange={v => { setPaySearchType('Transaction Type'); setPaySearchValue(v); }}
-              />
-            </div>
-            <div className="flex-1 min-w-[190px]">
-              <FloatInput
-                label="Invoice / Account No."
-                value={paySearchType === 'Transaction No.' ? paySearchValue : ''}
-                onChange={v => { setPaySearchType('Transaction No.'); setPaySearchValue(v); }}
-              />
-            </div>
-            <div className="flex-1 min-w-[170px]">
-              <FloatDropdown
-                label="Status"
-                value={payStatusFilter}
-                options={['Success', 'Initiated', 'Failed']}
-                onChange={setPayStatusFilter}
-              />
-            </div>
-            <button className="h-[56px] px-6 rounded-[4px] text-[16px] text-white flex-shrink-0" style={{ background: '#1360d2', fontFamily: font }}>Search</button>
-            <button onClick={() => { setPayFromDate('2026-06-09'); setPayToDate('2026-06-10'); setPayDateFilterType('Transaction Date'); setPayStatusFilter(''); setPaySearchValue(''); }}
-              data-secondary-btn className="h-[56px] px-6 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white flex-shrink-0" style={{ fontFamily: font }}>Reset</button>
           </div>
         </div>
       )}

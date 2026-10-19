@@ -55,6 +55,13 @@ export function DateTimePicker({
   const [hour,      setHour]      = useState(timePart ? parseInt(timePart.split(':')[0]) : 0);
   const [minute,    setMinute]    = useState(timePart ? parseInt(timePart.split(':')[1] ?? '0') : 0);
 
+  /* Hands the current selection back as soon as it is complete. */
+  const emit = (day: number | null, h: number, m: number) => {
+    if (!day) return;
+    const dateStr = `${viewYear}-${p2(viewMonth + 1)}-${p2(day)}`;
+    onConfirm(showTime ? `${dateStr} ${p2(h)}:${p2(m)}` : dateStr);
+  };
+
   const daysInMo   = new Date(viewYear, viewMonth + 1, 0).getDate();
   const firstDow   = new Date(viewYear, viewMonth, 1).getDay();
   const prevMoDays = new Date(viewYear, viewMonth, 0).getDate();
@@ -161,8 +168,9 @@ export function DateTimePicker({
               onClick={() => {
                 if (!isCur) return;
                 setSelDay(cell.day);
-                /* With no time to set, the day itself is the answer — no Confirm needed. */
-                if (!showTime) onConfirm(`${viewYear}-${p2(viewMonth + 1)}-${p2(cell.day)}`);
+                /* The pick itself is the answer — no Confirm. With a time alongside, the
+                   value keeps updating as the hours and minutes are set. */
+                emit(cell.day, hour, minute);
               }}
               style={{
                 height: 36, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -202,24 +210,6 @@ export function DateTimePicker({
     </div>
   );
 
-  const confirmBtn = (fullWidth = true) => (
-    <button type="button"
-      onClick={() => {
-        if (!selDay) return;
-        const dateStr = `${viewYear}-${p2(viewMonth + 1)}-${p2(selDay)}`;
-        onConfirm(showTime ? `${dateStr} ${p2(hour)}:${p2(minute)}` : dateStr);
-      }}
-      style={{
-        width: fullWidth ? '100%' : undefined, padding: '14px 0', borderRadius: 8, marginTop: 16,
-        fontSize: 15, fontWeight: 600, color: 'white', border: 'none',
-        background: selDay ? '#3a5fd9' : '#a6c2e9',
-        cursor: selDay ? 'pointer' : 'not-allowed',
-        fontFamily: FONT,
-      }}>
-      Confirm
-    </button>
-  );
-
   const BigTimeSelect = ({ val, max, label: tLabel, onChg }: { val: number; max: number; label: string; onChg: (v: number) => void }) => (
     <div style={{ flex: 1 }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: '#0e1b3d', fontFamily: FONT, marginBottom: 10 }}>{tLabel}</div>
@@ -246,14 +236,13 @@ export function DateTimePicker({
         </div>
         {/* Divider */}
         <div style={{ width: 1, background: '#e8edf5', margin: '0 24px', flexShrink: 0 }} />
-        {/* Time + Confirm */}
+        {/* Time — the value updates as it is set */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: 220 }}>
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
-            <BigTimeSelect val={hour}   max={24} label="Hours"   onChg={setHour} />
+            <BigTimeSelect val={hour}   max={24} label="Hours"   onChg={h => { setHour(h); emit(selDay, h, minute); }} />
             <span style={{ fontSize: 28, fontWeight: 700, color: '#0e1b3d', paddingBottom: 14, flexShrink: 0 }}>:</span>
-            <BigTimeSelect val={minute} max={60} label="Minutes" onChg={setMinute} />
+            <BigTimeSelect val={minute} max={60} label="Minutes" onChg={m => { setMinute(m); emit(selDay, hour, m); }} />
           </div>
-          {confirmBtn()}
         </div>
       </div>
     );
@@ -421,7 +410,7 @@ export function DateInput({
         }}>
           <DateTimePicker
             value={value}
-            onConfirm={v => { onChange(v); setOpen(false); }}
+            onConfirm={v => { onChange(v); setTyped(null); if (!showTime) setOpen(false); }}
             showTime={showTime}
           />
           {hasVal && (
@@ -532,7 +521,7 @@ export function DateInputOutlined({
         }}>
           <DateTimePicker
             value={value}
-            onConfirm={v => { onChange(v); setOpen(false); }}
+            onConfirm={v => { onChange(v); setTyped(null); setOpen(false); }}
           />
           {value && (
             <button type="button"
