@@ -23,6 +23,14 @@ import RowFlyout, { anchorFrom, type FlyoutAnchor, type FlyoutItem } from './dec
 const font = "'Dubai', 'Segoe UI', sans-serif";
 
 /* ─── Shared presentational helpers — mirror NonRemittanceClaimViewPage's look ─── */
+/* A field's label and value occupy 24 + 4 + 24px inside FieldCell's 12px padding. A
+   marker rendered beside the field matches that box, so it lines up with the text. */
+function FieldMarker({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="flex items-center flex-shrink-0" style={{ height: 52, marginTop: 12 }}>{children}</span>
+  );
+}
+
 /** The one field cell the claim view uses — every label lines up with every other. */
 function FieldCell({ label, tag, children }: { label: string; tag?: string; children: React.ReactNode }) {
   return (
@@ -576,8 +584,10 @@ function SubClaimBlock({ d, n, open, onToggle, onViewOb, onAction }: {
 
       {/* Sub-claim summary */}
       <div className="flex items-start gap-[10px] px-[14px] py-[10px]">
-        <span className="inline-flex items-center justify-center size-[26px] rounded-full text-[14px] flex-shrink-0 mt-[20px]"
-          style={{ background: '#1360d2', color: '#fff', fontWeight: 600, fontFamily: font }}>{n}</span>
+        <FieldMarker>
+          <span className="inline-flex items-center justify-center size-[26px] rounded-full text-[14px]"
+            style={{ background: '#1360d2', color: '#fff', fontWeight: 600, fontFamily: font }}>{n}</span>
+        </FieldMarker>
         {/* The fields keep a column of their own, so a wrapped row lines up with the first */}
         <div className="flex flex-wrap items-center flex-1 min-w-0">
         <FieldItem label="Charge Type" value={d.chargeType} />
@@ -599,7 +609,8 @@ function SubClaimBlock({ d, n, open, onToggle, onViewOb, onAction }: {
         {/* What was approved, and any waiver — both decided on this charge type */}
         <button type="button" aria-label={`${d.chargeType} actions`}
           onClick={(e) => { e.stopPropagation(); setMenuAt(anchorFrom(e, SUB_CLAIM_MENU.length, MENU_WIDTH)); }}
-          className="size-[32px] inline-flex items-center justify-center rounded flex-shrink-0 mt-[17px] hover:bg-[#f0f4ff] transition-colors">
+          className="size-[32px] inline-flex items-center justify-center rounded hover:bg-[#f0f4ff] transition-colors"
+          style={{ marginTop: 12 + (52 - 32) / 2, flexShrink: 0 }}>
           <MoreIcon />
         </button>
       </div>
@@ -700,7 +711,9 @@ function DeclarationCard({ g, idx, isOpen, onToggle, onViewOb, onAction, onSubCl
     <div className="bg-white rounded-[8px] overflow-hidden" style={{ border: '1.5px solid #d9e3f2', boxShadow: '0px 2px 8px rgba(143,155,186,0.12)' }}>
       {/* The declaration itself — everything the sub-claims below share */}
       <div className="flex items-start gap-[10px] px-[16px] py-[14px]">
-        <span className="text-[16px] text-[#455174] flex-shrink-0 mt-[21px]" style={{ fontFamily: font }}>{idx + 1}</span>
+        <FieldMarker>
+          <span className="text-[16px] text-[#455174]" style={{ fontFamily: font }}>{idx + 1}</span>
+        </FieldMarker>
         <div className="flex flex-wrap items-center flex-1 min-w-0">
         {/* The declaration number carries the owner's privilege marks */}
         <FieldCell label="Declaration No.">
@@ -716,7 +729,8 @@ function DeclarationCard({ g, idx, isOpen, onToggle, onViewOb, onAction, onSubCl
         {/* Everything this declaration can be looked at through, in one menu */}
         <button type="button" aria-label={`Declaration ${g.declarationNo} actions`}
           onClick={(e) => { e.stopPropagation(); setMenuAt(anchorFrom(e, DECLARATION_MENU.length, MENU_WIDTH)); }}
-          className="size-[32px] inline-flex items-center justify-center rounded flex-shrink-0 mt-[17px] hover:bg-[#f0f4ff] transition-colors">
+          className="size-[32px] inline-flex items-center justify-center rounded hover:bg-[#f0f4ff] transition-colors"
+          style={{ marginTop: 12 + (52 - 32) / 2, flexShrink: 0 }}>
           <MoreIcon />
         </button>
       </div>
