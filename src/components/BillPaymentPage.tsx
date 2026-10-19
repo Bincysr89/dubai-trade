@@ -939,8 +939,8 @@ function ToolbarSelect({ label, value, options, onChange, required = false }: {
             className="flex-1 min-w-0 bg-transparent focus:outline-none text-[16px] text-[#0e1b3d] placeholder-[#8f94ae]"
             style={{ fontFamily: font }} />
         ) : (
-          <span className="flex-1 truncate text-[16px]" style={{ color: value ? '#1360d2' : '#8f94ae', fontWeight: value ? 500 : 400 }}>
-            {value || `Select ${label.toLowerCase()}`}
+          <span className="flex-1 truncate text-[16px]" style={{ color: '#1360d2', fontWeight: 500 }}>
+            {value}
           </span>
         )}
         {value && !open && (
@@ -956,8 +956,7 @@ function ToolbarSelect({ label, value, options, onChange, required = false }: {
         )}
         <svg viewBox="0 0 24 24" className={`size-[16px] text-[#697498] flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M6 9l6 6 6-6" /></svg>
       </div>
-      <span className="absolute text-[12px] px-[4px] bg-white pointer-events-none"
-        style={{ left: 9, top: -8, color: '#060c28', fontFamily: font }}>
+      <span style={floatLabel(open || value !== '')}>
         {required && <span style={{ color: '#e8212e' }}>*</span>}{label}
       </span>
       {open && (
