@@ -2524,13 +2524,13 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
           </button>
           {paySearchTypeOpen && (
             <div className="absolute z-[200] top-[50px] left-0 bg-white shadow-lg rounded border border-[#e0e8f5] w-[180px] py-1">
-              {['Transaction No.', 'Receipt Number', 'Invoice Type'].map(opt => (
+              {['Transaction No.', 'Receipt Number', 'Transaction Type'].map(opt => (
                 <button key={opt} className="w-full px-4 py-2 text-left text-[16px] text-[#0e1b3d] hover:bg-[#e2ebf9]" style={{ fontFamily: font }}
                   onClick={() => { setPaySearchType(opt); setPaySearchValue(''); setPaySearchTypeOpen(false); }}>{opt}</button>
               ))}
             </div>
           )}
-          {paySearchType === 'Invoice Type' ? (
+          {paySearchType === 'Transaction Type' ? (
             <div className="flex items-center px-[12px] gap-[8px] flex-1">
               <select
                 value={paySearchValue}
@@ -2626,10 +2626,10 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
           <div className="flex items-start gap-4 flex-wrap">
             <div className="flex-1 min-w-[190px]">
               <FloatDropdown
-                label="Invoice Type"
-                value={paySearchType === 'Invoice Type' ? paySearchValue : ''}
+                label="Transaction Type"
+                value={paySearchType === 'Transaction Type' ? paySearchValue : ''}
                 options={['Case Management Demand Notice', 'Multiple Bill Settlement']}
-                onChange={v => { setPaySearchType('Invoice Type'); setPaySearchValue(v); }}
+                onChange={v => { setPaySearchType('Transaction Type'); setPaySearchValue(v); }}
               />
             </div>
             <div className="flex-1 min-w-[190px]">
@@ -2692,7 +2692,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
         <table style={{ width: '100%', minWidth: 1100, borderCollapse: 'separate', borderSpacing: '0 8px', fontFamily: font }}>
           <thead>
             <tr>
-              {renderFilterHeader('pay', 'Invoice Type', { style: { borderTopLeftRadius: 8, borderBottomLeftRadius: 8, paddingLeft: 16 } })}
+              {renderFilterHeader('pay', 'Transaction Type', { style: { borderTopLeftRadius: 8, borderBottomLeftRadius: 8, paddingLeft: 16 } })}
               {renderFilterHeader('pay', 'Transaction No.')}
               {renderFilterHeader('pay', 'Receipt No.')}
               {renderFilterHeader('pay', 'Transaction Date')}
