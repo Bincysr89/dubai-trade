@@ -6,6 +6,7 @@ import infoIconSrc from '../assets/icon-info.svg';
 import { DateTimePicker, DateInput, StatusAsOnBadge, fmtDate } from './DatePicker';
 import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
 import PaymentHistoryPage, { type PaymentHistoryRow } from './PaymentHistoryPage';
+import StatusPill, { PAY_STATUS } from './PaymentStatusPill';
 import ActionPage from './declaration/ActionPage';
 
 const font = "'Dubai', sans-serif";
@@ -31,21 +32,7 @@ const INV_STATUS: Record<string, { bg: string; color: string }> = {
   'Initiated':      { bg: '#e8f0ff',                 color: '#1360d2' },
   'Partially Paid': { bg: 'rgba(249,115,22,0.10)',   color: '#ea580c' },
 };
-const PAY_STATUS: Record<string, { bg: string; color: string }> = {
-  'Success':   { bg: '#e6f4ec',               color: '#1b6c3a' },
-  'Initiated': { bg: '#e8f0ff',               color: '#1360d2' },
-  'Unpaid':    { bg: 'rgba(255,169,26,0.16)', color: '#b45309' },
-  'Failed':    { bg: 'rgba(192,57,43,0.10)',  color: '#c0392b' },
-};
 
-/** The status pill the listings' Status column uses, wherever a status is shown. */
-function StatusPill({ status }: { status: string }) {
-  const st = PAY_STATUS[status] ?? { bg: 'rgba(105,116,152,0.10)', color: '#697498' };
-  return (
-    <span className="inline-flex items-center px-[10px] py-[3px] rounded-[4px] text-[16px] font-medium whitespace-nowrap"
-      style={{ background: st.bg, color: st.color, fontFamily: font }}>{status}</span>
-  );
-}
 
 /** Shifts a "DD-MM-YYYY HH:mm[:ss]" stamp by whole minutes, for an attempt trail. */
 function shiftMinutes(stamp: string, delta: number): string {
@@ -1613,9 +1600,14 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
       const statuses = tx.status === 'Success' ? ['Initiated', 'Failed', 'Success']
         : tx.status === 'Failed' ? ['Initiated', 'Failed']
         : ['Initiated'];
+      /* A settlement is several bills paid at once, so it names the bills it paid
+         rather than repeating "Multiple Bill Settlement". */
+      const type = tx.type === 'Multiple Bill Settlement'
+        ? tx.details.map(d => d.type)
+        : tx.type;
       return statuses.map((status, i) => ({
         txDate: shiftMinutes(tx.txDate, i - (statuses.length - 1)),
-        txType: tx.type,
+        txType: type,
         amount: tx.amount,
         status,
       }));
@@ -1629,13 +1621,6 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             rows={historyRows}
             onHome={handleHome}
             onBack={() => setHistoryFor(null)}
-            onAction={(action) => {
-              if (!tx) return;
-              if (action === 'viewDetails') { setHistoryFor(null); setInvPayDetails(tx); }
-              else if (action === 'viewReceipt' || action === 'downloadReceipt') {
-                setHistoryFor(null); setPayFlyoutReceiptRows(tx.details); setShowPayFlyoutReceipt(true);
-              }
-            }}
           />
         </div>
       </div>

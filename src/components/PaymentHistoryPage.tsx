@@ -1,25 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
+import React from 'react';
 import Dh from './Dh';
-import MoreIcon from './MoreIcon';
 import ActionPage from './declaration/ActionPage';
-import { JourneyTable, JourneyTd, JourneyThead, StatusChip, font } from './declaration/DeclarationUI';
-
-export type PaymentHistoryAction = 'viewDetails' | 'viewReceipt' | 'downloadReceipt' | 'recheck';
+import { JourneyTable, JourneyTd, JourneyThead, font } from './declaration/DeclarationUI';
+import StatusPill from './PaymentStatusPill';
 
 export type PaymentHistoryRow = {
   txDate: string;
-  txType: string;
+  /** The transaction's type — or, for a settlement, the types of the bills it paid. */
+  txType: string | string[];
   amount: string;
   status: string;
 };
 
-const MENU: { id: PaymentHistoryAction; label: string; icon: React.ReactNode }[] = [
-  { id: 'viewDetails', label: 'View Payment Details', icon: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z" /><circle cx="10" cy="10" r="2.5" /></svg> },
-  { id: 'viewReceipt', label: 'View & Print Receipt', icon: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 4h8v4H6zM4 8h12v6h-3v3H7v-3H4z" /><path d="M8 12h4" /></svg> },
-  { id: 'downloadReceipt', label: 'Download Receipt', icon: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M10 3v10M5 9l5 5 5-5M3 17h14" /></svg> },
-  { id: 'recheck', label: 'Recheck Status', icon: <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M17 10a7 7 0 1 1-2.05-4.95" /><path d="M17 3v4h-4" /></svg> },
-];
 
 type Props = {
   /** The transaction the history belongs to. */
@@ -27,37 +19,13 @@ type Props = {
   rows: PaymentHistoryRow[];
   onHome?: () => void;
   onBack?: () => void;
-  onAction?: (action: PaymentHistoryAction, row: PaymentHistoryRow) => void;
 };
 
 /**
- * Payment History — every payment attempt against the invoice, in the same read-only
- * table the Declaration History uses, with the columns the payments listing carries.
+ * Payment History — the attempts one transaction took, in the same read-only table
+ * the Declaration History uses.
  */
-export default function PaymentHistoryPage({ subject, rows, onHome, onBack, onAction }: Props) {
-  /* The menu is taller than the table's scroll box, so it is portalled to the body
-     and positioned from the button rather than clipped inside the card. */
-  const [menu, setMenu] = useState<{ row: number; top: number; left: number } | null>(null);
-
-  useEffect(() => {
-    if (!menu) return;
-    const close = () => setMenu(null);
-    document.addEventListener('mousedown', close);
-    window.addEventListener('scroll', close, true);
-    return () => { document.removeEventListener('mousedown', close); window.removeEventListener('scroll', close, true); };
-  }, [menu]);
-
-  const openMenu = (row: number) => (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const height = MENU.length * 44 + 8;
-    setMenu({
-      row,
-      top: Math.min(r.bottom + 4, window.innerHeight - height - 8),
-      left: Math.max(8, r.right - 240),
-    });
-  };
-
+export default function PaymentHistoryPage({ subject, rows, onHome, onBack }: Props) {
   return (
     <ActionPage title="Payment History" crumb="Bill Payment" onHome={onHome} onBack={onBack}
       subtitle={subject ? `Transaction No: ${subject}` : undefined}>
@@ -65,27 +33,26 @@ export default function PaymentHistoryPage({ subject, rows, onHome, onBack, onAc
         {rows.length === 0 ? (
           <p className="text-[16px] text-[#697498] text-center" style={{ padding: '32px 16px' }}>No payments recorded yet.</p>
         ) : (
-          <JourneyTable minWidth={760}>
+          <JourneyTable minWidth={700}>
             <JourneyThead columns={[
               { label: 'Transaction Date' }, { label: 'Transaction Type' },
               { label: 'Status' }, { label: 'Amount (AED)' },
-              { label: 'Actions', w: 90, filter: false },
             ]} />
             <tbody>
               {rows.map((r, i) => (
                 <tr key={`${r.txDate}-${r.status}-${i}`}>
                   <JourneyTd first>{r.txDate}</JourneyTd>
-                  <JourneyTd>{r.txType}</JourneyTd>
-                  <JourneyTd><StatusChip status={r.status} /></JourneyTd>
+                  <JourneyTd>
+                    {Array.isArray(r.txType) ? (
+                      /* A settlement paid several bills, so it lists what they were */
+                      <span className="flex flex-col gap-[2px]">
+                        {r.txType.map((t, j) => <span key={`${t}-${j}`}>{t}</span>)}
+                      </span>
+                    ) : r.txType}
+                  </JourneyTd>
+                  <JourneyTd><StatusPill status={r.status} /></JourneyTd>
                   <JourneyTd>
                     <span className="inline-flex items-baseline gap-[3px] whitespace-nowrap"><Dh style={{ fontSize: 15 }} />{r.amount}</span>
-                  </JourneyTd>
-                  <JourneyTd width={90}>
-                    <button type="button" aria-label={`${r.status} attempt actions`}
-                      onClick={openMenu(i)}
-                      className="size-[28px] inline-flex items-center justify-center rounded hover:bg-[#f0f4ff]">
-                      <MoreIcon />
-                    </button>
                   </JourneyTd>
                 </tr>
               ))}
@@ -94,23 +61,6 @@ export default function PaymentHistoryPage({ subject, rows, onHome, onBack, onAc
         )}
       </div>
 
-      {menu && createPortal(
-        <div
-          className="fixed z-[1000] bg-white rounded-[8px] py-[4px] overflow-hidden"
-          style={{ top: menu.top, left: menu.left, width: 240, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5', fontFamily: font }}
-          onMouseDown={(e) => e.stopPropagation()}
-        >
-          {MENU.map((m) => (
-            <button key={m.id} type="button"
-              onClick={() => { const row = rows[menu.row]; setMenu(null); onAction?.(m.id, row); }}
-              className="group flex items-center gap-[10px] w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors">
-              <span className="text-[#697498] group-hover:text-white flex-shrink-0">{m.icon}</span>
-              <span className="text-[16px] text-[#111838] group-hover:text-white">{m.label}</span>
-            </button>
-          ))}
-        </div>,
-        document.body,
-      )}
     </ActionPage>
   );
 }
