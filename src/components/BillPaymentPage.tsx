@@ -1317,8 +1317,12 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const [invTxDetails,    setInvTxDetails]    = useState<typeof PAYMENT_ROWS | null>(null);
   /* The Invoices listing shows an invoice's payments on a page, not in a popup. */
   const [invPayPage,      setInvPayPage]      = useState<{ invoiceNo: string; rows: typeof PAYMENT_ROWS } | null>(null);
-  const [payFromDate, setPayFromDate] = useState('2026-06-09');
-  const [payToDate,   setPayToDate]   = useState('2026-06-10');
+  /* The Advance Filters' range and the "Transaction Date As On" badge are two separate
+     controls — changing one leaves the other where the user put it. */
+  const [payFromDate, setPayFromDate] = useState('');
+  const [payToDate,   setPayToDate]   = useState('');
+  const [payAsOnFrom, setPayAsOnFrom] = useState('2026-06-09');
+  const [payAsOnTo,   setPayAsOnTo]   = useState('2026-06-10');
   /* The range always means one of two dates; transactions are the usual one. */
   const [payDateFilterType, setPayDateFilterType] = useState('Transaction Date');
   const [payExportOpen, setPayExportOpen] = useState(false);
@@ -2767,7 +2771,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const resetPayFilters = () => {
     setPayFromDate(''); setPayToDate(''); setPayDateFilterType('Transaction Date');
     setPayStatusFilter(''); setPaySearchValue('');
-  };
+  };   /* The as-on badge keeps its own range — it is not part of these filters. */
 
   /* ── Payments content ───────────────────────────────────────────────────── */
   const filteredPayments = payStatusFilter ? PAYMENT_ROWS.filter(r => r.status === payStatusFilter) : PAYMENT_ROWS;
@@ -2945,8 +2949,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
 
       {/* Row 2 — Transaction Date As On badge */}
       <div className="flex justify-center mb-[10px]">
-        <StatusAsOnBadge label="Transaction Date" fromValue={payFromDate} toValue={payToDate}
-          onApply={(from, to) => { setPayFromDate(from); setPayToDate(to); }} />
+        <StatusAsOnBadge label="Transaction Date" fromValue={payAsOnFrom} toValue={payAsOnTo}
+          onApply={(from, to) => { setPayAsOnFrom(from); setPayAsOnTo(to); }} />
       </div>
 
       {/* Info banner */}
