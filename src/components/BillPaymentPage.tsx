@@ -38,6 +38,15 @@ const PAY_STATUS: Record<string, { bg: string; color: string }> = {
   'Failed':    { bg: 'rgba(192,57,43,0.10)',  color: '#c0392b' },
 };
 
+/** The status pill the listings' Status column uses, wherever a status is shown. */
+function StatusPill({ status }: { status: string }) {
+  const st = PAY_STATUS[status] ?? { bg: 'rgba(105,116,152,0.10)', color: '#697498' };
+  return (
+    <span className="inline-flex items-center px-[10px] py-[3px] rounded-[4px] text-[16px] font-medium whitespace-nowrap"
+      style={{ background: st.bg, color: st.color, fontFamily: font }}>{status}</span>
+  );
+}
+
 /* ── Date helpers (mock-data dates only — never tied to real wall-clock time) ── */
 const MONTH_ABBR: Record<string, number> = { Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11 };
 /** 'DD-MMM-YY' e.g. '05-Jun-26' → sortable ordinal */
@@ -593,7 +602,6 @@ function TxTabs({ count, active, onChange }: { count: number; active: number; on
 
 /** The transaction's own fields, minus whatever the accordion header already shows. */
 function TxFields({ tx, omit = [] }: { tx: TxRow; omit?: string[] }) {
-  const isSuccess = tx.status === 'Success';
   const pairs: [string, string][] = [
     ['Transaction No.', tx.txNo],
     ['Transaction Date', tx.txDateFull],
@@ -610,8 +618,11 @@ function TxFields({ tx, omit = [] }: { tx: TxRow; omit?: string[] }) {
       {pairs.filter(([l]) => !omit.includes(l)).map(([label, value]) => (
         <div key={label}>
           <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>{label}</span>
-          <p className={`text-[16px] font-semibold mt-[2px] ${label === 'Status' ? (isSuccess ? 'text-[#28a745]' : 'text-[#dc3545]') : 'text-[#0e1b3d]'}`}
-            style={{ fontFamily: font }}>{value}</p>
+          {label === 'Status' ? (
+            <p className="mt-[2px]"><StatusPill status={value} /></p>
+          ) : (
+            <p className="text-[16px] font-semibold mt-[2px] text-[#0e1b3d]" style={{ fontFamily: font }}>{value}</p>
+          )}
         </div>
       ))}
     </div>
@@ -653,9 +664,7 @@ function TxPaymentTable({ tx }: { tx: TxRow }) {
               <td className="py-3 px-[14px] text-[15px] text-[#0e1b3d] whitespace-nowrap"><DirhamIcon size={13} color="#0e1b3d" />&nbsp;{d.amount}</td>
               <td className="py-3 px-[14px] text-[15px] text-[#0e1b3d]">{d.receiptNo}</td>
               <td className="py-3 px-[14px] text-[15px] text-[#0e1b3d]">{d.remarks}</td>
-              <td className="py-3 px-[14px] text-[16px]">
-                <span className={`font-medium ${d.status === 'Success' ? 'text-[#28a745]' : d.status === 'Unpaid' ? 'text-[#dc3545]' : 'text-[#1360d2]'}`}>{d.status}</span>
-              </td>
+              <td className="py-3 px-[14px]"><StatusPill status={d.status} /></td>
             </tr>
           ))}
         </tbody>
@@ -666,7 +675,6 @@ function TxPaymentTable({ tx }: { tx: TxRow }) {
 
 /** Layout 2 — one accordion per transaction, a summary on the header and the rest inside. */
 function TxAccordion({ tx, index, open, onToggle }: { tx: TxRow; index: number; open: boolean; onToggle: () => void }) {
-  const isSuccess = tx.status === 'Success';
   const headerPairs: [string, string][] = [
     ['Transaction No.', tx.txNo],
     ['Transaction Date', tx.txDateFull],
@@ -690,10 +698,15 @@ function TxAccordion({ tx, index, open, onToggle }: { tx: TxRow; index: number; 
         </span>
         <span className="flex-1 min-w-0 grid grid-cols-5 gap-x-6">
           {headerPairs.map(([label, value]) => (
-            <span key={label} className="flex flex-col">
+            <span key={label} className="flex flex-col gap-[2px] items-start">
               <span className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>{label}</span>
-              <span className={`text-[16px] font-semibold ${label === 'Status' ? (isSuccess ? 'text-[#28a745]' : 'text-[#dc3545]') : 'text-[#0e1b3d]'}`}
-                style={{ fontFamily: font }}>{value}</span>
+              {label === 'Status' ? (
+                <StatusPill status={value} />
+              ) : (
+                <span className="text-[16px] font-semibold text-[#0e1b3d] whitespace-nowrap" style={{ fontFamily: font }}>
+                  {label === 'Amount (AED)' && <><DirhamIcon size={14} color="#0e1b3d" />&nbsp;</>}{value}
+                </span>
+              )}
             </span>
           ))}
         </span>
@@ -730,7 +743,16 @@ function InvoicePaymentDetailsPage({ invoiceNo, rows, onHome, onBack }: {
   });
   return (
     <ActionPage title="Payment Details" crumb="Bill Payment" onHome={onHome} onBack={onBack}
-      subtitle={`Invoice No: ${invoiceNo}`}>
+      subtitle={
+        <span className="flex items-center gap-[10px] flex-wrap">
+          Invoice No: {invoiceNo}
+          {/* How many payments this invoice has behind it */}
+          <span className="text-[15px] px-[12px] py-[3px] rounded-[14px]"
+            style={{ background: '#e2ebf9', color: '#1360d2', fontWeight: 500, fontFamily: font }}>
+            {rows.length} transaction{rows.length !== 1 ? 's' : ''}
+          </span>
+        </span>
+      }>
       {rows.length === 0 ? (
         <p className="text-[16px] text-[#697498] text-center bg-white rounded-[8px]" style={{ padding: '32px 16px', fontFamily: font }}>
           No payments recorded against this invoice yet.
@@ -1104,7 +1126,9 @@ function EPayConfirmModal({ amount, count, onConfirm, onClose, paymentMethod }: 
                 By clicking the confirm button, you are authorizing us to redirect your request for payment of{' '}
                 <span style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 600 }}>{count} account(s)</span>
                 {' '}of total{' '}
-                <span style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 600 }}>AED {amount}</span>
+                <span style={{ fontFamily: "'Dubai', sans-serif", fontWeight: 600 }} className="inline-flex items-center gap-[3px]">
+                  <DirhamIcon size={18} color="#0e1b3d" />{amount}
+                </span>
                 {' '}through Dubai E-Government payment site
               </>
             )}
