@@ -47,6 +47,16 @@ function StatusPill({ status }: { status: string }) {
   );
 }
 
+/** Shifts a "DD-MM-YYYY HH:mm[:ss]" stamp by whole minutes, for an attempt trail. */
+function shiftMinutes(stamp: string, delta: number): string {
+  const [datePart, timePart = '00:00'] = stamp.split(' ');
+  const [d, m, y] = datePart.split('-').map(Number);
+  const [hh, mm] = timePart.split(':').map(Number);
+  const dt = new Date(y, m - 1, d, hh, mm + delta);
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${p(dt.getDate())}-${p(dt.getMonth() + 1)}-${dt.getFullYear()} ${p(dt.getHours())}:${p(dt.getMinutes())}`;
+}
+
 /* ── Date helpers (mock-data dates only — never tied to real wall-clock time) ── */
 const MONTH_ABBR: Record<string, number> = { Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11 };
 /** 'DD-MMM-YY' e.g. '05-Jun-26' → sortable ordinal */
@@ -766,24 +776,16 @@ function InvoicePaymentDetailsPage({ invoiceNo, rows, onHome, onBack }: {
   );
 }
 
-function TransactionModal({ row, rows, onClose, showLayoutToggle = false }: {
+function TransactionModal({ row, rows, onClose, showTabs = false }: {
   row?: TxRow; rows?: typeof PAYMENT_ROWS; onClose: () => void;
-  /* The alternate accordion layout is offered only from the listings' row menus. */
-  showLayoutToggle?: boolean;
+  /* The listings' popups page through several transactions; the payment confirmation
+     ones show the single transaction just made. */
+  showTabs?: boolean;
 }) {
   const list = rows && rows.length > 0 ? rows : (row ? [row] : []);
   const [activeIdx, setActiveIdx] = useState(0);
-  /* Two presentations of the same data — tabs, or an accordion per transaction. */
-  const [layout, setLayout] = useState<1 | 2>(1);
-  const [openRows, setOpenRows] = useState<Set<number>>(() => new Set([0]));
   const active = list[activeIdx] ?? list[0];
   if (!active) return null;
-
-  const toggleRow = (i: number) => setOpenRows(prev => {
-    const next = new Set(prev);
-    next.has(i) ? next.delete(i) : next.add(i);
-    return next;
-  });
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center" style={{ background: 'rgba(14,27,61,0.5)' }}>
@@ -799,42 +801,19 @@ function TransactionModal({ row, rows, onClose, showLayoutToggle = false }: {
         </div>
 
         <div className="p-6">
-          {/* The listings' popups get the layout switch and the full-width tab strip;
-              the payment confirmation ones show a single transaction and neither. */}
-          {showLayoutToggle && (
-            <>
-              <div className="flex items-center justify-end mb-3">
-                <button
-                  onClick={() => setLayout(l => (l === 1 ? 2 : 1))}
-                  data-secondary-btn
-                  className="h-[40px] px-5 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white transition-colors flex-shrink-0"
-                  style={{ fontFamily: font, fontWeight: 500 }}
-                >
-                  {layout === 1 ? 'Layout design - 2' : 'Layout design - 1'}
-                </button>
-              </div>
-              {layout === 1 && list.length > 1 && (
-                <div className="mb-5">
-                  <TxTabs count={list.length} active={activeIdx} onChange={setActiveIdx} />
-                </div>
-              )}
-            </>
+          {/* The listings' popups page through the transactions with the tab strip */}
+          {showTabs && list.length > 1 && (
+            <div className="mb-5">
+              <TxTabs count={list.length} active={activeIdx} onChange={setActiveIdx} />
+            </div>
           )}
 
-          {layout === 1 ? (
-            <>
-              <div className="rounded-[8px] border border-[#d5ddfb] p-5 mb-5" style={{ background: 'white' }}>
-                <TxFields tx={active} />
-                <TxMessage tx={active} />
-              </div>
-              <p className="text-[#0e1b3d] text-[20px] font-bold mb-3" style={{ fontFamily: font }}>Payment Details</p>
-              <TxPaymentTable tx={active} />
-            </>
-          ) : (
-            list.map((tx, i) => (
-              <TxAccordion key={i} tx={tx} index={i} open={openRows.has(i)} onToggle={() => toggleRow(i)} />
-            ))
-          )}
+          <div className="rounded-[8px] border border-[#d5ddfb] p-5 mb-5" style={{ background: 'white' }}>
+            <TxFields tx={active} />
+            <TxMessage tx={active} />
+          </div>
+          <p className="text-[#0e1b3d] text-[20px] font-bold mb-3" style={{ fontFamily: font }}>Payment Details</p>
+          <TxPaymentTable tx={active} />
 
           {/* Footer buttons — same pair as the account top-up receipt */}
           <div className="flex items-center justify-center gap-3 mt-6">
@@ -1222,7 +1201,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const [panelCollapsed, setPanelCollapsed] = useState(false);
   const [activeMenu, setActiveMenu]         = useState<Menu>('Overview');
   const [step, setStep]                     = useState<InvStep>('list');
-  /* Payment History — opened from either listing's row menu, for one invoice. */
+  /* Payment History — opened from the Payments row menu, for one transaction. */
   const [historyFor, setHistoryFor]         = useState<string | null>(null);
   const [showFilters, setShowFilters]       = useState(false);
   const [selectedRows, setSelectedRows]     = useState<Set<number>>(new Set());
@@ -1625,22 +1604,22 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
 
   /* ── Payment History ─────────────────────────────────────────────────────── */
   if (historyFor !== null) {
-    const historyRows: PaymentHistoryRow[] = PAYMENT_ROWS
-      .filter(r => !historyFor || r.invoiceNo === historyFor || r.details.some(d => d.invoiceNo === historyFor))
-      .map(r => {
-        const line = r.details.find(d => d.invoiceNo === historyFor) ?? r.details[0];
-        return {
-          txDate: r.txDate,
-          txNo: r.txNo,
-          receiptNo: line?.receiptNo ?? '',
-          invoiceType: r.type,
-          invoiceNo: historyFor || r.invoiceNo || line?.invoiceNo || '',
-          mode: r.mode,
-          amount: line?.amount ?? r.amount,
-          initiatedBy: r.initiatedBy,
-          status: r.status,
-        };
-      });
+    const tx = PAYMENT_ROWS.find(r => r.txNo === historyFor);
+    /* A transaction's history is the trail it left: initiated first, then whatever
+       came of it — a failed attempt before the one that went through. */
+    const historyRows: PaymentHistoryRow[] = tx ? (() => {
+      /* The attempts run in order, so each one is stamped a minute after the last and
+         the final one carries the transaction's own date. */
+      const statuses = tx.status === 'Success' ? ['Initiated', 'Failed', 'Success']
+        : tx.status === 'Failed' ? ['Initiated', 'Failed']
+        : ['Initiated'];
+      return statuses.map((status, i) => ({
+        txDate: shiftMinutes(tx.txDate, i - (statuses.length - 1)),
+        txType: tx.type,
+        amount: tx.amount,
+        status,
+      }));
+    })() : [];
     return (
       <div className="fixed inset-0 z-50 bg-[#f8fafd] flex flex-col overflow-hidden">
         <div className="flex-shrink-0"><Header onServiceCatalogue={onBack} onHome={handleHome} /></div>
@@ -1650,8 +1629,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             rows={historyRows}
             onHome={handleHome}
             onBack={() => setHistoryFor(null)}
-            onAction={(action, row) => {
-              const tx = PAYMENT_ROWS.find(p => p.txNo === row.txNo);
+            onAction={(action) => {
               if (!tx) return;
               if (action === 'viewDetails') { setHistoryFor(null); setInvPayDetails(tx); }
               else if (action === 'viewReceipt' || action === 'downloadReceipt') {
@@ -2752,7 +2730,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
           onPageSizeChange={() => {}}
         />
       </div>
-      {invTxDetails && <TransactionModal rows={invTxDetails} onClose={() => setInvTxDetails(null)} showLayoutToggle />}
+      {invTxDetails && <TransactionModal rows={invTxDetails} onClose={() => setInvTxDetails(null)} showTabs />}
       {showInvReceipt && <ReceiptModal onClose={() => setShowInvReceipt(false)} rows={invReceiptRows} />}
     </div>
     );
@@ -3043,7 +3021,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                                     if (item === 'View Payment Details') { setInvPayDetails(row); }
                                     else if (item === 'View & Print Receipt') { setPayFlyoutReceiptRows(row.details); setShowPayFlyoutReceipt(true); }
                                     else if (item === 'Recheck') { setRecheckIdx(absIdx); setRecheckOpen(true); }
-                                    else if (item === 'Payment History') { setHistoryFor(row.invoiceNo || row.details[0]?.invoiceNo || ''); }
+                                    else if (item === 'Payment History') { setHistoryFor(row.txNo); }
                                   }}>
                                   <RowActionItem label={item} />
                                 </button>
@@ -3131,7 +3109,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
         />
       </div>
       {showPayFlyoutReceipt && <ReceiptModal onClose={() => setShowPayFlyoutReceipt(false)} rows={payFlyoutReceiptRows} />}
-      {invPayDetails && <TransactionModal row={invPayDetails} onClose={() => setInvPayDetails(null)} showLayoutToggle />}
+      {invPayDetails && <TransactionModal row={invPayDetails} onClose={() => setInvPayDetails(null)} showTabs />}
     </div>
     );
   };

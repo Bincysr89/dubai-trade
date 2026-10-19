@@ -349,6 +349,10 @@ export const STATUS_TINTS: Record<string, { bg: string; color: string }> = {
   'Payment Pending':  { bg: 'rgba(255,169,26,0.16)',  color: '#b45309' },
   'Pending':          { bg: 'rgba(255,169,26,0.16)',  color: '#b45309' },
   'Registered':       { bg: 'rgba(19,96,210,0.10)',   color: '#1360d2' },
+  /* Payment outcomes, tinted as the Bill Payment listings show them. */
+  'Success':          { bg: '#e6f4ec',                color: '#1b6c3a' },
+  'Initiated':        { bg: '#e8f0ff',                color: '#1360d2' },
+  'Failed':           { bg: 'rgba(192,57,43,0.10)',   color: '#c0392b' },
 };
 
 export function StatusChip({ status }: { status: string }) {

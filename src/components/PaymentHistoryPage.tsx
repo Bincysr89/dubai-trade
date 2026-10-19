@@ -9,13 +9,8 @@ export type PaymentHistoryAction = 'viewDetails' | 'viewReceipt' | 'downloadRece
 
 export type PaymentHistoryRow = {
   txDate: string;
-  txNo: string;
-  receiptNo: string;
-  invoiceType: string;
-  invoiceNo: string;
-  mode: string;
+  txType: string;
   amount: string;
-  initiatedBy: string;
   status: string;
 };
 
@@ -27,7 +22,7 @@ const MENU: { id: PaymentHistoryAction; label: string; icon: React.ReactNode }[]
 ];
 
 type Props = {
-  /** What the history is for — an invoice number, or a transaction. */
+  /** The transaction the history belongs to. */
   subject?: string;
   rows: PaymentHistoryRow[];
   onHome?: () => void;
@@ -65,34 +60,28 @@ export default function PaymentHistoryPage({ subject, rows, onHome, onBack, onAc
 
   return (
     <ActionPage title="Payment History" crumb="Bill Payment" onHome={onHome} onBack={onBack}
-      subtitle={subject ? `Invoice No: ${subject}` : undefined}>
+      subtitle={subject ? `Transaction No: ${subject}` : undefined}>
       <div className="bg-white rounded-[8px] overflow-hidden" style={{ boxShadow: '1px 2px 12px rgba(0,0,0,0.06)', fontFamily: font }}>
         {rows.length === 0 ? (
           <p className="text-[16px] text-[#697498] text-center" style={{ padding: '32px 16px' }}>No payments recorded yet.</p>
         ) : (
-          <JourneyTable minWidth={1200}>
+          <JourneyTable minWidth={760}>
             <JourneyThead columns={[
-              { label: 'Transaction Date' }, { label: 'Transaction No.' }, { label: 'Receipt No.' },
-              { label: 'Invoice Type' }, { label: 'Invoice No.' }, { label: 'Payment Mode' },
-              { label: 'Amount (AED)' }, { label: 'Initiated By' }, { label: 'Status' },
+              { label: 'Transaction Date' }, { label: 'Transaction Type' },
+              { label: 'Status' }, { label: 'Amount (AED)' },
               { label: 'Actions', w: 90, filter: false },
             ]} />
             <tbody>
               {rows.map((r, i) => (
-                <tr key={`${r.txNo}-${i}`}>
+                <tr key={`${r.txDate}-${r.status}-${i}`}>
                   <JourneyTd first>{r.txDate}</JourneyTd>
-                  <JourneyTd>{r.txNo}</JourneyTd>
-                  <JourneyTd>{r.receiptNo || '—'}</JourneyTd>
-                  <JourneyTd>{r.invoiceType}</JourneyTd>
-                  <JourneyTd>{r.invoiceNo || '—'}</JourneyTd>
-                  <JourneyTd>{r.mode}</JourneyTd>
+                  <JourneyTd>{r.txType}</JourneyTd>
+                  <JourneyTd><StatusChip status={r.status} /></JourneyTd>
                   <JourneyTd>
                     <span className="inline-flex items-baseline gap-[3px] whitespace-nowrap"><Dh style={{ fontSize: 15 }} />{r.amount}</span>
                   </JourneyTd>
-                  <JourneyTd>{r.initiatedBy}</JourneyTd>
-                  <JourneyTd><StatusChip status={r.status} /></JourneyTd>
                   <JourneyTd width={90}>
-                    <button type="button" aria-label={`Transaction ${r.txNo} actions`}
+                    <button type="button" aria-label={`${r.status} attempt actions`}
                       onClick={openMenu(i)}
                       className="size-[28px] inline-flex items-center justify-center rounded hover:bg-[#f0f4ff]">
                       <MoreIcon />
