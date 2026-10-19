@@ -2760,7 +2760,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
         </button>
 
         {/* Quick search */}
-        <div className="flex h-[48px] rounded-[4px] border border-[#d5ddfb] bg-white overflow-hidden relative" style={{ minWidth: 260 }}>
+        {/* No overflow clipping — the type menu hangs below the box */}
+        <div className="flex h-[48px] rounded-[4px] border border-[#d5ddfb] bg-white relative" style={{ minWidth: 260 }}>
           <button
             type="button"
             onClick={() => setPaySearchTypeOpen(o => !o)}
