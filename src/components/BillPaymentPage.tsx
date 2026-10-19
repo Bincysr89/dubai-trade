@@ -6,6 +6,7 @@ import infoIconSrc from '../assets/icon-info.svg';
 import { DateTimePicker, DateInput, StatusAsOnBadge } from './DatePicker';
 import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
 import PaymentHistoryPage, { type PaymentHistoryRow } from './PaymentHistoryPage';
+import ActionPage from './declaration/ActionPage';
 
 const font = "'Dubai', sans-serif";
 
@@ -71,6 +72,25 @@ const INVOICE_ROWS = [
   { type: 'General Charge Invoice',                            number: '70003825',   date: '10-Jun-26', dueDate: '20-Jun-26', amount: '5.00',     settled: '0.00',     balance: '5.00',     status: 'Unpaid',    txNo: '—',     txDate: '—',          source: 'CDR',   payMode: '—'         },
   { type: 'General Charge Invoice',                            number: '70003826',   date: '10-Jun-26', dueDate: '20-Jun-26', amount: '10.00',    settled: '0.00',     balance: '10.00',    status: 'Unpaid',    txNo: '—',     txDate: '—',          source: 'CDR',   payMode: '—'         },
 ];
+
+/* ── Row-action icons — the same glyph wherever an action appears ──────────── */
+const ROW_ACTION_ICONS: Record<string, React.ReactNode> = {
+  'View Payment Details': <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z" /><circle cx="10" cy="10" r="2.5" /></svg>,
+  'Download Invoice':     <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M10 3v10M5 9l5 5 5-5M3 17h14" /></svg>,
+  'Initiate Payment':     <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="16" height="11" rx="2" /><path d="M2 9h16M5 13h3" /></svg>,
+  'Recheck':              <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M17 10a7 7 0 1 1-2.05-4.95" /><path d="M17 3v4h-4" /></svg>,
+  'View & Print Receipt': <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M5 2.5h10v15l-2.5-1.5-2.5 1.5-2.5-1.5L5 17.5z" /><path d="M8 6.5h4M8 10h4" /></svg>,
+  'Payment History':      <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M2 10a8 8 0 1 0 1.5-4.7" /><path d="M2 4.5V10h5.5" /><path d="M10 6v4l2.5 2" /></svg>,
+};
+
+function RowActionItem({ label }: { label: string }) {
+  return (
+    <>
+      <span className="text-[#1360d2] group-hover:text-white group-disabled:text-[#b0b8d0] flex-shrink-0">{ROW_ACTION_ICONS[label]}</span>
+      <span className="text-[15px] text-[#111838] group-hover:text-white" style={{ fontFamily: font }}>{label}</span>
+    </>
+  );
+}
 
 const PAYMENT_ROWS = [
   { type: 'Case Management Demand Notice', txNo: '13136', txDate: '10-06-2026 11:57:00', invoiceNo: '70003787', status: 'Success',   amount: '200.00',   txDateFull: '10-06-2026', degTx: '590000237262582', ePayTx: '20021737', initiatedDate: '10-06-2026 11:58:00', initiatedBy: 'crnuser01', mode: 'Credit Card', payMsg: 'Payment Status Remarks: SUCCESS', colMsg: 'Collection Status Remarks: Transaction has been processed successfully.', details: [{ type: 'Case Management Demand Notice', invoiceNo: '70003786', amount: '5,520.00', receiptNo: 'Z-12645', remarks: 'M1CS 1927055; BPS Transaction for ECM-70003786', status: 'Success' }] },
@@ -253,6 +273,19 @@ const ALL_ACCOUNTS = [
 
 const ACC_PAGE_SIZE = 8;
 const YEARS  = ['2024', '2025', '2026'];
+/* Where the invoice was raised. Each location issues its numbers under its own
+   prefix, which the invoice-number search shows once a location is picked. */
+const LOCATIONS: { name: string; prefix: string }[] = [
+  { name: 'Agent Office',          prefix: 'A' },
+  { name: 'Airport Free Zone',     prefix: 'F' },
+  { name: 'Airport Terminal 3',    prefix: 'T3' },
+  { name: 'AL Maktoum Cargo',      prefix: 'MC' },
+  { name: 'AL Maktoum Passenger',  prefix: 'MP' },
+  { name: 'Aviation District',     prefix: 'AV' },
+  { name: 'Jebel Ali Port',        prefix: 'JA' },
+  { name: 'Port Rashid',           prefix: 'PR' },
+];
+
 const INVOICE_TYPES = [
   'Auction Receivable',
   'Berthing/Loading Fee Statement',
@@ -366,7 +399,7 @@ function ReceiptModal({ onClose, rows }: { onClose: () => void; rows: typeof PAY
               ['Business Name', 'crnuser01'],
               ['Business Code', 'AE-1051144'],
               ['Date', '10-06-2026'],
-              ['Receipt No.', 'Z-12645'],
+              /* The receipt number is already listed per line in the table below */
               ['Username', 'crnuser01'],
             ].map(([label, value]) => (
               <div key={label}>
@@ -637,6 +670,7 @@ function TxAccordion({ tx, index, open, onToggle }: { tx: TxRow; index: number; 
   const headerPairs: [string, string][] = [
     ['Transaction No.', tx.txNo],
     ['Transaction Date', tx.txDateFull],
+    ['Amount (AED)', tx.amount],
     ['Payment Mode', tx.mode],
     ['Status', tx.status],
   ];
@@ -654,7 +688,7 @@ function TxAccordion({ tx, index, open, onToggle }: { tx: TxRow; index: number; 
           {index + 1}
           <span className="sr-only">Transaction {index + 1}</span>
         </span>
-        <span className="flex-1 min-w-0 grid grid-cols-4 gap-x-8">
+        <span className="flex-1 min-w-0 grid grid-cols-5 gap-x-6">
           {headerPairs.map(([label, value]) => (
             <span key={label} className="flex flex-col">
               <span className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>{label}</span>
@@ -671,13 +705,42 @@ function TxAccordion({ tx, index, open, onToggle }: { tx: TxRow; index: number; 
 
       {open && (
         <div className="px-5 pb-5 pt-4" style={{ borderTop: '1px solid #d5ddfb' }}>
-          <TxFields tx={tx} omit={['Transaction No.', 'Transaction Date', 'Payment Mode', 'Status']} />
+          <TxFields tx={tx} omit={['Transaction No.', 'Transaction Date', 'Amount (AED)', 'Payment Mode', 'Status']} />
           <TxMessage tx={tx} />
           <p className="text-[#0e1b3d] text-[20px] font-bold mt-5 mb-3" style={{ fontFamily: font }}>Payment Details</p>
           <TxPaymentTable tx={tx} />
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * Payment Details for one invoice — every transaction raised against it, each an
+ * accordion whose header carries the amount alongside the transaction and its mode.
+ */
+function InvoicePaymentDetailsPage({ invoiceNo, rows, onHome, onBack }: {
+  invoiceNo: string; rows: TxRow[]; onHome?: () => void; onBack?: () => void;
+}) {
+  const [openRows, setOpenRows] = useState<Set<number>>(() => new Set([0]));
+  const toggle = (i: number) => setOpenRows(prev => {
+    const next = new Set(prev);
+    next.has(i) ? next.delete(i) : next.add(i);
+    return next;
+  });
+  return (
+    <ActionPage title="Payment Details" crumb="Bill Payment" onHome={onHome} onBack={onBack}
+      subtitle={`Invoice No: ${invoiceNo}`}>
+      {rows.length === 0 ? (
+        <p className="text-[16px] text-[#697498] text-center bg-white rounded-[8px]" style={{ padding: '32px 16px', fontFamily: font }}>
+          No payments recorded against this invoice yet.
+        </p>
+      ) : (
+        rows.map((tx, i) => (
+          <TxAccordion key={tx.txNo} tx={tx} index={i} open={openRows.has(i)} onToggle={() => toggle(i)} />
+        ))
+      )}
+    </ActionPage>
   );
 }
 
@@ -830,7 +893,51 @@ function FloatInput({ label, value, onChange }: { label: string; value: string; 
   );
 }
 
-function FloatDropdown({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (v: string) => void }) {
+/* Toolbar-height select with a floating label — the Invoices toolbar's own control. */
+function ToolbarSelect({ label, value, options, onChange, required = false }: {
+  label: string; value: string; options: string[]; onChange: (v: string) => void; required?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, []);
+  return (
+    <div className="relative" ref={ref}>
+      <button type="button" onClick={() => setOpen(o => !o)}
+        className="h-[48px] w-full rounded-[4px] px-[12px] flex items-center gap-[6px] text-left bg-white hover:bg-[#f7faff] transition-colors"
+        style={{ border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}`, fontFamily: font }}>
+        <span className="flex-1 truncate text-[16px]" style={{ color: value ? '#1360d2' : '#8f94ae', fontWeight: value ? 500 : 400 }}>
+          {value || `Select ${label.toLowerCase()}`}
+        </span>
+        <svg viewBox="0 0 24 24" className={`size-[16px] text-[#697498] flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M6 9l6 6 6-6" /></svg>
+      </button>
+      <span className="absolute text-[12px] px-[4px] bg-white pointer-events-none"
+        style={{ left: 9, top: -8, color: '#060c28', fontFamily: font }}>
+        {required && <span style={{ color: '#e8212e' }}>*</span>}{label}
+      </span>
+      {open && (
+        <div className="absolute z-[90] top-[52px] left-0 bg-white rounded-[8px] py-[4px] overflow-y-auto"
+          style={{ minWidth: '100%', maxWidth: 320, maxHeight: 280, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
+          {!required && (
+            <button onClick={() => { onChange(''); setOpen(false); }}
+              className="block w-full text-left px-[14px] py-[8px] text-[16px] hover:bg-[#e2ebf9] whitespace-nowrap"
+              style={{ color: value === '' ? '#1360d2' : '#697498', fontFamily: font }}>All</button>
+          )}
+          {options.map(opt => (
+            <button key={opt} onClick={() => { onChange(opt); setOpen(false); }}
+              className="block w-full text-left px-[14px] py-[8px] text-[16px] hover:bg-[#e2ebf9] whitespace-nowrap"
+              style={{ color: opt === value ? '#1360d2' : '#0e1b3d', fontFamily: font, fontWeight: opt === value ? 500 : 400 }}>{opt}</button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FloatDropdown({ label, value, options, onChange, allowAll = true }: { label: string; value: string; options: string[]; onChange: (v: string) => void; allowAll?: boolean }) {
   const [open, setOpen] = useState(false);
   const [focused, setFocused] = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -851,7 +958,7 @@ function FloatDropdown({ label, value, options, onChange }: { label: string; val
         style={{ fontFamily: font, border: `1px solid ${open ? '#1360d2' : '#d5ddfb'}` }}
       >
         <span className="flex-1 truncate">{value}</span>
-        {showX && (
+        {showX && allowAll && (
           <span onClick={e => { e.stopPropagation(); onChange(''); setOpen(false); setFocused(false); }}
             style={{ width: 22, height: 22, borderRadius: '50%', background: '#b0b8d0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: 'pointer' }}>
             <svg viewBox="0 0 10 10" width="10" height="10" fill="none">
@@ -865,9 +972,11 @@ function FloatDropdown({ label, value, options, onChange }: { label: string; val
       <span style={floatLabel(active, open)}>{label}</span>
       {open && (
         <div className="absolute z-[90] top-[60px] left-0 right-0 bg-white rounded-[8px] py-[4px] overflow-hidden" style={{ boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
-          <button onClick={() => { onChange(''); setOpen(false); setFocused(false); }}
-            className="block w-full text-left px-[14px] py-[8px] text-[16px] hover:bg-[#e2ebf9]"
-            style={{ color: value === '' ? '#1360d2' : '#697498', fontFamily: font }}>All</button>
+          {allowAll && (
+            <button onClick={() => { onChange(''); setOpen(false); setFocused(false); }}
+              className="block w-full text-left px-[14px] py-[8px] text-[16px] hover:bg-[#e2ebf9]"
+              style={{ color: value === '' ? '#1360d2' : '#697498', fontFamily: font }}>All</button>
+          )}
           {options.map(opt => (
             <button key={opt} onClick={() => { onChange(opt); setOpen(false); setFocused(false); }}
               className="block w-full text-left px-[14px] py-[8px] text-[16px] hover:bg-[#e2ebf9]"
@@ -1073,6 +1182,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const [fToDate,    setFToDate]    = useState('');
   const [fSource,    setFSource]    = useState('');
   const [fInvType,   setFInvType]   = useState('');
+  const [fLocation,  setFLocation]  = useState('');
   const [fInvNumber, setFInvNumber] = useState('');
   /* Invoices tab defaults to showing Unpaid records; multi-select via checkboxes. */
   const [fStatuses,  setFStatuses]  = useState<Set<string>>(() => new Set(['Unpaid']));
@@ -1106,9 +1216,12 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const [payStatusOpen,   setPayStatusOpen]   = useState(false);
   const [invPayDetails,   setInvPayDetails]   = useState<typeof PAYMENT_ROWS[0] | null>(null);
   const [invTxDetails,    setInvTxDetails]    = useState<typeof PAYMENT_ROWS | null>(null);
+  /* The Invoices listing shows an invoice's payments on a page, not in a popup. */
+  const [invPayPage,      setInvPayPage]      = useState<{ invoiceNo: string; rows: typeof PAYMENT_ROWS } | null>(null);
   const [payFromDate, setPayFromDate] = useState('2026-06-09');
   const [payToDate,   setPayToDate]   = useState('2026-06-10');
-  const [payDateFilterType, setPayDateFilterType] = useState('');
+  /* The range always means one of two dates; transactions are the usual one. */
+  const [payDateFilterType, setPayDateFilterType] = useState('Transaction Date');
   const [payExportOpen, setPayExportOpen] = useState(false);
   const payExportRef = useRef<HTMLDivElement>(null);
   const [expandedPayRow, setExpandedPayRow] = useState<number | null>(null);
@@ -1345,6 +1458,9 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const selectedList = Array.from(selectedRows).map(i => INVOICE_ROWS[i]).filter(Boolean);
   const totalAmt     = selectedList.reduce((s, r) => s + parseFloat(r.balance.replace(',', '')), 0);
 
+  /* The picked location gives the invoice numbers their prefix. */
+  const invPrefix = LOCATIONS.find(l => l.name === fLocation)?.prefix ?? '';
+
   /* Invoices filtering — Invoice Type/Number (toolbar), Advance Filters fields (incl. date
      range on the invoice's generation date), multi-select Status (defaults to Unpaid on
      first load), and the due-date bucket set from the Overview tab's summary cards. */
@@ -1369,6 +1485,23 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
     if (allSelected) return new Set([...prev].filter(i => !filteredInvIdxs.includes(i)));
     return new Set([...prev, ...filteredInvIdxs]);
   });
+
+  /* ── An invoice's payment details, as a page ─────────────────────────────── */
+  if (invPayPage) {
+    return (
+      <div className="fixed inset-0 z-50 bg-[#f8fafd] flex flex-col overflow-hidden">
+        <div className="flex-shrink-0"><Header onServiceCatalogue={onBack} onHome={handleHome} /></div>
+        <div className="flex-1 overflow-hidden">
+          <InvoicePaymentDetailsPage
+            invoiceNo={invPayPage.invoiceNo}
+            rows={invPayPage.rows}
+            onHome={handleHome}
+            onBack={() => setInvPayPage(null)}
+          />
+        </div>
+      </div>
+    );
+  }
 
   /* ── Payment History ─────────────────────────────────────────────────────── */
   if (historyFor !== null) {
@@ -2205,13 +2338,31 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
           </svg>
         </button>
 
+        {/* Invoice Type — required before an invoice number can be searched */}
+        <div className="flex-shrink-0" style={{ width: 230 }}>
+          <ToolbarSelect label="Invoice Type" required value={fInvType} options={INVOICE_TYPES}
+            onChange={v => { setFInvType(v); if (!v) setFInvNumber(''); }} />
+        </div>
+
+        {/* Location — picks the prefix the invoice numbers carry */}
+        <div className="flex-shrink-0" style={{ width: 190 }}>
+          <ToolbarSelect label="Location" value={fLocation} options={LOCATIONS.map(l => l.name)}
+            onChange={setFLocation} />
+        </div>
+
         {/* Invoice Number search */}
-        <div className="flex items-center h-[48px] rounded-[4px] border border-[#d5ddfb] bg-white px-[12px] gap-[8px] flex-shrink-0" style={{ minWidth: 220 }}>
+        <div className="flex items-center h-[48px] rounded-[4px] border bg-white px-[12px] gap-[8px] flex-shrink-0"
+          style={{ minWidth: 220, borderColor: '#d5ddfb', background: fInvType ? '#fff' : '#f2f4f8', opacity: fInvType ? 1 : 0.7 }}
+          title={fInvType ? undefined : 'Select an invoice type first'}>
+          {invPrefix && (
+            <span className="text-[16px] flex-shrink-0" style={{ color: '#697498', fontFamily: font }}>{invPrefix} -</span>
+          )}
           <input
             type="text"
             value={fInvNumber}
             onChange={e => setFInvNumber(e.target.value)}
-            placeholder="Invoice number…"
+            disabled={!fInvType}
+            placeholder={fInvType ? 'Invoice number…' : 'Select invoice type'}
             className="flex-1 text-[16px] text-[#0e1b3d] placeholder-[#8f94ae] bg-transparent focus:outline-none min-w-0"
             style={{ fontFamily: font }}
           />
@@ -2294,15 +2445,12 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               </svg>
             </button>
           </div>
-          {/* Wraps rather than squeezing — five fields do not fit a narrow panel */}
+          {/* Dates first, then what narrows them. Wraps rather than squeezing. */}
           <div className="flex items-start gap-4 flex-wrap">
-            <div className="flex-1 min-w-[200px]">
-              <FloatDropdown
-                label="Invoice Type"
-                value={fInvType}
-                options={INVOICE_TYPES}
-                onChange={setFInvType}
-              />
+            {/* The pair wraps together, so a To Date never strands itself on its own row */}
+            <div className="flex gap-4 min-w-[340px]" style={{ flex: '2 1 340px' }}>
+              <div className="flex-1 min-w-0"><DateInput label="From Date" value={fFromDate} onChange={setFFromDate} /></div>
+              <div className="flex-1 min-w-0"><DateInput label="To Date"   value={fToDate}   onChange={setFToDate}   /></div>
             </div>
             <div className="flex-1 min-w-[170px]">
               <FloatDropdown
@@ -2312,10 +2460,13 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 onChange={setFSource}
               />
             </div>
-            {/* The pair wraps together, so a To Date never strands itself on its own row */}
-            <div className="flex gap-4 min-w-[340px]" style={{ flex: '2 1 340px' }}>
-              <div className="flex-1 min-w-0"><DateInput label="From Date" value={fFromDate} onChange={setFFromDate} /></div>
-              <div className="flex-1 min-w-0"><DateInput label="To Date"   value={fToDate}   onChange={setFToDate}   /></div>
+            <div className="flex-1 min-w-[200px]">
+              <FloatDropdown
+                label="Invoice Type"
+                value={fInvType}
+                options={INVOICE_TYPES}
+                onChange={setFInvType}
+              />
             </div>
             <div className="flex-1 min-w-[170px]">
               <StatusMultiDropdown
@@ -2445,19 +2596,19 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                             const disabled = item === 'View Payment Details' && payRows.length === 0;
                             return (
                               <button key={item} disabled={disabled}
-                                className="group w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors disabled:opacity-40 disabled:cursor-default"
+                                className="group w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors disabled:opacity-40 disabled:cursor-default flex items-center gap-[10px]"
                                 onClick={() => {
                                   if (disabled) return;
                                   setOpenFlyout(null);
                                   if (item === 'Initiate Payment') { setSelectedRows(new Set([absIdx])); setStep('pay'); }
-                                  else if (item === 'View Payment Details' && payRows.length > 0) { setInvTxDetails(payRows); }
+                                  else if (item === 'View Payment Details' && payRows.length > 0) { setInvPayPage({ invoiceNo: row.number, rows: payRows }); }
                                   else if (item === 'View & Print Receipt') {
                                     const rows = payRows[0]?.details ?? [{ type: row.type, invoiceNo: row.number, amount: row.balance, receiptNo: '—', remarks: '', status: row.status }];
                                     setInvReceiptRows(rows);
                                     setShowInvReceipt(true);
                                   }
                                 }}>
-                                <span className="text-[15px] text-[#111838] group-hover:text-white" style={{ fontFamily: font }}>{item}</span>
+                                <RowActionItem label={item} />
                               </button>
                             );
                           })}
@@ -2621,9 +2772,27 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               </svg>
             </button>
           </div>
-          {/* Dates ahead of the status, as the Invoices panel reads, with the
-              buttons inline after the last field rather than on a row of their own */}
+          {/* Date filter type first — it says which dates the range means — then the
+              range itself, then what narrows it. Buttons sit inline after the last field. */}
           <div className="flex items-start gap-4 flex-wrap">
+            <div className="flex-1 min-w-[190px]">
+              <FloatDropdown
+                label="Date Filter Type"
+                value={payDateFilterType}
+                options={['Transaction Date', 'Receipt Date']}
+                allowAll={false}
+                onChange={v => setPayDateFilterType(v || 'Transaction Date')}
+              />
+            </div>
+            {/* The pair wraps together, so a To Date never strands itself on its own row */}
+            <div className="flex gap-4 min-w-[340px]" style={{ flex: '2 1 340px' }}>
+              <div className="flex-1 min-w-0">
+                <DateInput label="From Date" value={payFromDate} onChange={setPayFromDate} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <DateInput label="To Date" value={payToDate} onChange={setPayToDate} />
+              </div>
+            </div>
             <div className="flex-1 min-w-[190px]">
               <FloatDropdown
                 label="Transaction Type"
@@ -2639,23 +2808,6 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 onChange={v => { setPaySearchType('Transaction No.'); setPaySearchValue(v); }}
               />
             </div>
-            <div className="flex-1 min-w-[190px]">
-              <FloatDropdown
-                label="Date Filter Type"
-                value={payDateFilterType}
-                options={['Receipt Date', 'Transaction Date']}
-                onChange={v => { setPayDateFilterType(v); if (!v) { setPayFromDate(''); setPayToDate(''); } }}
-              />
-            </div>
-            {/* The pair wraps together, so a To Date never strands itself on its own row */}
-            <div className="flex gap-4 min-w-[360px]" style={{ flex: '2 1 360px' }}>
-              <div className="flex-1 min-w-0">
-                <DateInput label="From Date" value={payFromDate} onChange={setPayFromDate} disabled={!payDateFilterType} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <DateInput label="To Date" value={payToDate} onChange={setPayToDate} disabled={!payDateFilterType} />
-              </div>
-            </div>
             <div className="flex-1 min-w-[170px]">
               <FloatDropdown
                 label="Status"
@@ -2665,7 +2817,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               />
             </div>
             <button className="h-[56px] px-6 rounded-[4px] text-[16px] text-white flex-shrink-0" style={{ background: '#1360d2', fontFamily: font }}>Search</button>
-            <button onClick={() => { setPayFromDate('2026-06-09'); setPayToDate('2026-06-10'); setPayDateFilterType(''); setPayStatusFilter(''); setPaySearchValue(''); }}
+            <button onClick={() => { setPayFromDate('2026-06-09'); setPayToDate('2026-06-10'); setPayDateFilterType('Transaction Date'); setPayStatusFilter(''); setPaySearchValue(''); }}
               data-secondary-btn className="h-[56px] px-6 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white flex-shrink-0" style={{ fontFamily: font }}>Reset</button>
           </div>
         </div>
@@ -2761,7 +2913,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                             <div className="fixed z-[9999] bg-white rounded-[8px] py-[4px] overflow-hidden"
                               style={{ top: flyoutPos?.top, bottom: flyoutPos?.bottom, right: flyoutPos?.right, width: 210, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
                               {['View Payment Details', 'View & Print Receipt', 'Recheck', 'Payment History'].map(item => (
-                                <button key={item} className="group w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
+                                <button key={item} className="group w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors flex items-center gap-[10px]"
                                   onClick={() => {
                                     setOpenFlyout(null);
                                     if (item === 'View Payment Details') { setInvPayDetails(row); }
@@ -2769,7 +2921,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                                     else if (item === 'Recheck') { setRecheckIdx(absIdx); setRecheckOpen(true); }
                                     else if (item === 'Payment History') { setHistoryFor(row.invoiceNo || row.details[0]?.invoiceNo || ''); }
                                   }}>
-                                  <span className="text-[15px] text-[#111838] group-hover:text-white" style={{ fontFamily: font }}>{item}</span>
+                                  <RowActionItem label={item} />
                                 </button>
                               ))}
                             </div>
@@ -2797,7 +2949,6 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                   {/* Inner rows — rendered as sibling <tr>s in the same tbody, aligned to parent columns */}
                   {isMultiple && isExpanded && row.details.map((d, di) => {
                     const dst = PAY_STATUS[d.status] ?? { bg: 'rgba(105,116,152,0.10)', color: '#697498' };
-                    const innerFlyoutKey = absIdx * 1000 + di + 5000;
                     const isLastDetail = di === row.details.length - 1;
                     return (
                       <tr key={`detail-${di}`} style={{ background: '#dce8f8' }}>
@@ -2833,38 +2984,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                         <td style={{ padding: '0 12px', height: 50, verticalAlign: 'middle', borderBottom: isLastDetail ? '1px solid #f0f4ff' : '1px solid #dce8f8' }}>
                           <span className="inline-flex items-center px-[10px] py-[3px] rounded-[4px] text-[16px] font-medium whitespace-nowrap" style={{ background: dst.bg, color: dst.color }}>{d.status}</span>
                         </td>
-                        {/* Col 7: Actions — three dots for download */}
-                        <td style={{ padding: '0 8px', height: 50, verticalAlign: 'middle', borderBottom: isLastDetail ? '1px solid #f0f4ff' : '1px solid #dce8f8', textAlign: 'center' }}>
-                          <div className="flex items-center justify-center">
-                            <div className="relative inline-block" ref={openFlyout === innerFlyoutKey ? flyoutRef : undefined}>
-                              <button onClick={(e) => {
-                                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                                  const goUp = rect.bottom + 120 > window.innerHeight;
-                                  setFlyoutPos({ ...(goUp ? { bottom: window.innerHeight - rect.top + 4 } : { top: rect.bottom + 4 }), right: window.innerWidth - rect.right });
-                                  setOpenFlyout(openFlyout === innerFlyoutKey ? null : innerFlyoutKey);
-                                }}
-                                className="size-[32px] rounded-full flex items-center justify-center hover:bg-[#dce8f8] transition-colors">
-                                <svg viewBox="0 0 20 20" width="18" height="18" fill="#697498">
-                                  <circle cx="10" cy="4" r="1.7" /><circle cx="10" cy="10" r="1.7" /><circle cx="10" cy="16" r="1.7" />
-                                </svg>
-                              </button>
-                              {openFlyout === innerFlyoutKey && (
-                                <div className="fixed z-[9999] bg-white rounded-[8px] py-[4px] overflow-hidden"
-                                  style={{ top: flyoutPos?.top, bottom: flyoutPos?.bottom, right: flyoutPos?.right, width: 200, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
-                                  {['View Details', 'Download Receipt'].map(item => (
-                                    <button key={item} className="group w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors"
-                                      onClick={() => {
-                                        setOpenFlyout(null);
-                                        if (item === 'View Details') { setInvPayDetails(row); }
-                                      }}>
-                                      <span className="text-[15px] text-[#111838] group-hover:text-white" style={{ fontFamily: font }}>{item}</span>
-                                    </button>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </td>
+                        {/* Col 7: Actions — a line of a settlement carries no actions of its own */}
+                        <td style={{ padding: '0 8px', height: 50, verticalAlign: 'middle', borderBottom: isLastDetail ? '1px solid #f0f4ff' : '1px solid #dce8f8' }} />
                       </tr>
                     );
                   })}
