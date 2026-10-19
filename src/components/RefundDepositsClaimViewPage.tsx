@@ -34,8 +34,9 @@ function FieldMarker({ children }: { children: React.ReactNode }) {
 /** The one field cell the claim view uses — every label lines up with every other. */
 function FieldCell({ label, tag, children }: { label: string; tag?: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-[4px] py-[12px] px-[16px]" style={{ flex: '1 0 200px', minWidth: 180 }}>
-      <span className="flex items-center gap-[8px] flex-wrap">
+    <div className="flex flex-col gap-[4px] py-[12px] px-[16px]"
+      style={tag ? { flex: '1 0 270px', minWidth: 250 } : { flex: '1 0 200px', minWidth: 180 }}>
+      <span className="flex items-center gap-[8px]" style={{ whiteSpace: 'nowrap' }}>
         <span className="text-[16px]" style={{ color: '#455174', fontFamily: font }}>{label}</span>
         {tag && (
           <span className="text-[13px] px-[8px] py-[1px] rounded-[10px] whitespace-nowrap"
@@ -593,8 +594,8 @@ function SubClaimBlock({ d, n, open, onToggle, onViewOb, onAction }: {
         <FieldItem label="Charge Type" value={d.chargeType} />
         <FieldItem label="Refund Type" value={d.refundType} />
         {([
-          ['Claim Amount (AED)', d.claimAmount],
           ['Amount (AED)', d.claimAmount],
+          ['Claim Amount (AED)', d.claimAmount],
           ['Net Amount (AED)', d.claimAmount, 'Payable/Receivable'],
         ] as [string, string, string?][]).map(([label, amount, tag]) => (
           <FieldCell key={label} label={label} tag={tag}>
