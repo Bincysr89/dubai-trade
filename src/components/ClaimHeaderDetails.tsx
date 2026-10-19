@@ -26,6 +26,8 @@ export type ClaimHeaderProps = {
   depositAccountNo?: string;
   depositAccountName?: string;
 
+  /** Hidden where the claim carries no deposit of its own (an auction claim). */
+  showDepositMethod?: boolean;
   /** Hidden where the refund mode belongs to each declaration rather than the claim. */
   showRefundMode?: boolean;
   refundMode?: RefundMode;
@@ -116,6 +118,7 @@ export default function ClaimHeaderDetails({
   depositAccountNo = 'SG-100004120',
   depositAccountName = 'SW Logistics LLC',
 
+  showDepositMethod = true,
   showRefundMode = true,
   refundMode = 'Bank Transfer',
   bankAccountNo = '019100458921',
@@ -154,11 +157,15 @@ export default function ClaimHeaderDetails({
         <FieldItem label="Claim Status" value={claimStatus} />
         <FieldItem label="Customs Broker" value={customsBroker} />
       </div>
-      <Divider />
-      <div className={ROW}>
-        <FieldItem label="Deposit Method" value={depositMethod} />
-        {depositFields.map(([l, v]) => <FieldItem key={l} label={l} value={v} />)}
-      </div>
+      {showDepositMethod && (
+        <>
+          <Divider />
+          <div className={ROW}>
+            <FieldItem label="Deposit Method" value={depositMethod} />
+            {depositFields.map(([l, v]) => <FieldItem key={l} label={l} value={v} />)}
+          </div>
+        </>
+      )}
       {/* The refund mode and whatever it needs alongside it get a row of their own */}
       {showRefundMode && (
         <>

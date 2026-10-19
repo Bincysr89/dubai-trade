@@ -210,6 +210,8 @@ export default function AuctionClaimViewPage({
               claimant={claimantName}
               beneficiary={claimantName}
               {...claimHeaderDefaultsFor('Refund on Auction Proceed')}
+              /* An auction claim is against sale proceeds, so there is no deposit to name. */
+              showDepositMethod={false}
             />
           </Section>
 

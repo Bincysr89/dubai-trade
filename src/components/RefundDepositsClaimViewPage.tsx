@@ -560,9 +560,11 @@ function UnitPriceDetailsModal({ hs, onClose }: { hs: HsLine | null; onClose: ()
 
 /** One sub-claim — a charge type claimed against the declaration, with whatever detail
     that charge type carries nested inside its own card so the nesting is unmistakable. */
-function SubClaimBlock({ d, n, open, onToggle, onViewOb }: {
+function SubClaimBlock({ d, n, open, onToggle, onViewOb, onAction }: {
   d: DeclLine; n: number; open: boolean; onToggle: () => void; onViewOb: (obs: OutboundDetail[]) => void;
+  onAction: (label: SubClaimMenuLabel, d: DeclLine) => void;
 }) {
+  const [menuAt, setMenuAt] = useState<FlyoutAnchor | null>(null);
   const allHs = d.invoices.flatMap(inv => inv.hsLines.map(hs => ({ inv, hs })));
   const outbound = hasOutboundLinkage(d.chargeType);
   const isCdm = d.chargeType === 'CDM Deposit';
@@ -574,7 +576,7 @@ function SubClaimBlock({ d, n, open, onToggle, onViewOb }: {
 
       {/* Sub-claim summary */}
       <div className="flex items-start gap-[10px] px-[14px] py-[10px]">
-        <span className="inline-flex items-center justify-center size-[26px] rounded-full text-[14px] flex-shrink-0 mt-[14px]"
+        <span className="inline-flex items-center justify-center size-[26px] rounded-full text-[14px] flex-shrink-0 mt-[20px]"
           style={{ background: '#1360d2', color: '#fff', fontWeight: 600, fontFamily: font }}>{n}</span>
         {/* The fields keep a column of their own, so a wrapped row lines up with the first */}
         <div className="flex flex-wrap items-center flex-1 min-w-0">
@@ -594,7 +596,17 @@ function SubClaimBlock({ d, n, open, onToggle, onViewOb }: {
           <span><StatusChip status="Registered" /></span>
         </FieldCell>
         </div>
+        {/* What was approved, and any waiver — both decided on this charge type */}
+        <button type="button" aria-label={`${d.chargeType} actions`}
+          onClick={(e) => { e.stopPropagation(); setMenuAt(anchorFrom(e, SUB_CLAIM_MENU.length, MENU_WIDTH)); }}
+          className="size-[32px] inline-flex items-center justify-center rounded flex-shrink-0 mt-[17px] hover:bg-[#f0f4ff] transition-colors">
+          <MoreIcon />
+        </button>
       </div>
+      {menuAt && (
+        <RowFlyout items={SUB_CLAIM_MENU} at={menuAt} width={MENU_WIDTH}
+          onPick={(label) => onAction(label as SubClaimMenuLabel, d)} onClose={() => setMenuAt(null)} />
+      )}
 
       {/* What this charge type carries. Export-linked types (Alternative Duty Deposit, Duty)
           get the Invoice/HS Code table; CDM Deposit a reference summary; the rest nothing. */}
@@ -659,30 +671,36 @@ const lineMenuIcons = {
 };
 
 const DECLARATION_MENU: FlyoutItem[] = [
-  { label: 'View Declaration',            icon: menuIcons.declaration },
-  { label: 'View Privileges & Benefits',  icon: menuIcons.privileges },
+  { label: 'View Declaration',           icon: menuIcons.declaration },
+  { label: 'View Privileges & Benefits', icon: menuIcons.privileges },
+];
+
+/* Approvals and waivers are decided per charge type, so they hang off the sub-claim. */
+const SUB_CLAIM_MENU: FlyoutItem[] = [
   { label: 'View Claim Approval Details', icon: menuIcons.approval },
   { label: 'View Waiver Details',         icon: menuIcons.waiver },
 ];
 
 type DeclarationMenuLabel = (typeof DECLARATION_MENU)[number]['label'];
+type SubClaimMenuLabel = (typeof SUB_CLAIM_MENU)[number]['label'];
 
 /* ─── Declaration Details — one card per declaration. The declaration's own particulars
        sit in the header; the charge types claimed against it are nested inside, each in
        its own card on a tinted tray so a sub-claim's detail cannot be mistaken for a
        sibling of the declaration. ─── */
-function DeclarationCard({ g, idx, isOpen, onToggle, onViewOb, onAction }: {
+function DeclarationCard({ g, idx, isOpen, onToggle, onViewOb, onAction, onSubClaimAction }: {
   g: DeclarationGroup; idx: number;
   isOpen: (key: string) => boolean; onToggle: (key: string) => void;
   onViewOb: (obs: OutboundDetail[]) => void;
   onAction: (label: DeclarationMenuLabel) => void;
+  onSubClaimAction: (label: SubClaimMenuLabel, d: DeclLine) => void;
 }) {
   const [menuAt, setMenuAt] = useState<FlyoutAnchor | null>(null);
   return (
     <div className="bg-white rounded-[8px] overflow-hidden" style={{ border: '1.5px solid #d9e3f2', boxShadow: '0px 2px 8px rgba(143,155,186,0.12)' }}>
       {/* The declaration itself — everything the sub-claims below share */}
       <div className="flex items-start gap-[10px] px-[16px] py-[14px]">
-        <span className="text-[16px] text-[#455174] flex-shrink-0 mt-[16px]" style={{ fontFamily: font }}>{idx + 1}</span>
+        <span className="text-[16px] text-[#455174] flex-shrink-0 mt-[21px]" style={{ fontFamily: font }}>{idx + 1}</span>
         <div className="flex flex-wrap items-center flex-1 min-w-0">
         {/* The declaration number carries the owner's privilege marks */}
         <FieldCell label="Declaration No.">
@@ -698,7 +716,7 @@ function DeclarationCard({ g, idx, isOpen, onToggle, onViewOb, onAction }: {
         {/* Everything this declaration can be looked at through, in one menu */}
         <button type="button" aria-label={`Declaration ${g.declarationNo} actions`}
           onClick={(e) => { e.stopPropagation(); setMenuAt(anchorFrom(e, DECLARATION_MENU.length, MENU_WIDTH)); }}
-          className="size-[32px] inline-flex items-center justify-center rounded flex-shrink-0 mt-[10px] hover:bg-[#f0f4ff] transition-colors">
+          className="size-[32px] inline-flex items-center justify-center rounded flex-shrink-0 mt-[17px] hover:bg-[#f0f4ff] transition-colors">
           <MoreIcon />
         </button>
       </div>
@@ -718,7 +736,8 @@ function DeclarationCard({ g, idx, isOpen, onToggle, onViewOb, onAction }: {
           const key = `${g.declarationNo}::${d.chargeType}`;
           return (
             <SubClaimBlock key={key} d={d} n={i + 1}
-              open={isOpen(key)} onToggle={() => onToggle(key)} onViewOb={onViewOb} />
+              open={isOpen(key)} onToggle={() => onToggle(key)} onViewOb={onViewOb}
+              onAction={onSubClaimAction} />
           );
         })}
       </div>
@@ -800,9 +819,12 @@ export function DeclarationDetailsSection({ chargeDetails, rows, outbounds, decl
               isOpen={(key) => openSubClaims.has(key)} onToggle={toggleSubClaim} onViewOb={setViewOb}
               onAction={(label) => {
                 if (label === 'View Declaration') setViewDecl(g.declarationNo);
-                else if (label === 'View Privileges & Benefits') setViewPrivileges(g.declarationNo);
-                else if (label === 'View Claim Approval Details') setViewApproval(g.declarationNo);
-                else setViewWaiver(g.declarationNo);
+                else setViewPrivileges(g.declarationNo);
+              }}
+              onSubClaimAction={(label, d) => {
+                const subject = `${g.declarationNo} — ${d.chargeType}`;
+                if (label === 'View Claim Approval Details') setViewApproval(subject);
+                else setViewWaiver(subject);
               }} />
           ))}
         </div>
