@@ -696,7 +696,7 @@ function TxAccordion({ tx, index, open, onToggle }: { tx: TxRow; index: number; 
         <span className="flex-1 min-w-0 grid grid-cols-5 gap-x-6">
           {headerPairs.map(([label, value]) => (
             <span key={label} className="flex flex-col gap-[2px] items-start">
-              <span className="text-[14px] text-[#697498]" style={{ fontFamily: font }}>{label}</span>
+              <span className="text-[16px] text-[#697498]" style={{ fontFamily: font }}>{label}</span>
               {label === 'Status' ? (
                 <StatusPill status={value} />
               ) : (
@@ -722,6 +722,24 @@ function TxAccordion({ tx, index, open, onToggle }: { tx: TxRow; index: number; 
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * Payment Details for one transaction — the same content the popup shows, on a page,
+ * with no accordion since there is only ever the one transaction here.
+ */
+function TransactionDetailsPage({ tx, onHome, onBack }: { tx: TxRow; onHome?: () => void; onBack?: () => void }) {
+  return (
+    <ActionPage title="Payment Details" crumb="Bill Payment" onHome={onHome} onBack={onBack}
+      subtitle={`Transaction No: ${tx.txNo}`}>
+      <div className="bg-white rounded-[8px] border border-[#d5ddfb] p-5 mb-5">
+        <TxFields tx={tx} />
+        <TxMessage tx={tx} />
+      </div>
+      <p className="text-[#0e1b3d] text-[20px] font-bold mb-3" style={{ fontFamily: font }}>Payment Details</p>
+      <TxPaymentTable tx={tx} />
+    </ActionPage>
   );
 }
 
@@ -1282,6 +1300,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const [invTxDetails,    setInvTxDetails]    = useState<typeof PAYMENT_ROWS | null>(null);
   /* The Invoices listing shows an invoice's payments on a page, not in a popup. */
   const [invPayPage,      setInvPayPage]      = useState<{ invoiceNo: string; rows: typeof PAYMENT_ROWS } | null>(null);
+  /* The Payments listing shows the one transaction behind a row, also as a page. */
+  const [payDetailsPage,  setPayDetailsPage]  = useState<TxRow | null>(null);
   /* The Advance Filters' range and the "Transaction Date As On" badge are two separate
      controls — changing one leaves the other where the user put it. */
   const [payFromDate, setPayFromDate] = useState('');
@@ -1583,6 +1603,18 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
             onHome={handleHome}
             onBack={() => setInvPayPage(null)}
           />
+        </div>
+      </div>
+    );
+  }
+
+  /* ── One transaction's details, as a page ───────────────────────────────── */
+  if (payDetailsPage) {
+    return (
+      <div className="fixed inset-0 z-50 bg-[#f8fafd] flex flex-col overflow-hidden">
+        <div className="flex-shrink-0"><Header onServiceCatalogue={onBack} onHome={handleHome} /></div>
+        <div className="flex-1 overflow-hidden">
+          <TransactionDetailsPage tx={payDetailsPage} onHome={handleHome} onBack={() => setPayDetailsPage(null)} />
         </div>
       </div>
     );
@@ -3003,7 +3035,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                                 <button key={item} className="group w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors flex items-center gap-[10px]"
                                   onClick={() => {
                                     setOpenFlyout(null);
-                                    if (item === 'View Payment Details') { setInvPayDetails(row); }
+                                    if (item === 'View Payment Details') { setPayDetailsPage(row); }
                                     else if (item === 'View & Print Receipt') { setPayFlyoutReceiptRows(row.details); setShowPayFlyoutReceipt(true); }
                                     else if (item === 'Recheck') { setRecheckIdx(absIdx); setRecheckOpen(true); }
                                     else if (item === 'Payment History') { setHistoryFor(row.txNo); }

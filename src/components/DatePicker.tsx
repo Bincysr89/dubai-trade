@@ -373,7 +373,7 @@ export function DateInput({
           disabled={disabled}
           placeholder={focused ? (showTime ? 'DD-MM-YYYY HH:mm' : 'DD-MM-YYYY') : ''}
           onChange={e => setTyped(e.target.value)}
-          onFocus={() => setFocused(true)}
+          onFocus={() => { setFocused(true); if (!disabled) setOpen(true); }}
           onBlur={e => { setFocused(false); commit(e.target.value); }}
           onKeyDown={e => {
             if (e.key === 'Enter') { commit((e.target as HTMLInputElement).value); setOpen(false); }
@@ -487,7 +487,7 @@ export function DateInputOutlined({
           value={typed ?? (value ? fmtDate(value) : '')}
           placeholder={focused ? 'DD-MM-YYYY' : ''}
           onChange={e => setTyped(e.target.value)}
-          onFocus={() => setFocused(true)}
+          onFocus={() => { setFocused(true); setOpen(true); }}
           onBlur={e => { setFocused(false); commit(e.target.value); }}
           onKeyDown={e => {
             if (e.key === 'Enter') { commit((e.target as HTMLInputElement).value); setOpen(false); }
