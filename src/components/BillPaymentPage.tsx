@@ -89,7 +89,6 @@ const ROW_ACTION_ICONS: Record<string, React.ReactNode> = {
   'View & Print Receipt': <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M5 2.5h10v15l-2.5-1.5-2.5 1.5-2.5-1.5L5 17.5z" /><path d="M8 6.5h4M8 10h4" /></svg>,
   'View Account Details': <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z" /><circle cx="10" cy="10" r="2.5" /></svg>,
   'Download Account Statement': <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M10 3v10M5 9l5 5 5-5M3 17h14" /></svg>,
-  'Recheck Payment Status': <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M17 10a7 7 0 1 1-2.05-4.95" /><path d="M17 3v4h-4" /></svg>,
   'Payment History':      <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M2 10a8 8 0 1 0 1.5-4.7" /><path d="M2 4.5V10h5.5" /><path d="M10 6v4l2.5 2" /></svg>,
 };
 
@@ -319,7 +318,7 @@ const ACCOUNT_MENU = [
   'View Account Details',
   'Download Account Statement',
   'Initiate Payment',
-  'Recheck Payment Status',
+  'Recheck',
 ] as const;
 
 const ACC_PAGE_SIZE = 8;
@@ -3407,7 +3406,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                         <RowMenu pos={flyoutPos} width={250}>
                           {ACCOUNT_MENU.map(item => {
                             /* Rechecking only means something once a payment is under way. */
-                            const disabled = item === 'Recheck Payment Status' && payState !== 'processing';
+                            const disabled = item === 'Recheck' && payState !== 'processing';
                             return (
                               <button key={item} disabled={disabled}
                                 className="group w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors disabled:opacity-40 disabled:cursor-default flex items-center gap-[10px]"
@@ -3422,7 +3421,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                                     setAccPayAmounts(acc.type !== 'Debit Account' ? { [absIdx]: acc.amountDue } : {});
                                     setAccView('pay');
                                   }
-                                  else if (item === 'Recheck Payment Status') { setRecheckIdx(0); setRecheckOpen(true); }
+                                  else if (item === 'Recheck') { setRecheckIdx(0); setRecheckOpen(true); }
                                 }}>
                                 <RowActionItem label={item} />
                               </button>
