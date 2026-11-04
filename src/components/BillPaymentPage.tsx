@@ -3310,8 +3310,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               return (
                 <tr key={i}
                   onClick={() => { if (locked) return; setSelectedAccs(prev => { const n = new Set(prev); n.has(absIdx) ? n.delete(absIdx) : n.add(absIdx); return n; }); }}
-                  title={payState ? ACC_PAY_STATE[payState].note : undefined}
-                  className={locked ? '' : (isSelected ? 'bg-[#dce8f8] cursor-pointer' : 'bg-white hover:bg-[#dce8f8] cursor-pointer')}
+                  className={`${locked ? 'group/pay' : (isSelected ? 'bg-[#dce8f8] cursor-pointer' : 'bg-white hover:bg-[#dce8f8] cursor-pointer')}`}
                   style={locked ? { background: tint!, cursor: 'default' } : undefined}>
                   <td style={{ padding: '0 16px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff' }}>
                     <input type="checkbox" readOnly disabled={locked} checked={isSelected && !locked}
@@ -3337,10 +3336,18 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                     <span className="flex items-center gap-[8px] flex-wrap">
                       <a href="#" onClick={e => { e.preventDefault(); e.stopPropagation(); setAccDetailsAccount(acc); setShowAccDetails(true); }} className="text-[16px] text-[#1360d2] underline hover:opacity-75 transition-opacity whitespace-nowrap">{acc.account}</a>
                       {payState && (
-                        <span title={ACC_PAY_STATE[payState].note}
-                          className="inline-flex items-center px-[8px] py-[2px] rounded-[4px] text-[13px] font-semibold whitespace-nowrap"
-                          style={{ background: ACC_PAY_STATE[payState].chipBg, color: ACC_PAY_STATE[payState].chipColor }}>
-                          {ACC_PAY_STATE[payState].label}
+                        <span className="relative inline-flex">
+                          <span className="inline-flex items-center px-[8px] py-[2px] rounded-[4px] text-[13px] font-semibold whitespace-nowrap"
+                            style={{ background: ACC_PAY_STATE[payState].chipBg, color: ACC_PAY_STATE[payState].chipColor }}>
+                            {ACC_PAY_STATE[payState].label}
+                          </span>
+                          {/* Shown while the row is hovered — the module's own tooltip card */}
+                          <span className="absolute left-0 top-[calc(100%+8px)] z-[400] hidden group-hover/pay:block rounded-[8px] whitespace-nowrap pointer-events-none"
+                            style={{ background: '#fff', border: '1px solid #e0e8f5', boxShadow: '0 8px 24px rgba(14,27,61,0.14)', padding: '10px 14px', fontSize: 14, fontWeight: 500, color: '#1360d2', fontFamily: font }}>
+                            {ACC_PAY_STATE[payState].note}
+                            <span className="absolute -top-[5px] left-[16px] w-[9px] h-[9px] rotate-45"
+                              style={{ background: '#fff', borderLeft: '1px solid #e0e8f5', borderTop: '1px solid #e0e8f5' }} />
+                          </span>
                         </span>
                       )}
                     </span>
