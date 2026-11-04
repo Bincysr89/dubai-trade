@@ -3320,7 +3320,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                       )}
                     </div>
                   </td>
-                  <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff' }}>
+                  <td style={{ padding: '10px 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff' }}>
                     <span className="flex items-center gap-[8px] flex-wrap">
                       <a href="#" onClick={e => { e.preventDefault(); e.stopPropagation(); setAccDetailsAccount(acc); setShowAccDetails(true); }} className="text-[16px] text-[#1360d2] underline hover:opacity-75 transition-opacity whitespace-nowrap">{acc.account}</a>
                       {payState && (
