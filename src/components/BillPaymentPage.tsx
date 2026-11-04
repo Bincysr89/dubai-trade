@@ -1824,7 +1824,6 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               data-secondary-btn className="h-[44px] px-8 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white transition-colors flex items-center gap-2"
               style={{ fontFamily: font }}
             >
-              <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5l-5 5 5 5" strokeLinecap="round" /></svg>
               Back
             </button>
             <button
@@ -1932,7 +1931,6 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 data-secondary-btn className="h-[44px] px-8 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white transition-colors flex items-center gap-2"
                 style={{ fontFamily: font }}
               >
-                <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5l-5 5 5 5" strokeLinecap="round" /></svg>
                 Back to Listing
               </button>
               <button
@@ -2136,7 +2134,6 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               data-secondary-btn className="h-[44px] px-8 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white transition-colors flex items-center gap-2"
               style={{ fontFamily: font }}
             >
-              <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5l-5 5 5 5" strokeLinecap="round" /></svg>
               Back
             </button>
             <button
@@ -2270,7 +2267,6 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                 data-secondary-btn className="h-[44px] px-8 rounded-[4px] border border-[#1360d2] text-[16px] text-[#1360d2] bg-white transition-colors flex items-center gap-2"
                 style={{ fontFamily: font }}
               >
-                <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5l-5 5 5 5" strokeLinecap="round" /></svg>
                 Back to Listing
               </button>
               <button
