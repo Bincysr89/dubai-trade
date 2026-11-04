@@ -146,7 +146,7 @@ function RowDots() {
 type AccountPayState = 'processing';
 
 const ACC_PAY_STATE: Record<AccountPayState, { label: string; row: string; chipBg: string; chipColor: string; note: string }> = {
-  processing: { label: 'Payment Pending', row: '#fff8ec', chipBg: 'rgba(255,169,26,0.18)', chipColor: '#b45309', note: 'Initiate Payment or recheck payment if already initiated' },
+  processing: { label: 'Payment Pending', row: '#fff8ec', chipBg: 'rgba(255,169,26,0.18)', chipColor: '#b45309', note: 'Initiate Payment or recheck payment status if already initiated' },
 };
 
 const ACCOUNTS = [
