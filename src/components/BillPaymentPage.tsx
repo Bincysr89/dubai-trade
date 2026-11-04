@@ -3343,7 +3343,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                           </span>
                           {/* Shown while the row is hovered — the module's own tooltip card */}
                           <span className="absolute left-0 top-[calc(100%+8px)] z-[400] hidden group-hover/pay:block rounded-[8px] whitespace-nowrap pointer-events-none"
-                            style={{ background: '#fff', border: '1px solid #e0e8f5', boxShadow: '0 8px 24px rgba(14,27,61,0.14)', padding: '10px 14px', fontSize: 14, fontWeight: 500, color: '#1360d2', fontFamily: font }}>
+                            style={{ background: '#fff', border: '1px solid #e0e8f5', boxShadow: '0 8px 24px rgba(14,27,61,0.14)', padding: '10px 14px', fontSize: 14, fontWeight: 500, color: '#0e1b3d', fontFamily: font }}>
                             {ACC_PAY_STATE[payState].note}
                             <span className="absolute -top-[5px] left-[16px] w-[9px] h-[9px] rotate-45"
                               style={{ background: '#fff', borderLeft: '1px solid #e0e8f5', borderTop: '1px solid #e0e8f5' }} />
