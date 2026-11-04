@@ -141,20 +141,18 @@ function RowDots() {
   );
 }
 
-/** Where an account's last payment attempt got to. An account in either state cannot
-    be paid alongside others: the failed one must be retried on its own, and the
-    processing one is already with the payment gateway. */
-type AccountPayState = 'failed' | 'processing';
+/** An account with a payment already under way. It cannot be paid alongside others:
+    the payment is either retried on its own or its status rechecked. */
+type AccountPayState = 'processing';
 
 const ACC_PAY_STATE: Record<AccountPayState, { label: string; row: string; chipBg: string; chipColor: string; note: string }> = {
-  failed:     { label: 'Payment Failed',  row: '#fdf0ef', chipBg: 'rgba(192,57,43,0.10)',  chipColor: '#c0392b', note: 'Payment Failed — the last payment on this account did not go through. Retry it from the row menu.' },
-  processing: { label: 'Payment Pending', row: '#fff8ec', chipBg: 'rgba(255,169,26,0.18)', chipColor: '#b45309', note: 'Payment Pending — a payment on this account is still with the gateway. Recheck its status from the row menu.' },
+  processing: { label: 'Payment Pending', row: '#fff8ec', chipBg: 'rgba(255,169,26,0.18)', chipColor: '#b45309', note: 'Initiate Payment or recheck payment if already initiated' },
 };
 
 const ACCOUNTS = [
   { type: 'Credit Account', account: '1222683 - AEOUAT1', totalLimit: '10,000,000,000.00', amountDue: '6,643.00',    dueDate: '05-Jun-26', currentLimit: '9,999,993,357.00', availableLimit: '9,999,993,357.00' },
   { type: 'Credit Account', account: '1222685 - AEOUAT1', totalLimit: '985,000,000.00',    amountDue: '6,510.00',    dueDate: '08-Jun-26', currentLimit: '984,993,490.00',   availableLimit: '984,993,490.00'   },
-  { type: 'Credit Account', account: '1222839 - AEOUAT1', totalLimit: '8,570,000,000.00',  amountDue: '192,834.00',  dueDate: '15-Jun-26', currentLimit: '8,569,807,166.00', availableLimit: '8,569,807,166.00', payState: 'failed' as AccountPayState },
+  { type: 'Credit Account', account: '1222839 - AEOUAT1', totalLimit: '8,570,000,000.00',  amountDue: '192,834.00',  dueDate: '15-Jun-26', currentLimit: '8,569,807,166.00', availableLimit: '8,569,807,166.00' },
   { type: 'Credit Account', account: '1222889 - AEOUAT1', totalLimit: '31,500,000.00',     amountDue: '280,709.38',  dueDate: '30-Jun-26', currentLimit: '31,219,290.62',    availableLimit: '31,219,290.62', payState: 'processing' as AccountPayState },
   { type: 'Credit Account', account: '1222840 - AEOUAT1', totalLimit: '8,957,000,000.00',  amountDue: '159,588.00',  dueDate: '20-Jun-26', currentLimit: '8,956,840,412.00', availableLimit: '8,956,840,412.00' },
   { type: 'Credit Account', account: '1222843 - AEOUAT1', totalLimit: '897,000,000.00',    amountDue: '416,486.00',  dueDate: '03-Jun-26', currentLimit: '896,583,514.00',   availableLimit: '896,583,514.00'   },
@@ -3401,10 +3399,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                       {openFlyout === absIdx + 7000 && (
                         <RowMenu pos={flyoutPos} width={250}>
                           {ACCOUNT_MENU.map(item => {
-                            /* Paying is for an account that is not already with the gateway;
-                               rechecking is only for one that is. */
-                            const disabled = (item === 'Initiate Payment' && payState === 'processing')
-                              || (item === 'Recheck Payment Status' && payState !== 'processing');
+                            /* Rechecking only means something once a payment is under way. */
+                            const disabled = item === 'Recheck Payment Status' && payState !== 'processing';
                             return (
                               <button key={item} disabled={disabled}
                                 className="group w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors disabled:opacity-40 disabled:cursor-default flex items-center gap-[10px]"
