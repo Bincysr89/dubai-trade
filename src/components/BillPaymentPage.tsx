@@ -129,28 +129,10 @@ function RowDots() {
     processing one is already with the payment gateway. */
 type AccountPayState = 'failed' | 'processing';
 
-const ACC_PAY_STATE: Record<AccountPayState, { label: string; row: string; note: string }> = {
-  failed:     { label: 'Payment Failed',  row: '#fdf0ef', note: 'Payment Failed — the last payment on this account did not go through. Retry it from the row menu.' },
-  processing: { label: 'Payment Pending', row: '#fff8ec', note: 'Payment Pending — a payment on this account is still with the gateway. Recheck its status from the row menu.' },
+const ACC_PAY_STATE: Record<AccountPayState, { label: string; row: string; chipBg: string; chipColor: string; note: string }> = {
+  failed:     { label: 'Payment Failed',  row: '#fdf0ef', chipBg: 'rgba(192,57,43,0.10)',  chipColor: '#c0392b', note: 'Payment Failed — the last payment on this account did not go through. Retry it from the row menu.' },
+  processing: { label: 'Payment Pending', row: '#fff8ec', chipBg: 'rgba(255,169,26,0.18)', chipColor: '#b45309', note: 'Payment Pending — a payment on this account is still with the gateway. Recheck its status from the row menu.' },
 };
-
-/** The VCC payment icons — the same ringed cross and exclamation those screens show. */
-function PayStateIcon({ state }: { state: AccountPayState }) {
-  const colour = state === 'failed' ? '#dc3545' : '#FFC020';
-  return (
-    <svg viewBox="0 0 96 96" width="18" height="18" fill="none" className="flex-shrink-0" aria-hidden>
-      <circle cx="48" cy="48" r="42" stroke={colour} strokeWidth="7" fill="none" />
-      {state === 'failed' ? (
-        <path d="M32 32 L64 64 M64 32 L32 64" stroke={colour} strokeWidth="7" strokeLinecap="round" />
-      ) : (
-        <>
-          <rect x="44.5" y="24" width="7" height="34" rx="3.5" fill={colour} />
-          <circle cx="48" cy="70" r="4.5" fill={colour} />
-        </>
-      )}
-    </svg>
-  );
-}
 
 const ACCOUNTS = [
   { type: 'Credit Account', account: '1222683 - AEOUAT1', totalLimit: '10,000,000,000.00', amountDue: '6,643.00',    dueDate: '05-Jun-26', currentLimit: '9,999,993,357.00', availableLimit: '9,999,993,357.00' },
@@ -3339,11 +3321,13 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                     </div>
                   </td>
                   <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff' }}>
-                    <span className="flex items-center gap-[8px] whitespace-nowrap">
+                    <span className="flex items-center gap-[8px] flex-wrap">
                       <a href="#" onClick={e => { e.preventDefault(); e.stopPropagation(); setAccDetailsAccount(acc); setShowAccDetails(true); }} className="text-[16px] text-[#1360d2] underline hover:opacity-75 transition-opacity whitespace-nowrap">{acc.account}</a>
                       {payState && (
-                        <span title={ACC_PAY_STATE[payState].note} aria-label={ACC_PAY_STATE[payState].label} className="inline-flex">
-                          <PayStateIcon state={payState} />
+                        <span title={ACC_PAY_STATE[payState].note}
+                          className="inline-flex items-center px-[8px] py-[2px] rounded-[4px] text-[13px] font-semibold whitespace-nowrap"
+                          style={{ background: ACC_PAY_STATE[payState].chipBg, color: ACC_PAY_STATE[payState].chipColor }}>
+                          {ACC_PAY_STATE[payState].label}
                         </span>
                       )}
                     </span>
