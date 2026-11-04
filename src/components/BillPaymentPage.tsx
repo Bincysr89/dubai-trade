@@ -2711,9 +2711,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                           setOpenFlyout(openFlyout === absIdx ? null : absIdx);
                         }}
                         className="size-[32px] rounded-full flex items-center justify-center hover:bg-[#e2ebf9] transition-colors">
-                        <svg viewBox="0 0 20 20" width="18" height="18" fill="#697498">
-                          <circle cx="10" cy="4" r="1.7" /><circle cx="10" cy="10" r="1.7" /><circle cx="10" cy="16" r="1.7" />
-                        </svg>
+                        <MoreIcon />
                       </button>
                       {openFlyout === absIdx && (
                         <div className="fixed z-[9999] bg-white rounded-[8px] py-[4px] overflow-hidden"
@@ -3043,9 +3041,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                               setOpenFlyout(openFlyout === absIdx + 100 ? null : absIdx + 100);
                             }}
                             className="size-[32px] rounded-full flex items-center justify-center hover:bg-[#e2ebf9] transition-colors">
-                            <svg viewBox="0 0 20 20" width="18" height="18" fill="#697498">
-                              <circle cx="10" cy="4" r="1.7" /><circle cx="10" cy="10" r="1.7" /><circle cx="10" cy="16" r="1.7" />
-                            </svg>
+                            <MoreIcon />
                           </button>
                           {openFlyout === absIdx + 100 && (
                             <div className="fixed z-[9999] bg-white rounded-[8px] py-[4px] overflow-hidden"
