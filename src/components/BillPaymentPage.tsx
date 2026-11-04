@@ -7,6 +7,7 @@ import { DateTimePicker, DateInput, StatusAsOnBadge, fmtDate } from './DatePicke
 import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
 import PaymentHistoryPage, { type PaymentHistoryRow } from './PaymentHistoryPage';
 import StatusPill, { PAY_STATUS } from './PaymentStatusPill';
+import MoreIcon from './MoreIcon';
 import ActionPage from './declaration/ActionPage';
 
 const font = "'Dubai', sans-serif";
@@ -86,6 +87,9 @@ const ROW_ACTION_ICONS: Record<string, React.ReactNode> = {
   'Initiate Payment':     <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="16" height="11" rx="2" /><path d="M2 9h16M5 13h3" /></svg>,
   'Recheck':              <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M17 10a7 7 0 1 1-2.05-4.95" /><path d="M17 3v4h-4" /></svg>,
   'View & Print Receipt': <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M5 2.5h10v15l-2.5-1.5-2.5 1.5-2.5-1.5L5 17.5z" /><path d="M8 6.5h4M8 10h4" /></svg>,
+  'View Account Details': <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z" /><circle cx="10" cy="10" r="2.5" /></svg>,
+  'Download Account Statement': <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M10 3v10M5 9l5 5 5-5M3 17h14" /></svg>,
+  'Recheck Payment Status': <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M17 10a7 7 0 1 1-2.05-4.95" /><path d="M17 3v4h-4" /></svg>,
   'Payment History':      <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M2 10a8 8 0 1 0 1.5-4.7" /><path d="M2 4.5V10h5.5" /><path d="M10 6v4l2.5 2" /></svg>,
 };
 
@@ -112,14 +116,24 @@ const PAYMENT_ROWS = [
 ];
 
 /* ── Account data ───────────────────────────────────────────────────────────── */
+/** Where an account's last payment attempt got to. An account in either state cannot
+    be paid alongside others: the failed one must be retried on its own, and the
+    processing one is already with the payment gateway. */
+type AccountPayState = 'failed' | 'processing';
+
+const ACC_PAY_STATE: Record<AccountPayState, { label: string; row: string; chipBg: string; chipColor: string; note: string }> = {
+  failed:     { label: 'Payment Failed',     row: '#fdf0ef', chipBg: 'rgba(192,57,43,0.10)',  chipColor: '#c0392b', note: 'The last payment on this account failed — retry it from the row menu.' },
+  processing: { label: 'Payment Processing', row: '#fff8ec', chipBg: 'rgba(255,169,26,0.18)', chipColor: '#b45309', note: 'A payment on this account is still with the gateway — recheck its status from the row menu.' },
+};
+
 const ACCOUNTS = [
   { type: 'Credit Account', account: '1222683 - AEOUAT1', totalLimit: '10,000,000,000.00', amountDue: '6,643.00',    dueDate: '05-Jun-26', currentLimit: '9,999,993,357.00', availableLimit: '9,999,993,357.00' },
   { type: 'Credit Account', account: '1222685 - AEOUAT1', totalLimit: '985,000,000.00',    amountDue: '6,510.00',    dueDate: '08-Jun-26', currentLimit: '984,993,490.00',   availableLimit: '984,993,490.00'   },
-  { type: 'Credit Account', account: '1222839 - AEOUAT1', totalLimit: '8,570,000,000.00',  amountDue: '192,834.00',  dueDate: '15-Jun-26', currentLimit: '8,569,807,166.00', availableLimit: '8,569,807,166.00' },
+  { type: 'Credit Account', account: '1222839 - AEOUAT1', totalLimit: '8,570,000,000.00',  amountDue: '192,834.00',  dueDate: '15-Jun-26', currentLimit: '8,569,807,166.00', availableLimit: '8,569,807,166.00', payState: 'failed' as AccountPayState },
   { type: 'Credit Account', account: '1222840 - AEOUAT1', totalLimit: '8,957,000,000.00',  amountDue: '159,588.00',  dueDate: '20-Jun-26', currentLimit: '8,956,840,412.00', availableLimit: '8,956,840,412.00' },
   { type: 'Credit Account', account: '1222843 - AEOUAT1', totalLimit: '897,000,000.00',    amountDue: '416,486.00',  dueDate: '03-Jun-26', currentLimit: '896,583,514.00',   availableLimit: '896,583,514.00'   },
   { type: 'Credit Account', account: '1222844 - AEOUAT1', totalLimit: '8,957,000,000.00',  amountDue: '194,563.00',  dueDate: '25-Jun-26', currentLimit: '8,956,805,437.00', availableLimit: '8,956,805,437.00' },
-  { type: 'Credit Account', account: '1222889 - AEOUAT1', totalLimit: '31,500,000.00',     amountDue: '280,709.38',  dueDate: '30-Jun-26', currentLimit: '31,219,290.62',    availableLimit: '31,219,290.62'    },
+  { type: 'Credit Account', account: '1222889 - AEOUAT1', totalLimit: '31,500,000.00',     amountDue: '280,709.38',  dueDate: '30-Jun-26', currentLimit: '31,219,290.62',    availableLimit: '31,219,290.62', payState: 'processing' as AccountPayState },
   { type: 'Credit Account', account: '1222890 - AEOUAT1', totalLimit: '3,500,000.00',      amountDue: '43,029.00',   dueDate: '07-Jun-26', currentLimit: '3,456,971.00',     availableLimit: '3,456,971.00'     },
   { type: 'Credit Account', account: '1222964 - AEOUAT1', totalLimit: '100,000.00',        amountDue: '20,049.00',   dueDate: '18-Jun-26', currentLimit: '79,951.00',        availableLimit: '79,951.00'        },
   { type: 'Credit Account', account: '1222966 - AEOUAT1', totalLimit: '300,000.00',        amountDue: '49,140.00',   dueDate: '22-Jun-26', currentLimit: '250,860.00',       availableLimit: '250,860.00'       },
@@ -276,6 +290,14 @@ const ALL_ACCOUNTS = [
   ...DEBIT_ACCOUNTS,
   ...ACCOUNTS,
 ];
+
+/* What can be done with one account from its row. */
+const ACCOUNT_MENU = [
+  'View Account Details',
+  'Download Account Statement',
+  'Initiate Payment',
+  'Recheck Payment Status',
+] as const;
 
 const ACC_PAGE_SIZE = 8;
 const YEARS  = ['2024', '2025', '2026'];
@@ -1953,7 +1975,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
   const selectedAccsList = Array.from(selectedAccs).sort((a, b) => a - b).map(idx => ({ idx, acc: ALL_ACCOUNTS[idx] }));
   const firstSelAcc = selectedAccsList.length > 0 ? selectedAccsList[0].idx : null;
   const selAccRow = firstSelAcc !== null ? ALL_ACCOUNTS[firstSelAcc] : null;
-  const totalAccPayAmount = selectedAccsList.reduce((s, { idx }) => s + parseFloat(accPayAmounts[idx] || '0'), 0);
+  /* The amounts are held as typed — "192,834.00" — so the commas come out before summing. */
+  const totalAccPayAmount = selectedAccsList.reduce((s, { idx }) => s + (parseFloat((accPayAmounts[idx] || '0').replace(/,/g, '')) || 0), 0);
   /* ── Accounts Pay screen ────────────────────────────────────────────────── */
   if (activeMenu === 'Accounts' && accView === 'pay' && selAccRow) {
     return (
@@ -3133,6 +3156,8 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
 
   /* ── Accounts content ───────────────────────────────────────────────────── */
   const filteredAccounts = accTypeFilter === 'All' ? ALL_ACCOUNTS : ALL_ACCOUNTS.filter(a => a.type === accTypeFilter);
+  /* Accounts whose last payment is unfinished — they sit out of a combined payment. */
+  const heldAccounts = filteredAccounts.filter(a => (a as { payState?: AccountPayState }).payState);
   const totalAccPages    = Math.ceil(filteredAccounts.length / ACC_PAGE_SIZE);
   const paginatedAcc     = filteredAccounts.slice((accPage - 1) * ACC_PAGE_SIZE, accPage * ACC_PAGE_SIZE);
 
@@ -3218,6 +3243,19 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
         </button>
       </div>
 
+      {/* Why some rows cannot be ticked */}
+      {heldAccounts.length > 0 && (
+        <div className="flex items-start gap-[8px] px-[14px] py-[10px] rounded-[8px] border border-[#b3caff] mb-[10px]" style={{ background: 'linear-gradient(135deg,#eef4ff,#f5f8ff)', fontFamily: font }}>
+          <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#1360d2" strokeWidth="1.6" className="flex-shrink-0 mt-[2px]">
+            <circle cx="10" cy="10" r="8"/><path d="M10 9v5M10 7v.5" strokeLinecap="round"/>
+          </svg>
+          <span className="text-[14px] text-[#1360d2] font-medium">
+            {heldAccounts.length} account{heldAccounts.length !== 1 ? 's are' : ' is'} in the middle of a payment and cannot be paid alongside others —
+            retry a failed one, or recheck a processing one, from its row menu.
+          </span>
+        </div>
+      )}
+
       {/* Accounts table */}
       <div style={{ position: 'relative' }}>
         <ScrollArrows atStart={accAtScrollStart} atEnd={accAtScrollEnd} onLeft={accScrollToStart} onRight={accScrollToEnd} stickyWidth={120} />
@@ -3267,11 +3305,21 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
               const absIdx = (accPage - 1) * ACC_PAGE_SIZE + i;
               const isSelected = selectedAccs.has(absIdx);
               const isDebit = acc.type === 'Debit Account';
+              /* An account mid-payment cannot join a combined payment */
+              const payState = (acc as { payState?: AccountPayState }).payState;
+              const locked = !!payState;
+              const tint = payState ? ACC_PAY_STATE[payState].row : null;
               return (
-                <tr key={i} onClick={() => setSelectedAccs(prev => { const n = new Set(prev); n.has(absIdx) ? n.delete(absIdx) : n.add(absIdx); return n; })}
-                  className={isSelected ? 'bg-[#dce8f8] cursor-pointer' : 'bg-white hover:bg-[#dce8f8] cursor-pointer'}>
+                <tr key={i}
+                  onClick={() => { if (locked) return; setSelectedAccs(prev => { const n = new Set(prev); n.has(absIdx) ? n.delete(absIdx) : n.add(absIdx); return n; }); }}
+                  title={payState ? ACC_PAY_STATE[payState].note : undefined}
+                  className={locked ? '' : (isSelected ? 'bg-[#dce8f8] cursor-pointer' : 'bg-white hover:bg-[#dce8f8] cursor-pointer')}
+                  style={locked ? { background: tint!, cursor: 'default' } : undefined}>
                   <td style={{ padding: '0 16px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff' }}>
-                    <input type="checkbox" readOnly checked={isSelected} className="size-4 accent-[#1360d2]" />
+                    <input type="checkbox" readOnly disabled={locked} checked={isSelected && !locked}
+                      className="size-4 accent-[#1360d2]"
+                      style={locked ? { cursor: 'not-allowed', opacity: 0.45 } : undefined}
+                      aria-label={locked ? `${acc.account} cannot be paid with other accounts` : `Select ${acc.account}`} />
                   </td>
                   <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff' }}>
                     <div className="flex items-center gap-[8px]">
@@ -3288,7 +3336,15 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                     </div>
                   </td>
                   <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff' }}>
-                    <a href="#" onClick={e => { e.preventDefault(); e.stopPropagation(); setAccDetailsAccount(acc); setShowAccDetails(true); }} className="text-[16px] text-[#1360d2] underline hover:opacity-75 transition-opacity whitespace-nowrap">{acc.account}</a>
+                    <span className="flex items-center gap-[8px] flex-wrap">
+                      <a href="#" onClick={e => { e.preventDefault(); e.stopPropagation(); setAccDetailsAccount(acc); setShowAccDetails(true); }} className="text-[16px] text-[#1360d2] underline hover:opacity-75 transition-opacity whitespace-nowrap">{acc.account}</a>
+                      {payState && (
+                        <span className="inline-flex items-center px-[8px] py-[2px] rounded-[4px] text-[13px] font-semibold whitespace-nowrap"
+                          style={{ background: ACC_PAY_STATE[payState].chipBg, color: ACC_PAY_STATE[payState].chipColor }}>
+                          {ACC_PAY_STATE[payState].label}
+                        </span>
+                      )}
+                    </span>
                   </td>
                   <td style={{ padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff', textAlign: 'right' }}>
                     {isDebit ? (
@@ -3325,18 +3381,53 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                   <td style={{
                     padding: '0 12px', height: 54, verticalAlign: 'middle', borderBottom: '1px solid #f0f4ff', textAlign: 'center',
                     position: 'sticky', right: 0, boxShadow: '-3px 0 6px rgba(0,0,0,0.06)', zIndex: 1,
-                    background: isSelected ? '#dce8f8' : '#fff',
+                    background: locked ? tint! : isSelected ? '#dce8f8' : '#fff',
                   }} onClick={e => e.stopPropagation()}>
-                    <button
-                      onClick={() => setShowStmtModal(true)}
-                      title="Download Account Statement"
-                      className="size-[34px] flex items-center justify-center rounded-[4px] border border-[#d5ddfb] bg-white text-[#1360d2] hover:bg-[#f0f4ff] transition-colors mx-auto"
-                    >
-                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8">
-                        <path d="M12 3v12M8 11l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" strokeLinecap="round" />
-                      </svg>
-                    </button>
+                    <div className="relative inline-block">
+                      <button
+                        onClick={(e) => {
+                          if (openFlyout === absIdx + 7000) { setOpenFlyout(null); return; }
+                          const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                          const menuH = ACCOUNT_MENU.length * 44 + 8;
+                          const goUp = r.bottom + menuH > window.innerHeight;
+                          setFlyoutPos({ ...(goUp ? { bottom: window.innerHeight - r.top + 4 } : { top: r.bottom + 4 }), right: window.innerWidth - r.right });
+                          setOpenFlyout(absIdx + 7000);
+                        }}
+                        aria-label={`${acc.account} actions`}
+                        className="size-[32px] rounded-full flex items-center justify-center hover:bg-[#e2ebf9] transition-colors mx-auto">
+                        <MoreIcon />
+                      </button>
+                      {openFlyout === absIdx + 7000 && (
+                        <div className="fixed z-[9999] bg-white rounded-[8px] py-[4px] overflow-hidden"
+                          style={{ top: flyoutPos?.top, bottom: flyoutPos?.bottom, right: flyoutPos?.right, width: 250, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
+                          {ACCOUNT_MENU.map(item => {
+                            /* Paying is for an account that is not already with the gateway;
+                               rechecking is only for one that is. */
+                            const disabled = (item === 'Initiate Payment' && payState === 'processing')
+                              || (item === 'Recheck Payment Status' && payState !== 'processing');
+                            return (
+                              <button key={item} disabled={disabled}
+                                className="group w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors disabled:opacity-40 disabled:cursor-default flex items-center gap-[10px]"
+                                onClick={() => {
+                                  if (disabled) return;
+                                  setOpenFlyout(null);
+                                  if (item === 'View Account Details') { setAccDetailsAccount(acc); setShowAccDetails(true); }
+                                  else if (item === 'Download Account Statement') { setShowStmtModal(true); }
+                                  else if (item === 'Initiate Payment') {
+                                    /* On its own — a retry cannot be combined with other accounts */
+                                    setSelectedAccs(new Set([absIdx]));
+                                    setAccPayAmounts(acc.type !== 'Debit Account' ? { [absIdx]: acc.amountDue } : {});
+                                    setAccView('pay');
+                                  }
+                                  else if (item === 'Recheck Payment Status') { setRecheckIdx(0); setRecheckOpen(true); }
+                                }}>
+                                <RowActionItem label={item} />
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                   </td>
                 </tr>
               );
