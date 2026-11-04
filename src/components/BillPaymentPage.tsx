@@ -7,7 +7,6 @@ import { DateTimePicker, DateInput, StatusAsOnBadge, fmtDate } from './DatePicke
 import { useTableBehaviors, ScrollArrows } from '../hooks/useTableBehaviors';
 import PaymentHistoryPage, { type PaymentHistoryRow } from './PaymentHistoryPage';
 import StatusPill, { PAY_STATUS } from './PaymentStatusPill';
-import MoreIcon from './MoreIcon';
 import ActionPage from './declaration/ActionPage';
 
 const font = "'Dubai', sans-serif";
@@ -116,6 +115,15 @@ const PAYMENT_ROWS = [
 ];
 
 /* ── Account data ───────────────────────────────────────────────────────────── */
+/** The row-menu glyph the Bill Payment listings share. */
+function RowDots() {
+  return (
+    <svg viewBox="0 0 20 20" width="18" height="18" fill="#697498" className="flex-shrink-0">
+      <circle cx="10" cy="4" r="1.7" /><circle cx="10" cy="10" r="1.7" /><circle cx="10" cy="16" r="1.7" />
+    </svg>
+  );
+}
+
 /** Where an account's last payment attempt got to. An account in either state cannot
     be paid alongside others: the failed one must be retried on its own, and the
     processing one is already with the payment gateway. */
@@ -2711,7 +2719,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                           setOpenFlyout(openFlyout === absIdx ? null : absIdx);
                         }}
                         className="size-[32px] rounded-full flex items-center justify-center hover:bg-[#e2ebf9] transition-colors">
-                        <MoreIcon />
+                        <RowDots />
                       </button>
                       {openFlyout === absIdx && (
                         <div className="fixed z-[9999] bg-white rounded-[8px] py-[4px] overflow-hidden"
@@ -3041,7 +3049,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                               setOpenFlyout(openFlyout === absIdx + 100 ? null : absIdx + 100);
                             }}
                             className="size-[32px] rounded-full flex items-center justify-center hover:bg-[#e2ebf9] transition-colors">
-                            <MoreIcon />
+                            <RowDots />
                           </button>
                           {openFlyout === absIdx + 100 && (
                             <div className="fixed z-[9999] bg-white rounded-[8px] py-[4px] overflow-hidden"
@@ -3387,7 +3395,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                         }}
                         aria-label={`${acc.account} actions`}
                         className="size-[32px] rounded-full flex items-center justify-center hover:bg-[#e2ebf9] transition-colors mx-auto">
-                        <MoreIcon />
+                        <RowDots />
                       </button>
                       {openFlyout === absIdx + 7000 && (
                         <div className="fixed z-[9999] bg-white rounded-[8px] py-[4px] overflow-hidden"
