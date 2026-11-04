@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from './Header';
 import Pagination from './Pagination';
@@ -115,6 +116,22 @@ const PAYMENT_ROWS = [
 ];
 
 /* ── Account data ───────────────────────────────────────────────────────────── */
+/** Row menus live on the body: a sticky Actions cell is its own stacking context, so a
+    menu rendered inside one is painted under the rows that follow it. */
+function RowMenu({ pos, width, children }: {
+  pos: { top?: number; bottom?: number; right?: number } | null;
+  width: number;
+  children: React.ReactNode;
+}) {
+  return createPortal(
+    <div className="fixed z-[9999] bg-white rounded-[8px] py-[4px] overflow-hidden"
+      style={{ top: pos?.top, bottom: pos?.bottom, right: pos?.right, width, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
+      {children}
+    </div>,
+    document.body,
+  );
+}
+
 /** The row-menu glyph the Bill Payment listings share. */
 function RowDots() {
   return (
@@ -2722,8 +2739,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                         <RowDots />
                       </button>
                       {openFlyout === absIdx && (
-                        <div className="fixed z-[9999] bg-white rounded-[8px] py-[4px] overflow-hidden"
-                          style={{ top: flyoutPos?.top, bottom: flyoutPos?.bottom, right: flyoutPos?.right, width: 200, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
+                        <RowMenu pos={flyoutPos} width={200}>
                           {[
                             'View Payment Details',
                             'Download Invoice',
@@ -2750,7 +2766,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                               </button>
                             );
                           })}
-                        </div>
+                        </RowMenu>
                       )}
                     </div>
                   </td>
@@ -3052,8 +3068,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                             <RowDots />
                           </button>
                           {openFlyout === absIdx + 100 && (
-                            <div className="fixed z-[9999] bg-white rounded-[8px] py-[4px] overflow-hidden"
-                              style={{ top: flyoutPos?.top, bottom: flyoutPos?.bottom, right: flyoutPos?.right, width: 210, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
+                            <RowMenu pos={flyoutPos} width={210}>
                               {['View Payment Details', 'View & Print Receipt', 'Recheck', 'Payment History'].map(item => (
                                 <button key={item} className="group w-full px-[14px] py-[10px] text-left hover:bg-[#1360d2] transition-colors flex items-center gap-[10px]"
                                   onClick={() => {
@@ -3066,7 +3081,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                                   <RowActionItem label={item} />
                                 </button>
                               ))}
-                            </div>
+                            </RowMenu>
                           )}
                         </div>
                         {/* Expand/collapse chevron — only for Multiple Bill Settlement, placed after three-dot */}
@@ -3384,8 +3399,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                         <RowDots />
                       </button>
                       {openFlyout === absIdx + 7000 && (
-                        <div className="fixed z-[9999] bg-white rounded-[8px] py-[4px] overflow-hidden"
-                          style={{ top: flyoutPos?.top, bottom: flyoutPos?.bottom, right: flyoutPos?.right, width: 250, boxShadow: '0px 2px 16px rgba(0,0,0,0.12)', border: '1px solid #f0f0f5' }}>
+                        <RowMenu pos={flyoutPos} width={250}>
                           {ACCOUNT_MENU.map(item => {
                             /* Paying is for an account that is not already with the gateway;
                                rechecking is only for one that is. */
@@ -3411,7 +3425,7 @@ export default function BillPaymentPage({ onBack }: { onBack: () => void }) {
                               </button>
                             );
                           })}
-                        </div>
+                        </RowMenu>
                       )}
                     </div>
                   </td>
